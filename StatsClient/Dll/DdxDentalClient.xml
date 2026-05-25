@@ -1,0 +1,368 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DdxDentalClient</name>
+    </assembly>
+    <members>
+        <member name="T:DdxDentalClient.DdxCallbackServer">
+             <summary>
+             HTTP callback listener that handles DDX callback events.
+            
+             All DDX callback servers MUST implement at least application_ping.
+             DDX sends application_ping BEFORE the end user can approve the registration,
+             to confirm the callback server is reachable.
+            
+             Signature validation (spec v1.0):
+               For signed callbacks (all except application_ping), validate as follows:
+                 1. Take only: ddx_app_key, ddx_nonce, ddx_signature_method,
+                               ddx_timestamp, ddx_version — sorted alphabetically.
+                 2. Concatenate as raw key+value pairs (no separators).
+                 3. Append privateKey + eventName.
+                 4. Hash with SHA256 or MD5 (plain, not HMAC).
+                 5. Compare result to the supplied ddx_signature.
+            
+             Note: application_ping carries NO authentication (per DDX spec).
+            
+             Usage:
+               var server = new DdxCallbackServer(config, port: 7777);
+               server.Start();
+               // ...
+               server.Stop();
+             </summary>
+        </member>
+        <member name="F:DdxDentalClient.DdxCallbackServer.SignatureKeys">
+            <summary>Keys included in callback signature validation (spec-defined set).</summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxCallbackServer.ValidateSignature(System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+             <summary>
+             Validates a signed callback event per DDX auth spec v1.0.
+            
+             Base string = concat of sorted (ddx_app_key, ddx_nonce,
+               ddx_signature_method, ddx_timestamp, ddx_version) raw key+value pairs
+               + privateKey + eventName
+            
+             Then hash with SHA256 or MD5 and compare to ddx_signature.
+             </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxCallbackServer.OnApplicationPing">
+            <summary>
+            DDX sends application_ping (no auth) before the end user can complete
+            registration. Must respond with <response><reply /></response>.
+            </summary>
+        </member>
+        <member name="T:DdxDentalClient.DdxClient">
+             <summary>
+             Client for the DDX Dental remote application API.
+            
+             Authentication (DDX auth spec v1.0):
+               All signed API calls include these query parameters:
+                 ddx_app_key           – your public key
+                 ddx_signature_method  – "SHA256" or "MD5"
+                 ddx_timestamp         – ISO 8601 date/time string
+                 ddx_nonce             – random unique string per request
+                 ddx_version           – "1.0"
+                 ddx_signature         – generated hash (see below)
+            
+               Signing algorithm:
+                 1. Sort all request params (excl. ddx_signature) alphabetically by key.
+                 2. Concatenate as raw key+value pairs with NO separators:
+                        key1value1key2value2...
+                 3. Append the private key, then the API method name (last URL path segment).
+                 4. Hash the entire string with SHA256 or MD5 (plain hash, NOT HMAC).
+                 5. Hex-encode the result (lower-case).
+             </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.GetRegistrationUrl(System.String,System.String,System.String[],System.String,System.String[])">
+             <summary>
+             Builds the browser URL for application_register.
+             The DDX user must open this in a browser, authenticate, and approve.
+             After approval DDX will display the public and private keys.
+            
+             Recommended scopes for a read-only lab integration:
+               scopes: ["lab.case.read", "lab.account.read"]
+            
+             Available scopes include: lab.case.read, lab.case.write, lab.case.*,
+               lab.account.read, lab.account.write, lab.meta.read, is_authoritative, etc.
+            
+             lab.case.read    – required for GetCasesAsync / GetCaseInfoAsync
+             lab.account.read – required for GetAccountAsync
+            
+             IMPORTANT: If you have already registered without the required scopes,
+             you must re-register (new keys will be issued) to gain access.
+             </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.GetApplicationInfoAsync(System.Threading.CancellationToken)">
+            <summary>
+            Calls application_get_info to validate keys and retrieve application details.
+            Automatically populates <see cref="P:DdxDentalClient.DdxConfig.LabId"/> from the response.
+            Throws <see cref="T:DdxDentalClient.DdxApiException"/> on API-level errors.
+            </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.GetAccountAsync(System.String,System.Threading.CancellationToken)">
+             <summary>
+             Retrieves the dental practice account details (account_get).
+            
+             The two most commonly needed fields are:
+               <see cref="P:DdxDentalClient.AccountInfoResponse.Name"/>         – practice name
+               <see cref="P:DdxDentalClient.AccountInfoResponse.Primary"/>.<see cref="P:DdxDentalClient.AccountPrimaryContact.Email"/> – primary contact email
+            
+             Scope required: <c>lab.account.read</c>
+             Endpoint: https://[LabId].[DDX]/service/default/account_get
+             </summary>
+             <param name="practiceId">
+               The dental practice's identifier.
+               Obtain it from <see cref="P:DdxDentalClient.CaseSummary.PracticeId"/> or
+               <see cref="P:DdxDentalClient.CaseInfoResponse.PracticeId"/>.
+             </param>
+             <param name="ct">Optional cancellation token.</param>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.GetCasesAsync(System.Threading.CancellationToken)">
+             <summary>
+             Retrieves a list of open lab cases (cases_get).
+             Useful for discovering the <c>practice_id</c> of a case before
+             calling <see cref="M:DdxDentalClient.DdxClient.GetCaseInfoAsync(System.Int32,System.String,System.Threading.CancellationToken)"/>.
+            
+             Endpoint: https://[LabId].[DDX]/service/cases/cases_get
+             </summary>
+             <param name="ct">Optional cancellation token.</param>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.GetCaseInfoAsync(System.Int32,System.String,System.Threading.CancellationToken)">
+             <summary>
+             Retrieves a specific DDX lab case by case ID.
+            
+             Endpoint: https://[LabId].[DDX]/service/cases/case_get
+            
+             Parameters sent:
+               ID          = your lab's identifier (subdomain AND query param)
+               id          = the case identifier
+               practice_id = the <strong>dental practice's</strong> identifier
+            
+             If you do not know the practice_id, call
+             <see cref="M:DdxDentalClient.DdxClient.FindPracticeIdForCaseAsync(System.Int32,System.Threading.CancellationToken)"/> first, or use
+             <see cref="M:DdxDentalClient.DdxClient.GetCaseInfoByIdAsync(System.Int32,System.Threading.CancellationToken)"/> which does this automatically.
+             </summary>
+             <param name="caseId">DDX lab case identifier.</param>
+             <param name="practiceId">
+               The dental practice's ID — the practice that sent you this case.
+               This is NOT your lab ID. Find it via <see cref="M:DdxDentalClient.DdxClient.GetCasesAsync(System.Threading.CancellationToken)"/>
+               or <see cref="M:DdxDentalClient.DdxClient.FindPracticeIdForCaseAsync(System.Int32,System.Threading.CancellationToken)"/>.
+             </param>
+             <param name="ct">Optional cancellation token.</param>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.GetCaseInfoByIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Retrieves a specific DDX lab case by searching the case list for its
+            practice_id automatically. Convenience wrapper around
+            <see cref="M:DdxDentalClient.DdxClient.GetCasesAsync(System.Threading.CancellationToken)"/> + <see cref="M:DdxDentalClient.DdxClient.GetCaseInfoAsync(System.Int32,System.String,System.Threading.CancellationToken)"/>.
+            </summary>
+            <param name="caseId">DDX lab case identifier.</param>
+            <param name="ct">Optional cancellation token.</param>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.FindPracticeIdForCaseAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Calls cases_get to find the practice_id associated with a given case ID.
+            Throws <see cref="T:System.InvalidOperationException"/> if the case is not found.
+            </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.GenerateSignature(System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+             <summary>
+             DDX signature algorithm (spec v1.0):
+            
+               base = concat of sorted key+value pairs (raw, no separators)
+                    + privateKey
+                    + methodName          ← API method or callback event name
+            
+               signature = SHA256(base)   or   MD5(base)   — plain hash, not HMAC
+            
+             Example (from spec):
+               params sorted → ddx_app_key{key}ddx_nonce705...formatXML
+               + privateKey + "application_get_info"
+               → SHA256 → 64ce0a0080da2b5bd1b15d336e05feae...
+             </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.GetJsonAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Performs a GET request and returns the raw body, asserting it is JSON.
+            Reserved for any future DDX endpoints that may genuinely return JSON.
+            All current DDX endpoints (including case_get/cases_get) are on the XML
+            path via <see cref="M:DdxDentalClient.DdxClient.GetXmlAsync(System.String,System.Threading.CancellationToken)"/> — do not use this for case calls.
+            </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.TryThrowDdxJsonError(System.String)">
+            <summary>
+            Attempts to parse a DDX JSON error and throw a <see cref="T:DdxDentalClient.DdxApiException"/>.
+            DDX JSON error format: {"error":"string","error_description":"string"}
+            </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.TryThrowDdxError(System.String)">
+            <summary>
+            Attempts to parse a DDX error response and throw a <see cref="T:DdxDentalClient.DdxApiException"/>.
+            DDX error XML format:
+              &lt;response&gt;
+                &lt;error&gt;6&lt;/error&gt;
+                &lt;error_message&gt;Requested API call does not exist&lt;/error_message&gt;
+                &lt;error_details/&gt;
+              &lt;/response&gt;
+            </summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxClient.ParseResponse``1(System.String)">
+            <summary>
+            Deserialises XML into T.
+            Throws <see cref="T:DdxDentalClient.DdxApiException"/> with the inner exception message on failure
+            so the caller can see exactly which element caused the problem.
+            </summary>
+        </member>
+        <member name="T:DdxDentalClient.DdxApiException">
+            <summary>Represents a DDX API-level error.</summary>
+        </member>
+        <member name="M:DdxDentalClient.DdxApiException.#ctor(System.Int32,System.String)">
+            <summary>Represents a DDX API-level error.</summary>
+        </member>
+        <member name="T:DdxDentalClient.DdxConfig">
+            <summary>
+            Configuration for the DDX Dental remote application.
+            Public and private keys are obtained after completing the
+            browser-based application_register flow.
+            </summary>
+        </member>
+        <member name="P:DdxDentalClient.DdxConfig.DdxHost">
+            <summary>
+            DDX base hostname, e.g. "ddxdental.com" or "www.ddxdental.com".
+            Used as-is for application_get_info.
+            For case_get the library strips any leading "www." and prepends
+            the LabId as subdomain, e.g. "804598.ddxdental.com".
+            </summary>
+        </member>
+        <member name="P:DdxDentalClient.DdxConfig.LabId">
+             <summary>
+             YOUR lab's numeric identifier (used as the subdomain and as the
+             required "ID" query parameter for case API calls).
+            
+             This is automatically populated from ApplicationInfoResponse.ParentId
+             after a successful call to GetApplicationInfoAsync().
+            
+             IMPORTANT: This is NOT the dental practice's ID.
+             The dental practice ID must be passed separately to GetCaseInfoAsync().
+             </summary>
+        </member>
+        <member name="P:DdxDentalClient.DdxConfig.AppPublicKey">
+            <summary>
+            Remote application public key (ddx_app_key), provided after registration.
+            </summary>
+        </member>
+        <member name="P:DdxDentalClient.DdxConfig.AppPrivateKey">
+            <summary>
+            Remote application private key, provided after registration.
+            Appended to the signature base string during signing — keep this confidential.
+            </summary>
+        </member>
+        <member name="P:DdxDentalClient.DdxConfig.SignatureMethod">
+            <summary>
+            Signature method: "SHA256" (default) or "MD5".
+            Should match the callback_signature_method chosen during registration.
+            </summary>
+        </member>
+        <member name="P:DdxDentalClient.DdxConfig.ApiVersion">
+            <summary>DDX API version (always "1.0").</summary>
+        </member>
+        <member name="T:DdxDentalClient.CasesResponse">
+            <summary>Wrapper for the XML response returned by cases_get.</summary>
+        </member>
+        <member name="T:DdxDentalClient.CaseSummary">
+            <summary>
+            Lightweight case entry returned by cases_get.
+            Use <see cref="M:DdxDentalClient.DdxClient.GetCasesAsync(System.Threading.CancellationToken)"/> to retrieve all open cases.
+            The <see cref="P:DdxDentalClient.CaseSummary.PracticeId"/> value can then be passed to
+            <see cref="M:DdxDentalClient.DdxClient.GetCaseInfoAsync(System.Int32,System.String,System.Threading.CancellationToken)"/> to fetch the full case detail.
+            </summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseSummary.DdxId">
+            <summary>Global DDX case hash identifier.</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseSummary.PracticeId">
+            <summary>The dental practice's ID that sent this case to your lab.</summary>
+        </member>
+        <member name="T:DdxDentalClient.CaseInfoResponse">
+            <summary>Full DDX lab case returned by case_get.</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseInfoResponse.Id">
+            <summary>DDX lab case identifier.</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseInfoResponse.PracticeIdRaw">
+            <summary>Dental practice identifier (the practice that sent this case).</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseInfoResponse.CancelledBy">
+            <summary>"PRACTICE" or "LAB".</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseInfoResponse.Status">
+            <summary>"OPEN" or "CLOSED".</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseInfoResponse.ShippingType">
+            <summary>"DHL", "UPS", "FDX", "PUR", "USPS", "CAPS", or "OTHER".</summary>
+        </member>
+        <member name="M:DdxDentalClient.CaseInfoResponse.ToString">
+            <summary>Returns a human-readable summary of the case.</summary>
+        </member>
+        <member name="P:DdxDentalClient.CasePatient.Dob">
+            <summary>Date of birth (ISO date string, e.g. "1985-06-15").</summary>
+        </member>
+        <member name="P:DdxDentalClient.CasePatient.Gender">
+            <summary>"M" or "F".</summary>
+        </member>
+        <member name="P:DdxDentalClient.ProcedureAttribute.Regions">
+            <summary>"gingival", "body", or "incisal".</summary>
+        </member>
+        <member name="P:DdxDentalClient.ProcedureAttribute.MassRaw">
+            <summary>Material mass in grams (may be null).</summary>
+        </member>
+        <member name="P:DdxDentalClient.ProcedureAttribute.PriceRaw">
+            <summary>Procedure price (may be null).</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseNote.Recipient">
+            <summary>"PRACTICE" or "LAB".</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseNote.Originator">
+            <summary>"PRACTICE" or "LAB".</summary>
+        </member>
+        <member name="P:DdxDentalClient.CaseFile.Originator">
+            <summary>"PRACTICE" or "LAB".</summary>
+        </member>
+        <member name="T:DdxDentalClient.AccountInfoResponse">
+            <summary>
+            Dental practice account returned by account_get.
+            The two most commonly needed fields are <see cref="P:DdxDentalClient.AccountInfoResponse.Name"/> (practice name)
+            and <see cref="P:DdxDentalClient.AccountInfoResponse.Primary"/>.<see cref="P:DdxDentalClient.AccountPrimaryContact.Email"/>.
+            </summary>
+        </member>
+        <member name="P:DdxDentalClient.AccountInfoResponse.Name">
+            <summary>Practice name (up to 40 characters).</summary>
+        </member>
+        <member name="P:DdxDentalClient.AccountInfoResponse.Status">
+            <summary>"ACTIVE", "PENDING", or "CLOSED".</summary>
+        </member>
+        <member name="P:DdxDentalClient.AccountInfoResponse.Email">
+            <summary>Practice-level email address (separate from the primary contact email).</summary>
+        </member>
+        <member name="P:DdxDentalClient.AccountInfoResponse.Primary">
+            <summary>
+            Primary contact for this practice.
+            Use <see cref="P:DdxDentalClient.AccountPrimaryContact.Email"/> for the primary contact email.
+            </summary>
+        </member>
+        <member name="T:DdxDentalClient.AccountPrimaryContact">
+            <summary>Primary contact information returned inside account_get.</summary>
+        </member>
+        <member name="P:DdxDentalClient.AccountPrimaryContact.Email">
+            <summary>Primary contact email address.</summary>
+        </member>
+        <member name="P:DdxDentalClient.ErrorResponse.ErrorCode">
+            <summary>Numeric DDX error code, e.g. 1, 2, 3, 4, 6, 12.</summary>
+        </member>
+        <member name="P:DdxDentalClient.ErrorResponse.ErrorMessage">
+            <summary>Human-readable error description.</summary>
+        </member>
+        <member name="P:DdxDentalClient.ErrorResponse.ErrorDetails">
+            <summary>Optional additional error detail.</summary>
+        </member>
+    </members>
+</doc>

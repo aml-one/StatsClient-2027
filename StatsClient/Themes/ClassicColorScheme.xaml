@@ -1,0 +1,52 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="PrimaryColor">#c9bf97</SolidColorBrush>
+    <SolidColorBrush x:Key="PrimaryDarkColor">#E9DA9A</SolidColorBrush>
+    <SolidColorBrush x:Key="ThreeShapeHeaderBackgroundColor">#E9DA9A</SolidColorBrush>
+    <SolidColorBrush x:Key="PrimaryDarkTitleBarColor">#C9BC87</SolidColorBrush>
+    <SolidColorBrush x:Key="LightTextColor">Beige</SolidColorBrush>
+    <SolidColorBrush x:Key="VerySeeThruWhiteBackground">#11FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="SeeThruGrayBackground">#D5999999</SolidColorBrush>
+    <SolidColorBrush x:Key="TitleBarButtonOverBackground">#76797F</SolidColorBrush>
+    <SolidColorBrush x:Key="HomeButtonsAreaBackground">#b3ae9b</SolidColorBrush>
+    <SolidColorBrush x:Key="DarkGrayBackround">#FF3F3F3F</SolidColorBrush>
+    
+    <SolidColorBrush x:Key="LightGrayBorderAndShadowColor">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="DarkGrayBorderAndShadowColor">#444444</SolidColorBrush>
+    <SolidColorBrush x:Key="CreamYellowFieldColor">#EFE7C9</SolidColorBrush>
+    <SolidColorBrush x:Key="RefreshButtonColor">#35e6c6</SolidColorBrush>
+    <SolidColorBrush x:Key="HomeButtonColor">#e6c235</SolidColorBrush>
+    <SolidColorBrush x:Key="TodayButtonForeground">#013101</SolidColorBrush>
+    <SolidColorBrush x:Key="EmptyPansBackground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="EmptyPansBorder">#999999</SolidColorBrush>
+    <SolidColorBrush x:Key="LastIteroIDTextColor">#066D06</SolidColorBrush>
+    <SolidColorBrush x:Key="IteroFilesCount">#FF1D06</SolidColorBrush>
+    <SolidColorBrush x:Key="ShowRxButtonColor">#C6BE13</SolidColorBrush>
+    <SolidColorBrush x:Key="RXEventsTitle">#667466</SolidColorBrush>
+    <SolidColorBrush x:Key="RXLogTitleBackground">#666674</SolidColorBrush>
+    <SolidColorBrush x:Key="GrabANumberButtonColor">#56795F</SolidColorBrush>
+    <SolidColorBrush x:Key="MarkAsRushButtonColor">#76595F</SolidColorBrush>
+    <SolidColorBrush x:Key="AddSendToLineButtonColor">#96995F</SolidColorBrush>
+    <SolidColorBrush x:Key="AddMissingButtonColor">#76995F</SolidColorBrush>
+
+    <SolidColorBrush x:Key="LightGreenColor">#CCFFCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LightPrpleColor">#CCCCFF</SolidColorBrush>
+    <SolidColorBrush x:Key="BlackSeeThruColor">#aa000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LightPinkColor">#ffabb6</SolidColorBrush>
+    <SolidColorBrush x:Key="VeryLightGrayColor">#E8E8E8</SolidColorBrush>
+    <SolidColorBrush x:Key="BlackColor">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoPtNameColor">#09905C</SolidColorBrush>
+    <SolidColorBrush x:Key="DarkYellowColor">Yellow</SolidColorBrush>
+
+
+    <Color x:Key="LightGrayBorderAndShadowColor_Cl">#888888</Color>
+
+
+
+    <Color x:Key="BlackColor_Cl">#000000</Color>
+    <Color x:Key="TodayButtonGradient_Top_Cl">#FFFB9D</Color>
+    <Color x:Key="TodayButtonGradient_Middle_Cl">#FCE418</Color>
+    <Color x:Key="TodayButtonGradient_Bottom_Cl">#D9C51E</Color>
+    <Color x:Key="PrimaryDarkColor_Cl">#C7C7C9</Color>
+
+</ResourceDictionary>

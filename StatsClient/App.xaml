@@ -1,0 +1,26 @@
+﻿<Application x:Class="StatsClient.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:StatsClient"
+             StartupUri="MVVM/View/SplashWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/ScrollBar.xaml" />
+                <ResourceDictionary Source="/Themes/TabControlStyles.xaml" />
+                <ResourceDictionary Source="/Themes/CircleCheckBox.xaml" />
+                <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
+                <ResourceDictionary Source="/Themes/ControlStyles.xaml" />
+                <ResourceDictionary Source="/Themes/SearchBoxTitleBar.xaml" />
+                <ResourceDictionary Source="/Themes/ModernColorScheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="{x:Type MenuItem}">
+                <Setter Property="HorizontalContentAlignment"
+                        Value="Left" />
+                <Setter Property="VerticalContentAlignment"
+                        Value="Top" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

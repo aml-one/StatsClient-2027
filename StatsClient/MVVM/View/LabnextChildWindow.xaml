@@ -1,0 +1,30 @@
+﻿<Window x:Class="StatsClient.MVVM.View.LabnextChildWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StatsClient.MVVM.View"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        mc:Ignorable="d"
+        Title="LabnextChildWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <ProgressBar Value="40"
+                     Height="2"
+                     BorderThickness="0"
+                     Background="#FFF"
+                     IsIndeterminate="True"
+                     Grid.Row="0"
+                     Name="progressBar" />
+
+        <wv2:WebView2 Source="https://804598.labnext.net/lab/"
+                      CoreWebView2InitializationCompleted="Webview_CoreWebView2InitializationCompleted"
+                      NavigationStarting="Webview_NavigationStarting"
+                      NavigationCompleted="Webview_NavigationCompleted"
+                      Name="webviewLabnext"
+                      Grid.Row="1" />
+    </Grid>
+</Window>

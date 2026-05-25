@@ -1,0 +1,1015 @@
+<Window x:Class="DCMViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:h="http://helix-toolkit.org/wpf"
+    xmlns:local="clr-namespace:DCMViewer"
+        mc:Ignorable="d"
+        Title="DCM Viewer"
+        Height="920"
+        Width="1200"
+        MinHeight="500"
+        MinWidth="800"
+        AllowDrop="True"
+        PreviewDragOver="Window_PreviewDragOver"
+        Drop="Window_Drop">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <local:WatermarkSizeConverter x:Key="WatermarkSizeConverter" />
+
+        <!-- Slider track segment buttons -->
+        <Style x:Key="SliderRepeatButton"
+               TargetType="RepeatButton">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Focusable"
+                    Value="False" />
+            <Setter Property="IsTabStop"
+                    Value="False" />
+            <Setter Property="Background"
+                    Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Height="3"
+                                VerticalAlignment="Center"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="1.5" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SliderRepeatButtonVertical"
+               TargetType="RepeatButton"
+               BasedOn="{StaticResource SliderRepeatButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Width="3"
+                                HorizontalAlignment="Center"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="1.5" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Round slider thumb -->
+        <Style x:Key="SliderThumb"
+               TargetType="Thumb">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Width"
+                    Value="22" />
+            <Setter Property="Height"
+                    Value="22" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Ellipse x:Name="Knob"
+                                 Fill="#FFD0D9E2"
+                                 Stroke="#FF7C8FA3"
+                                 StrokeThickness="1" />
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Knob"
+                                        Property="Fill"
+                                        Value="#FFE8EDF3" />
+                                <Setter TargetName="Knob"
+                                        Property="Stroke"
+                                        Value="#FFA0B4C8" />
+                            </Trigger>
+                            <Trigger Property="IsDragging"
+                                     Value="True">
+                                <Setter TargetName="Knob"
+                                        Property="Fill"
+                                        Value="#FFB8C8D8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TopRightSliderThumb"
+               TargetType="Thumb">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Width"
+                    Value="20" />
+            <Setter Property="Height"
+                    Value="20" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Image Width="20"
+                               Height="20"
+                               Stretch="Uniform"
+                               Source="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Base nice slider template (appearance only) -->
+        <Style x:Key="NiceSlider"
+               TargetType="Slider">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Height"
+                    Value="40" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="40"
+                              VerticalAlignment="Center"
+                              Background="Transparent">
+                            <Track x:Name="PART_Track"
+                                   VerticalAlignment="Center">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                                  Background="#FF5A7090" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                                  Background="#FF38475A" />
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource SliderThumb}" />
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- File-list opacity slider (inherits NiceSlider, adds range + min-width) -->
+        <Style x:Key="NiceOpacitySlider"
+               TargetType="Slider"
+               BasedOn="{StaticResource NiceSlider}">
+            <Setter Property="Minimum"
+                    Value="0" />
+            <Setter Property="Maximum"
+                    Value="1" />
+            <Setter Property="SmallChange"
+                    Value="0.02" />
+            <Setter Property="LargeChange"
+                    Value="0.1" />
+            <Setter Property="MinWidth"
+                    Value="110" />
+        </Style>
+
+        <Style x:Key="TopRightOpacitySlider"
+               TargetType="Slider"
+               BasedOn="{StaticResource NiceOpacitySlider}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="40"
+                              VerticalAlignment="Center"
+                              Background="Transparent">
+                            <Track x:Name="PART_Track"
+                                   VerticalAlignment="Center">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                                  Background="#FF5A7090" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                                  Background="#FF38475A" />
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource TopRightSliderThumb}"
+                                           Tag="{TemplateBinding Tag}" />
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SectionHeaderSlider"
+               TargetType="Slider"
+               BasedOn="{StaticResource NiceSlider}">
+            <Setter Property="Height"
+                    Value="22" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="22"
+                              VerticalAlignment="Center"
+                              Background="Transparent">
+                            <Track x:Name="PART_Track"
+                                   VerticalAlignment="Center">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                                  Background="#FF5A7090" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                                  Background="#FF38475A" />
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource SliderThumb}" />
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NiceVerticalSlider"
+               TargetType="Slider">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Width"
+                    Value="34" />
+            <Setter Property="Height"
+                    Value="116" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Width="34"
+                              Height="116"
+                              Background="Transparent">
+                            <Track x:Name="PART_Track"
+                                   Orientation="Vertical"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,4,0,4">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButtonVertical}"
+                                                  Background="#FF5A7090" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButtonVertical}"
+                                                  Background="#FF38475A" />
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource SliderThumb}" />
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="IconButton"
+               TargetType="Button">
+            <Setter Property="Width"
+                    Value="38" />
+            <Setter Property="Height"
+                    Value="32" />
+            <Setter Property="FontSize"
+                    Value="15" />
+            <Setter Property="Padding"
+                    Value="0" />
+            <Setter Property="Margin"
+                    Value="0,0,0,6" />
+        </Style>
+
+        <!-- Round eye/visibility checkbox -->
+        <Style x:Key="RoundCheckBox"
+               TargetType="CheckBox">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Width"
+                    Value="16" />
+            <Setter Property="Height"
+                    Value="16" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Width="16"
+                              Height="16">
+                            <Border x:Name="Ring"
+                                    CornerRadius="8"
+                                    BorderThickness="1.5"
+                                    BorderBrush="#FF4A5F72"
+                                    Background="#FFEDF2F8" />
+                            <Path x:Name="CheckMark"
+                                    Data="M 4,8 L 7,11 L 12,5"
+                                    Stroke="#FF2E9B49"
+                                  StrokeThickness="2"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  Visibility="Collapsed" />
+                                <Path x:Name="EncryptedMark"
+                                    Data="M 5,5 L 11,11 M 11,5 L 5,11"
+                                    Stroke="#FF7A1F33"
+                                    StrokeThickness="2"
+                                    StrokeStartLineCap="Round"
+                                    StrokeEndLineCap="Round"
+                                    Visibility="Collapsed" />
+                            <Path x:Name="FailedMark"
+                                  Data="M 5,5 L 11,11 M 11,5 L 5,11"
+                                  Stroke="#FF7A1F33"
+                                  StrokeThickness="2"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  Visibility="Collapsed" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked"
+                                     Value="True">
+                                <Setter TargetName="CheckMark"
+                                    Property="Visibility"
+                                    Value="Visible" />
+                                <Setter TargetName="Ring"
+                                    Property="Background"
+                                    Value="#FFE8F6EC" />
+                                <Setter TargetName="Ring"
+                                    Property="BorderBrush"
+                                    Value="#FF2E9B49" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Ring"
+                                        Property="BorderBrush"
+                                        Value="#FF7A9EC0" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="Ring"
+                                        Property="Opacity"
+                                        Value="0.45" />
+                                <Setter TargetName="CheckMark"
+                                        Property="Opacity"
+                                        Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="FileRoundCheckBox"
+               TargetType="CheckBox"
+               BasedOn="{StaticResource RoundCheckBox}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsPackageLocked}"
+                             Value="True">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="CheckBox">
+                                <Grid Width="16"
+                                      Height="16">
+                                    <Border x:Name="Ring"
+                                            CornerRadius="8"
+                                            BorderThickness="1.5"
+                                            BorderBrush="#FF7A1F33"
+                                            Background="#FFF5E6EA" />
+                                    <Path x:Name="CheckMark"
+                                          Data="M 5,5 L 11,11 M 11,5 L 5,11"
+                                          Stroke="#FF7A1F33"
+                                          StrokeThickness="2"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          StrokeLineJoin="Round" />
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsLoadFailed}"
+                             Value="True">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="CheckBox">
+                                <Grid Width="16"
+                                      Height="16">
+                                    <Border x:Name="Ring"
+                                            CornerRadius="8"
+                                            BorderThickness="1.5"
+                                            BorderBrush="#FF7A1F33"
+                                            Background="#FFF5E6EA" />
+                                    <Path x:Name="FailedMark"
+                                          Data="M 5,5 L 11,11 M 11,5 L 5,11"
+                                          Stroke="#FF7A1F33"
+                                          StrokeThickness="2"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round" />
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <ControlTemplate x:Key="FailedOpacitySliderTemplate"
+                         TargetType="Slider">
+            <Grid Height="40"
+                  VerticalAlignment="Center"
+                  Background="Transparent">
+                <Track x:Name="PART_Track"
+                       VerticalAlignment="Center">
+                    <Track.DecreaseRepeatButton>
+                        <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                      Background="#FF4A1320" />
+                    </Track.DecreaseRepeatButton>
+                    <Track.IncreaseRepeatButton>
+                        <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                      Background="#FF2B0A12" />
+                    </Track.IncreaseRepeatButton>
+                    <Track.Thumb>
+                        <Thumb Style="{StaticResource SliderThumb}" />
+                    </Track.Thumb>
+                </Track>
+            </Grid>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="TopRightFailedOpacitySliderTemplate"
+                         TargetType="Slider">
+            <Grid Height="40"
+                  VerticalAlignment="Center"
+                  Background="Transparent">
+                <Track x:Name="PART_Track"
+                       VerticalAlignment="Center">
+                    <Track.DecreaseRepeatButton>
+                        <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                      Background="#FF4A1320" />
+                    </Track.DecreaseRepeatButton>
+                    <Track.IncreaseRepeatButton>
+                        <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                      Background="#FF2B0A12" />
+                    </Track.IncreaseRepeatButton>
+                    <Track.Thumb>
+                        <Thumb Style="{StaticResource TopRightSliderThumb}"
+                               Tag="{TemplateBinding Tag}" />
+                    </Track.Thumb>
+                </Track>
+            </Grid>
+        </ControlTemplate>
+
+         <Style x:Key="TopRightOverlayFadeStyle"
+             TargetType="FrameworkElement">
+            <Setter Property="Opacity"
+                    Value="1" />
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="MouseEnter">
+                    <StopStoryboard BeginStoryboardName="TopRightFadeOutStoryboard" />
+                    <BeginStoryboard Name="TopRightFadeInStoryboard">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             Duration="0:0:0.15" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+
+                <EventTrigger RoutedEvent="MouseLeave">
+                    <BeginStoryboard Name="TopRightFadeOutStoryboard">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             BeginTime="0:0:10"
+                                             To="0.15"
+                                             Duration="0:0:0.9" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        
+
+        <Grid x:Name="WatermarkCanvas">
+            <Grid.Background>
+                <RadialGradientBrush GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.8" RadiusY="0.8">
+                    <GradientStop Color="#FFFFFFFF" Offset="0.0" />
+                    <GradientStop Color="#FFF3F6F9" Offset="0.35" />
+                    <GradientStop Color="#FFD3D7DA" Offset="0.7" />
+                    <GradientStop Color="#FFB0B4B8" Offset="1.0" />
+                </RadialGradientBrush>
+            </Grid.Background>
+
+            <Image Source="pack://application:,,,/DcmViewer/Images/logo.png"
+                   Width="{Binding ElementName=WatermarkCanvas, Path=ActualWidth, Converter={StaticResource WatermarkSizeConverter}}"
+                   Height="{Binding ElementName=WatermarkCanvas, Path=ActualHeight, Converter={StaticResource WatermarkSizeConverter}}"
+                   MaxWidth="512"
+                   MaxHeight="512"
+                   Opacity="0.03"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   IsHitTestVisible="False"
+                   Panel.ZIndex="0" />
+
+                 <TextBlock Text="AmL"
+                      FontSize="80"
+                      FontWeight="SemiBold"
+                          Foreground="#FFB8A35C"
+                           Opacity="0.05"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                           Margin="0"
+                      IsHitTestVisible="False"
+                          Panel.ZIndex="0">
+                    <TextBlock.Effect>
+                        <DropShadowEffect ShadowDepth="0"
+                                      BlurRadius="26"
+                                      Opacity="0.16"
+                                      Color="#FF000000" />
+                    </TextBlock.Effect>
+                 </TextBlock>
+
+            <h:HelixViewport3D ShowViewCube="True"
+                               x:Name="Viewport"
+                               ShowCoordinateSystem="True"
+                               IsRotationEnabled="True"
+                               CameraRotationMode="Trackball"
+                               RotateGesture="RightClick"
+                               IsPanEnabled="True"
+                               IsZoomEnabled="True"
+                               RotateAroundMouseDownPoint="False"
+                               ZoomExtentsWhenLoaded="True"
+                               Background="Transparent">
+
+                <h:HelixViewport3D.Camera>
+                    <PerspectiveCamera Position="{Binding CameraPosition}"
+                                       LookDirection="{Binding CameraLookDirection}"
+                                       UpDirection="{Binding CameraUpDirection}"
+                                       FieldOfView="45" />
+                </h:HelixViewport3D.Camera>
+
+                <h:CuttingPlaneGroup x:Name="SectionCutGroup"
+                                     IsEnabled="False"
+                                     Content="{Binding ModelGroup}" />
+
+                <ModelVisual3D x:Name="SectionPlaneVisual" />
+                <h:LinesVisual3D x:Name="SectionPlaneOutlineVisual"
+                                 IsRendering="False"
+                                 Thickness="1.0"
+                                 Color="#FF15459F" />
+
+                <h:LinesVisual3D x:Name="MeasurementLine"
+                                 Thickness="2.4"
+                                 Color="#FF1F6FEB"
+                                 IsRendering="False" />
+
+                <h:BillboardTextVisual3D x:Name="MeasurementText"
+                                         IsRendering="False"
+                                         Background="#DDF5F9FF"
+                                         BorderBrush="#FF8BA1B8"
+                                         BorderThickness="1"
+                                         Foreground="#FF1A2A3A"
+                                         Padding="6,3"
+                                         FontSize="13"
+                                         FontWeight="SemiBold"
+                                         Text="" />
+            </h:HelixViewport3D>
+
+
+
+
+                                  <Grid  HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,10,10,0"
+                    Panel.ZIndex="25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel x:Name="TopRightOverlayPanel"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,0,10,0"
+                            Style="{StaticResource TopRightOverlayFadeStyle}"
+                            Width="330">
+
+                    <StackPanel Margin="0,0,0,6">
+                        <Grid Margin="0,2,0,2"
+                              Visibility="{Binding HasRestorationGroup, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="6" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox Grid.Column="0"
+                                      Style="{StaticResource RoundCheckBox}"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding RestorationGroupVisible, Mode=TwoWay}" />
+
+                            <Border Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    CornerRadius="2"
+                                    Padding="4,1,4,1"
+                                    Background="#FF2A323D">
+                                <TextBlock VerticalAlignment="Center"
+                                           Foreground="#FFE8EDF3"
+                                           FontSize="10"
+                                           Text="{Binding RestorationGroupCount, StringFormat=Restorations ({0})}" />
+                            </Border>
+
+                            <Slider Grid.Column="4"
+                                    Value="{Binding RestorationGroupOpacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{StaticResource TopRightOpacitySlider}"
+                                    Tag="/DcmViewer/Images/restoration.png"
+                                    PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
+                        </Grid>
+
+                        <Grid Margin="0,2,0,2"
+                              Visibility="{Binding HasAbutmentGroup, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="6" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox Grid.Column="0"
+                                      Style="{StaticResource RoundCheckBox}"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding AbutmentGroupVisible, Mode=TwoWay}" />
+
+                            <Border Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    CornerRadius="2"
+                                    Padding="4,1,4,1"
+                                    Background="#FF2A323D">
+                                <TextBlock VerticalAlignment="Center"
+                                           Foreground="#FFE8EDF3"
+                                           FontSize="10"
+                                           Text="{Binding AbutmentGroupCount, StringFormat=Abutment ({0})}" />
+                            </Border>
+
+                            <Slider Grid.Column="4"
+                                    Value="{Binding AbutmentGroupOpacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{StaticResource TopRightOpacitySlider}"
+                                    Tag="/DcmViewer/Images/abutment.png"
+                                    PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
+                        </Grid>
+                    </StackPanel>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  MaxHeight="450">
+                        <ItemsControl ItemsSource="{Binding LoadedFiles}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2,0,2">
+                                        <Grid.Style>
+                                            <Style TargetType="Grid">
+                                                <Setter Property="Visibility"
+                                                        Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding UseCategoryGroupControl}"
+                                                                 Value="True">
+                                                        <Setter Property="Visibility"
+                                                                Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Style>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="6" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="120" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0"
+                                                  Style="{StaticResource FileRoundCheckBox}"
+                                                  IsEnabled="{Binding IsOpacityEnabled}"
+                                                  IsChecked="{Binding IsVisible, Mode=TwoWay}" />
+
+                                        <Border Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                CornerRadius="2"
+                                            Padding="4,1,4,1"
+                                            MinWidth="0">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background"
+                                                        Value="#FF2A323D" />
+                                                    <Setter Property="BorderBrush"
+                                                        Value="Transparent" />
+                                                    <Setter Property="BorderThickness"
+                                                            Value="1" />
+                                                    <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPackageLocked}"
+                                                             Value="True">
+                                                        <Setter Property="Background"
+                                                            Value="#FF800000" />
+                                                        <Setter Property="BorderBrush"
+                                                            Value="#FFA33A3A" />
+                                                    </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsLoadFailed}"
+                                                                     Value="True">
+                                                            <Setter Property="Background"
+                                                                    Value="#FF800000" />
+                                                            <Setter Property="BorderBrush"
+                                                                    Value="#FFA33A3A" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock VerticalAlignment="Center"
+                                                       Foreground="#FFE8EDF3"
+                                                       FontSize="10"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       TextWrapping="NoWrap"
+                                                       ToolTip="{Binding DisplayName}"
+                                                       Text="{Binding DisplayName}" />
+                                        </Border>
+
+                                        <Slider Grid.Column="4"
+                                                IsEnabled="{Binding IsOpacityEnabled}"
+                                                Width="120"
+                                                Tag="{Binding SliderKnobIconPath}"
+                                                Value="{Binding Opacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                ToolTip="{Binding LoadError}"
+                                                PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown">
+                                            <Slider.Style>
+                                                <Style TargetType="Slider"
+                                                       BasedOn="{StaticResource TopRightOpacitySlider}">
+                                                    <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPackageLocked}"
+                                                             Value="True">
+                                                        <Setter Property="Template"
+                                                            Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
+                                                    </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsLoadFailed}"
+                                                                     Value="True">
+                                                            <Setter Property="Template"
+                                                                    Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Slider.Style>
+                                        </Slider>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+
+
+                <!-- Top-right icon buttons and section offset slider -->
+                <StackPanel Grid.Column="1">
+                    <Button Style="{StaticResource IconButton}"
+                            ToolTip="Export visible scans as separate STL files"
+                            Command="{Binding ExportSeparatedMeshesCommand}">
+                           <Image Source="/DcmViewer/Images/export.png"
+                                Width="24"
+                                Height="24"
+                                Stretch="Uniform" />
+                    </Button>
+                    <Button Style="{StaticResource IconButton}"
+                            ToolTip="Export visible scans as one merged STL"
+                            Command="{Binding ExportVisibleMeshesCommand}">
+                           <Image Source="/DcmViewer/Images/merge.png"
+                                Width="24"
+                                Height="24"
+                                Stretch="Uniform" />
+                    </Button>
+                    <Button Style="{StaticResource IconButton}"
+                            ToolTip="Zoom to fit"
+                            Click="ShowAllButton_Click">
+                        <Image Source="/DcmViewer/Images/zoomtofit.png"
+                               Width="24"
+                               Height="24"
+                               Stretch="Uniform" />
+                    </Button>
+                    <Button x:Name="ProjectionToggleButton"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Switch to orthographic view"
+                            >
+                        <Image Source="/DcmViewer/Images/perspective.png"
+                               Width="24"
+                               Height="24"
+                               Stretch="Uniform" />
+                    </Button>
+                    <!--<Button x:Name="ClippingToggleButton"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Relax near clipping"
+                            Click="ClippingToggleButton_OnClick">
+                        <Image Source="/DcmViewer/Images/clipping.png"
+                               Width="24"
+                               Height="24"
+                               Stretch="Uniform" />
+                    </Button>-->
+                    <Button Style="{StaticResource IconButton}"
+                            ToolTip="Toggle finish"
+                            Command="{Binding ToggleFinishCommand}">
+                        <Image Source="/DcmViewer/Images/finish.png"
+                               Width="24"
+                               Height="24"
+                               Stretch="Uniform" />
+                    </Button>
+                    <Button x:Name="ModelScanMaterialToggleButton"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="{Binding ModelScanMaterialToggleTooltip}"
+                            Command="{Binding ToggleModelScanMaterialCommand}">
+                        <Image Source="/DcmViewer/Images/finish.png"
+                               Width="24"
+                               Height="24"
+                               Stretch="Uniform" />
+                    </Button>
+                    <Button x:Name="SectionToggleButton"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Section mode"
+                            Margin="0,15,0,6"
+                            Command="{Binding ToggleSectionModeCommand}">
+                        <Image Source="/DcmViewer/Images/sectionmode.png"
+                               Width="24"
+                               Height="24"
+                               Stretch="Uniform" />
+                    </Button>
+                    <Button x:Name="MeasureToggleButton"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Measure mode"
+                            Visibility="Collapsed">
+                        <Image Source="/DcmViewer/Images/measurement.png"
+                               Width="22"
+                               Height="22"
+                               Stretch="Uniform" />
+                    </Button>
+                    <Button Style="{StaticResource IconButton}"
+                            Margin="0"
+                            ToolTip="Clear measurement"
+                            Visibility="{Binding HasSectionMeasurementPoint, Converter={StaticResource BoolToVis}}"
+                            Command="{Binding ClearSectionMeasurementCommand}">
+                        <Image Source="/DcmViewer/Images/clearmeasurement.png"
+                               Width="22"
+                               Height="22"
+                               Stretch="Uniform" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <Border x:Name="SectionProfilePanel"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,10,10"
+                    Width="410"
+                    Height="450"
+                    Background="#EAF2F7FD"
+                    BorderBrush="#FFB8C6D5"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    Visibility="Collapsed"
+                    Panel.ZIndex="24">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="34" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Background="#FFDDE8F2"
+                            BorderBrush="#FFB8C6D5"
+                            BorderThickness="0,0,0,1"
+                            Cursor="SizeAll"
+                            MouseLeftButtonDown="SectionProfileHeader_OnMouseLeftButtonDown"
+                            MouseMove="SectionProfileHeader_OnMouseMove"
+                            MouseLeftButtonUp="SectionProfileHeader_OnMouseLeftButtonUp">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="2D Cross Section"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,10,0"
+                                       Foreground="#FF1D2A38"
+                                       FontSize="12"
+                                       FontWeight="SemiBold" />
+                            
+                            <!-- Section plane offset slider at top, horizontal -->
+                            <Slider x:Name="SectionOffsetSlider"
+                                    Margin="8,0,8,0"
+                                    Grid.Column="1"
+                                    Style="{StaticResource SectionHeaderSlider}"
+                                    Minimum="-1"
+                                    Maximum="1"
+                                    Value="{Binding SectionOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TickFrequency="0.1"
+                                    Visibility="Collapsed"
+                                    ToolTip="Section plane offset"
+                                    PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
+                            <Button Grid.Column="2"
+                                    x:Name="ResetZoomButton"
+                                    Content="1:1"
+                                    Margin="0,0,6,0"
+                                    Padding="5,1"
+                                    VerticalAlignment="Center"
+                                    FontSize="10"
+                                    ToolTip="Reset zoom"
+                                    Click="ResetZoomButton_OnClick"
+                                    Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="1"
+                          Margin="8"
+                          ClipToBounds="True">
+                        <Canvas x:Name="SectionProfileGridCanvas"
+                            Background="#FFF4F7FA"
+                            IsHitTestVisible="False" />
+                        <Canvas x:Name="SectionProfileCanvas"
+                            Background="Transparent"
+                                MouseLeftButtonDown="SectionProfileCanvas_OnMouseLeftButtonDown"
+                                MouseWheel="SectionProfileCanvas_OnMouseWheel"
+                                MouseRightButtonDown="SectionProfileCanvas_OnRightMouseDown"
+                                MouseMove="SectionProfileCanvas_OnMouseMove"
+                                MouseRightButtonUp="SectionProfileCanvas_OnRightMouseUp" />
+                        <TextBlock x:Name="SectionProfileHintText"
+                                   Text="Enable section and click on mesh to position plane"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="#AA2A3A48"
+                                   FontSize="12"
+                                   IsHitTestVisible="False" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+
+
+            <!-- Status text bottom-left -->
+            <TextBlock Text="{Binding StatusText}"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom"
+                       Margin="10,0,0,8"
+                       FontSize="11"
+                       Foreground="#BB364555"
+                       IsHitTestVisible="False"
+                       Panel.ZIndex="5" />
+
+            <Border HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="50,8,0,0"
+                    Padding="6,3"
+                    Background="#88F4F7FB"
+                    BorderBrush="#FFBDC7D2"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    IsHitTestVisible="False">
+                <TextBlock x:Name="ZoomPercentText"
+                           Foreground="#FF23313E"
+                           FontSize="11"
+                           Text="Zoom: 100%" />
+            </Border>
+
+            <Grid Panel.ZIndex="200"
+                  Background="Transparent"
+                  Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
+                  IsHitTestVisible="True">
+                <Border HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Padding="26,22"
+                        Background="#F4FFFFFF"
+                        BorderBrush="#FFBFCAD4"
+                        BorderThickness="1"
+                        CornerRadius="10">
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <ProgressBar Width="220"
+                                     Height="8"
+                                     IsIndeterminate="True"
+                                     Foreground="#FF46627A"
+                                     Background="#FFE3EAF0" />
+                        <TextBlock Text="{Binding StatusText}"
+                                   Margin="0,12,0,0"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"
+                                   Foreground="#FF24323E"
+                                   FontSize="13"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding LoadProgressPercentText}"
+                                   Margin="0,4,0,0"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#FF516171"
+                                   FontSize="16" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

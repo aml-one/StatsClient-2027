@@ -1,0 +1,130 @@
+﻿<Window x:Class="StatsClient.MVVM.View.AddCustomerSuggestionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StatsClient.MVVM.View"
+        xmlns:viewmodel="clr-namespace:StatsClient.MVVM.ViewModel"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        mc:Ignorable="d"
+        Title="AddCustomerSuggestionsWindow"
+        Height="170"
+        Width="600"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        WindowState="Normal"
+        AllowsTransparency="True"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="Transparent"
+        Foreground="Black">
+
+    <Window.DataContext>
+        <viewmodel:AddCustomerSuggestionsViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/ModernColorScheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border CornerRadius="8,8,4,8"
+            BorderThickness="0.5"
+            BorderBrush="Black"
+            Background="{DynamicResource PrimaryDarkColor}"
+            ClipToBounds="True">
+        <Border CornerRadius="8,8,8,8"
+                BorderThickness="0.5"
+                Margin="10"
+                BorderBrush="Black"
+                Background="{DynamicResource PrimaryColor}"
+                ClipToBounds="True">
+            <Grid Margin="7">
+                <TextBlock Text="╳"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Top"
+                           Cursor="Hand"
+                           Panel.ZIndex="50"
+                           FontSize="16">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBlock>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130" />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="30" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Customer Name:"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Right"
+                               Margin="0,3,6,0"
+                               FontSize="14" />
+
+                    <TextBox Grid.Column="1"
+                             Grid.Row="0"
+                             FontSize="18"
+                             Margin="0,0,0,6"
+                             Text="{Binding CustomerName}"
+                             Height="26" />
+
+                    <TextBlock Text="New Name:"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Right"
+                               Margin="0,3,6,0"
+                               FontSize="14"
+                               Grid.Row="1" />
+
+                    <TextBox Grid.Column="1"
+                             Grid.Row="1"
+                             FontSize="18"
+                             Margin="0,0,0,6"
+                             Text="{Binding NewName}"
+                             Height="26" />
+
+                    <TextBlock Text="Registered Names:"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Right"
+                               Margin="0,0,6,0"
+                               FontSize="14"
+                               Grid.Row="2" />
+
+                    <Grid Grid.Column="1"
+                          Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <ListBox Grid.Column="0" 
+                                 ItemsSource="{Binding CustomerSuggestionsList}"/>
+
+                        <StackPanel Grid.Column="1"
+                                    VerticalAlignment="Bottom">
+                            <Button Content="Add"
+                                    Height="22"
+                                    Margin="6,0,0,3" 
+                                    Command="{Binding AddCommand}"/>
+
+                            <Button Content="Cancel"
+                                    Height="22"
+                                    Margin="6,0,0,0" 
+                                    Command="{Binding CloseWindowCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Border>
+</Window>

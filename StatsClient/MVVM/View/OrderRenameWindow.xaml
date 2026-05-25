@@ -1,0 +1,371 @@
+﻿<Window x:Class="StatsClient.MVVM.View.OrderRenameWindow"
+        x:Name="OrderRenameWindw"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewmodel="clr-namespace:StatsClient.MVVM.ViewModel"
+        xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        mc:Ignorable="d"
+        Title="OrderRenameWindow"
+        Height="450"
+        Width="1000"
+        MinHeight="450"
+        MinWidth="1000"
+        MaxHeight="450"
+        MaxWidth="1000"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        WindowState="Normal"
+        AllowsTransparency="True"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="Transparent"
+        Foreground="Black">
+    <Window.DataContext>
+        <viewmodel:OrderRenameViewModel />
+    </Window.DataContext>
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="0,0,5,5"
+                      CaptionHeight="0" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/ScrollBar.xaml" />
+                <ResourceDictionary Source="/Themes/TabControlStyles.xaml" />
+                <ResourceDictionary Source="/Themes/CircleCheckBox.xaml" />
+                <ResourceDictionary Source="/Themes/ModernColorScheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <converter:EmptyToHiddenConverter x:Key="EmptyToHiddenConverter" />
+            <converter:BoolToInverseVisibilityConverter x:Key="BoolToInverseVisibilityConverter" />
+            <converter:BoolToFGColorConverter x:Key="BoolToFGColorConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+
+
+    <Border CornerRadius="8,8,4,8"
+            BorderThickness="0.5"
+            BorderBrush="Black"
+            Background="{DynamicResource PrimaryDarkColor}"
+            ClipToBounds="True">
+        <Border CornerRadius="8,8,8,8"
+                BorderThickness="0.5"
+                Margin="10"
+                BorderBrush="Black"
+                Background="{DynamicResource PrimaryColor}"
+                ClipToBounds="True">
+
+            <Grid Margin="7">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="55" />
+                    <RowDefinition />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="22" />
+                    <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+
+
+                <Image Source="/Images/ToolBar/rename.png"
+                       Grid.RowSpan="3"
+                       Width="300"
+                       Height="300"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom"
+                       Opacity="0.10"
+                       Margin="20,0,0,-27"
+                       Panel.ZIndex="-1" />
+
+
+                <TextBlock Text="╳"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Top"
+                           Cursor="Hand"
+                           Foreground="Black"
+                           Panel.ZIndex="50"
+                           FontSize="16">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBlock>
+
+                <Border BorderBrush="#CCC"
+                        BorderThickness="0,0,0,1"
+                        Margin="0,0,0,20"
+                        Grid.Row="0">
+                    <DockPanel>
+                        <Ellipse Width="25"
+                                 Height="25"
+                                 Margin="0,-4,6,0"
+                                 Grid.Column="0"
+                                 VerticalAlignment="Center">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="/Images/ToolBar/rename.png"
+                                            RenderOptions.BitmapScalingMode="Fant" />
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBox Text="Renaming Order"
+                                 FontSize="20"
+                                 Margin="0,0,0,0"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Foreground="Black"
+                                 Cursor="Arrow"
+                                 IsReadOnly="True"
+                                 FontWeight="Light" />
+
+
+
+
+                        <Grid PreviewMouseDown="TitleBar_PreviewMouseDown"
+                              Cursor="Hand">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text=" " />
+                            <TextBlock Text="Renaming in progress - Please see log at bottom of the window"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource DarkYellowColor}"
+                                       Visibility="{Binding ControlsEnabled, Converter={StaticResource BoolToInverseVisibilityConverter}}"
+                                       d:Visibility="Visible"
+                                       FontSize="18" />
+                        </Grid>
+                    </DockPanel>
+                </Border>
+
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120" />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="20" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Order ID:"
+                               FontSize="16"
+                               Foreground="Black"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Right"
+                               Margin="0,0,10,0" />
+
+                    <TextBox Grid.Row="0"
+                             Grid.Column="1"
+                             Text="{Binding OrderID, UpdateSourceTrigger=PropertyChanged}"
+                             d:Text="111-TEST-ORDER-ID"
+                             Foreground="{Binding OrderIDIsValid, Converter={StaticResource BoolToFGColorConverter}}"
+                             d:Foreground="Black"
+                             FontSize="22"
+                             IsEnabled="{Binding ControlsEnabled}"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center" />
+
+                    <WrapPanel Grid.Row="1"
+                               Grid.Column="1"
+                               VerticalAlignment="Center">
+                        <CheckBox Content="make a note in Comment section about name change"
+                                  IsChecked="{Binding MakeCommentAboutRename, Mode=TwoWay}"
+                                  IsEnabled="{Binding ControlsEnabled}"
+                                  Style="{StaticResource CircleCheckBox}"
+                                  Foreground="Brown" />
+                    </WrapPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                HorizontalAlignment="Right">
+                        <Button Width="120"
+                                Height="25"
+                                Content="Smart Naming"
+                                Background="LightYellow"
+                                Panel.ZIndex="10"
+                                IsEnabled="{Binding ControlsEnabled}"
+                                d:Visibility="Visible"
+                                Command="{Binding GenerateNameCommand}" />
+
+                        <Button Width="120"
+                                Height="25"
+                                Content="Reset changes"
+                                Background="Pink"
+                                Panel.ZIndex="10"
+                                Margin="5,0,0,0"
+                                IsEnabled="{Binding ControlsEnabled}"
+                                Visibility="{Binding ShowResetButton}"
+                                d:Visibility="Visible"
+                                Command="{Binding ResetChangesCommand}" />
+                    </StackPanel>
+
+                    <TextBlock Text="Details:"
+                               FontSize="16"
+                               Margin="0,0,10,0"
+                               Foreground="Black"
+                               Grid.Row="2"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Right" />
+
+                    <Grid Grid.Row="2"
+                          Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Patient Name"
+                                       Margin="0,4,0,0"
+                                       FontSize="11"
+                                       Foreground="Black"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding PatientName}"
+                                       d:Text="JANE DOE"
+                                       FontSize="16"
+                                       Foreground="{DynamicResource DarkYellowColor}"
+                                       FontWeight="Thin" />
+
+                            <TextBlock Text="Customer"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="Black"
+                                       Margin="0,10,0,0" />
+                            <TextBlock Text="{Binding ThreeShapeObject.Customer}"
+                                       d:Text="DENTAL OFFICE"
+                                       FontSize="16"
+                                       Foreground="Green"
+                                       FontWeight="Thin" />
+
+                            <TextBlock Text="Order Items"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="Black"
+                                       Margin="0,10,0,0" />
+                            <TextBlock Text="{Binding ThreeShapeObject.Items}"
+                                       d:Text="ITEMS ITEMS"
+                                       FontSize="16"
+                                       FontWeight="Thin"
+                                       Foreground="#65a7b5"
+                                       TextWrapping="Wrap" />
+
+                        </StackPanel>
+
+
+
+                        <StackPanel Grid.Column="1"
+                                    Visibility="{Binding ThreeShapeObject.OrderComments, Converter={StaticResource EmptyToHiddenConverter}}"
+                                    d:Visibility="Visible"
+                                    Margin="10,0,0,0">
+                            <TextBlock Text="Order comment"
+                                       Margin="0,4,0,0"
+                                       FontSize="11"
+                                       Foreground="Black"
+                                       FontWeight="SemiBold" />
+                            <ScrollViewer VerticalScrollBarVisibility="Visible"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          CanContentScroll="True"
+                                          ClipToBounds="True"
+                                          Height="166">
+
+
+                                <TextBlock Text="{Binding ThreeShapeObject.OrderComments}"
+                                           d:Text="COMMENTS"
+                                           FontSize="14"
+                                           Foreground="#32a89e"
+                                           FontWeight="Thin"
+                                           TextWrapping="Wrap" />
+
+                            </ScrollViewer>
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+                <DockPanel Grid.Column="1"
+                           Grid.Row="2"
+                           Margin="120,0,20,0"
+                           Visibility="{Binding ThreeShapeObject.OriginalOrderID, Converter={StaticResource EmptyToHiddenConverter}}"
+                           d:Visibility="Visible">
+                    <StackPanel>
+
+                        <TextBlock Text="This order is a copy of the following order below:"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="Black"
+                                   Margin="0,0,0,0" />
+                        <TextBlock Text="{Binding ThreeShapeObject.OriginalOrderID}"
+                                   d:Text="ORIGINAL ORDER ID"
+                                   FontSize="16"
+                                   FontWeight="Thin"
+                                   Foreground="DeepPink"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <Button Content="Copy original name"
+                            HorizontalAlignment="Right"
+                            Padding="8,0"
+                            Height="30"
+                            IsEnabled="{Binding ControlsEnabled}"
+                            Background="LightSteelBlue"
+                            Command="{Binding CopyOriginalOrderIdCommand}" />
+                </DockPanel>
+
+
+                <TextBlock Text="Log:"
+                           Grid.Row="3"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Foreground="Black"
+                           HorizontalAlignment="Left"
+                           IsEnabled="{Binding ControlsEnabled}"
+                           Visibility="{Binding LogMessage, Converter={StaticResource EmptyToHiddenConverter}}"
+                           d:Visibility="Visible"
+                           Margin="80,0,10,0" />
+
+                <TextBlock Text="{Binding LogMessage}"
+                           d:Text="log message"
+                           Grid.Row="3"
+                           Margin="120,2,20,0"
+                           Foreground="Brown"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Visibility="{Binding LogMessage, Converter={StaticResource EmptyToHiddenConverter}}"
+                           d:Visibility="Visible" />
+
+
+                <Grid Grid.Row="4"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      Margin="120,0,20,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Content="Cancel"
+                            Margin="0,10,20,0"
+                            Width="200"
+                            HorizontalAlignment="Left"
+                            Command="{Binding CloseWindowCommand}" />
+
+                    <Button Content="Rename"
+                            Grid.Column="1"
+                            Background="LightGreen"
+                            Width="200"
+                            IsEnabled="{Binding OrderIDIsValid}"
+                            HorizontalAlignment="Right"
+                            Margin="20,10,0,0"
+                            Command="{Binding RenameCommand}" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Border>
+</Window>

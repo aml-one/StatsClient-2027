@@ -1,0 +1,13 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="language">Chinese</system:String>
+
+    <system:String x:Key="closeMessage">您确定要关闭更新程序吗？</system:String>
+    <system:String x:Key="pleaseWait">请稍等</system:String>
+    <system:String x:Key="caseCheckerUpdater">Stats Client 更新程序</system:String>
+    <system:String x:Key="error">错误</system:String>
+    <system:String x:Key="couldNotStart">无法启动 StatsClient 应用程序</system:String>
+    
+</ResourceDictionary>

@@ -1,0 +1,831 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>False</UseWindowsForms>
+    <ApplicationIcon>Images\stats_2025_icon.ico</ApplicationIcon>
+    <PlatformTarget>x64</PlatformTarget>
+    <Company>AmL</Company>
+    <Copyright>AmL</Copyright>
+	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+	<StartupObject>StatsClient.App</StartupObject>
+	<Version>2026</Version>
+	<Authors>StatsSystems 2026</Authors>
+	<ApplicationManifest>app.manifest</ApplicationManifest>
+	<Product>Stats</Product>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="eng.traineddata" />
+    <None Remove="Executable\BaseSettings.Config" />
+    <None Remove="Fonts\RobotoMono.ttf" />
+    <None Remove="Images\AccountInfoIcons\app.png" />
+    <None Remove="Images\AccountInfoIcons\key.png" />
+    <None Remove="Images\AccountInfoIcons\user.png" />
+    <None Remove="Images\AccountInfoIcons\web.png" />
+    <None Remove="Images\ArchivesIcons\0.png" />
+    <None Remove="Images\ArchivesIcons\1.png" />
+    <None Remove="Images\ArchivesIcons\10.png" />
+    <None Remove="Images\ArchivesIcons\11.png" />
+    <None Remove="Images\ArchivesIcons\12.png" />
+    <None Remove="Images\ArchivesIcons\13.png" />
+    <None Remove="Images\ArchivesIcons\14.png" />
+    <None Remove="Images\ArchivesIcons\2.png" />
+    <None Remove="Images\ArchivesIcons\3.png" />
+    <None Remove="Images\ArchivesIcons\4.png" />
+    <None Remove="Images\ArchivesIcons\5.png" />
+    <None Remove="Images\ArchivesIcons\6.png" />
+    <None Remove="Images\ArchivesIcons\7.png" />
+    <None Remove="Images\ArchivesIcons\8.png" />
+    <None Remove="Images\ArchivesIcons\9.png" />
+    <None Remove="Images\as_signature.png" />
+    <None Remove="Images\as_signature_straight.png" />
+    <None Remove="Images\avatar-40.jpg" />
+    <None Remove="Images\avatar-7.jpg" />
+    <None Remove="Images\avatar.jpeg" />
+    <None Remove="Images\database.png" />
+    <None Remove="Images\Error.png" />
+    <None Remove="Images\FilterIcons\000_OrdersRoot22x22.png" />
+    <None Remove="Images\FilterIcons\001_OrdersByDate22x22.png" />
+    <None Remove="Images\FilterIcons\002_OrdersByDateToday22x22.png" />
+    <None Remove="Images\FilterIcons\003_OrdersByDateLastTwoDays22x22.png" />
+    <None Remove="Images\FilterIcons\004_OrdersByDateLastWeek22x22.png" />
+    <None Remove="Images\FilterIcons\005_OrdersByDateLastTwoWeeks22x22.png" />
+    <None Remove="Images\FilterIcons\006_OrdersByStatus22x22.png" />
+    <None Remove="Images\FilterIcons\007_OrderStatusCreated22x22.png" />
+    <None Remove="Images\FilterIcons\009_OrderStatusScanned22x22.png" />
+    <None Remove="Images\FilterIcons\012_OrderStatusModelling22x22.png" />
+    <None Remove="Images\FilterIcons\016_OrderStatusManufacturing22x22.png" />
+    <None Remove="Images\FilterIcons\018_OrderStatusClosed22x22.png" />
+    <None Remove="Images\FilterIcons\020_OrderStatusApproved22x22.png" />
+    <None Remove="Images\FilterIcons\021_OrderStatusCAMError22x22.png" />
+    <None Remove="Images\FilterIcons\025_OrderStatusScannedTrios22x22.png" />
+    <None Remove="Images\FilterIcons\027_OrderGroups22x22.png" />
+    <None Remove="Images\FilterIcons\028_OrdersSent22x22.png" />
+    <None Remove="Images\FilterIcons\030_OrdersAllOpen22x22.png" />
+    <None Remove="Images\FilterIcons\031_OrdersMyRecent22x22 - Copy.png" />
+    <None Remove="Images\FilterIcons\032_OrdersSearch22x22.png" />
+    <None Remove="Images\FilterIcons\035_InboxRoot22x22.png" />
+    <None Remove="Images\FilterIcons\22x22_3DBitePlate.png" />
+    <None Remove="Images\FilterIcons\22x22_additional_scan.png" />
+    <None Remove="Images\FilterIcons\22x22_Articulator.png" />
+    <None Remove="Images\FilterIcons\22x22_DigitalModel.png" />
+    <None Remove="Images\FilterIcons\22x22_preparation.png" />
+    <None Remove="Images\FilterIcons\24x24Abutment.png" />
+    <None Remove="Images\FilterIcons\24x24DigitalModelUnsectioned.png" />
+    <None Remove="Images\FilterIcons\notSentOut_28.png" />
+    <None Remove="Images\FilterIcons\orders_CheckedOut.png" />
+    <None Remove="Images\FilterIcons\psModelling.png" />
+    <None Remove="Images\folder.png" />
+    <None Remove="Images\HealthIcons\dead.png" />
+    <None Remove="Images\HealthIcons\healthy.png" />
+    <None Remove="Images\HealthIcons\late.png" />
+    <None Remove="Images\HealthIcons\sleeping.png" />
+    <None Remove="Images\HealthIcons\struggle.png" />
+    <None Remove="Images\HomeButtons\accounts.png" />
+    <None Remove="Images\HomeButtons\archives.png" />
+    <None Remove="Images\HomeButtons\bill.png" />
+    <None Remove="Images\HomeButtons\folder.png" />
+    <None Remove="Images\HomeButtons\labnext.png" />
+    <None Remove="Images\HomeButtons\rx.png" />
+    <None Remove="Images\HomeButtons\sentoutcases.png" />
+    <None Remove="Images\HomeButtons\settings.png" />
+    <None Remove="Images\HomeButtons\threeshape.png" />
+    <None Remove="Images\Idioms\Desktop.png" />
+    <None Remove="Images\Idioms\Phone.png" />
+    <None Remove="Images\Idioms\server.png" />
+    <None Remove="Images\Idioms\Unknown.png" />
+    <None Remove="Images\IssuesIcons\error.png" />
+    <None Remove="Images\IssuesIcons\info.png" />
+    <None Remove="Images\IssuesIcons\warning.png" />
+    <None Remove="Images\ListViewIcons\checkedOut.png" />
+    <None Remove="Images\ListViewIcons\checkingIn.png" />
+    <None Remove="Images\ListViewIcons\image.png" />
+    <None Remove="Images\ListViewIcons\image2.png" />
+    <None Remove="Images\ListViewIcons\lock.png" />
+    <None Remove="Images\ListViewIcons\psAccepted.png" />
+    <None Remove="Images\ListViewIcons\psClosed.png" />
+    <None Remove="Images\ListViewIcons\psCreated.png" />
+    <None Remove="Images\ListViewIcons\psCreated_CheckedOut.png" />
+    <None Remove="Images\ListViewIcons\psCreated_Locked.png" />
+    <None Remove="Images\ListViewIcons\psModelled.png" />
+    <None Remove="Images\ListViewIcons\psModelled_CheckedOut.png" />
+    <None Remove="Images\ListViewIcons\psModelling.png" />
+    <None Remove="Images\ListViewIcons\psRejected.png" />
+    <None Remove="Images\ListViewIcons\psScanned.png" />
+    <None Remove="Images\ListViewIcons\psScannedE.png" />
+    <None Remove="Images\ListViewIcons\psScannedE_CheckedOut.png" />
+    <None Remove="Images\ListViewIcons\psScanned_CheckedOut.png" />
+    <None Remove="Images\ListViewIcons\psScanning.png" />
+    <None Remove="Images\ListViewIcons\psScanningE.png" />
+    <None Remove="Images\ListViewIcons\psSent.png" />
+    <None Remove="Images\ListViewIcons\trios_CheckedOut.png" />
+    <None Remove="Images\ListViewIcons\trios_Locked.png" />
+    <None Remove="Images\ListViewIcons\trios_scanned.png" />
+    <None Remove="Images\MessageIcons\Error.png" />
+    <None Remove="Images\MessageIcons\Info.png" />
+    <None Remove="Images\MessageIcons\Question.png" />
+    <None Remove="Images\MessageIcons\Success.png" />
+    <None Remove="Images\MessageIcons\Warning.png" />
+    <None Remove="Images\new_folder.png" />
+    <None Remove="Images\new_logo.ico" />
+    <None Remove="Images\new_logo.png" />
+    <None Remove="Images\new_logo_blue.png" />
+    <None Remove="Images\Other\add.png" />
+    <None Remove="Images\Other\archives.png" />
+    <None Remove="Images\Other\box.png" />
+    <None Remove="Images\Other\changes.png" />
+    <None Remove="Images\Other\check.gif" />
+    <None Remove="Images\Other\crown.png" />
+    <None Remove="Images\Other\down-arrow.png" />
+    <None Remove="Images\Other\download.gif" />
+    <None Remove="Images\Other\download.png" />
+    <None Remove="Images\Other\download_2.gif" />
+    <None Remove="Images\Other\edit.png" />
+    <None Remove="Images\Other\loading.gif" />
+    <None Remove="Images\Other\loading2.gif" />
+    <None Remove="Images\Other\scr.png" />
+    <None Remove="Images\Other\threeshape.png" />
+    <None Remove="Images\Other\zip.png" />
+    <None Remove="Images\SentOutCases\abutment.png" />
+    <None Remove="Images\SentOutCases\crown.png" />
+    <None Remove="Images\SentOutCases\i10.png" />
+    <None Remove="Images\SentOutCases\i20.png" />
+    <None Remove="Images\SentOutCases\i32.png" />
+    <None Remove="Images\SentOutCases\i33.png" />
+    <None Remove="Images\SentOutCases\models.png" />
+    <None Remove="Images\SentOutCases\screwretained.png" />
+    <None Remove="Images\SentOutCases\trios_new.png" />
+    <None Remove="Images\server.png" />
+    <None Remove="Images\Splash\1.jpg" />
+    <None Remove="Images\Splash\10.jpg" />
+    <None Remove="Images\Splash\11.jpg" />
+    <None Remove="Images\Splash\12.jpg" />
+    <None Remove="Images\Splash\13.jpg" />
+    <None Remove="Images\Splash\14.jpg" />
+    <None Remove="Images\Splash\15.jpg" />
+    <None Remove="Images\Splash\16.jpg" />
+    <None Remove="Images\Splash\17.jpg" />
+    <None Remove="Images\Splash\18.jpg" />
+    <None Remove="Images\Splash\19.jpg" />
+    <None Remove="Images\Splash\2.jpg" />
+    <None Remove="Images\Splash\20.jpg" />
+    <None Remove="Images\Splash\21.jpg" />
+    <None Remove="Images\Splash\22.jpg" />
+    <None Remove="Images\Splash\23.jpg" />
+    <None Remove="Images\Splash\24.jpg" />
+    <None Remove="Images\Splash\25.jpg" />
+    <None Remove="Images\Splash\26.jpg" />
+    <None Remove="Images\Splash\27.jpg" />
+    <None Remove="Images\Splash\28.jpg" />
+    <None Remove="Images\Splash\29.jpg" />
+    <None Remove="Images\Splash\3.jpg" />
+    <None Remove="Images\Splash\30.jpg" />
+    <None Remove="Images\Splash\31.jpg" />
+    <None Remove="Images\Splash\4.jpg" />
+    <None Remove="Images\Splash\5.jpg" />
+    <None Remove="Images\Splash\6.jpg" />
+    <None Remove="Images\Splash\7.jpg" />
+    <None Remove="Images\Splash\8.jpg" />
+    <None Remove="Images\Splash\9.jpg" />
+    <None Remove="Images\stats_2025_icon.ico" />
+    <None Remove="Images\stats_2025_Q512.png" />
+    <None Remove="Images\system-update.png" />
+    <None Remove="Images\ToolBar\assign.png" />
+    <None Remove="Images\ToolBar\dcm.png" />
+    <None Remove="Images\ToolBar\folder.png" />
+    <None Remove="Images\ToolBar\id.png" />
+    <None Remove="Images\ToolBar\info.png" />
+    <None Remove="Images\ToolBar\info2.png" />
+    <None Remove="Images\ToolBar\labnext.png" />
+    <None Remove="Images\ToolBar\new_folder.png" />
+    <None Remove="Images\ToolBar\open.png" />
+    <None Remove="Images\ToolBar\rename.png" />
+    <None Remove="Images\ToolBar\search.png" />
+    <None Remove="Images\ToolBar\stcopy-regenerate.png" />
+    <None Remove="Images\ToolBar\stcopy.png" />
+    <None Remove="Images\ToolBar\update.png" />
+    <None Remove="Images\ToolBar\xml.png" />
+    <None Remove="version.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\stats_2025_icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="eng.traineddata">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+	
+  
+
+  <ItemGroup>
+    <Folder Include="Executable\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.2" />
+    <PackageReference Include="Syncfusion.Licensing" Version="32.1.20" />
+    <PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="32.1.20" />
+    <PackageReference Include="Syncfusion.PdfViewer.WPF" Version="32.1.20" />
+    <PackageReference Include="System.Data.SQLite" Version="2.0.2" />
+    <PackageReference Include="TesseractOCR" Version="5.5.1" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Fonts\RobotoMono.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\AccountInfoIcons\app.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\AccountInfoIcons\key.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\AccountInfoIcons\user.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\AccountInfoIcons\web.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\0.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\10.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\11.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\12.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\13.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\14.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\3.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\4.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\5.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\6.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\7.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\8.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ArchivesIcons\9.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\as_signature.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\as_signature_straight.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\database.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\000_OrdersRoot22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\001_OrdersByDate22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\002_OrdersByDateToday22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\003_OrdersByDateLastTwoDays22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\004_OrdersByDateLastWeek22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\005_OrdersByDateLastTwoWeeks22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\006_OrdersByStatus22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\007_OrderStatusCreated22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\009_OrderStatusScanned22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\012_OrderStatusModelling22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\016_OrderStatusManufacturing22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\018_OrderStatusClosed22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\020_OrderStatusApproved22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\021_OrderStatusCAMError22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\025_OrderStatusScannedTrios22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\027_OrderGroups22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\028_OrdersSent22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\030_OrdersAllOpen22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\031_OrdersMyRecent22x22 - Copy.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\032_OrdersSearch22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\035_InboxRoot22x22.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\22x22_3DBitePlate.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\22x22_additional_scan.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\22x22_Articulator.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\22x22_DigitalModel.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\22x22_preparation.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\24x24Abutment.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\24x24DigitalModelUnsectioned.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\notSentOut_28.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\orders_CheckedOut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\FilterIcons\psModelling.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\folder.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HealthIcons\dead.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HealthIcons\healthy.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HealthIcons\late.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HealthIcons\sleeping.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HealthIcons\struggle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\accounts.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\archives.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\bill.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\folder.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\labnext.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\rx.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\sentoutcases.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\settings.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\HomeButtons\threeshape.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Idioms\Desktop.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Idioms\Phone.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Idioms\Server.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Idioms\Unknown.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\IssuesIcons\error.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\IssuesIcons\info.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\IssuesIcons\warning.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\checkedOut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\checkingIn.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\image.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\image2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\lock.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psAccepted.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psClosed.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psCreated.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psCreated_CheckedOut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psCreated_Locked.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psModelled.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psModelled_CheckedOut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psModelling.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psRejected.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psScanned.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psScannedE.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psScannedE_CheckedOut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psScanned_CheckedOut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psScanning.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psScanningE.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\psSent.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\trios_CheckedOut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\trios_Locked.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ListViewIcons\trios_scanned.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\MessageIcons\Error.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\MessageIcons\Info.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\MessageIcons\Question.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\MessageIcons\Success.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\MessageIcons\Warning.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\new_logo.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\new_logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\add.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\archives.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\box.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\changes.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\check.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\crown.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\down-arrow.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\download.gif">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\download.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\download_2.gif">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\edit.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\loading.gif">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\loading2.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\scr.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\threeshape.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\zip.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\abutment.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\crown.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\i10.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\i20.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\i32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\i33.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\models.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\screwretained.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\SentOutCases\trios_new.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\server.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\1.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\10.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\11.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\12.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\13.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\14.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\15.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\16.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\17.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\18.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\19.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\2.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\20.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\21.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\22.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\23.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\24.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\25.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\26.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\27.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\28.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\29.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\3.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\30.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\31.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\4.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\5.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\6.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\7.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\8.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Splash\9.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\stats_2025_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\stats_2025_Q512.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\system-update.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\assign.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\dcm.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\folder.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\id.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\info.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\info2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\labnext.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\new_folder.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\open.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\rename.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\search.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\stcopy-regenerate.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\stcopy.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\update.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\xml.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+	  <EmbeddedResource Include="version.txt">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DdxDentalClient">
+      <HintPath>Dll\DdxDentalClient.dll</HintPath>
+    </Reference>
+    <Reference Include="HelixToolkit.Wpf">
+      <HintPath>Dll\HelixToolkit.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="BouncyCastle.Cryptography">
+      <HintPath>Dll\BouncyCastle.Cryptography.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="DcmViewer\Images\*.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="DcmViewer\Images\*.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+</Project>

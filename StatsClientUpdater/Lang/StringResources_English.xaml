@@ -1,0 +1,13 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="language">English</system:String>
+
+    <system:String x:Key="closeMessage">Are you sure you want to close the updater?</system:String>
+    <system:String x:Key="pleaseWait">Please wait..</system:String>
+    <system:String x:Key="caseCheckerUpdater">Stats Client Updater</system:String>
+    <system:String x:Key="error">Error</system:String>
+    <system:String x:Key="couldNotStart">Could not start StatsClient</system:String>
+    
+</ResourceDictionary>
