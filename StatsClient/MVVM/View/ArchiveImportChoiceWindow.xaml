@@ -1,0 +1,48 @@
+<Window x:Class="StatsClient.MVVM.View.ArchiveImportChoiceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Import order"
+        Height="220"
+        Width="360"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="{DynamicResource PrimaryColor}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/ModernColorScheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="How do you want to import this archive order?"
+                   FontSize="14"
+                   FontWeight="SemiBold"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,12" />
+        <StackPanel Grid.Row="1"
+                    VerticalAlignment="Center">
+            <Button Content="Import into 3Shape"
+                    Height="32"
+                    Margin="0,4"
+                    Click="ImportStandard_Click" />
+            <Button Content="Import into 3Shape with new Pan Number"
+                    Height="32"
+                    Margin="0,4"
+                    Click="ImportWithNewPan_Click" />
+        </StackPanel>
+        <Button Grid.Row="2"
+                Content="Cancel"
+                Height="28"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Right"
+                MinWidth="80"
+                Click="Cancel_Click" />
+    </Grid>
+</Window>

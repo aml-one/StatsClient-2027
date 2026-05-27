@@ -249,7 +249,6 @@ public class OrderRenameViewModel : ObservableObject
         int givenPanNr = -1;
         bool FoundNumber = false;
 
-        string digitalSystem = await GetDigiSystemName(ThreeShapeObject!.IntOrderID!);
         if (OrderID.Contains('-')) 
         {
             string panNrPart = OrderID[..OrderID.IndexOf('-')];
@@ -271,43 +270,10 @@ public class OrderRenameViewModel : ObservableObject
             if (await PanNumberIsValid(givenPanNr) || GoWithGivenPanNumber)
             {
                 GoWithGivenPanNumber = false;
-                string patientNm = ThreeShapeObject!.Patient_LastName!.Replace(" ", "_")
-                                                                     .Replace(",", "")
-                                                                     .Replace("'", "_")
-                                                                     .Replace("\"", "_")
-                                                                     .Replace("+", "_")
-                                                                     .Replace("\\", "_")
-                                                                     .Replace("/", "_")
-                                                                     .Replace(":", "_")
-                                                                     .Replace("*", "_")
-                                                                     .Replace("?", "_")
-                                                                     .Replace("<", "_")
-                                                                     .Replace(">", "_")
-                                                                     .Replace("&", "-")
-                                                                     .Replace("|", "_")
-                                                                     .Trim();
-
-                string customer = ThreeShapeObject!.Customer!;
-
-                List<string> customerSuggestions = await CustomerHasSuggestedName(customer);
-                if (customerSuggestions.Count > 0)
-                    customer = customerSuggestions[0];   
-
-                customer = CleanUpCustomerName(customer);
-
                 ToothNumbersString = await GetToothNumbersString(ThreeShapeObject!.IntOrderID!);
-
-                if (!string.IsNullOrEmpty(digitalSystem))
-                    digitalSystem = $"-{digitalSystem}";
-
-                string builtOrderName = $"{givenPanNr}-{ToothNumbersString}-{patientNm}-{customer}{digitalSystem}";
-
-                if (ThreeShapeObject.OrderComments!.Contains("screw retained", StringComparison.CurrentCultureIgnoreCase) ||
-                    ThreeShapeObject.OrderComments!.Contains("screwretained", StringComparison.CurrentCultureIgnoreCase) ||
-                    ThreeShapeObject.OrderComments!.Contains("access hole", StringComparison.CurrentCultureIgnoreCase))
-                    builtOrderName += "-SCR";
-            
-                OrderID = builtOrderName.Trim().ToUpper();
+                string? builtOrderName = await SmartOrderNameBuilder.BuildOrderNameAsync(ThreeShapeObject!, givenPanNr);
+                if (!string.IsNullOrWhiteSpace(builtOrderName))
+                    OrderID = builtOrderName;
             }
             else
             {
@@ -399,11 +365,22 @@ public class OrderRenameViewModel : ObservableObject
 
         try
         {
+            await OrderInfoWindow.ReleaseLocksIfViewingOrderAsync(OriginalOrderID);
+
+            string destinationFolder = $"{ThreeShapeDirectoryHelper}{NewFileName}";
+            if (Directory.Exists(destinationFolder))
+            {
+                LogMessage = $"Couldn't rename the order's folder: a folder named \"{NewFileName}\" already exists in 3Shape.";
+                ControlsEnabled = true;
+                OrderIDIsValid = true;
+                OrderRenameWindow.StaticInstance.Cursor = Cursors.Arrow;
+                return;
+            }
 
             // renaming Order's folder to the new name
             try
             {
-                Directory.Move($"{ThreeShapeDirectoryHelper}{OriginalOrderID}", $"{ThreeShapeDirectoryHelper}{NewFileName}");
+                Directory.Move($"{ThreeShapeDirectoryHelper}{OriginalOrderID}", destinationFolder);
             }
             catch (Exception ex)
             {
@@ -447,8 +424,9 @@ public class OrderRenameViewModel : ObservableObject
                 // opening up the XML file
                 XMLFileContent = File.ReadAllText(@$"{ThreeShapeDirectoryHelper}{NewFolderName}\{NewFileName}.xml");
 
-                // replacing all the entry in the text where the original filename presented to the new name
-                XMLFileContent = XMLFileContent.Replace(OriginalOrderID, NewFileName);
+                // Replace order id in XML but never change ModelFilename (CAD paths keep original folder name).
+                XMLFileContent = ThreeShapeOrderRenameHelper.ReplaceOrderIdInXmlContent(
+                    XMLFileContent, OriginalOrderID, NewFileName);
 
                 //
                 // checking if the user want to make a note in the comments (if checkbox checked)
@@ -515,189 +493,35 @@ public class OrderRenameViewModel : ObservableObject
 
                 try
                 {
-
-
-                    ///
-                    /// renaming
-                    /// 
-                    /// [PrintJobItem] [OrderID]
-                    /// [OrderHistory] [OrderID]
-                    /// [OrderExchangeElement] [OrderID]
-                    /// [ImageOverlay] [OrderID]
-                    /// [CustomData] [OrderID]
-                    ///
-
-                    string connectionString = DatabaseConnection.ConnectionStrFor3Shape();
-
-                    string queryCopyLine = @$"INSERT INTO Orders ( 
-                                             [IntOrderID] 
-                                            ,[ExtOrderID] 
-                                            ,[ClientID] 
-                                            ,[ClientOrderNo] 
-                                            ,[OrderDate] 
-                                            ,[OrderImportanceID] 
-                                            ,[Patient_RefNo] 
-                                            ,[Patient_FirstName]
-                                            ,[Patient_LastName] 
-                                            ,[DeliveryAddress1] 
-                                            ,[DeliveryAddress2] 
-                                            ,[DeliveryZip] 
-                                            ,[DeliveryCity] 
-                                            ,[DeliveryState] 
-                                            ,[DeliveryCountryID] 
-                                            ,[DeliveryType] 
-                                            ,[ShipToDeliveryAddress] 
-                                            ,[ClientContactPerson] 
-                                            ,[LabID] 
-                                            ,[LabOperator] 
-                                            ,[OrderComments] 
-                                            ,[CreatedFromApp] 
-                                            ,[RelativePos] 
-                                            ,[OperatorID] 
-                                            ,[DisplayOrderID] 
-                                            ,[NumOrderID] 
-                                            ,[DesignModuleID] 
-                                            ,[ScanModuleID] 
-                                            ,[FaceScanModuleID] 
-                                            ,[Items] 
-                                            ,[OperatorName] 
-                                            ,[Customer] 
-                                            ,[ManufName] 
-                                            ,[OrderRelativePositionClass] 
-                                            ,[ShipToERPCustNo] 
-                                            ,[ERPCustomerNo] 
-                                            ,[ShipToID] 
-                                            ,[ModelManufacturingID] 
-                                            ,[CacheMaterialName] 
-                                            ,[ScanSource] 
-                                            ,[ImprovementProgramSendDate] 
-                                            ,[GroupFolder] 
-                                            ,[CacheColor] 
-                                            ,[OriginalOrderID] 
-                                            ,[ImportOrderID] 
-                                            ,[CacheMaxScanDate] 
-                                            ,[TraySystemType]
-                                            ,[ExternalLabID] 
-                                            ,[ShipToDifferentAddress] 
-                                            ,[PatientGuid]) 
-
-                                        SELECT '{NewFileName}'
-                                            ,[ExtOrderID] 
-                                            ,[ClientID] 
-                                            ,[ClientOrderNo] 
-                                            ,[OrderDate] 
-                                            ,[OrderImportanceID] 
-                                            ,[Patient_RefNo] 
-                                            ,[Patient_FirstName] 
-                                            ,[Patient_LastName] 
-                                            ,[DeliveryAddress1] 
-                                            ,[DeliveryAddress2] 
-                                            ,[DeliveryZip] 
-                                            ,[DeliveryCity] 
-                                            ,[DeliveryState] 
-                                            ,[DeliveryCountryID] 
-                                            ,[DeliveryType] 
-                                            ,[ShipToDeliveryAddress] 
-                                            ,[ClientContactPerson] 
-                                            ,[LabID] 
-                                            ,[LabOperator] 
-                                            ,[OrderComments] 
-                                            ,[CreatedFromApp] 
-                                            ,[RelativePos] 
-                                            ,[OperatorID] 
-                                            ,[DisplayOrderID] 
-                                            ,[NumOrderID] 
-                                            ,[DesignModuleID] 
-                                            ,[ScanModuleID] 
-                                            ,[FaceScanModuleID] 
-                                            ,[Items] 
-                                            ,[OperatorName] 
-                                            ,[Customer] 
-                                            ,[ManufName] 
-                                            ,[OrderRelativePositionClass] 
-                                            ,[ShipToERPCustNo] 
-                                            ,[ERPCustomerNo] 
-                                            ,[ShipToID] 
-                                            ,[ModelManufacturingID] 
-                                            ,[CacheMaterialName] 
-                                            ,[ScanSource] 
-                                            ,[ImprovementProgramSendDate] 
-                                            ,[GroupFolder] 
-                                            ,[CacheColor] 
-                                            ,[OriginalOrderID] 
-                                            ,[ImportOrderID] 
-                                            ,[CacheMaxScanDate] 
-                                            ,[TraySystemType] 
-                                            ,[ExternalLabID] 
-                                            ,[ShipToDifferentAddress] 
-                                            ,[PatientGuid] FROM Orders WHERE IntOrderID = '{OriginalOrderID}'";
-
-                    await RunCommandAsynchronouslyWithLogging(queryCopyLine, connectionString);
-
-
-
-
-                    string query6 = $"UPDATE ModelJob SET OrderID = '{NewFileName}' WHERE OrderID = '{OriginalOrderID}'";
-                    await RunCommandAsynchronouslyWithLogging(query6, connectionString);
-
-                    string query2 = $"UPDATE OrderHistory SET OrderID = '{NewFileName}' WHERE OrderID = '{OriginalOrderID}'";
-                    await RunCommandAsynchronouslyWithLogging(query2, connectionString);
-
-                    string query5 = $"UPDATE CustomData SET OrderID = '{NewFileName}' WHERE OrderID = '{OriginalOrderID}'";
-                    await RunCommandAsynchronouslyWithLogging(query5, connectionString);
-
-                    string query1 = $"UPDATE PrintJobItem SET OrderID = '{NewFileName}' WHERE OrderID = '{OriginalOrderID}'";
-                    await RunCommandAsynchronouslyWithLogging(query1, connectionString);
-
-                    string query7 = $"UPDATE CommunicateOrders SET OrderID = '{NewFileName}' WHERE OrderID = '{OriginalOrderID}'";
-                    await RunCommandAsynchronouslyWithLogging(query7, connectionString);
-
-                    string query3 = $"UPDATE OrderExchangeElement SET OrderID = '{NewFileName}' WHERE OrderID = '{OriginalOrderID}'";
-                    await RunCommandAsynchronouslyWithLogging(query3, connectionString);
-
-                    string query4 = $"UPDATE ImageOverlay SET OrderID = '{NewFileName}' WHERE OrderID = '{OriginalOrderID}'";
-                    await RunCommandAsynchronouslyWithLogging(query4, connectionString);
-
-
-
-
-                    UpdateLastModifyDateinDatabase(NewFileName);
-
-
-
-
-                    string queryRemoveOriginalLine = $"DELETE FROM Orders WHERE IntOrderID = '{OriginalOrderID}'";
-                    await RunCommandAsynchronouslyWithLogging(queryRemoveOriginalLine, connectionString);
-
-
-
-                    //
-                    // checking if the user want to make a note in the comments (if checkbox checked)
-                    //
+                    string? orderCommentsOverride = null;
                     if (MakeCommentAboutRename && !NewlyCreatedOrder)
                     {
-                        string commentsHelper = "";
-                        if (ThreeShapeObject!.OriginalOrderID!.Length > 0)
-                        {
-                            // if it's a copied order then adding a comment line like this
-                            commentsHelper = $"This case is a copy of: {ThreeShapeObject!.OriginalOrderID!} \n{commentsHelper}";
-
-                        }
-                        else
-                        {
-                            // if it's not a copied order, adding a comment line like this
-                            commentsHelper = $"Renamed file of: {OriginalOrderID} \n{commentsHelper}";
-                        }
-
-                        string queryUpdateComment = $"UPDATE Orders SET OrderComments = '{commentsHelper}' WHERE IntOrderID = '{NewFileName}'";
-                        await RunCommandAsynchronouslyWithLogging(queryUpdateComment, connectionString);
+                        orderCommentsOverride = ThreeShapeObject!.OriginalOrderID!.Length > 0
+                            ? $"This case is a copy of: {ThreeShapeObject.OriginalOrderID} \n"
+                            : $"Renamed file of: {OriginalOrderID} \n";
                     }
-                    //
-                    // END
-                    //
 
+                    ThreeShapeOrderRenameDatabaseResult dbResult =
+                        await ThreeShapeOrderRenameHelper.RenameOrderIdInDatabaseAsync(
+                            OriginalOrderID,
+                            NewFileName,
+                            orderCommentsOverride,
+                            step =>
+                            {
+                                LogMessage = step;
+                                LogMessages.Add(step);
+                            });
 
-
+                    if (!dbResult.Success)
+                    {
+                        error = true;
+                        LogMessage = dbResult.ErrorMessage ?? "Database rename failed.";
+                        LogMessages.Add(LogMessage);
+                    }
+                    else
+                    {
+                        UpdateLastModifyDateinDatabase(NewFileName);
+                    }
                 }
                 catch (Exception ex)
                 {

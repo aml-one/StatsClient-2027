@@ -5005,9 +5005,9 @@ RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}
                                             d:Visibility="Visible"
                                             Visibility="{Binding ReasonIsDead, Converter={StaticResource EmptyTextToVisibleConverter}}"
                                             Margin="10,0,0,0">
-                                    <Image Source="/Images/Toolbar/open.png"
+                                    <Image Source="/Images/ToolBar/info2.png"
                                            Cursor="Hand"
-                                           ToolTip="Jump to.."
+                                           ToolTip="Open up"
                                            HorizontalAlignment="Right"
                                            VerticalAlignment="Center"
                                            Width="40"
@@ -5015,14 +5015,14 @@ RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}
                                         <i:Interaction.Triggers>
 
                                             <i:EventTrigger EventName="PreviewMouseDown">
-                                                <i:InvokeCommandAction Command="{Binding DataContext.GsItemClickedCommand, 
+                                                <i:InvokeCommandAction Command="{Binding DataContext.GsOpenOrderInfoCommand, 
                                          RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"
                                                                        CommandParameter="{Binding .}" />
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
 
                                     </Image>
-                                    <TextBlock Text="Jump to.."
+                                    <TextBlock Text="Open up"
                                                FontSize="9" />
 
                                 </StackPanel>

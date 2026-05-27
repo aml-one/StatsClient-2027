@@ -7,17 +7,7 @@ namespace DCMViewer.Services;
 
 internal static class MeshExportService
 {
-    internal sealed record MeshSnapshot(Point3D[] Positions, int[] TriangleIndices);
     internal sealed record MeshExportItem(string DisplayName, MeshSnapshot Mesh);
-
-    public static MeshSnapshot CreateSnapshot(MeshGeometry3D mesh)
-    {
-        ArgumentNullException.ThrowIfNull(mesh);
-
-        return new MeshSnapshot(
-            mesh.Positions.ToArray(),
-            mesh.TriangleIndices.ToArray());
-    }
 
     public static void Export(string filePath, IReadOnlyList<MeshSnapshot> meshes)
     {

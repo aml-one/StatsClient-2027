@@ -1,5 +1,6 @@
 using StatsClient.MVVM.Model;
 using System.IO;
+using DCMViewer.Services;
 using System.Xml.Linq;
 
 namespace StatsClient.MVVM.Core;
@@ -241,7 +242,7 @@ public static class DCMFinder
                 FilePath = file,
                 RelativePath = Path.GetRelativePath(orderFolder, file),
                 DisplayName = fileName,
-                MaterialName = modelScanMaterial,
+                MaterialName = PrepScanMaterialRules.IsPreopScan(file) ? PrepScanMaterialRules.TextureName : modelScanMaterial,
                 GroupName = groupName,
                 SourceKind = DCMFileSourceKind.ModelScan,
                 IsDesigned = false,

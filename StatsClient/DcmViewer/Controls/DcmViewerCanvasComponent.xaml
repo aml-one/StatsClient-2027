@@ -3,8 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:h="http://helix-toolkit.org/wpf"
+             xmlns:hx="http://helix-toolkit.org/wpf/SharpDX"
              mc:Ignorable="d"
+             Background="Transparent"
              d:DesignHeight="700"
              d:DesignWidth="1000">
     <Grid x:Name="WatermarkCanvas">
@@ -38,52 +39,37 @@
             </TextBlock.Effect>
         </TextBlock>
 
-        <h:HelixViewport3D x:Name="Viewport"
-                           ShowViewCube="True"
-                           ShowCoordinateSystem="True"
-                           IsRotationEnabled="True"
-                           CameraRotationMode="Trackball"
-                           RotateGesture="RightClick"
-                           IsPanEnabled="True"
-                           IsZoomEnabled="True"
-                           RotateAroundMouseDownPoint="False"
-                           ZoomExtentsWhenLoaded="True"
-                           UseLayoutRounding="True"
-                           RenderOptions.CachingHint="Cache"
-                           Background="Transparent">
+        <hx:Viewport3DX x:Name="Viewport"
+                      ShowViewCube="True"
+                      ShowCoordinateSystem="True"
+                      IsRotationEnabled="True"
+                      CameraRotationMode="Trackball"
+                      IsPanEnabled="True"
+                      IsZoomEnabled="True"
+                      RotateAroundMouseDownPoint="False"
+                      ZoomExtentsWhenLoaded="True"
+                      UseLayoutRounding="True"
+                      EnableSwapChainRendering="False"
+                      EnableRenderOrder="True"
+                      Background="#00000000"
+                      BackgroundColor="#00000000">
 
-            <h:HelixViewport3D.Camera>
-                <PerspectiveCamera Position="{Binding CameraPosition}"
-                                   LookDirection="{Binding CameraLookDirection}"
-                                   UpDirection="{Binding CameraUpDirection}"
-                                   FieldOfView="45" />
-            </h:HelixViewport3D.Camera>
+            <hx:Viewport3DX.Camera>
+                <hx:PerspectiveCamera FieldOfView="45"
+                                      CreateLeftHandSystem="False" />
+            </hx:Viewport3DX.Camera>
 
-            <h:CuttingPlaneGroup x:Name="SectionCutGroup"
-                                 IsEnabled="False"
-                                 Content="{Binding ModelGroup}" />
-
-            <ModelVisual3D x:Name="SectionPlaneVisual" />
-            <h:LinesVisual3D x:Name="SectionPlaneOutlineVisual"
-                             IsRendering="False"
-                             Thickness="1.0"
-                             Color="#FF15459F" />
-
-            <h:LinesVisual3D x:Name="MeasurementLine"
-                             Thickness="2.4"
-                             Color="#FF1F6FEB"
-                             IsRendering="False" />
-
-            <h:BillboardTextVisual3D x:Name="MeasurementText"
-                                     IsRendering="False"
-                                     Background="#DDF5F9FF"
-                                     BorderBrush="#FF8BA1B8"
-                                     BorderThickness="1"
-                                     Foreground="#FF1A2A3A"
-                                     Padding="6,3"
-                                     FontSize="13"
-                                     FontWeight="SemiBold"
-                                     Text="" />
-        </h:HelixViewport3D>
+            <hx:MeshGeometryModel3D x:Name="SectionPlaneVisual" Visibility="Collapsed" />
+            <hx:LineGeometryModel3D x:Name="SectionPlaneOutlineVisual"
+                                    Visibility="Collapsed"
+                                    Thickness="1.0"
+                                    Color="#FF15459F" />
+            <hx:LineGeometryModel3D x:Name="MeasurementLine"
+                                    Visibility="Collapsed"
+                                    Thickness="2.4"
+                                    Color="#FF1F6FEB" />
+            <hx:BillboardTextModel3D x:Name="MeasurementText"
+                                     Visibility="Collapsed" />
+        </hx:Viewport3DX>
     </Grid>
 </UserControl>

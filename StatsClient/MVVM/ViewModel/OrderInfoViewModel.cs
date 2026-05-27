@@ -1,4 +1,4 @@
-﻿using StatsClient.MVVM.Core;
+using StatsClient.MVVM.Core;
 using StatsClient.MVVM.Model;
 using StatsClient.MVVM.View;
 using System.IO;
@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Media;
+using System.Globalization;
 using static StatsClient.MVVM.Core.DatabaseOperations;
 using static StatsClient.MVVM.Core.MessageBoxes;
 using static StatsClient.MVVM.Core.Functions;
@@ -318,6 +319,17 @@ public class OrderInfoViewModel : ObservableObject
         }
     }
 
+    private bool isLoading;
+    public bool IsLoading
+    {
+        get => isLoading;
+        set
+        {
+            isLoading = value;
+            RaisePropertyChanged(nameof(IsLoading));
+        }
+    }
+
 
     #endregion Properties
 
@@ -330,6 +342,7 @@ public class OrderInfoViewModel : ObservableObject
     public RelayCommand ShowOrderXmlDiffCommand { get; set; }
     public RelayCommand GenerateArchiveZipCommand { get; set; }
     public RelayCommand ImportArchiveOrderCommand { get; set; }
+    public RelayCommand RenameOrderCommand { get; set; }
     
 
     public OrderInfoViewModel()
@@ -344,7 +357,8 @@ public class OrderInfoViewModel : ObservableObject
         ShowDiscoveredDCMFilesCommand = new RelayCommand(o => ShowDiscoveredDCMFiles());
         ShowOrderXmlDiffCommand = new RelayCommand(o => ShowOrderXmlDiff());
         GenerateArchiveZipCommand = new RelayCommand(o => GenerateArchiveZip());
-        ImportArchiveOrderCommand = new RelayCommand(o => ImportArchiveOrder());
+        ImportArchiveOrderCommand = new RelayCommand(o => _ = ImportArchiveOrderAsync());
+        RenameOrderCommand = new RelayCommand(o => _ = OpenRenameOrderWindowAsync());
         
     }
 
@@ -401,18 +415,78 @@ public class OrderInfoViewModel : ObservableObject
         });
     }
 
-    private void ImportArchiveOrder()
+    private async Task ImportArchiveOrderAsync()
     {
         if (ThreeShapeObject is null || string.IsNullOrWhiteSpace(ThreeShapeObject.IntOrderID))
             return;
 
-        string orderId = ThreeShapeObject.IntOrderID;
+        Window owner = OrderInfoWindow.StaticInstance ?? _InfoWindow;
+        ArchiveImportChoice choice = ArchiveImportChoiceWindow.ShowDialog(owner);
+
+        if (choice == ArchiveImportChoice.Cancel)
+            return;
+
+        int? newPanNumber = null;
+        if (choice == ArchiveImportChoice.ImportWithNewPan)
+        {
+            newPanNumber = ArchiveImportPanNumberWindow.ShowDialog(owner);
+            if (newPanNumber is null)
+                return;
+
+            if (!await ConfirmPanNumberForImportAsync(newPanNumber.Value, owner))
+                return;
+        }
+
+        if (!TryQueueArchiveImport(out string orderId))
+            return;
+
+        MainViewModel.Instance.ShowNotificationMessage(
+            "Order Import",
+            $"Order {orderId} queued for import service.",
+            MainViewModel.NotificationIcon.Success);
+
+        if (choice == ArchiveImportChoice.ImportWithNewPan && newPanNumber is int pan)
+        {
+            ArchiveImportPostRenameService.StartWatchAfterImport(orderId, pan, SnapshotArchiveOrderForImportWatch(ThreeShapeObject));
+        }
+    }
+
+    private static ThreeShapeOrdersModel SnapshotArchiveOrderForImportWatch(ThreeShapeOrdersModel source) =>
+        new()
+        {
+            IntOrderID = source.IntOrderID,
+            Patient_FirstName = source.Patient_FirstName,
+            Patient_LastName = source.Patient_LastName,
+            Customer = source.Customer,
+            OrderComments = source.OrderComments,
+            Items = source.Items,
+        };
+
+    private async Task<bool> ConfirmPanNumberForImportAsync(int panNumber, Window owner)
+    {
+        if (await PanNumberIsValid(panNumber))
+            return true;
+
+        var result = MainViewModel.Instance.ShowMessageBox(
+            "Pan number not registered",
+            $"The chosen number ({panNumber}) is not a registered pan number in Stats.\n\nAre you sure you want to use it?",
+            Enums.SMessageBoxButtons.YesNo,
+            MainViewModel.NotificationIcon.Question,
+            30,
+            owner);
+
+        return result == Enums.SMessageBoxResult.Yes;
+    }
+
+    private bool TryQueueArchiveImport(out string orderId)
+    {
+        orderId = ThreeShapeObject!.IntOrderID!;
         string sourceFolder = ThreeShapeObject.OrderFolderPath ?? string.Empty;
 
         if (!Directory.Exists(sourceFolder))
         {
             ShowMessage(_InfoWindow.Instance, "Cannot import this archive order because source folder is not accessible.", TaskDialogIcon.Error, Buttons.Ok);
-            return;
+            return false;
         }
 
         string destinationRoot = DatabaseOperations.GetServerFileDirectory();
@@ -422,37 +496,38 @@ public class OrderInfoViewModel : ObservableObject
         if (!ArchiveOrderImportHelper.EnsureClientImportPathAvailable(clientImportPath, out string pathError))
         {
             ShowMessage(_InfoWindow.Instance, $"Import share is not available: {pathError}", TaskDialogIcon.Error, Buttons.Ok);
-            return;
+            return false;
         }
 
         if (destinationExists)
         {
-            var result = MainViewModel.Instance.ShowMessageBox("Overwrite existing order?",
+            var result = MainViewModel.Instance.ShowMessageBox(
+                "Overwrite existing order?",
                 $"Order {orderId} already exists in 3Shape. Overwrite it?",
                 Enums.SMessageBoxButtons.YesNo,
                 MainViewModel.NotificationIcon.Warning,
                 20,
-                MainWindow.Instance);
+                _InfoWindow);
 
             if (result != Enums.SMessageBoxResult.Yes)
-                return;
+                return false;
         }
 
         string? zipPath = ArchiveOrderImportHelper.BuildArchiveOrderZip(orderId, sourceFolder, clientImportPath, out string zipError);
         if (string.IsNullOrWhiteSpace(zipPath))
         {
             ShowMessage(_InfoWindow.Instance, $"Could not prepare import package: {zipError}", TaskDialogIcon.Error, Buttons.Ok);
-            return;
+            return false;
         }
 
         var queueResult = ArchiveOrderImportHelper.QueueImportRequest(orderId, zipPath, Environment.MachineName);
         if (!queueResult.Success)
         {
             ShowMessage(_InfoWindow.Instance, $"Could not queue import: {queueResult.Message}", TaskDialogIcon.Error, Buttons.Ok);
-            return;
+            return false;
         }
 
-        MainViewModel.Instance.ShowNotificationMessage("Order Import", $"Order {orderId} queued for import service.", MainViewModel.NotificationIcon.Success);
+        return true;
     }
 
     private void ShowDiscoveredDCMFiles()
@@ -599,163 +674,311 @@ public class OrderInfoViewModel : ObservableObject
         OrderInfoWindow.StaticInstance.Close();
     }
 
-    public async void UpdateForm()
+    public async Task UpdateForm()
+    {
+        if (ThreeShapeObject is null)
+            return;
+
+        var snapshot = CreateOrderInfoSnapshot(ThreeShapeObject);
+
+        OrderInfoBackgroundData backgroundData = await Task.Run(() => BuildBackgroundData(snapshot));
+        List<DesignerModel> designersList = await GetDesignersListAtStartAsync();
+
+        ApplyBackgroundData(backgroundData);
+        ApplyLastTouchedByUi(backgroundData.LastTouchedByList);
+        UpdateDesignedByList();
+        ApplyPanColorUi(backgroundData.PanColorBrush);
+        ApplyDesignerMenuUi(designersList);
+        ReloadImages(false);
+
+        //tbOrderUpdated.Visibility = Visibility.Visible;
+    }
+
+    private async Task OpenRenameOrderWindowAsync()
+    {
+        if (ThreeShapeObject is null || string.IsNullOrWhiteSpace(ThreeShapeObject.IntOrderID))
+            return;
+
+        if (IsArchiveOrder)
+        {
+            ShowMessage(_InfoWindow.Instance, "Rename is only available for active 3Shape orders.", TaskDialogIcon.Warning, Buttons.Ok);
+            return;
+        }
+
+        string originalOrderId = ThreeShapeObject.IntOrderID;
+        bool changed = await MainViewModel.Instance.OpenUpRenameOrderWindowFromOrderInfo(ThreeShapeObject, _InfoWindow);
+        if (!changed)
+            return;
+
+        string newOrderId = OrderRenameViewModel.Instance.OrderID ?? ThreeShapeObject.IntOrderID ?? originalOrderId;
+        await ReloadAfterRenameAsync(newOrderId);
+    }
+
+    private sealed class OrderInfoSnapshot
+    {
+        public required string OrderID { get; init; }
+        public required string FirstName { get; init; }
+        public required string LastName { get; init; }
+        public required string Customer { get; init; }
+        public required string ProcessStatus { get; init; }
+        public required string ScanSource { get; init; }
+        public required string ScannerFriendlyName { get; init; }
+        public required string MaxCreateDate { get; init; }
+        public required string CacheMaxScanDate { get; init; }
+        public required string Manufacturer { get; init; }
+        public required string Comments { get; init; }
+        public required string TraySystemType { get; init; }
+        public required string CacheMaterialName { get; init; }
+        public required string Items { get; init; }
+        public string? XmlFilePath { get; init; }
+        public bool IsCaseWereDesigned { get; init; }
+        public string? ArchiveBaseFolderPath { get; init; }
+        public string? PanNumber { get; init; }
+        public string? PanColor { get; init; }
+        public string? DesignerName { get; init; }
+        public required string MaxProcessStatusID { get; init; }
+    }
+
+    private sealed class OrderInfoBackgroundData
+    {
+        public required bool IsArchiveOrder { get; init; }
+        public required string OrderID { get; init; }
+        public required string FirstName { get; init; }
+        public required string LastName { get; init; }
+        public required string Customer { get; init; }
+        public required string Status { get; init; }
+        public required string Scanner { get; init; }
+        public required string DigitalCase { get; init; }
+        public required string Created { get; init; }
+        public required string Scanned { get; init; }
+        public required string Manufacturer { get; init; }
+        public required string Comments { get; init; }
+        public required string TraySystem { get; init; }
+        public required string Material { get; init; }
+        public required string Items { get; init; }
+        public required string DentalSystemVersion { get; init; }
+        public required string DesignModuleActual { get; init; }
+        public required string DesignModuleOriginal { get; init; }
+        public required string OriginalOrderID { get; init; }
+        public required List<XMLItemsDataModel> XmlItems { get; init; }
+        public required List<LastTouchedByModel> LastTouchedByList { get; init; }
+        public required bool IsCaseWereDesigned { get; init; }
+        public Brush? PanColorBrush { get; init; }
+    }
+
+    private static OrderInfoSnapshot CreateOrderInfoSnapshot(ThreeShapeOrdersModel source)
+    {
+        return new OrderInfoSnapshot
+        {
+            OrderID = source.IntOrderID ?? string.Empty,
+            FirstName = source.Patient_FirstName ?? string.Empty,
+            LastName = source.Patient_LastName ?? string.Empty,
+            Customer = source.Customer ?? string.Empty,
+            ProcessStatus = string.IsNullOrWhiteSpace(source.ProcessStatusID) ? "psClosed" : source.ProcessStatusID,
+            ScanSource = string.IsNullOrWhiteSpace(source.ScanSource) ? "ssUnknown" : source.ScanSource,
+            ScannerFriendlyName = source.ScanSourceFriendlyName ?? string.Empty,
+            MaxCreateDate = source.MaxCreateDate ?? string.Empty,
+            CacheMaxScanDate = source.CacheMaxScanDate ?? string.Empty,
+            Manufacturer = source.ManufName ?? string.Empty,
+            Comments = source.OrderComments ?? string.Empty,
+            TraySystemType = source.TraySystemType ?? "stNone",
+            CacheMaterialName = source.CacheMaterialName ?? string.Empty,
+            Items = source.Items ?? string.Empty,
+            XmlFilePath = source.XmlFilePath,
+            IsCaseWereDesigned = source.IsCaseWereDesigned,
+            ArchiveBaseFolderPath = source.ArchiveBaseFolderPath,
+            PanNumber = source.PanNumber,
+            PanColor = source.PanColor,
+            DesignerName = source.DesignerName,
+            MaxProcessStatusID = source.MaxProcessStatusID ?? string.Empty
+        };
+    }
+
+    private OrderInfoBackgroundData BuildBackgroundData(OrderInfoSnapshot snapshot)
+    {
+        bool isArchiveOrder = !string.IsNullOrWhiteSpace(snapshot.ArchiveBaseFolderPath);
+        string orderId = snapshot.OrderID;
+        string firstName = snapshot.FirstName;
+        string lastName = snapshot.LastName;
+        string customer = snapshot.Customer;
+
+        if (string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(orderId) && firstName != "-")
+            firstName = "-";
+
+        if (string.IsNullOrWhiteSpace(lastName))
+            lastName = "-";
+
+        string scanner = !string.IsNullOrWhiteSpace(snapshot.ScannerFriendlyName)
+            ? snapshot.ScannerFriendlyName
+            : GetScanner(snapshot.ScanSource);
+
+        string digitalCase = IsDigitalCase(snapshot.ScanSource) ? "Yes" : "No";
+
+        string created = string.Empty;
+        if (DateTime.TryParse(snapshot.MaxCreateDate, out DateTime maxCreateDate))
+            created = maxCreateDate.ToString("yyyy-MM-dd h:mm:ss tt", CultureInfo.InvariantCulture);
+
+        string scanned = string.Empty;
+        if (DateTime.TryParse(snapshot.CacheMaxScanDate, out DateTime cacheMaxScanDate))
+            scanned = cacheMaxScanDate.ToString("yyyy-MM-dd h:mm:ss tt", CultureInfo.InvariantCulture);
+
+        string manufacturer = string.IsNullOrWhiteSpace(snapshot.Manufacturer) ? "This Lab" : snapshot.Manufacturer;
+        string comments = snapshot.Comments.Replace("&#xA;", "\n").Replace("&", "");
+        string traySystem = !IsDigitalCase(snapshot.ScanSource)
+            ? GetTraySystem(snapshot.TraySystemType, snapshot.ProcessStatus)
+            : string.Empty;
+        string material = System.Net.WebUtility.HtmlDecode(snapshot.CacheMaterialName).Replace("\"", string.Empty).Trim();
+        string items = RemoveChineseCharacters(snapshot.Items);
+
+        XmlInfoData xmlInfo = ReadXmlInfoData(snapshot.XmlFilePath, snapshot.OrderID);
+        bool isCaseWereDesigned = snapshot.IsCaseWereDesigned;
+        if (!isCaseWereDesigned)
+        {
+            DCMFinderResult dcmResult = DCMFinder.FindForCase(ThreeShapeObject!);
+            if (dcmResult.HasDesignedElements)
+                isCaseWereDesigned = true;
+        }
+
+        List<LastTouchedByModel> lastTouchedByList = GetLastTouchedByListData(snapshot.OrderID);
+        Brush? panColorBrush = TryCreatePanColorBrush(snapshot.PanNumber, snapshot.PanColor);
+
+        return new OrderInfoBackgroundData
+        {
+            IsArchiveOrder = isArchiveOrder,
+            OrderID = orderId,
+            FirstName = firstName,
+            LastName = lastName,
+            Customer = customer,
+            Status = GetStatus(snapshot.ProcessStatus),
+            Scanner = scanner,
+            DigitalCase = digitalCase,
+            Created = created,
+            Scanned = scanned,
+            Manufacturer = manufacturer,
+            Comments = comments,
+            TraySystem = traySystem,
+            Material = material,
+            Items = items,
+            DentalSystemVersion = xmlInfo.DentalSystemVersion,
+            DesignModuleActual = xmlInfo.DesignModuleActual,
+            DesignModuleOriginal = xmlInfo.DesignModuleOriginal,
+            OriginalOrderID = xmlInfo.OriginalOrderID,
+            XmlItems = xmlInfo.Items,
+            LastTouchedByList = lastTouchedByList,
+            IsCaseWereDesigned = isCaseWereDesigned,
+            PanColorBrush = panColorBrush
+        };
+    }
+
+    private void ApplyBackgroundData(OrderInfoBackgroundData data)
     {
         TDM_ItemsList.Clear();
-        DentalSystemVersion = "";
-        DesignModuleActual = "";
-        DesignModuleOriginal = "";
-        OriginalOrderID = "";
-
-        IsArchiveOrder = !string.IsNullOrWhiteSpace(ThreeShapeObject?.ArchiveBaseFolderPath);
-
-        OrderID = ThreeShapeObject!.IntOrderID ?? "";
-        FirstName = ThreeShapeObject.Patient_FirstName ?? "";
-        LastName = ThreeShapeObject.Patient_LastName ?? "";
-        Customer = ThreeShapeObject.Customer ?? "";
-
-        if (string.IsNullOrWhiteSpace(FirstName) && !string.IsNullOrWhiteSpace(OrderID) && FirstName != "-")
-            FirstName = "-";
-
-        if (string.IsNullOrWhiteSpace(LastName))
-            LastName = "-";
-
-        string processStatus = string.IsNullOrWhiteSpace(ThreeShapeObject.ProcessStatusID) ? "psClosed" : ThreeShapeObject.ProcessStatusID;
-        Status = GetStatus(processStatus);
-
-        string scanSource = string.IsNullOrWhiteSpace(ThreeShapeObject.ScanSource) ? "ssUnknown" : ThreeShapeObject.ScanSource;
-        Scanner = !string.IsNullOrWhiteSpace(ThreeShapeObject.ScanSourceFriendlyName)
-            ? ThreeShapeObject.ScanSourceFriendlyName
-            : GetScanner(scanSource);
-
-        if (IsDigitalCase(scanSource))
-            DigitalCase = "Yes";
-        else
-            DigitalCase = "No";
-
-        Created = "";
-        if(DateTime.TryParse(ThreeShapeObject.MaxCreateDate, out DateTime MaxCreateDate))
-            Created = MaxCreateDate.ToString("yyyy-MM-dd h:mm:ss tt");
-
-        Scanned = "";
-        if (DateTime.TryParse(ThreeShapeObject.CacheMaxScanDate, out DateTime CacheMaxScanDate))
-            Scanned = CacheMaxScanDate.ToString("yyyy-MM-dd h:mm:ss tt");
-
-
-
-        Manufacturer = ThreeShapeObject.ManufName ?? "";
-        if (Manufacturer == "")
-            Manufacturer = "This Lab";
-        Comments = (ThreeShapeObject.OrderComments ?? "").Replace("&#xA;", "\n").Replace("&", "");
-
-        if (!IsDigitalCase(scanSource))
-            TraySystem = GetTraySystem(ThreeShapeObject.TraySystemType ?? "stNone", processStatus);
-        else
-            TraySystem = "";
-
-        Material = System.Net.WebUtility.HtmlDecode(ThreeShapeObject.CacheMaterialName ?? "").Replace("\"", "").Trim();
-        Items = RemoveChineseCharacters(ThreeShapeObject.Items ?? "");
-
-        if (!string.IsNullOrWhiteSpace(ThreeShapeObject.XmlFilePath) && File.Exists(ThreeShapeObject.XmlFilePath))
-            ReadXMLInfoFromPath(ThreeShapeObject.XmlFilePath);
-        else if (!string.IsNullOrWhiteSpace(ThreeShapeObject.IntOrderID))
-            ReadXMLInfo(ThreeShapeObject.IntOrderID);
-
-        if (!ThreeShapeObject.IsCaseWereDesigned)
+        foreach (XMLItemsDataModel item in data.XmlItems)
         {
-            DCMFinderResult dcmResult = DCMFinder.FindForCase(ThreeShapeObject);
-            if (dcmResult.HasDesignedElements)
-                ThreeShapeObject.IsCaseWereDesigned = true;
+            TDM_ItemsList.Add(item);
         }
 
+        DentalSystemVersion = data.DentalSystemVersion;
+        DesignModuleActual = data.DesignModuleActual;
+        DesignModuleOriginal = data.DesignModuleOriginal;
+        OriginalOrderID = data.OriginalOrderID;
+        IsArchiveOrder = data.IsArchiveOrder;
+        OrderID = data.OrderID;
+        FirstName = data.FirstName;
+        LastName = data.LastName;
+        Customer = data.Customer;
+        Status = data.Status;
+        Scanner = data.Scanner;
+        DigitalCase = data.DigitalCase;
+        Created = data.Created;
+        Scanned = data.Scanned;
+        Manufacturer = data.Manufacturer;
+        Comments = data.Comments;
+        TraySystem = data.TraySystem;
+        Material = data.Material;
+        Items = data.Items;
+        LastTouchedByList = data.LastTouchedByList;
+        ThreeShapeObject!.IsCaseWereDesigned = data.IsCaseWereDesigned;
+    }
 
+    private void ApplyLastTouchedByUi(List<LastTouchedByModel> lastTouchedByList)
+    {
         var bc = new BrushConverter();
-
-        LastTouchedByList = GetLastTouchedByListData(ThreeShapeObject.IntOrderID!);
         _InfoWindow!.panelLastTouchedBy.Children.Clear();
+        _InfoWindow.borderLastTouchedByPanel.Visibility = lastTouchedByList.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-        if (LastTouchedByList.Count > 0)
+        foreach (LastTouchedByModel item in lastTouchedByList)
         {
-            foreach (LastTouchedByModel item in LastTouchedByList)
+            string computerName = item.ComputerName;
+            string dateTime = item.DateTimeStr;
+
+            _ = DateTime.TryParse(dateTime, out DateTime dtm);
+            dateTime = dtm.ToString("dddd - M/d/yyyy h:mm tt", CultureInfo.InvariantCulture);
+
+            StackPanel stckPanel = new()
             {
-                string computerName = item.ComputerName;
-                string dateTime = item.DateTimeStr;
+                Margin = new Thickness(0, 0, 0, 8)
+            };
 
-                _ = DateTime.TryParse(dateTime, out DateTime dtm);
-                dateTime = dtm.ToString("dddd - M/d/yyyy h:mm tt");
+            Brush badgeBackground = CreateComputerBadgeBrush(computerName);
+            Brush badgeForeground = IsDarkBrushColor(badgeBackground) ? Brushes.White : Brushes.Black;
 
-                StackPanel stckPanel = new()
-                {
-                    Margin = new Thickness(0, 0, 0, 8)
-                };
+            Border computerBadge = new()
+            {
+                Background = badgeBackground,
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(6, 2, 6, 2),
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
 
-                Brush badgeBackground = CreateComputerBadgeBrush(computerName);
-                Brush badgeForeground = IsDarkBrushColor(badgeBackground) ? Brushes.White : Brushes.Black;
+            TextBlock dtbCompName = new()
+            {
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 12,
+                Foreground = badgeForeground,
+                Text = computerName
+            };
+            computerBadge.Child = dtbCompName;
+            stckPanel.Children.Add(computerBadge);
 
-                Border computerBadge = new()
-                {
-                    Background = badgeBackground,
-                    CornerRadius = new CornerRadius(4),
-                    Padding = new Thickness(6, 2, 6, 2),
-                    HorizontalAlignment = HorizontalAlignment.Left
-                };
+            TextBlock dtbDateTime = new()
+            {
+                FontSize = 9
+            };
 
-                TextBlock dtbCompName = new()
-                {
-                    FontWeight = FontWeights.SemiBold,
-                    FontSize = 12,
-                    Foreground = badgeForeground,
-                    Text = computerName
-                };
-                computerBadge.Child = dtbCompName;
-                stckPanel.Children.Add(computerBadge);
+            if (dtm.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) == DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                dtbDateTime.Foreground = Brushes.Green;
+            else if (dtm.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) == DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                dtbDateTime.Foreground = Brushes.SteelBlue;
+            else
+                dtbDateTime.Foreground = (Brush)bc.ConvertFrom("#FF666666")!;
 
-                TextBlock dtbDateTime = new()
-                {
-                    FontSize = 9
-                };
+            dtbDateTime.Text = dateTime;
+            stckPanel.Children.Add(dtbDateTime);
 
-                if (dtm.ToString("yyyy-MM-dd") == DateTime.Now.ToString("yyyy-MM-dd"))
-                    dtbDateTime.Foreground = Brushes.Green;
-                else if (dtm.ToString("yyyy-MM-dd") == DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd"))
-                    dtbDateTime.Foreground = Brushes.SteelBlue;
-                else
-                    dtbDateTime.Foreground = (Brush)bc.ConvertFrom("#FF666666")!;
-
-                dtbDateTime.Text = dateTime;
-                stckPanel.Children.Add(dtbDateTime);
-
-                _InfoWindow.panelLastTouchedBy.Children.Add(stckPanel);
-            }
+            _InfoWindow.panelLastTouchedBy.Children.Add(stckPanel);
         }
-        else
-            _InfoWindow.borderLastTouchedByPanel.Visibility = Visibility.Collapsed;
+    }
 
-
-        UpdateDesignedByList();
-
-        if (ThreeShapeObject.PanNumber != "" && ThreeShapeObject.PanColor != "#FFFFFF" && ThreeShapeObject.PanColor != "Transparent")
+    private void ApplyPanColorUi(Brush? panColorBrush)
+    {
+        if (panColorBrush is not null)
         {
-            try
-            {
-                _InfoWindow.brPanColor.Background = (Brush)bc.ConvertFrom("#FF" + ThreeShapeObject.PanColor!.Replace("#", ""))!;
-            }
-            catch (Exception ex)
-            {
-                MainViewModel.Instance.AddDebugLine(ex);
-            }
-
-        }
-        else
-        {
-            _InfoWindow.brPanColor.Visibility = Visibility.Collapsed;
+            _InfoWindow.brPanColor.Visibility = Visibility.Visible;
+            _InfoWindow.brPanColor.Background = panColorBrush;
+            return;
         }
 
+        _InfoWindow.brPanColor.Visibility = Visibility.Collapsed;
+    }
 
-        List<DesignerModel> designersList = await GetDesignersListAtStartAsync();
+    private void ApplyDesignerMenuUi(List<DesignerModel> designersList)
+    {
+        Designers.Clear();
         ContextMenu menu = OrderInfoWindow.StaticInstance.designerContextMenu;
+        menu.Items.Clear();
 
-        if (ThreeShapeObject.MaxProcessStatusID == "psModelled" && ThreeShapeObject.IsCaseWereDesigned)
+        if (ThreeShapeObject!.MaxProcessStatusID == "psModelled" && ThreeShapeObject.IsCaseWereDesigned)
         {
             MenuItem mitem = new()
             {
@@ -764,14 +987,12 @@ public class OrderInfoViewModel : ObservableObject
             };
 
             menu.Items.Add(mitem);
-
-            Separator separator = new();
-            menu.Items.Add(separator);
+            menu.Items.Add(new Separator());
 
             foreach (var designer in designersList)
             {
                 Designers.Add(designer);
-                MenuItem item = new () 
+                MenuItem item = new()
                 {
                     Header = $"To {designer.FriendlyName}",
                     Tag = designer.DesignerID,
@@ -792,13 +1013,262 @@ public class OrderInfoViewModel : ObservableObject
 
             menu.Items.Add(mitem);
         }
+    }
 
-        ReloadImages(false);
+    private static Brush? TryCreatePanColorBrush(string? panNumber, string? panColor)
+    {
+        if (string.IsNullOrWhiteSpace(panNumber) || string.IsNullOrWhiteSpace(panColor) || panColor == "#FFFFFF" || panColor == "Transparent")
+        {
+            return null;
+        }
 
+        try
+        {
+            var brush = (Brush)new BrushConverter().ConvertFrom("#FF" + panColor.Replace("#", string.Empty))!;
+            if (brush.CanFreeze)
+            {
+                brush.Freeze();
+            }
+            return brush;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
+    private sealed class XmlInfoData
+    {
+        public string DentalSystemVersion { get; init; } = string.Empty;
+        public string DesignModuleActual { get; init; } = string.Empty;
+        public string DesignModuleOriginal { get; init; } = string.Empty;
+        public string OriginalOrderID { get; init; } = string.Empty;
+        public List<XMLItemsDataModel> Items { get; init; } = [];
+    }
 
+    private static XmlInfoData ReadXmlInfoData(string? xmlFilePath, string orderId)
+    {
+        var xmlItems = new List<XMLItemsDataModel>();
+        string dentalSystemVersion = string.Empty;
+        string designModuleActual = string.Empty;
+        string designModuleOriginal = string.Empty;
+        string originalOrderId = string.Empty;
 
-        //tbOrderUpdated.Visibility = Visibility.Visible;
+        string xmlFile = !string.IsNullOrWhiteSpace(xmlFilePath) && File.Exists(xmlFilePath)
+            ? xmlFilePath
+            : Path.Combine(DatabaseConnection.GetServerFileDirectory(), orderId, $"{orderId}.xml");
+        string stCopyFile = Path.Combine(Path.GetDirectoryName(xmlFile) ?? string.Empty, Path.GetFileNameWithoutExtension(xmlFile) + ".stCopy");
+        bool stCopyExists = File.Exists(stCopyFile);
+
+        if (!File.Exists(xmlFile))
+        {
+            return new XmlInfoData();
+        }
+
+        List<string> tdmItemModelElement = [];
+        bool needToCopyModelElement = false;
+
+        foreach (string line in File.ReadLines(xmlFile))
+        {
+            if (line.Contains("<DentalContainer version="))
+                dentalSystemVersion = line.Replace("<DentalContainer version=\"", "").Replace("\"", "").Replace("/>", "").Replace(">", "").Trim();
+
+            if (line.Contains("<Property name=\"DesignModuleID\" value=\""))
+                designModuleActual = line.Replace("<Property name=\"DesignModuleID\" value=\"", "").Replace("\"", "").Replace("/>", "").Trim();
+
+            if (line.Contains("<Property name=\"OriginalOrderID\" value=\""))
+                originalOrderId = line.Replace("<Property name=\"OriginalOrderID\" value=\"", "").Replace("\"", "").Replace("/>", "").Trim();
+
+            if (line.Contains("<Object type=\"TDM_Item_ModelElement\">"))
+                needToCopyModelElement = true;
+
+            if (line.Contains("</List>"))
+                needToCopyModelElement = false;
+
+            if (needToCopyModelElement)
+                tdmItemModelElement.Add(line);
+        }
+
+        string itemChunk = string.Empty;
+        string cacheMaterialChunk = string.Empty;
+        string modelJobIdChunk = string.Empty;
+        string manufacturingProcessIdChunk = string.Empty;
+        string manufacturerIdChunk = string.Empty;
+        string manufNameChunk = string.Empty;
+        string modelElementId = string.Empty;
+
+        foreach (string line in tdmItemModelElement)
+        {
+            if (line.Contains("<Property name=\"ModelElementID\" value=\""))
+                modelElementId = line.Replace("<Property name=\"ModelElementID\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+            if (line.Contains("<Property name=\"Items\" value=\""))
+                itemChunk = line.Replace("<Property name=\"Items\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+            if (line.Contains("<Property name=\"CacheMaterialName\" value=\""))
+                cacheMaterialChunk = line.Replace("<Property name=\"CacheMaterialName\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+            if (line.Contains("<Property name=\"ModelJobID\" value=\""))
+                modelJobIdChunk = line.Replace("<Property name=\"ModelJobID\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+            if (line.Contains("<Property name=\"ManufacturingProcessID\" value=\""))
+                manufacturingProcessIdChunk = line.Replace("<Property name=\"ManufacturingProcessID\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+            if (line.Contains("<Property name=\"ManufacturerID\" value=\""))
+                manufacturerIdChunk = line.Replace("<Property name=\"ManufacturerID\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+            if (line.Contains("<Property name=\"ManufName\" value=\""))
+                manufNameChunk = line.Replace("<Property name=\"ManufName\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+            if (cacheMaterialChunk != string.Empty && !modelElementId.Contains("_"))
+            {
+                xmlItems.Add(stCopyExists
+                    ? new XMLItemsDataModel(itemChunk, cacheMaterialChunk, modelJobIdChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, null, null, null, Brushes.Blue, null)
+                    : new XMLItemsDataModel(itemChunk, cacheMaterialChunk, modelJobIdChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, Brushes.DimGray, "FailedToValidate"));
+
+                cacheMaterialChunk = string.Empty;
+            }
+        }
+
+        if (stCopyExists)
+        {
+            List<string> tdmItemModelElementSt = [];
+            bool needToCopyModelElementSt = false;
+
+            foreach (string line in File.ReadLines(stCopyFile))
+            {
+                if (line.Contains("<Property name=\"DesignModuleID\" value=\""))
+                    designModuleOriginal = line.Replace("<Property name=\"DesignModuleID\" value=\"", "").Replace("\"", "").Replace("/>", "").Trim();
+
+                if (line.Contains("<Object type=\"TDM_Item_ModelElement\">"))
+                    needToCopyModelElementSt = true;
+
+                if (line.Contains("</List>"))
+                    needToCopyModelElementSt = false;
+
+                if (needToCopyModelElementSt)
+                    tdmItemModelElementSt.Add(line);
+            }
+
+            itemChunk = string.Empty;
+            cacheMaterialChunk = string.Empty;
+            modelJobIdChunk = string.Empty;
+            manufacturingProcessIdChunk = string.Empty;
+            manufacturerIdChunk = string.Empty;
+            manufNameChunk = string.Empty;
+
+            foreach (string line in tdmItemModelElementSt)
+            {
+                if (line.Contains("<Property name=\"Items\" value=\""))
+                    itemChunk = line.Replace("<Property name=\"Items\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+                if (line.Contains("<Property name=\"ModelJobID\" value=\""))
+                    modelJobIdChunk = line.Replace("<Property name=\"ModelJobID\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+                if (line.Contains("<Property name=\"ManufacturingProcessID\" value=\""))
+                    manufacturingProcessIdChunk = line.Replace("<Property name=\"ManufacturingProcessID\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+                if (line.Contains("<Property name=\"ManufacturerID\" value=\""))
+                    manufacturerIdChunk = line.Replace("<Property name=\"ManufacturerID\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+                if (line.Contains("<Property name=\"ManufName\" value=\""))
+                    manufNameChunk = line.Replace("<Property name=\"ManufName\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+                if (line.Contains("<Property name=\"CacheMaterialName\" value=\""))
+                    cacheMaterialChunk = line.Replace("<Property name=\"CacheMaterialName\" value=\"", "").Replace("\"", "").Replace("/>", "").Replace("'", "_").Trim();
+
+                if (!line.Contains("</Object>"))
+                    continue;
+
+                try
+                {
+                    XMLItemsDataModel? exactMatch = xmlItems.FirstOrDefault(x => x.Item == itemChunk && x.ModelJobID == modelJobIdChunk);
+                    if (exactMatch is not null)
+                    {
+                        exactMatch.ManufacturerID_stCopy = manufacturerIdChunk;
+                        exactMatch.ManufacturingProcessID_stCopy = manufacturingProcessIdChunk;
+                        exactMatch.ManufName_stCopy = manufNameChunk;
+                        exactMatch.ValidateItemIntegrity = exactMatch.ManufacturerID != exactMatch.ManufacturerID_stCopy
+                            || exactMatch.ManufacturingProcessID != exactMatch.ManufacturingProcessID_stCopy
+                            || exactMatch.ManufName != exactMatch.ManufName_stCopy
+                            ? "Invalid"
+                            : "Valid";
+                    }
+                    else if (xmlItems.FirstOrDefault(x => FDIConverter.ConvertFDIinString(x.Item) == itemChunk && x.ModelJobID == modelJobIdChunk) is XMLItemsDataModel fdiMatch)
+                    {
+                        fdiMatch.ManufacturerID_stCopy = manufacturerIdChunk;
+                        fdiMatch.ManufacturingProcessID_stCopy = manufacturingProcessIdChunk;
+                        fdiMatch.ManufName_stCopy = manufNameChunk;
+                        fdiMatch.ValidateItemIntegrity = fdiMatch.ManufacturerID != fdiMatch.ManufacturerID_stCopy
+                            || fdiMatch.ManufacturingProcessID != fdiMatch.ManufacturingProcessID_stCopy
+                            || fdiMatch.ManufName != fdiMatch.ManufName_stCopy
+                            ? "Invalid"
+                            : "Valid";
+                        fdiMatch.Item = itemChunk;
+                    }
+                    else
+                    {
+                        foreach (var x in xmlItems)
+                        {
+                            if (x.Item != itemChunk && x.ModelJobID != modelJobIdChunk)
+                            {
+                                x.ValidateItemIntegrity = "ChangedItem";
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MainViewModel.Instance.AddDebugLine(ex);
+                }
+            }
+        }
+
+        if (designModuleActual == "DentalDesigner")
+        {
+            designModuleActual = "DentalDesigner " + dentalSystemVersion.Substring(0, 4);
+        }
+
+        if (designModuleOriginal == "DentalDesigner" && designModuleActual.StartsWith("DD"))
+        {
+            designModuleOriginal = "DentalDesigner " + designModuleActual.Substring(2);
+        }
+
+        return new XmlInfoData
+        {
+            DentalSystemVersion = dentalSystemVersion,
+            DesignModuleActual = designModuleActual,
+            DesignModuleOriginal = designModuleOriginal,
+            OriginalOrderID = originalOrderId,
+            Items = xmlItems
+        };
+    }
+
+    private async Task ReloadAfterRenameAsync(string orderId)
+    {
+        if (string.IsNullOrWhiteSpace(orderId))
+            return;
+
+        ThreeShapeOrderInspectionModel inspected = InspectThreeShapeOrder(orderId);
+
+        string xmlPath = Path.Combine(GetServerFileDirectory(), orderId, $"{orderId}.xml");
+        string scanSource = ThreeShapeObject?.ScanSource ?? "ssUnknown";
+        string processStatus = inspected.CaseStatus ?? ThreeShapeObject?.ProcessStatusID ?? "psClosed";
+        string processLock = inspected.OriginalLockStatusID ?? ThreeShapeObject?.ProcessLockID ?? "plReady";
+        string panNumber = inspected.PanNumber > 0 ? inspected.PanNumber.ToString() : (ThreeShapeObject?.PanNumber ?? string.Empty);
+
+        ThreeShapeObject!.IntOrderID = orderId;
+        ThreeShapeObject.ProcessStatusID = processStatus;
+        ThreeShapeObject.MaxProcessStatusID = processStatus;
+        ThreeShapeObject.ProcessLockID = processLock;
+        ThreeShapeObject.CaseStatus = CaseStatusSelect(processStatus, scanSource, processLock);
+        ThreeShapeObject.ImageSource = @"\Images\ListViewIcons\" + IconSelect(processStatus, scanSource, processLock) + ".png";
+        ThreeShapeObject.PanNumber = panNumber;
+        ThreeShapeObject.OrderFolderPath = Path.Combine(GetServerFileDirectory(), orderId);
+        ThreeShapeObject.XmlFilePath = xmlPath;
+
+        await UpdateForm();
+        await _InfoWindow.ReloadCaseFilesForCurrentOrderAsync();
     }
 
     private void UpdateDesignedByList()
@@ -959,7 +1429,7 @@ public class OrderInfoViewModel : ObservableObject
         {
             List<string> TDM_Item_ModelElement = [];
             bool NeedToCopyModelElement = false;
-            
+
             foreach (string line in File.ReadLines(XMLFile))
             {
                 if (line.Contains("<DentalContainer version="))
@@ -1208,20 +1678,20 @@ public class OrderInfoViewModel : ObservableObject
             #endregion END Parse stCopy
 
 
-            
-            
+
+
 
             if (DesignModuleActual == "DentalDesigner")
             {
                 DesignModuleActual = "DentalDesigner " + DentalSystemVersion.Substring(0, 4);
             }
-            
+
 
             if (DesignModuleOriginal == "DentalDesigner" && DesignModuleActual.StartsWith("DD"))
             {
                 DesignModuleOriginal = "DentalDesigner " + DesignModuleActual.Substring(2);
             }
-            
+
             return true;
         }
         return false;

@@ -4,15 +4,27 @@ using System.Windows.Media;
 namespace DCMViewer.Services;
 
 /// <summary>
-/// Colors for a single named material/texture entry.
+/// Colors and optional Phong tuning for a named material/texture entry.
 /// </summary>
-public readonly record struct MaterialPalette(Color FrontDiffuse, Color BackDiffuse, Color FrontSpecular);
+/// <param name="SpecularShininessOverride">When &gt; 0, replaces the global satin/matte shininess.</param>
+/// <param name="SpecularIntensityScale">Multiplier on the global specular intensity.</param>
+/// <param name="AmbientScale">Diffuse ambient multiplier.</param>
+/// <param name="EmissiveScale">Back-diffuse emissive multiplier.</param>
+public readonly record struct MaterialPalette(
+    Color FrontDiffuse,
+    Color BackDiffuse,
+    Color FrontSpecular,
+    double SpecularShininessOverride = 0,
+    double SpecularIntensityScale = 1.0,
+    double AmbientScale = 0.25,
+    double EmissiveScale = 0.15);
 
 /// <summary>
 /// Named material library.  Add entries here to extend the texture list.
 /// "Model"    - neutral gray for scan/jaw models (default).
 /// "Zirconia" - warm ivory for tooth/restoration meshes.
-/// "Emax"     - cool blueish porcelain look.
+/// "Emax"     - blueish translucent ceramic / glass look.
+/// "Preop"    - 3Shape-style light periwinkle for pre-prep scans.
 /// "Stone"    - stone model look.
 /// "Gold"     - gold metal look.
 /// "SLM"      - silver metal look.
@@ -29,6 +41,7 @@ public static class MaterialLibrary
         "Model",
         "Zirconia",
         "Emax",
+        "Preop",
         "Stone",
         "Gold",
         "SLM",
@@ -50,9 +63,23 @@ public static class MaterialLibrary
                 Color.FromRgb(154, 148, 128)),
 
             ["Emax"] = new MaterialPalette(
-                Color.FromRgb(168, 174, 212),
-                Color.FromRgb(130, 136, 180),
-                Color.FromRgb(200, 208, 240)),
+                FrontDiffuse: Color.FromRgb(178, 198, 238),
+                BackDiffuse: Color.FromRgb(118, 142, 192),
+                FrontSpecular: Color.FromRgb(245, 250, 255),
+                SpecularShininessOverride: 142,
+                SpecularIntensityScale: 1.18,
+                AmbientScale: 0.18,
+                EmissiveScale: 0.06),
+
+            // PrePreparationScan / GenericDoublePrepScan — 3Shape preop periwinkle (#A5B8E8).
+            ["Preop"] = new MaterialPalette(
+                FrontDiffuse: Color.FromRgb(165, 184, 232),
+                BackDiffuse: Color.FromRgb(125, 148, 205),
+                FrontSpecular: Color.FromRgb(210, 222, 248),
+                SpecularShininessOverride: 78,
+                SpecularIntensityScale: 0.92,
+                AmbientScale: 0.24,
+                EmissiveScale: 0.12),
 
             ["Stone"] = new MaterialPalette(
                 Color.FromRgb(235, 210, 120),

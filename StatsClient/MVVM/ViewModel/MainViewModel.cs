@@ -2066,11 +2066,15 @@ public partial class MainViewModel : ObservableObject
             RaisePropertyChanged(nameof(SearchString));
             if (string.IsNullOrEmpty(SearchString))
             {
+                _globalSearchDebounceTimer.Stop();
                 ArchiveResultOffsetOnArchivePage = 0;
                 ArchiveResultOffset = 0;
                 GlobalSearchResultArchives = [];
                 GlobalSearchResult3Shape = [];
+                return;
             }
+
+            ScheduleGlobalSearch(GlobalSearchSource.Tabs);
         }
     }
 
@@ -3595,6 +3599,7 @@ public partial class MainViewModel : ObservableObject
     #endregion Folder Subscription RelayCommands
 
     public RelayCommand GsItemClickedCommand { get; set; }
+    public RelayCommand GsOpenOrderInfoCommand { get; set; }
 
     public RelayCommand BlinkWindowCommand { get; set; }
     public RelayCommand RunNotificationProgressCommand { get; set; }
@@ -3659,6 +3664,17 @@ public partial class MainViewModel : ObservableObject
     private readonly DispatcherTimer LabnextPanLookupTimer = new();
     private readonly DispatcherTimer LabnextLoadingHiderTimer = new();
     private readonly DispatcherTimer LabnextKeepAliveTimer = new();
+    private readonly DispatcherTimer _globalSearchDebounceTimer = new();
+    private bool _restartGlobalSearchAfterCancel;
+    private string _lastGlobalSearchKeywordStarted = "";
+    private GlobalSearchSource _pendingGlobalSearchSource = GlobalSearchSource.Tabs;
+    private GlobalSearchSource _activeGlobalSearchSource = GlobalSearchSource.Tabs;
+
+    private enum GlobalSearchSource
+    {
+        Tabs,
+        Home
+    }
 
     private static readonly BackgroundWorker bwZippingOrderArchives = new();
     private static readonly BackgroundWorker bwListCasesGlobal = new();
@@ -3719,6 +3735,9 @@ public partial class MainViewModel : ObservableObject
         UpdateCheckTimer.Tick += UpdateCheckTimer_Tick;
         UpdateCheckTimer.Interval = new TimeSpan(0, 0, 6);
         UpdateCheckTimer.Start();
+
+        _globalSearchDebounceTimer.Tick += GlobalSearchDebounceTimer_Tick;
+        _globalSearchDebounceTimer.Interval = TimeSpan.FromMilliseconds(200);
 
         int thisYear = DateTime.Now.Year;
         FilterYearItems.Add("All time");
@@ -3899,6 +3918,7 @@ public partial class MainViewModel : ObservableObject
         #endregion Folder Subscription RelayCommands
 
         GsItemClickedCommand = new RelayCommand(o => GsItemClicked(o));
+        GsOpenOrderInfoCommand = new RelayCommand(o => GsOpenOrderInfo(o));
         LabnextIdClickedCommand = new RelayCommand(o => LabnextIdClicked(o));
 
         InconsistencyItemClickedCommand = new RelayCommand(o => InconsistencyItemClicked(o));
@@ -3980,7 +4000,7 @@ public partial class MainViewModel : ObservableObject
         bwListArchivesCases.WorkerSupportsCancellation = true;
 
         bwListCasesGlobal.DoWork += ListCasesGlobal_DoWork;
-        bwListCasesGlobal.RunWorkerCompleted += ZippingOrderArchives_RunWorkerCompleted;
+        bwListCasesGlobal.RunWorkerCompleted += ListCasesGlobal_RunWorkerCompleted;
         bwListCasesGlobal.WorkerSupportsCancellation = true;
 
         bwListCasesForPaymentIssueMatching.DoWork += ListCasesForPaymentIssueMatching_DoWork;
@@ -7286,6 +7306,15 @@ public partial class MainViewModel : ObservableObject
         GlobalSearchResult.Clear();
     }
 
+    public void GsOpenOrderInfo(object obj)
+    {
+        if (obj is null)
+            return;
+
+        ItemClicked(obj);
+        OpenUpOrderInfoWindow();
+    }
+
     public void LabnextIdClicked(object obj)
     {
         if (obj is null)
@@ -7380,11 +7409,35 @@ public partial class MainViewModel : ObservableObject
 
     public async void OpenUpRenameOrderWindow()
     {
-        OrderRenameWindow orderRenameWindow = new(ThreeShapeObject!)
+        await OpenUpRenameOrderWindowInternalAsync(ThreeShapeObject!, _MainWindow);
+    }
+
+    public async Task<bool> OpenUpRenameOrderWindowFromOrderInfo(ThreeShapeOrdersModel model, Window owner)
+    {
+        string beforeOrderId = model.IntOrderID ?? string.Empty;
+        await OpenUpRenameOrderWindowInternalAsync(model, owner);
+        // OrderRenameViewModel updates its OrderID textbox, but it does not mutate the model's IntOrderID.
+        // Use the VM value as the source of truth for the new name.
+        string afterOrderId = OrderRenameViewModel.Instance.OrderID ?? beforeOrderId;
+        return !string.Equals(beforeOrderId, afterOrderId, StringComparison.Ordinal);
+    }
+
+    private async Task OpenUpRenameOrderWindowInternalAsync(ThreeShapeOrdersModel model, Window owner)
+    {
+        if (model is null || string.IsNullOrWhiteSpace(model.IntOrderID))
+            return;
+
+        ThreeShapeObject = model;
+
+        // Unload embedded DCM viewer before rename dialog so 3Shape folder is not locked.
+        // Disabled: user prefers keeping models visible while editing the new name in the dialog.
+        // await OrderInfoWindow.ReleaseLocksIfViewingOrderAsync(model.IntOrderID);
+
+        OrderRenameWindow orderRenameWindow = new(model)
         {
-            Owner = _MainWindow
+            Owner = owner
         };
-        await LockOrderIn3Shape(ThreeShapeObject!.IntOrderID!);
+        await LockOrderIn3Shape(model.IntOrderID);
         orderRenameWindow.ShowDialog();
         ListUpdateTimer_Tick(null, null);
     }
@@ -7857,50 +7910,105 @@ public partial class MainViewModel : ObservableObject
 
 
 
-    private async void SearchFieldKeyDownOnTabs()
+    private void SearchFieldKeyDownOnTabs()
     {
-        if (SearchString.Length > 1)
-        {
-            ListUpdateable = true;
-            BuildingUpDates();
-            if (bwListCasesGlobal.IsBusy != true)
-            {
-                bwListCasesGlobal.RunWorkerAsync(new SearchData
-                {
-                    FilterInUse = false,
-                    KeyWordOrFilter = SearchString
-                });
-            }
-            else
-            {
-                bwListCasesGlobal.CancelAsync();
-            }
-        }
-        else
-            GlobalSearchResult.Clear();
+        ScheduleGlobalSearch(GlobalSearchSource.Tabs);
     }
 
-    private async void SearchFieldKeyDownOnHome()
+    private void SearchFieldKeyDownOnHome()
     {
-        if (SearchStringGlobal.Length > 1)
+        ScheduleGlobalSearch(GlobalSearchSource.Home);
+    }
+
+    private void ScheduleGlobalSearch(GlobalSearchSource source)
+    {
+        _pendingGlobalSearchSource = source;
+        _globalSearchDebounceTimer.Stop();
+        _globalSearchDebounceTimer.Start();
+    }
+
+    private void GlobalSearchDebounceTimer_Tick(object? sender, EventArgs e)
+    {
+        _globalSearchDebounceTimer.Stop();
+
+        var keyword = _pendingGlobalSearchSource == GlobalSearchSource.Home
+            ? SearchStringGlobal
+            : SearchString;
+
+        keyword = keyword?.Trim() ?? string.Empty;
+        if (keyword.Length < 2)
         {
-            ListUpdateable = true;
-            BuildingUpDates();
-            if (bwListCasesGlobal.IsBusy != true)
-            {
-                bwListCasesGlobal.RunWorkerAsync(new SearchData
-                {
-                    FilterInUse = false,
-                    KeyWordOrFilter = SearchStringGlobal
-                });
-            }
-            else
-            {
-                bwListCasesGlobal.CancelAsync();
-            }
-        }
-        else
             GlobalSearchResult.Clear();
+            GlobalSearchResultArchives = [];
+            GlobalSearchResult3Shape = [];
+            return;
+        }
+
+        TryStartGlobalSearch(keyword);
+    }
+
+    private void TryStartGlobalSearch(string keyword)
+    {
+        keyword = keyword.Trim();
+        if (keyword.Length < 2)
+        {
+            GlobalSearchResult.Clear();
+            GlobalSearchResultArchives = [];
+            GlobalSearchResult3Shape = [];
+            return;
+        }
+
+        _lastGlobalSearchKeywordStarted = keyword;
+        _activeGlobalSearchSource = _pendingGlobalSearchSource;
+        ListUpdateable = true;
+        BuildingUpDates();
+
+        var searchData = new SearchData
+        {
+            FilterInUse = false,
+            KeyWordOrFilter = keyword
+        };
+
+        if (bwListCasesGlobal.IsBusy)
+        {
+            _restartGlobalSearchAfterCancel = true;
+            bwListCasesGlobal.CancelAsync();
+            return;
+        }
+
+        _restartGlobalSearchAfterCancel = false;
+        bwListCasesGlobal.RunWorkerAsync(searchData);
+    }
+
+    private void ListCasesGlobal_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+    {
+        if (_restartGlobalSearchAfterCancel || e.Cancelled)
+        {
+            _restartGlobalSearchAfterCancel = false;
+
+            var keyword = _pendingGlobalSearchSource == GlobalSearchSource.Home
+                ? SearchStringGlobal
+                : SearchString;
+            keyword = keyword?.Trim() ?? string.Empty;
+
+            if (keyword.Length > 1)
+            {
+                TryStartGlobalSearch(keyword);
+            }
+
+            return;
+        }
+
+        var current = _activeGlobalSearchSource == GlobalSearchSource.Home
+            ? SearchStringGlobal
+            : SearchString;
+        current = current?.Trim() ?? string.Empty;
+
+        if (current.Length > 1 &&
+            !string.Equals(current, _lastGlobalSearchKeywordStarted, StringComparison.OrdinalIgnoreCase))
+        {
+            ScheduleGlobalSearch(_activeGlobalSearchSource);
+        }
     }
 
     private void SearchFieldEnterKeyDownOnHome()
@@ -8551,7 +8659,10 @@ public partial class MainViewModel : ObservableObject
 
     private async void ListCasesGlobal_DoWork(object? sender, DoWorkEventArgs e)
     {
-        if (SearchString.Length < 2)
+        var data = (SearchData)e.Argument!;
+        string keyword = data.KeyWordOrFilter?.Trim() ?? string.Empty;
+
+        if (keyword.Length < 2)
         {
             ClearAllSearchCriteria();
             GlobalSearchResultArchives = [];
@@ -8577,8 +8688,6 @@ public partial class MainViewModel : ObservableObject
         }));
 
         ThreeShapeServerIsDown = false;
-        var data = (SearchData)e.Argument!;
-        string keyword = data.KeyWordOrFilter!;
         string queryString = "";
         int id = 0;
         int idA = 0;
@@ -8940,7 +9049,10 @@ public partial class MainViewModel : ObservableObject
                                  ReasonIsDead,
                                  Registered,
                                  BaseFolder,
-                                 XMLFile
+                                 XMLFile,
+                                 ProcessStatusID,
+                                 ProcessLockID,
+                                 ScanSource
                              FROM Archives
                              WHERE {searchQueryStr}
                              Order by CreateDate DESC
@@ -8998,7 +9110,10 @@ public partial class MainViewModel : ObservableObject
 
                 string unitsFromItems = $"#{RemoveAllButUnitNumbers(reader["Items"].ToString()!)}";
 
-
+                string archiveIcon = GetListViewIconResourcePath(
+                    reader["ProcessStatusID"].ToString(),
+                    reader["ScanSource"].ToString(),
+                    reader["ProcessLockID"].ToString());
 
                 listArchives.Add(new GlobalSearchModel
                 {
@@ -9013,7 +9128,7 @@ public partial class MainViewModel : ObservableObject
                     CreateDateLong = createDateLong,
                     CreateYear = createYear,
                     Designer = reader["DesignerName"].ToString()!,
-                    Icon = "/Images/Other/archives.png",
+                    Icon = archiveIcon,
                     Background = "LightYellow",
                     Source = "Archives",
                     ReasonIsDead = reader["ReasonIsDead"].ToString()!,
@@ -9029,6 +9144,19 @@ public partial class MainViewModel : ObservableObject
         {
         }
 
+
+        if (bwListCasesGlobal.CancellationPending)
+        {
+            return;
+        }
+
+        var currentKeyword = _activeGlobalSearchSource == GlobalSearchSource.Home
+            ? SearchStringGlobal
+            : SearchString;
+        if (!string.Equals(currentKeyword?.Trim() ?? string.Empty, keyword, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
 
         GlobalSearchResultArchives = listArchives;
         GlobalSearchResult3Shape = list3Shape;
@@ -10193,14 +10321,11 @@ public partial class MainViewModel : ObservableObject
                     if (reader["ModelHeight"].ToString() != "0" && string.IsNullOrEmpty(reader["OriginalOrderID"].ToString()))
                         IsCaseWereDesigned = true;
 
-                    bool canBeRenamed = false;
-                    if (((MaxProcessStatusID == "psCreated" && !IsCaseWereDesigned) ||
-                         (MaxProcessStatusID == "psScanned" && !IsCaseWereDesigned) ||
-                         (MaxProcessStatusID == "psModelled" && !string.IsNullOrEmpty(reader["OriginalOrderID"].ToString()))) &&
-                         !IsLocked && !IsCheckedOut && isTheFilesAccessible)
-                    {
-                        canBeRenamed = true;
-                    }
+                    bool canBeRenamed = ThreeShapeOrderRenameHelper.CanRenameOrder(
+                        MaxProcessStatusID,
+                        IsLocked,
+                        IsCheckedOut,
+                        isTheFilesAccessible);
 
 
                     if (MaxProcessStatusID != "psModelled"

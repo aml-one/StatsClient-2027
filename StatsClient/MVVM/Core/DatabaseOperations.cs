@@ -3419,6 +3419,17 @@ public partial class DatabaseOperations
 
 
 
+    /// <summary>
+    /// WPF pack URI for a list/status icon (same logic as OrderInfoWindow and 3Shape order lists).
+    /// </summary>
+    public static string GetListViewIconResourcePath(string? processStatusId, string? scanSource, string? processLockId)
+    {
+        string processStatus = string.IsNullOrWhiteSpace(processStatusId) ? "psClosed" : processStatusId;
+        string processLock = string.IsNullOrWhiteSpace(processLockId) ? "plReady" : processLockId;
+        string scan = string.IsNullOrWhiteSpace(scanSource) ? "ssUnknown" : scanSource;
+        return $"/Images/ListViewIcons/{IconSelect(processStatus, scan, processLock)}.png";
+    }
+
     public static string IconSelect(string processStatusID, string scanSource, string processLockID)
     {
 

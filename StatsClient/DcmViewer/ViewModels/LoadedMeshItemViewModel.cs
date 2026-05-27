@@ -1,11 +1,11 @@
 using System.ComponentModel;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using DCMViewer.Services;
+using HelixToolkit.SharpDX;
+using HelixToolkit.Wpf.SharpDX;
 
 namespace DCMViewer.ViewModels;
 
@@ -19,34 +19,37 @@ public enum MeshCategory
 
 public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
 {
-    // Convention for _opacityBrushes: [0] = front diffuse, [1] = back diffuse, [2] = front specular.
-    private readonly IReadOnlyList<SolidColorBrush> _opacityBrushes;
-    private readonly IReadOnlyList<SolidColorBrush> _specularBrushes;
-    private Color[] _baseSpecularColors;
+    /// <summary>Opacity at or above this value uses the opaque render pass.</summary>
+    public const double OpaqueOpacityThreshold = 0.999;
+
+    private MaterialPalette _palette;
+    private double _specularIntensity = 1.0;
+    private double _specularShininess = 90.0;
     private double _opacity = 1.0;
     private bool _isVisible = true;
 
     public LoadedMeshItemViewModel(
         string filePath,
-        Model3D model,
-        IEnumerable<SolidColorBrush> opacityBrushes,
-        IEnumerable<SolidColorBrush>? specularBrushes,
+        MeshGeometryModel3D model,
+        MeshSnapshot meshSnapshot,
+        MaterialPalette palette,
         Rect3D bounds,
         int vertexCount,
         int triangleCount,
         bool isEncrypted = false,
         bool isPackageLocked = false,
         MeshCategory category = MeshCategory.Model,
+        ScanLayerArch scanArch = ScanLayerArch.None,
         bool isLoadFailed = false,
         string? loadError = null,
         string? appliedTextureName = null)
     {
         FilePath = filePath;
         DisplayName = Path.GetFileName(filePath);
+        ScanArch = scanArch;
         Model = model;
-        _opacityBrushes = opacityBrushes.ToArray();
-        _specularBrushes = specularBrushes?.ToArray() ?? Array.Empty<SolidColorBrush>();
-        _baseSpecularColors = _specularBrushes.Select(brush => brush.Color).ToArray();
+        MeshSnapshot = meshSnapshot;
+        _palette = palette;
         Bounds = bounds;
         VertexCount = vertexCount;
         TriangleCount = triangleCount;
@@ -56,7 +59,7 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
         IsLoadFailed = isLoadFailed;
         LoadError = loadError;
         AppliedTextureName = appliedTextureName;
-        ApplyOpacity();
+        ApplyMaterial();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -65,9 +68,9 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
 
     public string DisplayName { get; }
 
-    public Model3D Model { get; }
+    public MeshGeometryModel3D Model { get; }
 
-    public MeshGeometry3D? MeshGeometry => (Model as GeometryModel3D)?.Geometry as MeshGeometry3D;
+    public MeshSnapshot? MeshSnapshot { get; }
 
     public Rect3D Bounds { get; }
 
@@ -80,6 +83,8 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
     public bool IsPackageLocked { get; }
 
     public MeshCategory Category { get; }
+
+    public ScanLayerArch ScanArch { get; }
 
     public string SliderKnobIconPath => Category switch
     {
@@ -95,7 +100,6 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
         && !IsLoadFailed
         && !IsPackageLocked;
 
-    /// <summary>Name of the texture/material from <see cref="MaterialLibrary"/> currently applied to this mesh.</summary>
     public string? AppliedTextureName { get; private set; }
 
     public bool IsLoadFailed { get; }
@@ -116,7 +120,7 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
             }
 
             _opacity = clampedValue;
-            ApplyOpacity();
+            ApplyRenderState();
             OnPropertyChanged();
         }
     }
@@ -137,57 +141,82 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
             }
 
             _isVisible = value;
+            ApplyRenderState();
             OnPropertyChanged();
         }
     }
 
     public void SetSpecularIntensity(double intensity)
     {
-        var clampedIntensity = Math.Clamp(intensity, 0.0, 1.0);
-
-        for (var i = 0; i < _specularBrushes.Count; i++)
-        {
-            var baseColor = _baseSpecularColors[i];
-            _specularBrushes[i].Color = Color.FromRgb(
-                ScaleComponent(baseColor.R, clampedIntensity),
-                ScaleComponent(baseColor.G, clampedIntensity),
-                ScaleComponent(baseColor.B, clampedIntensity));
-        }
+        _specularIntensity = Math.Clamp(intensity, 0.0, 1.0);
+        ApplyMaterial();
     }
 
-    /// <summary>
-    /// Replaces the diffuse and specular colors of this mesh with those from
-    /// <paramref name="palette"/>.  Call <see cref="SetSpecularIntensity"/> afterwards
-    /// to re-apply the current finish level.
-    /// </summary>
+    public void SetSpecularShininess(double shininess)
+    {
+        _specularShininess = Math.Clamp(shininess, 1.0, 200.0);
+        ApplyMaterial();
+    }
+
     public void SetMaterialPalette(MaterialPalette palette, string? textureName = null)
     {
-        if (_opacityBrushes.Count >= 1) _opacityBrushes[0].Color = palette.FrontDiffuse;
-        if (_opacityBrushes.Count >= 2) _opacityBrushes[1].Color = palette.BackDiffuse;
-        if (_opacityBrushes.Count >= 3) _opacityBrushes[2].Color = palette.FrontSpecular;
-
-        // Reset specular base colors so intensity scaling uses the new values.
-        for (var i = 0; i < _baseSpecularColors.Length; i++)
-        {
-            if (i < _specularBrushes.Count)
-                _baseSpecularColors[i] = _specularBrushes[i].Color;
-        }
-
+        _palette = palette;
         AppliedTextureName = textureName;
+        ApplyMaterial();
     }
 
-    private void ApplyOpacity()
+    public void ApplySectionPlane(Point3D planePoint, Vector3D planeNormal, bool enabled)
     {
-        foreach (var brush in _opacityBrushes)
+        // 2D cross-section uses SectionGeometryService; 3D viewport meshes are not plane-clipped.
+    }
+
+    public void ApplyRenderState()
+    {
+        ApplyMaterial();
+        Model.Visibility = _isVisible ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+        Model.RenderOrder = GetRenderOrder();
+    }
+
+    private int GetRenderOrder()
+    {
+        var order = Category switch
         {
-            brush.Opacity = _opacity;
+            MeshCategory.Scan => 0,
+            MeshCategory.Model => 100,
+            MeshCategory.Abutment => 200,
+            MeshCategory.Restoration => 300,
+            _ => 400
+        };
+
+        if (_opacity < OpaqueOpacityThreshold)
+        {
+            order += 50;
         }
+
+        return order;
     }
 
-    private static byte ScaleComponent(byte component, double intensity)
+    private void ApplyMaterial()
     {
-        var scaled = (int)Math.Round(component * intensity);
-        return (byte)Math.Clamp(scaled, 0, 255);
+        var frontDiffuse = _palette.FrontDiffuse.ToColor4(_opacity);
+        var backDiffuse = _palette.BackDiffuse.ToColor4(_opacity);
+        var specularIntensity = Math.Clamp(_specularIntensity * _palette.SpecularIntensityScale, 0.0, 1.0);
+        var specular = _palette.FrontSpecular.ToColor4(specularIntensity);
+        var shininess = _palette.SpecularShininessOverride > 0
+            ? _palette.SpecularShininessOverride
+            : _specularShininess;
+
+        Model.Material = new PhongMaterial
+        {
+            AmbientColor = frontDiffuse * (float)_palette.AmbientScale,
+            DiffuseColor = frontDiffuse,
+            SpecularColor = specular,
+            SpecularShininess = (float)shininess,
+            EmissiveColor = backDiffuse * (float)_palette.EmissiveScale
+        };
+
+        Model.IsTransparent = _opacity < OpaqueOpacityThreshold;
+        Model.CullMode = SharpDX.Direct3D11.CullMode.None;
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -199,20 +228,27 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
         string filePath,
         string error,
         MeshCategory category = MeshCategory.Model,
+        ScanLayerArch scanArch = ScanLayerArch.None,
         bool isPackageLocked = false,
         bool isEncrypted = false)
     {
+        var placeholder = new MeshGeometryModel3D
+        {
+            Visibility = System.Windows.Visibility.Collapsed
+        };
+
         return new LoadedMeshItemViewModel(
             filePath,
-            new Model3DGroup(),
-            Array.Empty<SolidColorBrush>(),
-            Array.Empty<SolidColorBrush>(),
+            placeholder,
+            new MeshSnapshot(Array.Empty<Point3D>(), Array.Empty<int>()),
+            MaterialLibrary.Get(MaterialLibrary.DefaultName),
             Rect3D.Empty,
             0,
             0,
             isEncrypted: isEncrypted,
             isPackageLocked: isPackageLocked,
             category: category,
+            scanArch: scanArch,
             isLoadFailed: true,
             loadError: error)
         {

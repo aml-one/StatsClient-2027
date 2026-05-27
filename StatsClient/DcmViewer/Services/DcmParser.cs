@@ -7,7 +7,6 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Xml;
 using System.Xml.Linq;
-using HelixToolkit.Wpf;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
 
@@ -21,7 +20,7 @@ public enum CoordinateDecodingMode
 }
 
 public sealed record ParsedMeshData(
-    MeshGeometry3D Mesh,
+    MeshSnapshot Mesh,
     Rect3D Bounds,
     int VertexCount,
     int TriangleCount,
@@ -41,7 +40,8 @@ public sealed class DcmParser
     public ParsedMeshData ParseFile(
         string filePath,
         CoordinateDecodingMode mode = CoordinateDecodingMode.Auto,
-        bool allowThreeShapeFallback = true)
+        bool allowThreeShapeFallback = true,
+        bool applySceneTransform = true)
     {
         if (!File.Exists(filePath))
         {
@@ -334,24 +334,22 @@ public sealed class DcmParser
             throw new InvalidDataException("No supported mesh payload was found. Expected 3Shape geometry nodes with decryptable <Vertices> data and decodable <Facets> data.");
         }
 
-        TryApplyBestCoordinateTransform(filePath, positions);
-
-        var mesh = new MeshGeometry3D
+        if (applySceneTransform)
         {
-            Positions = new Point3DCollection(positions),
-            TriangleIndices = new Int32Collection(triangleIndices)
-        };
+            ApplyThreeShapeSceneTransforms(filePath, positions);
+        }
+
+        DcmParserSanitizer.TrySanitizeMeshConnectivity(positions, triangleIndices);
 
         PointCollection? textureCoordinates = null;
         byte[]? textureImageBytes = null;
 
-        mesh.Freeze();
-
+        var meshSnapshot = MeshSnapshot.FromLists(positions, triangleIndices);
         var triangleCount = triangleIndices.Count / 3;
         return new ParsedMeshData(
-            mesh,
-            mesh.Bounds,
-            mesh.Positions.Count,
+            meshSnapshot,
+            meshSnapshot.Bounds,
+            meshSnapshot.VertexCount,
             triangleCount,
             new Dictionary<string, string>(metadata.Properties, StringComparer.OrdinalIgnoreCase),
             isEncrypted,
@@ -372,17 +370,12 @@ public sealed class DcmParser
                 throw new InvalidDataException("STL file contains no geometry.");
             }
 
-            var mesh = new MeshGeometry3D
-            {
-                Positions = new Point3DCollection(positions),
-                TriangleIndices = new Int32Collection(triangleIndices)
-            };
-            mesh.Freeze();
+            var meshSnapshot = MeshSnapshot.FromLists(positions, triangleIndices);
 
             return new ParsedMeshData(
-                mesh,
-                mesh.Bounds,
-                mesh.Positions.Count,
+                meshSnapshot,
+                meshSnapshot.Bounds,
+                meshSnapshot.VertexCount,
                 triangleIndices.Count / 3,
                 new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                 IsEncrypted: false,
@@ -2104,6 +2097,50 @@ public sealed class DcmParser
         return maxAbs;
     }
 
+    internal static IReadOnlyList<string> DescribeFacetDecodeCandidates(
+        byte[] rawData,
+        int expectedFaceCount,
+        int vertexCount,
+        IReadOnlyList<Point3D> vertices)
+    {
+        var paramSets = new (bool use32, int ivp, bool highNib)[]
+        {
+            (false, 0, false), (false, 1, false), (true, 0, false), (true, 1, false),
+            (false, 0, true), (false, 1, true), (true, 0, true), (true, 1, true)
+        };
+
+        var lines = new List<string>();
+        foreach (var p in paramSets)
+        {
+            var normalized = NormalizeFacetIndices(
+                InterpretFacetsBuffer(rawData, expectedFaceCount, p.use32, p.ivp, p.highNib),
+                vertexCount);
+            var score = ScoreFacetDecode(normalized, expectedFaceCount, vertexCount);
+            var penalty = ScoreFacetGeometryPenalty(normalized, vertices);
+            var needleRatio = DcmParserSanitizer.ComputeNeedleTriangleRatio(
+                vertices,
+                BuildIndicesFromTriangles(normalized));
+
+            lines.Add(
+                $"  use32={p.use32}, ivp={p.ivp}, highNib={p.highNib} -> tris={normalized.Count:N0}, delta={score.ExpectedDelta}, penalty={penalty:F1}, needles={needleRatio:P1}");
+        }
+
+        return lines;
+    }
+
+    private static List<int> BuildIndicesFromTriangles(List<Triangle> triangles)
+    {
+        var indices = new List<int>(triangles.Count * 3);
+        foreach (var triangle in triangles)
+        {
+            indices.Add(triangle.V0);
+            indices.Add(triangle.V1);
+            indices.Add(triangle.V2);
+        }
+
+        return indices;
+    }
+
     private static List<Triangle> DecodeFacets(
         byte[] rawData,
         int expectedFaceCount,
@@ -2118,9 +2155,12 @@ public sealed class DcmParser
         var candidates = System.Array.ConvertAll(paramSets, p =>
             InterpretFacetsBuffer(rawData, expectedFaceCount, p.use32, p.ivp, p.highNib));
 
+        var allowedExpectedDelta = Math.Max(50, (int)(expectedFaceCount * 0.001));
         var bestScore = FacetDecodeScore.Worst;
         var bestGeometryPenalty = double.PositiveInfinity;
         List<Triangle>? best = null;
+        List<Triangle>? bestScoreOnly = null;
+        var bestScoreOnlyValue = FacetDecodeScore.Worst;
 
         for (var ci = 0; ci < candidates.Length; ci++)
         {
@@ -2128,10 +2168,21 @@ public sealed class DcmParser
             var score = ScoreFacetDecode(normalized, expectedFaceCount, vertexCount);
             var geometryPenalty = vertices is { Count: > 0 }
                 ? ScoreFacetGeometryPenalty(normalized, vertices)
-                : 0.0;
+                : double.PositiveInfinity;
 
-            if (score.CompareTo(bestScore) < 0 ||
-                (score.CompareTo(bestScore) == 0 && geometryPenalty < bestGeometryPenalty))
+            if (score.CompareTo(bestScoreOnlyValue) < 0)
+            {
+                bestScoreOnlyValue = score;
+                bestScoreOnly = normalized;
+            }
+
+            if (score.ExpectedDelta > allowedExpectedDelta)
+            {
+                continue;
+            }
+
+            if (geometryPenalty < bestGeometryPenalty - 0.001 ||
+                (Math.Abs(geometryPenalty - bestGeometryPenalty) <= 0.001 && score.CompareTo(bestScore) <= 0))
             {
                 bestScore = score;
                 bestGeometryPenalty = geometryPenalty;
@@ -2139,7 +2190,7 @@ public sealed class DcmParser
             }
         }
 
-        return best ?? new List<Triangle>();
+        return best ?? bestScoreOnly ?? new List<Triangle>();
     }
 
     private static double ScoreFacetGeometryPenalty(List<Triangle> triangles, IReadOnlyList<Point3D> vertices)
@@ -2205,7 +2256,38 @@ public sealed class DcmParser
 
         var longEdgeRatio = (double)longEdges / (considered * 3.0);
         var tinyAreaRatio = (double)tinyAreas / considered;
-        return (longEdgeRatio * 1000.0) + (tinyAreaRatio * 100.0);
+
+        var needleTriangles = 0;
+        for (var i = 0; i < triangles.Count; i += stride)
+        {
+            var triangle = triangles[i];
+            if (triangle.V0 < 0 || triangle.V1 < 0 || triangle.V2 < 0 ||
+                triangle.V0 >= vertices.Count || triangle.V1 >= vertices.Count || triangle.V2 >= vertices.Count)
+            {
+                continue;
+            }
+
+            var p0 = vertices[triangle.V0];
+            var p1 = vertices[triangle.V1];
+            var p2 = vertices[triangle.V2];
+            var e01 = (p0 - p1).Length;
+            var e12 = (p1 - p2).Length;
+            var e20 = (p2 - p0).Length;
+            var maxEdge = Math.Max(e01, Math.Max(e12, e20));
+            var area2 = Vector3D.CrossProduct(p1 - p0, p2 - p0).LengthSquared;
+            var minEdge = Math.Min(e01, Math.Min(e12, e20));
+            if (minEdge > 1e-6)
+            {
+                var aspectRatioSquared = (maxEdge * maxEdge) / area2;
+                if (aspectRatioSquared > 120.0 && maxEdge / minEdge > 12.0)
+                {
+                    needleTriangles++;
+                }
+            }
+        }
+
+        var needleRatio = (double)needleTriangles / Math.Max(1, sampleCount);
+        return (longEdgeRatio * 1000.0) + (tinyAreaRatio * 100.0) + (needleRatio * 2500.0);
     }
 
     private static List<Triangle> InterpretFacetsBuffer(byte[] rawData, int expectedFaceCount, bool use32BitPayload, int initialVertexPointer, bool useHighNibbleOpcodes)
@@ -2585,99 +2667,6 @@ public sealed class DcmParser
             triangleIndices.Add(baseIndex + i + 1);
             triangleIndices.Add(baseIndex + i + 2);
         }
-    }
-
-    private static void PruneBridgeTriangles(List<Point3D> positions, List<int> triangleIndices)
-    {
-        if (triangleIndices.Count < 9 || positions.Count == 0)
-        {
-            return;
-        }
-
-        var triangleCount = triangleIndices.Count / 3;
-        if (triangleCount < 10_000)
-        {
-            // Small/compact meshes are often legitimate closed components (e.g. abutments), so skip open-sheet cleanup.
-            return;
-        }
-
-        var maxEdgeLengths = new double[triangleCount];
-
-        for (var triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
-        {
-            var i0 = triangleIndices[(triangleIndex * 3) + 0];
-            var i1 = triangleIndices[(triangleIndex * 3) + 1];
-            var i2 = triangleIndices[(triangleIndex * 3) + 2];
-
-            if (i0 < 0 || i1 < 0 || i2 < 0 ||
-                i0 >= positions.Count || i1 >= positions.Count || i2 >= positions.Count)
-            {
-                maxEdgeLengths[triangleIndex] = double.PositiveInfinity;
-                continue;
-            }
-
-            var p0 = positions[i0];
-            var p1 = positions[i1];
-            var p2 = positions[i2];
-
-            var e01 = (p0 - p1).Length;
-            var e12 = (p1 - p2).Length;
-            var e20 = (p2 - p0).Length;
-            maxEdgeLengths[triangleIndex] = Math.Max(e01, Math.Max(e12, e20));
-        }
-
-        var sorted = (double[])maxEdgeLengths.Clone();
-        Array.Sort(sorted);
-        var median = sorted[sorted.Length / 2];
-        if (!double.IsFinite(median) || median <= 0)
-        {
-            return;
-        }
-
-        var bounds = ComputeBounds(positions);
-        if (bounds == Rect3D.Empty)
-        {
-            return;
-        }
-
-        var diagonal = Math.Sqrt((bounds.SizeX * bounds.SizeX) + (bounds.SizeY * bounds.SizeY) + (bounds.SizeZ * bounds.SizeZ));
-        if (!double.IsFinite(diagonal) || diagonal <= 0)
-        {
-            return;
-        }
-
-        // Keep filtering conservative: only remove triangles with edge spans that are implausibly large for local mesh tessellation.
-        var threshold = Math.Min(median * 25.0, diagonal * 0.45);
-        if (!double.IsFinite(threshold) || threshold <= 0)
-        {
-            return;
-        }
-
-        var rebuilt = new List<int>(triangleIndices.Count);
-        for (var triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
-        {
-            if (maxEdgeLengths[triangleIndex] <= threshold)
-            {
-                rebuilt.Add(triangleIndices[(triangleIndex * 3) + 0]);
-                rebuilt.Add(triangleIndices[(triangleIndex * 3) + 1]);
-                rebuilt.Add(triangleIndices[(triangleIndex * 3) + 2]);
-            }
-        }
-
-        if (rebuilt.Count == 0)
-        {
-            return;
-        }
-
-        var removedTriangleCount = triangleCount - (rebuilt.Count / 3);
-        // Ignore tiny/no-op changes so nominally clean files are left untouched.
-        if (removedTriangleCount <= 0)
-        {
-            return;
-        }
-
-        triangleIndices.Clear();
-        triangleIndices.AddRange(rebuilt);
     }
 
     private static Rect3D ComputeBounds(List<Point3D> positions)
@@ -3156,6 +3145,59 @@ public sealed class DcmParser
            ((value & 0x0000FF00U) << 8) |
            ((value & 0x000000FFU) << 24);
 
+    private static void ApplyThreeShapeSceneTransforms(string filePath, List<Point3D> positions)
+    {
+        if (positions.Count == 0)
+        {
+            return;
+        }
+
+        List<XDocument> documents;
+        try
+        {
+            documents = LoadDocumentHierarchy(filePath);
+        }
+        catch
+        {
+            return;
+        }
+
+        var transforms = new List<CoordinateTransform>();
+        foreach (var document in documents)
+        {
+            transforms.AddRange(ExtractCoordinateTransforms(document));
+        }
+
+        // Preop scans: prefer scored forward/inverse fit; fall back to root transform when no annotation hints exist.
+        if (PrepScanMaterialRules.IsPreopScan(filePath))
+        {
+            if (!TryApplyPreopCoordinateTransform(positions, documents) && transforms.Count > 0)
+            {
+                var transform = transforms[0];
+                for (var i = 0; i < positions.Count; i++)
+                {
+                    positions[i] = transform.Apply(positions[i]);
+                }
+            }
+
+            return;
+        }
+
+        if (transforms.Count > 0)
+        {
+            // Match 3Shape: apply the annotation transform from the primary (root) document.
+            var transform = transforms[0];
+            for (var i = 0; i < positions.Count; i++)
+            {
+                positions[i] = transform.Apply(positions[i]);
+            }
+
+            return;
+        }
+
+        TryApplyBestCoordinateTransform(filePath, positions, documents);
+    }
+
     private static void TryApplyBestCoordinateTransform(string filePath, List<Point3D> positions)
     {
         if (positions.Count == 0)
@@ -3173,6 +3215,69 @@ public sealed class DcmParser
             return;
         }
 
+        TryApplyBestCoordinateTransform(filePath, positions, documents);
+    }
+
+    /// <summary>
+    /// PrePreparationScan / GenericDoublePrepScan: always apply the best forward/inverse transform when
+    /// annotation hints exist (no score-improvement gate). Returns false when caller should use root transform.
+    /// </summary>
+    private static bool TryApplyPreopCoordinateTransform(List<Point3D> positions, List<XDocument> documents)
+    {
+        var commentOrigins = new List<Point3D>();
+        var transforms = new List<CoordinateTransform>();
+
+        foreach (var document in documents)
+        {
+            commentOrigins.AddRange(ExtractCommentOrigins(document));
+            transforms.AddRange(ExtractCoordinateTransforms(document));
+        }
+
+        if (transforms.Count == 0 || commentOrigins.Count == 0)
+        {
+            return false;
+        }
+
+        var baselineBounds = ComputeBounds(positions);
+        var baselineScore = ScoreBoundsAgainstPoints(baselineBounds, commentOrigins);
+
+        var bestTransform = transforms[0];
+        var bestInverse = false;
+        var bestScore = baselineScore;
+
+        foreach (var transform in transforms)
+        {
+            var forwardBounds = ComputeBounds(positions, transform, inverse: false);
+            var forwardScore = ScoreBoundsAgainstPoints(forwardBounds, commentOrigins);
+            if (forwardScore < bestScore)
+            {
+                bestScore = forwardScore;
+                bestTransform = transform;
+                bestInverse = false;
+            }
+
+            var inverseBounds = ComputeBounds(positions, transform, inverse: true);
+            var inverseScore = ScoreBoundsAgainstPoints(inverseBounds, commentOrigins);
+            if (inverseScore < bestScore)
+            {
+                bestScore = inverseScore;
+                bestTransform = transform;
+                bestInverse = true;
+            }
+        }
+
+        for (var i = 0; i < positions.Count; i++)
+        {
+            positions[i] = bestInverse
+                ? bestTransform.ApplyInverse(positions[i])
+                : bestTransform.Apply(positions[i]);
+        }
+
+        return true;
+    }
+
+    private static void TryApplyBestCoordinateTransform(string filePath, List<Point3D> positions, List<XDocument> documents)
+    {
         var commentOrigins = new List<Point3D>();
         var transforms = new List<CoordinateTransform>();
 

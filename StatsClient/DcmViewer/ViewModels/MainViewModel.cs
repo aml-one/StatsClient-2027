@@ -11,6 +11,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using DCMViewer.Infrastructure;
 using DCMViewer.Services;
+using HelixToolkit.SharpDX;
+using HelixToolkit.Wpf.SharpDX;
 using Microsoft.Win32;
 
 namespace DCMViewer.ViewModels;
@@ -20,10 +22,16 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private const double SatinSpecularIntensity = 1.0;
     private const double MatteSpecularIntensity = 0.35;
 
-    private static readonly Color AmbientLightColor = Color.FromRgb(26, 26, 26);
-    private static readonly Color KeyLightColor = Color.FromRgb(78, 78, 78);
-    private static readonly Color FillLightColor = Color.FromRgb(58, 58, 58);
-    private static readonly Color RimLightColor = Color.FromRgb(34, 34, 34);
+    private const double SatinSpecularShininess = 90.0;
+    private const double MatteSpecularShininess = 30.0;
+
+    private static readonly Color AmbientLightColor = Color.FromRgb(30, 30, 30);
+    private static readonly Color KeyLightColor = Color.FromRgb(92, 92, 92);
+    private static readonly Color FillLightColor = Color.FromRgb(72, 72, 72);
+    private static readonly Color RimLightColor = Color.FromRgb(46, 46, 46);
+
+    /// <summary>Weak opposite-side key to keep concave scan areas from going pure black.</summary>
+    private const double BackFillLightStrength = 0.275;
 
     private readonly DcmParser _parser;
     private readonly RelayCommand _openFileCommand;
@@ -33,14 +41,22 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly RelayCommand _toggleSectionModeCommand;
     private readonly RelayCommand _clearSectionMeasurementCommand;
     private readonly RelayCommand _toggleModelScanMaterialCommand;
+    private readonly RelayCommand _toggleRestorationGroupExpandedCommand;
+    private readonly RelayCommand _toggleAbutmentGroupExpandedCommand;
     private readonly ObservableCollection<LoadedMeshItemViewModel> _loadedFiles = new();
-    private readonly AmbientLight _ambientLight = new();
-    private readonly DirectionalLight _keyLight = new();
-    private readonly DirectionalLight _fillLight = new();
-    private readonly DirectionalLight _rimLight = new();
-    private readonly Model3DGroup _sharedLightRig;
+    private readonly ObservableCollection<LoadedMeshItemViewModel> _restorationGroupFiles = new();
+    private readonly ObservableCollection<LoadedMeshItemViewModel> _abutmentGroupFiles = new();
+    private readonly ObservableCollection<LoadedMeshItemViewModel> _upperScanFiles = new();
+    private readonly ObservableCollection<LoadedMeshItemViewModel> _lowerScanFiles = new();
+    private readonly ObservableCollection<LoadedMeshItemViewModel> _otherLoadedFiles = new();
+    private readonly AmbientLight3D _ambientLight = new();
+    private readonly DirectionalLight3D _keyLight = new();
+    private readonly DirectionalLight3D _fillLight = new();
+    private readonly DirectionalLight3D _rimLight = new();
+    private readonly DirectionalLight3D _backFillLight = new();
+    private readonly ObservableElement3DCollection _sceneItems = new();
+    private bool _lightsAdded;
 
-    private Model3DGroup _modelGroup = new();
     private Point3D _cameraPosition = new(0, 0, 500);
     private Vector3D _cameraLookDirection = new(0, 0, -500);
     private Vector3D _cameraUpDirection = new(0, 1, 0);
@@ -58,7 +74,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _abutmentGroupVisible = true;
     private double _restorationGroupOpacity = 1.0;
     private double _abutmentGroupOpacity = 1.0;
+    private bool _isRestorationGroupExpanded;
+    private bool _isAbutmentGroupExpanded;
     private bool _isExternalFileDropEnabled = true;
+    private bool _suppressAutomaticCameraFraming;
     private bool _useStoneForModelScans;
     private int _bulkVisualUpdateNesting;
     private bool _isVisualRefreshPending;
@@ -73,12 +92,25 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _toggleSectionModeCommand = new RelayCommand(ToggleSectionMode);
         _clearSectionMeasurementCommand = new RelayCommand(ClearSectionMeasurement);
         _toggleModelScanMaterialCommand = new RelayCommand(ToggleModelScanMaterial);
+        _toggleRestorationGroupExpandedCommand = new RelayCommand(ToggleRestorationGroupExpanded);
+        _toggleAbutmentGroupExpandedCommand = new RelayCommand(ToggleAbutmentGroupExpanded);
         _loadedFiles.CollectionChanged += LoadedFilesOnCollectionChanged;
 
-        _sharedLightRig = CreateSharedLightRig(_ambientLight, _keyLight, _fillLight, _rimLight);
+        EffectsManager = new DefaultEffectsManager();
+        InitializeLightRig();
         ApplyLightingStrength();
         UpdateLightRigFromCamera(_cameraLookDirection, _cameraUpDirection);
-        RebuildModelGroup();
+        RebuildSceneItems();
+    }
+
+    public IEffectsManager EffectsManager { get; }
+
+    public void DisposeEffectsManager()
+    {
+        if (EffectsManager is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -102,6 +134,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     /// </summary>
     public Dictionary<string, string> CategoryOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>Per-file arch assignment for scan/model layer list grouping (Upper/Lower).</summary>
+    public Dictionary<string, ScanLayerArch> ArchOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Enables or disables drag-and-drop loading of external files (.dcm/.stl/.xml).
     /// Set to false when hosting the viewer in apps that must block user file drops.
@@ -121,13 +156,48 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// When true, <see cref="FrameCameraToBounds"/> is skipped so the host can set zoom (e.g. Order Info 66%).
+    /// </summary>
+    public bool SuppressAutomaticCameraFraming
+    {
+        get => _suppressAutomaticCameraFraming;
+        set => _suppressAutomaticCameraFraming = value;
+    }
+
     public bool HasRestorationGroup => _loadedFiles.Any(item => !item.IsLoadFailed && item.Category == MeshCategory.Restoration);
 
     public bool HasAbutmentGroup => _loadedFiles.Any(item => !item.IsLoadFailed && item.Category == MeshCategory.Abutment);
 
+    public bool HasRestorationSection => _loadedFiles.Any(item => item.Category == MeshCategory.Restoration);
+
+    public bool HasAbutmentSection => _loadedFiles.Any(item => item.Category == MeshCategory.Abutment);
+
+    public bool ShowRestorationGroupHeader => RestorationGroupCount > 1;
+
+    public bool ShowAbutmentGroupHeader => AbutmentGroupCount > 1;
+
+    public bool ShowRestorationGroupExpander => RestorationGroupCount > 1;
+
+    public bool ShowAbutmentGroupExpander => AbutmentGroupCount > 1;
+
     public int RestorationGroupCount => _loadedFiles.Count(item => !item.IsLoadFailed && item.Category == MeshCategory.Restoration);
 
     public int AbutmentGroupCount => _loadedFiles.Count(item => !item.IsLoadFailed && item.Category == MeshCategory.Abutment);
+
+    public ObservableCollection<LoadedMeshItemViewModel> RestorationGroupFiles => _restorationGroupFiles;
+
+    public ObservableCollection<LoadedMeshItemViewModel> AbutmentGroupFiles => _abutmentGroupFiles;
+
+    public ObservableCollection<LoadedMeshItemViewModel> UpperScanFiles => _upperScanFiles;
+
+    public ObservableCollection<LoadedMeshItemViewModel> LowerScanFiles => _lowerScanFiles;
+
+    public ObservableCollection<LoadedMeshItemViewModel> OtherLoadedFiles => _otherLoadedFiles;
+
+    public bool HasUpperScanSection => _upperScanFiles.Count > 0;
+
+    public bool HasLowerScanSection => _lowerScanFiles.Count > 0;
 
     public bool RestorationGroupVisible
     {
@@ -226,6 +296,40 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public ICommand ToggleModelScanMaterialCommand => _toggleModelScanMaterialCommand;
 
+    public ICommand ToggleRestorationGroupExpandedCommand => _toggleRestorationGroupExpandedCommand;
+
+    public ICommand ToggleAbutmentGroupExpandedCommand => _toggleAbutmentGroupExpandedCommand;
+
+    public bool IsRestorationGroupExpanded
+    {
+        get => _isRestorationGroupExpanded;
+        private set
+        {
+            if (_isRestorationGroupExpanded == value)
+            {
+                return;
+            }
+
+            _isRestorationGroupExpanded = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsAbutmentGroupExpanded
+    {
+        get => _isAbutmentGroupExpanded;
+        private set
+        {
+            if (_isAbutmentGroupExpanded == value)
+            {
+                return;
+            }
+
+            _isAbutmentGroupExpanded = value;
+            OnPropertyChanged();
+        }
+    }
+
     public string ModelScanMaterialToggleTooltip => _useStoneForModelScans
         ? "Model scan material: Stone (click to switch to Model)"
         : "Model scan material: Model (click to switch to Stone)";
@@ -301,20 +405,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public ObservableCollection<LoadedMeshItemViewModel> LoadedFiles => _loadedFiles;
 
-    public Model3DGroup ModelGroup
-    {
-        get => _modelGroup;
-        private set
-        {
-            if (ReferenceEquals(_modelGroup, value))
-            {
-                return;
-            }
-
-            _modelGroup = value;
-            OnPropertyChanged();
-        }
-    }
+    public ObservableElement3DCollection SceneItems => _sceneItems;
 
     public Point3D CameraPosition
     {
@@ -432,6 +523,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _keyLight.Direction = look;
         _fillLight.Direction = NormalizeDirection(look + (up * 0.38) - (right * 0.26));
         _rimLight.Direction = NormalizeDirection(look - (up * 0.55) + (right * 0.33));
+        _backFillLight.Direction = NormalizeDirection(-look);
     }
 
     public async Task LoadFilesAsync(IEnumerable<string> filePaths, bool clearExisting)
@@ -485,44 +577,35 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 }
 
                 var fallbackCategory = ResolveMeshCategory(filePath, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+                var applySceneTransform = ShouldApplySceneTransform(fallbackCategory, filePath);
 
                 try
                 {
                     var decodeMode = ResolveCoordinateDecodingMode(filePath);
-                    var parsed = await Task.Run(() => _parser.ParseFile(filePath, decodeMode));
+                    var parsed = await Task.Run(() => _parser.ParseFile(filePath, decodeMode, applySceneTransform: applySceneTransform));
 
                     var category = ResolveMeshCategory(filePath, parsed.Properties);
                     var (palette, textureName) = ResolveMaterialPalette(filePath, parsed.Properties, category);
 
-                    var frontBrush = new SolidColorBrush(palette.FrontDiffuse);
-                    var backBrush = new SolidColorBrush(palette.BackDiffuse);
-                    var frontSpecularBrush = new SolidColorBrush(palette.FrontSpecular);
-
-                    var frontMaterial = new MaterialGroup();
-                    frontMaterial.Children.Add(new DiffuseMaterial(frontBrush));
-                    frontMaterial.Children.Add(new SpecularMaterial(frontSpecularBrush, 7));
-
-                    var backMaterial = new MaterialGroup();
-                    backMaterial.Children.Add(new DiffuseMaterial(backBrush));
-
-                    var geometryModel = new GeometryModel3D
+                    var geometry = SharpDxMeshFactory.CreateGeometry(parsed.Mesh);
+                    var meshModel = new MeshGeometryModel3D
                     {
-                        Geometry = parsed.Mesh,
-                        Material = frontMaterial,
-                        BackMaterial = backMaterial
+                        Geometry = geometry
                     };
 
+                    var scanArch = ResolveScanArch(filePath);
                     var loadedFile = new LoadedMeshItemViewModel(
                         filePath,
-                        geometryModel,
-                        new[] { frontBrush, backBrush, frontSpecularBrush },
-                        new[] { frontSpecularBrush },
+                        meshModel,
+                        parsed.Mesh,
+                        palette,
                         parsed.Bounds,
                         parsed.VertexCount,
                         parsed.TriangleCount,
                         parsed.IsEncrypted,
                         parsed.Properties.ContainsKey("PackageLockList"),
                         category,
+                        scanArch,
                         appliedTextureName: textureName);
 
                     if (loadedFile.Category == MeshCategory.Restoration)
@@ -537,6 +620,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     }
 
                     loadedFile.SetSpecularIntensity(GetSpecularIntensity());
+                    loadedFile.SetSpecularShininess(GetSpecularShininess());
                     loadedFile.PropertyChanged += LoadedFileOnPropertyChanged;
                     _loadedFiles.Add(loadedFile);
                     loadedNow++;
@@ -550,6 +634,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                         filePath,
                         ex.Message,
                         fallbackCategory,
+                        ResolveScanArch(filePath),
                         isPackageLocked: isPackageLocked,
                         isEncrypted: isPackageLocked);
                     _loadedFiles.Add(failedFile);
@@ -560,7 +645,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             LoadProgress = 1;
-            RebuildModelGroup();
+            RebuildSceneItems();
             FrameCameraToBounds(GetVisibleBounds());
 
             var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
@@ -608,7 +693,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             return false;
         }
 
-        RebuildModelGroup();
+        RebuildSceneItems();
         FrameCameraToBounds(GetVisibleBounds());
         var visibleFilesCount = _loadedFiles.Count(item => item.IsVisible);
         var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
@@ -630,10 +715,66 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void LoadedFilesOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        RebuildCategoryFileLists();
         _exportVisibleMeshesCommand.RaiseCanExecuteChanged();
         _exportSeparatedMeshesCommand.RaiseCanExecuteChanged();
+        NotifyCategoryGroupPropertiesChanged();
+    }
+
+    private void RebuildCategoryFileLists()
+    {
+        _restorationGroupFiles.Clear();
+        _abutmentGroupFiles.Clear();
+        _upperScanFiles.Clear();
+        _lowerScanFiles.Clear();
+        _otherLoadedFiles.Clear();
+
+        foreach (var item in _loadedFiles)
+        {
+            switch (item.Category)
+            {
+                case MeshCategory.Restoration:
+                    _restorationGroupFiles.Add(item);
+                    break;
+                case MeshCategory.Abutment:
+                    _abutmentGroupFiles.Add(item);
+                    break;
+                case MeshCategory.Scan:
+                case MeshCategory.Model:
+                    switch (item.ScanArch)
+                    {
+                        case ScanLayerArch.Upper:
+                            _upperScanFiles.Add(item);
+                            break;
+                        case ScanLayerArch.Lower:
+                            _lowerScanFiles.Add(item);
+                            break;
+                        default:
+                            _otherLoadedFiles.Add(item);
+                            break;
+                    }
+
+                    break;
+                default:
+                    _otherLoadedFiles.Add(item);
+                    break;
+            }
+        }
+
+        OnPropertyChanged(nameof(HasUpperScanSection));
+        OnPropertyChanged(nameof(HasLowerScanSection));
+    }
+
+    private void NotifyCategoryGroupPropertiesChanged()
+    {
         OnPropertyChanged(nameof(HasRestorationGroup));
         OnPropertyChanged(nameof(HasAbutmentGroup));
+        OnPropertyChanged(nameof(HasRestorationSection));
+        OnPropertyChanged(nameof(HasAbutmentSection));
+        OnPropertyChanged(nameof(ShowRestorationGroupHeader));
+        OnPropertyChanged(nameof(ShowAbutmentGroupHeader));
+        OnPropertyChanged(nameof(ShowRestorationGroupExpander));
+        OnPropertyChanged(nameof(ShowAbutmentGroupExpander));
         OnPropertyChanged(nameof(RestorationGroupCount));
         OnPropertyChanged(nameof(AbutmentGroupCount));
     }
@@ -655,17 +796,17 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private bool CanExportVisibleMeshes()
     {
-        return !IsBusy && _loadedFiles.Any(item => item.IsVisible && item.MeshGeometry is not null);
+        return !IsBusy && _loadedFiles.Any(item => item.IsVisible && item.MeshSnapshot is not null);
     }
 
     private async void ExportVisibleMeshes()
     {
         var exportableItems = _loadedFiles
-            .Where(item => item.IsVisible && item.MeshGeometry is not null)
+            .Where(item => item.IsVisible && item.MeshSnapshot is not null)
             .Select(item => new
             {
                 item.DisplayName,
-                Mesh = item.MeshGeometry!
+                Mesh = item.MeshSnapshot!
             })
             .ToList();
 
@@ -699,7 +840,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             StatusText = "Exporting merged STL...";
 
             var snapshots = exportableItems
-                .Select(item => MeshExportService.CreateSnapshot(item.Mesh))
+                .Select(item => item.Mesh)
                 .ToArray();
 
             await Task.Run(() => MeshExportService.Export(dialog.FileName, snapshots));
@@ -719,8 +860,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private async void ExportSeparatedMeshes()
     {
         var exportableItems = _loadedFiles
-            .Where(item => item.IsVisible && item.MeshGeometry is not null)
-            .Select(item => new MeshExportService.MeshExportItem(item.DisplayName, MeshExportService.CreateSnapshot(item.MeshGeometry!)))
+            .Where(item => item.IsVisible && item.MeshSnapshot is not null)
+            .Select(item => new MeshExportService.MeshExportItem(item.DisplayName, item.MeshSnapshot!))
             .ToList();
 
         if (exportableItems.Count == 0)
@@ -789,6 +930,26 @@ public sealed class MainViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ModelScanMaterialToggleTooltip));
     }
 
+    private void ToggleRestorationGroupExpanded()
+    {
+        if (!ShowRestorationGroupExpander)
+        {
+            return;
+        }
+
+        IsRestorationGroupExpanded = !IsRestorationGroupExpanded;
+    }
+
+    private void ToggleAbutmentGroupExpanded()
+    {
+        if (!ShowAbutmentGroupExpander)
+        {
+            return;
+        }
+
+        IsAbutmentGroupExpanded = !IsAbutmentGroupExpanded;
+    }
+
     public void RegisterSectionMeasurementPoint(Point point)
     {
         if (MeasureStartSection is null || MeasureEndSection is not null)
@@ -812,6 +973,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var scanPaletteName = _useStoneForModelScans ? "Stone" : "Model";
         var scanPalette = MaterialLibrary.Get(scanPaletteName);
         var intensity = GetSpecularIntensity();
+        var shininess = GetSpecularShininess();
 
         foreach (var loadedFile in _loadedFiles)
         {
@@ -820,55 +982,78 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 continue;
             }
 
-            if (ShouldUseEmaxForModelScanFile(loadedFile.FilePath))
+            if (PrepScanMaterialRules.IsPreopScan(loadedFile.FilePath))
             {
-                loadedFile.SetMaterialPalette(MaterialLibrary.Get("Emax"), "Emax");
+                loadedFile.SetMaterialPalette(MaterialLibrary.Get(PrepScanMaterialRules.TextureName), PrepScanMaterialRules.TextureName);
                 loadedFile.SetSpecularIntensity(intensity);
+                loadedFile.SetSpecularShininess(shininess);
                 continue;
             }
 
             loadedFile.SetMaterialPalette(scanPalette, scanPaletteName);
             loadedFile.SetSpecularIntensity(intensity);
+            loadedFile.SetSpecularShininess(shininess);
         }
     }
 
-    private void RebuildModelGroup()
+    private void RebuildSceneItems()
     {
-        var group = new Model3DGroup();
-        group.Children.Add(_sharedLightRig);
+        _sceneItems.Clear();
+        _lightsAdded = false;
+        EnsureLightsInScene();
+        UpdateLightRigFromCamera(_cameraLookDirection, _cameraUpDirection);
 
-        foreach (var item in _loadedFiles.Where(i => i.IsVisible && i.Opacity >= 0.999))
+        var meshes = _loadedFiles.Where(i => !i.IsLoadFailed).ToList();
+        foreach (var item in meshes)
         {
-            group.Children.Add(item.Model);
+            item.ApplyRenderState();
         }
 
-        // Draw transparent meshes last so opaque geometry remains visible underneath.
-        foreach (var item in _loadedFiles.Where(i => i.IsVisible && i.Opacity < 0.999))
+        foreach (var item in meshes
+                     .OrderBy(i => i.Model.RenderOrder)
+                     .ThenBy(i => i.DisplayName, StringComparer.OrdinalIgnoreCase))
         {
-            group.Children.Add(item.Model);
+            _sceneItems.Add(item.Model);
         }
 
-        ModelGroup = group;
+        OnPropertyChanged(nameof(SceneItems));
     }
 
-    private static Model3DGroup CreateSharedLightRig(
-        AmbientLight ambientLight,
-        DirectionalLight keyLight,
-        DirectionalLight fillLight,
-        DirectionalLight rimLight)
+    private void EnsureLightsInScene()
     {
-        var group = new Model3DGroup();
+        if (_lightsAdded)
+        {
+            return;
+        }
 
-        keyLight.Direction = NormalizeDirection(new Vector3D(0, 0, -1));
-        fillLight.Direction = NormalizeDirection(new Vector3D(-0.26, 0.38, -1));
-        rimLight.Direction = NormalizeDirection(new Vector3D(0.33, -0.55, -1));
+        _sceneItems.Add(_ambientLight);
+        _sceneItems.Add(_keyLight);
+        _sceneItems.Add(_fillLight);
+        _sceneItems.Add(_rimLight);
+        _sceneItems.Add(_backFillLight);
+        _lightsAdded = true;
+    }
 
-        group.Children.Add(ambientLight);
-        group.Children.Add(keyLight);
-        group.Children.Add(fillLight);
-        group.Children.Add(rimLight);
+    private void InitializeLightRig()
+    {
+        _keyLight.Direction = NormalizeDirection(new Vector3D(0, 0, -1));
+        _fillLight.Direction = NormalizeDirection(new Vector3D(-0.26, 0.38, -1));
+        _rimLight.Direction = NormalizeDirection(new Vector3D(0.33, -0.55, -1));
+        _backFillLight.Direction = NormalizeDirection(new Vector3D(0, 0, 1));
+    }
 
-        return group;
+    public void ApplySectionPlane(Point3D planePoint, Vector3D planeNormal, bool enabled)
+    {
+        // 2D cross-section uses SectionGeometryService; do not clip meshes in the 3D viewport.
+        if (enabled)
+        {
+            return;
+        }
+
+        foreach (var item in _loadedFiles.Where(i => i.IsVisible && !i.IsLoadFailed))
+        {
+            item.ApplySectionPlane(planePoint, planeNormal, false);
+        }
     }
 
     private static Vector3D NormalizeDirection(Vector3D direction)
@@ -888,34 +1073,39 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _keyLight.Color = ScaleColor(KeyLightColor, _lightingStrength);
         _fillLight.Color = ScaleColor(FillLightColor, _lightingStrength);
         _rimLight.Color = ScaleColor(RimLightColor, _lightingStrength);
+        _backFillLight.Color = ScaleColor(KeyLightColor, _lightingStrength * BackFillLightStrength);
     }
 
     private void ApplyFinishProfile()
     {
         var intensity = GetSpecularIntensity();
+        var shininess = GetSpecularShininess();
         foreach (var loadedFile in _loadedFiles)
         {
             loadedFile.SetSpecularIntensity(intensity);
+            loadedFile.SetSpecularShininess(shininess);
         }
     }
 
     private double GetSpecularIntensity() => _isMatteFinish ? MatteSpecularIntensity : SatinSpecularIntensity;
+
+    private double GetSpecularShininess() => _isMatteFinish ? MatteSpecularShininess : SatinSpecularShininess;
 
     private (MaterialPalette Palette, string TextureName) ResolveMaterialPalette(
         string filePath,
         IReadOnlyDictionary<string, string> properties,
         MeshCategory category)
     {
-        // 1. Explicit per-file override from the host application.
+        if (PrepScanMaterialRules.IsPreopScan(filePath))
+        {
+            return (MaterialLibrary.Get(PrepScanMaterialRules.TextureName), PrepScanMaterialRules.TextureName);
+        }
+
+        // Explicit per-file override from the host application (after prep-scan emax rule).
         if (TryGetHostOverride(TextureOverrides, filePath, out var overrideName) &&
             MaterialLibrary.Contains(overrideName))
         {
             return (MaterialLibrary.Get(overrideName), overrideName);
-        }
-
-        if (ShouldUseEmaxForModelScanFile(filePath))
-        {
-            return (MaterialLibrary.Get("Emax"), "Emax");
         }
 
         // 2. Category default: restorations should use Zirconia unless explicitly overridden.
@@ -945,6 +1135,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         var newPalette = MaterialLibrary.Get(newTexture);
         var intensity = GetSpecularIntensity();
+        var shininess = GetSpecularShininess();
         foreach (var loadedFile in _loadedFiles)
         {
             if (!TryGetHostOverride(TextureOverrides, loadedFile.FilePath, out _) &&
@@ -952,6 +1143,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             {
                 loadedFile.SetMaterialPalette(newPalette, newTexture);
                 loadedFile.SetSpecularIntensity(intensity);
+                loadedFile.SetSpecularShininess(shininess);
             }
         }
     }
@@ -967,6 +1159,22 @@ public sealed class MainViewModel : INotifyPropertyChanged
         // Without an explicit override, default to basic categories only.
         // Restoration/abutment grouping should be explicit via CategoryOverrides.
         return LooksLikeTexturedScan(properties) ? MeshCategory.Scan : MeshCategory.Model;
+    }
+
+    private ScanLayerArch ResolveScanArch(string filePath)
+    {
+        var fullPath = Path.GetFullPath(filePath);
+        if (ArchOverrides.TryGetValue(fullPath, out var arch) && arch != ScanLayerArch.None)
+        {
+            return arch;
+        }
+
+        if (ArchOverrides.TryGetValue(Path.GetFileName(filePath), out arch) && arch != ScanLayerArch.None)
+        {
+            return arch;
+        }
+
+        return ScanLayerArchResolver.Resolve(filePath);
     }
 
     private static bool TryGetHostOverride(IReadOnlyDictionary<string, string> overrides, string filePath, out string value)
@@ -1070,7 +1278,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private void RefreshVisualState()
     {
         _isVisualRefreshPending = false;
-        RebuildModelGroup();
+
+        foreach (var item in _loadedFiles.Where(i => !i.IsLoadFailed))
+        {
+            item.ApplyRenderState();
+        }
 
         var visibleFilesCount = _loadedFiles.Count(item => item.IsVisible);
         var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
@@ -1079,10 +1291,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         _exportVisibleMeshesCommand.RaiseCanExecuteChanged();
         _exportSeparatedMeshesCommand.RaiseCanExecuteChanged();
-        OnPropertyChanged(nameof(HasRestorationGroup));
-        OnPropertyChanged(nameof(HasAbutmentGroup));
-        OnPropertyChanged(nameof(RestorationGroupCount));
-        OnPropertyChanged(nameof(AbutmentGroupCount));
+        NotifyCategoryGroupPropertiesChanged();
     }
 
     private static bool LooksLikeToothFile(string filePath, IReadOnlyDictionary<string, string> properties)
@@ -1148,13 +1357,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         return false;
     }
 
-    private static bool ShouldUseEmaxForModelScanFile(string filePath)
-    {
-        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
-        return fileNameWithoutExtension.Contains("PrePreparationScan", StringComparison.OrdinalIgnoreCase)
-            || fileNameWithoutExtension.Contains("GenericDoublePrepScan", StringComparison.OrdinalIgnoreCase);
-    }
-
     private static bool IsToothClassificationKey(string key)
         => ContainsToken(key, "ToothElementType") ||
            ContainsToken(key, "elementtype") ||
@@ -1170,6 +1372,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         return CoordinateDecodingMode.Auto;
     }
+
+    /// <summary>
+    /// Designed restorations/abutments are already in the case frame; other scans use DCM annotation transforms.
+    /// </summary>
+    private static bool ShouldApplySceneTransform(MeshCategory category, string filePath)
+        => category is not MeshCategory.Restoration and not MeshCategory.Abutment;
 
     private static Brush? CreateTextureBrush(byte[]? textureImageBytes, IReadOnlyDictionary<string, string> properties)
     {
@@ -1237,7 +1445,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void FrameCameraToBounds(Rect3D bounds)
     {
-        if (bounds.IsEmpty)
+        if (_suppressAutomaticCameraFraming || bounds.IsEmpty)
         {
             return;
         }

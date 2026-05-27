@@ -1,12 +1,17 @@
 using System.Windows.Controls;
 using System.Windows;
 using System.ComponentModel;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
+using System.Windows.Threading;
+using DCMViewer.Services;
+using DCMViewer.ViewModels;
+using HelixToolkit.Wpf.SharpDX;
 using StatsClient.MVVM.Core;
 using System.IO;
-using HelixToolkit.Wpf;
+using System.Linq;
 
 namespace DCMViewer.Controls;
 
@@ -130,12 +135,22 @@ public partial class DcmViewerCanvasComponent : UserControl
     public DcmViewerCanvasComponent()
     {
         InitializeComponent();
+        Background = Brushes.Transparent;
+        ApplyViewportClearTransparency();
+        ConfigureViewportGestures();
         UpdateBackgroundBrush();
         UpdateWatermarkVisuals();
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         IsVisibleChanged += OnIsVisibleChanged;
+        DataContextChanged += OnViewerHostDataContextChanged;
     }
+
+    /// <summary>DCM viewer view model when hosted with <see cref="UseFullAppShell"/>.</summary>
+    public MainViewModel? ViewerViewModel => _embeddedWindow?.ViewModel;
+
+    /// <summary>True while the embedded viewer cross-section tool is active.</summary>
+    public bool IsSectionModeActive => ViewerViewModel?.IsSectionMode == true;
 
     /// <summary>
     /// Gets or sets the background gradient layout mode.
@@ -258,34 +273,29 @@ public partial class DcmViewerCanvasComponent : UserControl
     }
 
     /// <summary>
-    /// Gets the hosted Helix viewport for advanced host-side interaction.
+    /// Gets the hosted SharpDX viewport for advanced host-side interaction.
     /// </summary>
-    public HelixViewport3D Viewport3D => Viewport;
-
-    /// <summary>
-    /// Gets the cutting-plane group used to apply section cuts to the model content.
-    /// </summary>
-    public CuttingPlaneGroup CuttingPlaneGroup => SectionCutGroup;
+    public Viewport3DX Viewport3D => Viewport;
 
     /// <summary>
     /// Gets the 3D model visual used for section-plane display.
     /// </summary>
-    public ModelVisual3D SectionPlaneModel => SectionPlaneVisual;
+    public MeshGeometryModel3D SectionPlaneModel => SectionPlaneVisual;
 
     /// <summary>
     /// Gets the outline visual used for the section-plane boundary.
     /// </summary>
-    public LinesVisual3D SectionPlaneOutline => SectionPlaneOutlineVisual;
+    public LineGeometryModel3D SectionPlaneOutline => SectionPlaneOutlineVisual;
 
     /// <summary>
     /// Gets the measurement line visual used in the hosted 3D viewport.
     /// </summary>
-    public LinesVisual3D MeasurementLineVisual => MeasurementLine;
+    public LineGeometryModel3D MeasurementLineVisual => MeasurementLine;
 
     /// <summary>
     /// Gets the billboard text visual used for 3D measurement labels.
     /// </summary>
-    public BillboardTextVisual3D MeasurementTextVisual => MeasurementText;
+    public BillboardTextModel3D MeasurementTextVisual => MeasurementText;
 
     public Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files)
     {
@@ -310,7 +320,7 @@ public partial class DcmViewerCanvasComponent : UserControl
         {
             Content = null;
             Content = _hostedContent;
-            ApplyHostedContentDataContext();
+            EnsureViewerDataContext();
         }
 
         _embeddedWindow.RestoreEmbeddedInteraction();
@@ -324,16 +334,33 @@ public partial class DcmViewerCanvasComponent : UserControl
     public void UnloadViewer()
     {
         _pendingCaseFiles = null;
+        Content = null;
+        _hostedContent = null;
+        DataContext = null;
 
-        if (_embeddedWindow is not null)
+        if (_embeddedWindow is null)
         {
-            _embeddedWindow.Close();
-            _embeddedWindow = null;
+            return;
         }
 
-        _hostedContent = null;
+        _ = _embeddedWindow.PrepareForHostUnloadAsync();
+    }
+
+    public void ShutdownEmbeddedHost()
+    {
+        _pendingCaseFiles = null;
         Content = null;
+        _hostedContent = null;
         DataContext = null;
+
+        if (_embeddedWindow is null)
+        {
+            return;
+        }
+
+        _embeddedWindow.ShutdownEmbeddedHost();
+        _embeddedWindow.Close();
+        _embeddedWindow = null;
     }
 
     public async Task ReloadCaseFilesAsync(IEnumerable<DCMFileItem> files)
@@ -344,9 +371,20 @@ public partial class DcmViewerCanvasComponent : UserControl
         }
 
         var fileList = files?.ToList() ?? [];
-        UnloadViewer();
-        _pendingCaseFiles = fileList;
         await EnsureEmbeddedWindowLoadedAsync();
+
+        if (_embeddedWindow is null)
+        {
+            return;
+        }
+
+        if (fileList.Count == 0)
+        {
+            await _embeddedWindow.PrepareForHostUnloadAsync();
+            return;
+        }
+
+        await _embeddedWindow.LoadCaseFilesAsync(fileList);
     }
 
     public async Task AddCaseFileAsync(DCMFileItem file)
@@ -374,12 +412,36 @@ public partial class DcmViewerCanvasComponent : UserControl
         _embeddedWindow?.RemoveCaseFile(filePath);
     }
 
-    private void ApplyHostedContentDataContext()
+    private void OnViewerHostDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (_hostedContent is FrameworkElement frameworkElement && _embeddedWindow is not null)
+        if (!UseFullAppShell || _embeddedWindow?.ViewModel is null)
         {
-            frameworkElement.DataContext = _embeddedWindow.DataContext;
+            return;
         }
+
+        if (!ReferenceEquals(DataContext, _embeddedWindow.ViewModel))
+        {
+            EnsureViewerDataContext();
+        }
+    }
+
+    private void EnsureViewerDataContext()
+    {
+        var viewModel = _embeddedWindow?.ViewModel;
+        if (viewModel is null)
+        {
+            return;
+        }
+
+        // Block inheritance of OrderInfoViewModel from the parent window.
+        SetCurrentValue(DataContextProperty, viewModel);
+
+        if (_hostedContent is FrameworkElement root)
+        {
+            root.SetCurrentValue(FrameworkElement.DataContextProperty, viewModel);
+        }
+
+        _embeddedWindow?.PinViewerDataContext();
     }
 
     private async Task EnsureEmbeddedWindowLoadedAsync()
@@ -389,15 +451,46 @@ public partial class DcmViewerCanvasComponent : UserControl
             return;
         }
 
+        try
+        {
+            await EnsureEmbeddedWindowLoadedCoreAsync();
+        }
+        catch (Exception ex)
+        {
+            LogEmbeddedHostFailure(ex);
+            throw;
+        }
+    }
+
+    private static void LogEmbeddedHostFailure(Exception ex)
+    {
+        try
+        {
+            var logPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "Stats_Client",
+                "dcm-embed-host.log");
+            Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+            File.AppendAllText(logPath, $"[{DateTime.Now:O}] {ex}\r\n");
+        }
+        catch
+        {
+            // ignore logging failures
+        }
+    }
+
+    private async Task EnsureEmbeddedWindowLoadedCoreAsync()
+    {
         if (_embeddedWindow is not null)
         {
             _embeddedWindow.SetCanvasBackgroundTransparent(IsBackgroundTransparent);
-            DataContext = _embeddedWindow.DataContext;
+            _embeddedWindow.EnsureEmbeddedHostAppearance();
             if (Content is null && _hostedContent is not null)
             {
                 Content = _hostedContent;
-                ApplyHostedContentDataContext();
             }
+
+            EnsureViewerDataContext();
 
             _embeddedWindow.RestoreEmbeddedInteraction();
 
@@ -411,9 +504,18 @@ public partial class DcmViewerCanvasComponent : UserControl
             return;
         }
 
-        _embeddedWindow = new MainWindow();
+        // Do not call Show() — a brief visible window caused a white flash in Order Info.
+        _embeddedWindow = new MainWindow(suppressStartupLoad: true, isEmbeddedHost: true)
+        {
+            ShowInTaskbar = false,
+            WindowStyle = WindowStyle.None,
+            Visibility = Visibility.Hidden,
+            Width = 0,
+            Height = 0,
+            Left = -32000,
+            Top = -32000
+        };
         _embeddedWindow.SetCanvasBackgroundTransparent(IsBackgroundTransparent);
-        DataContext = _embeddedWindow.DataContext;
 
         if (_embeddedWindow.Content is not UIElement hostedContent)
         {
@@ -421,14 +523,14 @@ public partial class DcmViewerCanvasComponent : UserControl
         }
 
         _hostedContent = hostedContent;
-
-        if (hostedContent is FrameworkElement frameworkElement)
-        {
-            frameworkElement.DataContext = _embeddedWindow.DataContext;
-        }
-
         _embeddedWindow.Content = null;
-        Content = hostedContent;
+        Content = _hostedContent;
+        EnsureViewerDataContext();
+        _embeddedWindow.AttachEmbeddedHost();
+
+        await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Loaded);
+
+        _embeddedWindow.EnsureEmbeddedHostAppearance();
         _embeddedWindow.RestoreEmbeddedInteraction();
 
         if (_pendingCaseFiles is { Count: > 0 })
@@ -463,6 +565,10 @@ public partial class DcmViewerCanvasComponent : UserControl
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        if (UseFullAppShell)
+        {
+            ShutdownEmbeddedHost();
+        }
     }
 
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -478,11 +584,38 @@ public partial class DcmViewerCanvasComponent : UserControl
         }
     }
 
+    private void ApplyViewportClearTransparency()
+    {
+        Viewport.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
+        Viewport.Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
+        Viewport.EnableSwapChainRendering = false;
+        Viewport.EnableRenderOrder = true;
+    }
+
+    private void ConfigureViewportGestures()
+    {
+        if (!Viewport.InputBindings.OfType<MouseBinding>().Any(b =>
+                b.Command == ViewportCommands.Pan &&
+                b.Gesture is MouseGesture { MouseAction: MouseAction.MiddleClick }))
+        {
+            Viewport.InputBindings.Add(new MouseBinding(
+                ViewportCommands.Pan,
+                new MouseGesture(MouseAction.MiddleClick)));
+        }
+    }
+
     private void UpdateBackgroundBrush()
     {
+        LogoImage.Visibility = (IsWatermarkVisible && IsLogoVisible && !IsBackgroundTransparent)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        WatermarkTextBlock.Visibility = (IsWatermarkVisible && !IsBackgroundTransparent)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
         if (IsBackgroundTransparent)
         {
-            WatermarkCanvas.Background = Brushes.Transparent;
+            EmbeddedViewerBackdrop.ApplyHostCanvasBackdrop(WatermarkCanvas);
             return;
         }
 
@@ -513,6 +646,11 @@ public partial class DcmViewerCanvasComponent : UserControl
         brush.GradientStops.Add(new GradientStop(GradientOuterColor, 1.0));
 
         WatermarkCanvas.Background = brush;
+
+        if (!IsBackgroundTransparent)
+        {
+            ApplyViewportClearTransparency();
+        }
     }
 
     private void UpdateWatermarkVisuals()

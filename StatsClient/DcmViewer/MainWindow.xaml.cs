@@ -17,7 +17,12 @@ using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using DCMViewer.Services;
 using DCMViewer.ViewModels;
-using HelixToolkit.Wpf;
+using HelixToolkit.SharpDX;
+using HelixToolkit.Wpf.SharpDX;
+using SharpDX;
+using HelixProjectionCamera = HelixToolkit.Wpf.SharpDX.ProjectionCamera;
+using HelixPerspectiveCamera = HelixToolkit.Wpf.SharpDX.PerspectiveCamera;
+using HelixOrthographicCamera = HelixToolkit.Wpf.SharpDX.OrthographicCamera;
 using Line = System.Windows.Shapes.Line;
 using Ellipse = System.Windows.Shapes.Ellipse;
 
@@ -28,12 +33,26 @@ namespace DCMViewer;
 /// </summary>
 public partial class MainWindow : Window
 {
+    /// <summary>When true, skips loading a demo scan on startup (embedded Order Info host).</summary>
+    public bool SuppressStartupLoad { get; set; }
+
+    /// <summary>When true, this window hosts its content inside Order Info instead of running standalone.</summary>
+    public bool IsEmbeddedHost { get; set; }
+
+    public MainViewModel ViewModel => _viewModel;
+
     private const double DefaultPerspectiveFieldOfView = 45.0;
+    private const double ZoomExtentsPadding = 1.08;
+    private const double EmbeddedDefaultZoomPercent = 66.0;
+    private const double EmbeddedCoordinateSystemHorizontalPosition = -0.22;
+    private const double EmbeddedViewCubeHorizontalPosition = 0.48;
+    private const double EmbeddedSectionPanelLeftInset = 10;
+    private const double EmbeddedSectionPanelBottomInset = 8;
+    private const double EmbeddedModelVerticalViewBias = 0.14;
     private readonly MainViewModel _viewModel;
     private readonly Brush _activeToolBrush = new SolidColorBrush(Color.FromRgb(214, 185, 92));
+    private readonly Brush _toolbarButtonBackground = new SolidColorBrush(Color.FromRgb(237, 242, 248));
     private readonly Brush _activeToolForegroundBrush = new SolidColorBrush(Color.FromRgb(58, 49, 18));
-    private double _zoomReferenceDistance = 1.0;
-    private double _zoomReferenceOrthographicWidth = 1.0;
     private Point3D _sectionCenter = new(0, 0, 0);
     private Vector3D _sectionNormal = new(0, 0, 1);
     private Point3D _activeSectionPlanePoint = new(0, 0, 0);
@@ -58,6 +77,8 @@ public partial class MainWindow : Window
     private double _defaultNearPlaneDistance = 0.1;
     private double _defaultFarPlaneDistance = 100000;
     private bool _isSectionRefreshQueued;
+    private bool _isCompositionRenderingHooked;
+    private Brush? _defaultWatermarkBackground;
 
     public void RestoreEmbeddedInteraction()
     {
@@ -67,6 +88,7 @@ public partial class MainWindow : Window
             Viewport.IsZoomEnabled = true;
             Viewport.IsPanEnabled = true;
             Viewport.IsRotationEnabled = true;
+            ConfigureViewportGestures();
             ConfigureRotationBehavior();
             SyncLightingToCamera();
             UpdateZoomPercentLabel();
@@ -109,6 +131,7 @@ public partial class MainWindow : Window
 
         RestoreEmbeddedInteraction();
         ScheduleTopRightOverlayFade();
+        EnsureEmbeddedHostAppearance();
     }
 
     public async Task AddCaseFileAsync(DCMFileItem file)
@@ -148,6 +171,7 @@ public partial class MainWindow : Window
         var fullPath = Path.GetFullPath(filePath);
         _viewModel.TextureOverrides.Remove(fullPath);
         _viewModel.CategoryOverrides.Remove(fullPath);
+        _viewModel.ArchOverrides.Remove(fullPath);
         _viewModel.UnloadFile(fullPath);
         RestoreEmbeddedInteraction();
     }
@@ -155,7 +179,9 @@ public partial class MainWindow : Window
     private void ApplyFileOverrides(DCMFileItem item)
     {
         var fullPath = Path.GetFullPath(item.FilePath);
-        _viewModel.TextureOverrides[fullPath] = item.MaterialName;
+        _viewModel.TextureOverrides[fullPath] = PrepScanMaterialRules.IsPreopScan(fullPath)
+            ? PrepScanMaterialRules.TextureName
+            : item.MaterialName;
         _viewModel.CategoryOverrides[fullPath] = item.SourceKind == DCMFileSourceKind.ModelScan
             ? "scan"
             : item.GroupName switch
@@ -164,6 +190,7 @@ public partial class MainWindow : Window
                 "Abutment" => "abutment",
                 _ => "restoration"
             };
+        _viewModel.ArchOverrides[fullPath] = ScanLayerArchResolver.Resolve(fullPath, item.GroupName);
     }
 
     private void ScheduleTopRightOverlayFade()
@@ -187,14 +214,282 @@ public partial class MainWindow : Window
         TopRightOverlayPanel.BeginAnimation(UIElement.OpacityProperty, fadeAnimation, HandoffBehavior.SnapshotAndReplace);
     }
 
-    public void SetCanvasBackgroundTransparent(bool isTransparent)
+    public void PinViewerDataContext()
     {
-        WatermarkCanvas.Background = isTransparent ? Brushes.Transparent : WatermarkCanvas.Background;
+        DataContext = _viewModel;
+        WatermarkCanvas.DataContext = _viewModel;
+        if (Viewport is not null)
+        {
+            Viewport.DataContext = _viewModel;
+        }
+
+        if (Resources["ViewerBindingProxy"] is BindingProxy proxy)
+        {
+            proxy.Data = _viewModel;
+        }
+    }
+
+    public void AttachEmbeddedHost()
+    {
+        HookCompositionRendering();
+        PinViewerDataContext();
+        UpdateProjectionToggleButtonState();
+        UpdateClippingToggleButtonState();
+    }
+
+    public async Task PrepareForHostUnloadAsync()
+    {
+        UnhookCompositionRendering();
+        await _viewModel.LoadFilesAsync(Array.Empty<string>(), clearExisting: true);
+    }
+
+    public void ShutdownEmbeddedHost()
+    {
+        UnhookCompositionRendering();
+        _viewModel.DisposeEffectsManager();
+    }
+
+    private void HookCompositionRendering()
+    {
+        if (_isCompositionRenderingHooked)
+        {
+            return;
+        }
+
+        CompositionTarget.Rendering += OnCompositionTargetRendering;
+        _isCompositionRenderingHooked = true;
+    }
+
+    private void UnhookCompositionRendering()
+    {
+        if (!_isCompositionRenderingHooked)
+        {
+            return;
+        }
+
+        CompositionTarget.Rendering -= OnCompositionTargetRendering;
+        _isCompositionRenderingHooked = false;
+    }
+
+    /// <summary>
+    /// When hosted in Order Info, hides watermark chrome and applies the same backdrop as the Overview tab.
+    /// </summary>
+    public void SetCanvasBackgroundTransparent(bool hideWatermarkForHost)
+    {
+        if (!hideWatermarkForHost)
+        {
+            _defaultWatermarkBackground ??= WatermarkCanvas.Background;
+            WatermarkCanvas.Background = _defaultWatermarkBackground;
+            ApplyViewportClearTransparency();
+        }
+        else
+        {
+            EnsureEmbeddedHostAppearance();
+        }
+
+        PinViewerDataContext();
+
+        var watermarkVisibility = hideWatermarkForHost ? Visibility.Collapsed : Visibility.Visible;
+        WatermarkLogoImage.Visibility = watermarkVisibility;
+        WatermarkTextBlock.Visibility = watermarkVisibility;
+    }
+
+    /// <summary>Order Info matching gradient + D3D clear tuned for transparent meshes.</summary>
+    public void EnsureEmbeddedHostAppearance()
+    {
+        if (!IsEmbeddedHost)
+        {
+            return;
+        }
+
+        EmbeddedViewerBackdrop.ApplyEmbeddedHostAppearance(WatermarkCanvas, Viewport);
+        if (Content is Grid hostRoot)
+        {
+            hostRoot.Background = Brushes.Transparent;
+        }
+
+        EmbeddedBusyOverlay.Visibility = Visibility.Collapsed;
+
+        // Leave room for Order Info left/right overlay panels on full-bleed canvas.
+        TopRightChromeGrid.Margin = new Thickness(0, 10, 212, 0);
+        ZoomBadgeBorder.Margin = new Thickness(420, 10, 0, 0);
+        BottomStatusText.Margin = new Thickness(412, 0, 212, 8);
+
+        ApplyEmbeddedViewportChromeLayout();
+
+        ConfigureTransparencyRendering();
+    }
+
+    private void ApplyEmbeddedViewportChromeLayout()
+    {
+        Viewport.ZoomExtentsWhenLoaded = false;
+        Viewport.CoordinateSystemHorizontalPosition = EmbeddedCoordinateSystemHorizontalPosition;
+        Viewport.CoordinateSystemVerticalPosition = -0.8;
+        Viewport.ViewCubeHorizontalPosition = EmbeddedViewCubeHorizontalPosition;
+        Viewport.ViewCubeVerticalPosition = -0.8;
+    }
+
+    /// <summary>
+    /// Sets camera distance from our fit formula so the zoom label matches <see cref="EmbeddedDefaultZoomPercent"/>.
+    /// </summary>
+    private void ApplyEmbeddedDefaultZoom()
+    {
+        if (!IsEmbeddedHost || Viewport.Camera is not HelixProjectionCamera camera)
+        {
+            return;
+        }
+
+        var bounds = GetVisibleBounds();
+        if (bounds.IsEmpty)
+        {
+            return;
+        }
+
+        var center = GetEmbeddedLookAtCenter(bounds);
+
+        var zoomScale = EmbeddedDefaultZoomPercent / 100.0;
+        if (zoomScale <= 0)
+        {
+            return;
+        }
+
+        var look = camera.LookDirection;
+        if (look.LengthSquared < 1e-9)
+        {
+            look = new Vector3D(0, 0, -1);
+        }
+        else
+        {
+            look.Normalize();
+        }
+
+        if (camera is HelixOrthographicCamera orthographicCamera)
+        {
+            var fitWidth = CalculateOrthographicFitWidth(bounds, look, camera.UpDirection);
+            orthographicCamera.Width = fitWidth / zoomScale;
+            return;
+        }
+
+        var fieldOfView = camera is HelixPerspectiveCamera perspective
+            ? perspective.FieldOfView
+            : DefaultPerspectiveFieldOfView;
+        var fitDistance = CalculatePerspectiveFitDistance(
+            bounds,
+            look,
+            camera.UpDirection,
+            fieldOfView,
+            Viewport.ActualWidth,
+            Viewport.ActualHeight);
+        var targetDistance = fitDistance / zoomScale;
+        camera.Position = center - (look * targetDistance);
+        camera.LookDirection = center - camera.Position;
+    }
+
+    private Point3D GetEmbeddedLookAtCenter(Rect3D bounds)
+    {
+        var center = new Point3D(
+            bounds.X + (bounds.SizeX / 2.0),
+            bounds.Y + (bounds.SizeY / 2.0),
+            bounds.Z + (bounds.SizeZ / 2.0));
+
+        if (!IsEmbeddedHost || Viewport.Camera is not HelixProjectionCamera camera)
+        {
+            return center;
+        }
+
+        var up = camera.UpDirection;
+        if (up.LengthSquared < 1e-9)
+        {
+            center.Y += bounds.SizeY * EmbeddedModelVerticalViewBias;
+            return center;
+        }
+
+        up.Normalize();
+        center += up * (bounds.SizeY * EmbeddedModelVerticalViewBias);
+        return center;
+    }
+
+    private void ApplyEmbeddedInitialView()
+    {
+        if (!IsEmbeddedHost)
+        {
+            return;
+        }
+
+        void Apply()
+        {
+            if (GetVisibleBounds().IsEmpty)
+            {
+                return;
+            }
+
+            ApplyEmbeddedDefaultZoom();
+            ConfigureRotationBehavior();
+            SyncLightingToCamera();
+            UpdateZoomPercentLabel();
+        }
+
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, Apply);
+        Dispatcher.BeginInvoke(DispatcherPriority.Render, Apply);
+    }
+
+    public void EnsureEmbeddedHostCanvasTransparent() => EnsureEmbeddedHostAppearance();
+
+    private void ApplyViewportClearTransparency()
+    {
+        // WPF Colors.Transparent is #00FFFFFF; Helix/DX11 needs #00000000 for a true clear.
+        Viewport.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
+        Viewport.Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
+        Viewport.EnableSwapChainRendering = false;
+        ConfigureTransparencyRendering();
+    }
+
+    private void ConfigureTransparencyRendering()
+    {
+        Viewport.EnableRenderOrder = true;
+    }
+
+    private void ConfigureViewportGestures()
+    {
+        // Helix 3.x defaults pan to right-click+shift; WPF viewer used middle-click pan (PanGesture2).
+        if (!Viewport.InputBindings.OfType<MouseBinding>().Any(b =>
+                b.Command == ViewportCommands.Pan &&
+                b.Gesture is MouseGesture { MouseAction: MouseAction.MiddleClick }))
+        {
+            Viewport.InputBindings.Add(new MouseBinding(
+                ViewportCommands.Pan,
+                new MouseGesture(MouseAction.MiddleClick)));
+        }
     }
 
     public MainWindow()
+        : this(suppressStartupLoad: false, isEmbeddedHost: false)
     {
+    }
+
+    public MainWindow(bool suppressStartupLoad, bool isEmbeddedHost)
+    {
+        SuppressStartupLoad = suppressStartupLoad;
+        IsEmbeddedHost = isEmbeddedHost;
+
         InitializeComponent();
+        EnsureSectionPlaneFillMaterial();
+
+        if (isEmbeddedHost)
+        {
+            Background = Brushes.Transparent;
+            ShowInTaskbar = false;
+            ShowActivated = false;
+            ConfigureViewportGestures();
+            EnsureEmbeddedHostAppearance();
+            WatermarkCanvas.SizeChanged += WatermarkCanvas_OnSizeChanged;
+        }
+        else
+        {
+            _defaultWatermarkBackground = WatermarkCanvas.Background;
+            ApplyViewportClearTransparency();
+            ConfigureViewportGestures();
+        }
 
         // Log render tier — written to %ProgramData%\Stats_Client\render-info.log (always writable).
         // Tier 0 = software only, Tier 1 = partial HW, Tier 2 = full DirectX HW acceleration.
@@ -231,9 +526,15 @@ public partial class MainWindow : Window
         Closed += (_, _) => RenderCapability.TierChanged -= OnRenderTierChanged;
 
         _viewModel = new MainViewModel(new DcmParser());
+        if (isEmbeddedHost)
+        {
+            _viewModel.SuppressAutomaticCameraFraming = true;
+        }
+
         _viewModel.PropertyChanged += ViewModelOnPropertyChanged;
         _viewModel.LoadedFiles.CollectionChanged += LoadedFilesOnCollectionChanged;
         DataContext = _viewModel;
+        PinViewerDataContext();
         SetDefaultProjectionMode();
 
         if (FindName("ProjectionToggleButton") is Button projectionToggleButton)
@@ -241,13 +542,31 @@ public partial class MainWindow : Window
             projectionToggleButton.Click += ProjectionToggleButton_OnClick;
         }
 
-        UpdateProjectionToggleButtonState();
-        UpdateClippingToggleButtonState();
+        if (!IsEmbeddedHost)
+        {
+            UpdateProjectionToggleButtonState();
+            UpdateClippingToggleButtonState();
+        }
 
-        ConfigureRotationBehavior();
+        if (Viewport.Camera is HelixProjectionCamera initialCamera)
+        {
+            BindCameraPose(initialCamera);
+        }
 
-        CompositionTarget.Rendering += OnCompositionTargetRendering;
-        Closed += (_, _) => CompositionTarget.Rendering -= OnCompositionTargetRendering;
+        if (!IsEmbeddedHost)
+        {
+            ConfigureRotationBehavior();
+            HookCompositionRendering();
+        }
+
+        Closed += (_, _) =>
+        {
+            UnhookCompositionRendering();
+            if (!IsEmbeddedHost)
+            {
+                _viewModel.DisposeEffectsManager();
+            }
+        };
         SyncLightingToCamera();
         UpdateZoomPercentLabel();
         Viewport.MouseLeftButtonDown += Viewport_OnMouseLeftButtonDown;
@@ -259,10 +578,13 @@ public partial class MainWindow : Window
             }
         };
 
-        var startupScanPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "scan.dcm"));
-        if (File.Exists(startupScanPath))
+        if (!SuppressStartupLoad)
         {
-            _ = _viewModel.LoadFileAsync(startupScanPath);
+            var startupScanPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "scan.dcm"));
+            if (File.Exists(startupScanPath))
+            {
+                _ = _viewModel.LoadFileAsync(startupScanPath);
+            }
         }
     }
 
@@ -275,12 +597,10 @@ public partial class MainWindow : Window
         if (applyOverride)
         {
             RenderOptions.SetBitmapScalingMode(Viewport, BitmapScalingMode.NearestNeighbor);
-            RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
         }
         else
         {
             RenderOptions.SetBitmapScalingMode(Viewport, BitmapScalingMode.HighQuality);
-            RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
         }
 
         string msg = $"TierChanged → tier:{tier} remote:{isRemote} override:{applyOverride}";
@@ -299,22 +619,23 @@ public partial class MainWindow : Window
 
     private void SetDefaultProjectionMode()
 {
-        if (Viewport.Camera is not ProjectionCamera currentCamera)
+        if (Viewport.Camera is not HelixProjectionCamera currentCamera)
         {
             return;
         }
 
-        var fieldOfView = currentCamera is PerspectiveCamera perspective
+        var fieldOfView = currentCamera is HelixPerspectiveCamera perspective
             ? perspective.FieldOfView
             : DefaultPerspectiveFieldOfView;
         var orthographicWidth = CalculateOrthographicWidth(currentCamera.LookDirection.Length, fieldOfView);
 
-        var orthographicCamera = new OrthographicCamera
+        var orthographicCamera = new HelixOrthographicCamera
         {
             Position = currentCamera.Position,
             LookDirection = currentCamera.LookDirection,
             UpDirection = currentCamera.UpDirection,
-            Width = orthographicWidth
+            Width = orthographicWidth,
+            CreateLeftHandSystem = false
         };
 
         BindCameraPose(orthographicCamera);
@@ -376,7 +697,7 @@ public partial class MainWindow : Window
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (string.Equals(e.PropertyName, nameof(MainViewModel.ModelGroup), StringComparison.Ordinal))
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.SceneItems), StringComparison.Ordinal))
         {
             ConfigureRotationBehavior();
             ScheduleTopRightOverlayFade();
@@ -390,7 +711,17 @@ public partial class MainWindow : Window
                 _pendingShowAllAfterModelUpdate = false;
                 Dispatcher.BeginInvoke(
                     DispatcherPriority.Loaded,
-                    new Action(() => ShowAllButton_Click(this, new RoutedEventArgs())));
+                    new Action(() =>
+                    {
+                        if (IsEmbeddedHost)
+                        {
+                            ApplyEmbeddedInitialView();
+                        }
+                        else
+                        {
+                            ShowAllButton_Click(this, new RoutedEventArgs());
+                        }
+                    }));
             }
         }
 
@@ -408,6 +739,13 @@ public partial class MainWindow : Window
             string.Equals(e.PropertyName, nameof(MainViewModel.MeasureEndSection), StringComparison.Ordinal))
         {
             UpdateMeasurementVisual();
+        }
+
+        if (IsEmbeddedHost &&
+            string.Equals(e.PropertyName, nameof(MainViewModel.IsBusy), StringComparison.Ordinal) &&
+            !_viewModel.IsBusy)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, ApplyEmbeddedInitialView);
         }
     }
 
@@ -427,8 +765,7 @@ public partial class MainWindow : Window
                 return;
             }
 
-            SectionCutGroup.CuttingPlanes.Clear();
-            SectionCutGroup.CuttingPlanes.Add(new Plane3D(_activeSectionPlanePoint, _activeSectionPlaneNormal));
+            _viewModel.ApplySectionPlane(_activeSectionPlanePoint, _activeSectionPlaneNormal, _viewModel.IsSectionMode);
             UpdateSectionPlaneVisual(_activeSectionPlanePoint, _activeSectionPlaneNormal);
             UpdateSectionProfileView(_activeSectionPlanePoint, _activeSectionPlaneNormal, resetCanvasTransform: false);
         }));
@@ -436,23 +773,69 @@ public partial class MainWindow : Window
 
     private void LoadedFilesOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (e.Action is not (NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Reset))
+        if (e.NewItems is not null)
+        {
+            foreach (LoadedMeshItemViewModel item in e.NewItems)
+            {
+                item.PropertyChanged += OnLoadedFilePropertyChanged;
+            }
+        }
+
+        if (e.OldItems is not null)
+        {
+            foreach (LoadedMeshItemViewModel item in e.OldItems)
+            {
+                item.PropertyChanged -= OnLoadedFilePropertyChanged;
+            }
+        }
+
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            foreach (var item in _viewModel.LoadedFiles)
+            {
+                item.PropertyChanged += OnLoadedFilePropertyChanged;
+            }
+        }
+
+        if (e.Action is NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Reset)
+        {
+            _pendingShowAllAfterModelUpdate = true;
+        }
+    }
+
+    private void OnLoadedFilePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (!IsEmbeddedHost)
         {
             return;
         }
 
-        _pendingShowAllAfterModelUpdate = true;
+        if (string.Equals(e.PropertyName, nameof(LoadedMeshItemViewModel.Opacity), StringComparison.Ordinal))
+        {
+            QueueEmbeddedHostAppearanceRefresh();
+        }
+    }
+
+    private void QueueEmbeddedHostAppearanceRefresh()
+    {
+        if (!IsEmbeddedHost)
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (IsEmbeddedHost && Viewport.IsVisible)
+            {
+                EnsureEmbeddedHostAppearance();
+            }
+        }, DispatcherPriority.Render);
     }
 
     private void ConfigureRotationBehavior()
     {
-        var controller = Viewport.CameraController;
-        if (controller is null)
-        {
-            return;
-        }
-
-        ConfigureInteractionCursors(controller);
+        Viewport.PanCursor = Cursors.Arrow;
+        Viewport.RotateCursor = Cursors.Arrow;
 
         var bounds = GetVisibleBounds();
         if (bounds.IsEmpty)
@@ -460,23 +843,16 @@ public partial class MainWindow : Window
             return;
         }
 
-        var center = new Point3D(
-            bounds.X + (bounds.SizeX / 2.0),
-            bounds.Y + (bounds.SizeY / 2.0),
-            bounds.Z + (bounds.SizeZ / 2.0));
+        var center = IsEmbeddedHost
+            ? GetEmbeddedLookAtCenter(bounds)
+            : new Point3D(
+                bounds.X + (bounds.SizeX / 2.0),
+                bounds.Y + (bounds.SizeY / 2.0),
+                bounds.Z + (bounds.SizeZ / 2.0));
 
-        controller.FixedRotationPointEnabled = true;
-        controller.FixedRotationPoint = center;
-        controller.RotateAroundMouseDownPoint = false;
-
-        if (Viewport.Camera is ProjectionCamera camera)
-        {
-            _zoomReferenceDistance = GetDistance(camera.Position, center);
-            if (camera is OrthographicCamera orthographicCamera)
-            {
-                _zoomReferenceOrthographicWidth = Math.Max(orthographicCamera.Width, 1e-9);
-            }
-        }
+        Viewport.FixedRotationPointEnabled = true;
+        Viewport.FixedRotationPoint = center;
+        Viewport.RotateAroundMouseDownPoint = false;
 
         if (!_viewModel.IsSectionMode)
         {
@@ -485,34 +861,39 @@ public partial class MainWindow : Window
         UpdateZoomPercentLabel();
     }
 
-    private static void ConfigureInteractionCursors(CameraController controller)
-    {
-        controller.PanCursor = Cursors.Arrow;
-        controller.RotateCursor = Cursors.Arrow;
-    }
-
     private void ShowAllButton_Click(object sender, RoutedEventArgs e)
     {
+        if (IsEmbeddedHost)
+        {
+            ApplyEmbeddedInitialView();
+            return;
+        }
+
         Viewport.ZoomExtents(250);
-        ConfigureRotationBehavior();
-        SyncLightingToCamera();
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () =>
+        {
+            ConfigureRotationBehavior();
+            SyncLightingToCamera();
+            UpdateZoomPercentLabel();
+        });
     }
 
     private void ProjectionToggleButton_OnClick(object sender, RoutedEventArgs e)
     {
-        if (Viewport.Camera is not ProjectionCamera currentCamera)
+        if (Viewport.Camera is not HelixProjectionCamera currentCamera)
         {
             return;
         }
 
         if (_isOrthographicView)
         {
-            var perspectiveCamera = new PerspectiveCamera
+            var perspectiveCamera = new HelixPerspectiveCamera
             {
                 Position = currentCamera.Position,
                 LookDirection = currentCamera.LookDirection,
                 UpDirection = currentCamera.UpDirection,
-                FieldOfView = DefaultPerspectiveFieldOfView
+                FieldOfView = DefaultPerspectiveFieldOfView,
+                CreateLeftHandSystem = false
             };
 
             BindCameraPose(perspectiveCamera);
@@ -523,10 +904,10 @@ public partial class MainWindow : Window
         }
         else
         {
-            var fieldOfView = currentCamera is PerspectiveCamera perspective ? perspective.FieldOfView : DefaultPerspectiveFieldOfView;
+            var fieldOfView = currentCamera is HelixPerspectiveCamera perspective ? perspective.FieldOfView : DefaultPerspectiveFieldOfView;
             var orthographicWidth = CalculateOrthographicWidth(currentCamera.LookDirection.Length, fieldOfView);
 
-            var orthographicCamera = new OrthographicCamera
+            var orthographicCamera = new HelixOrthographicCamera
             {
                 Position = currentCamera.Position,
                 LookDirection = currentCamera.LookDirection,
@@ -549,7 +930,7 @@ public partial class MainWindow : Window
     private void ClippingToggleButton_OnClick(object sender, RoutedEventArgs e)
     {
         _isNearClippingRelaxed = !_isNearClippingRelaxed;
-        if (Viewport.Camera is ProjectionCamera camera)
+        if (Viewport.Camera is HelixProjectionCamera camera)
         {
             ApplyClipMode(camera);
         }
@@ -567,18 +948,18 @@ public partial class MainWindow : Window
         clippingToggleButton.ToolTip = _isNearClippingRelaxed
             ? "Use normal near clipping"
             : "Relax near clipping";
-        clippingToggleButton.Content = CreateToolbarIcon("/DcmViewer/Images/clipping.png");
+        clippingToggleButton.Content = TryCreateToolbarIcon("/DcmViewer/Images/clipping.png");
         clippingToggleButton.Background = _isNearClippingRelaxed ? _activeToolBrush : null;
         clippingToggleButton.Foreground = _isNearClippingRelaxed ? _activeToolForegroundBrush : Brushes.Black;
     }
 
-    private void CaptureClipDefaults(ProjectionCamera camera)
+    private void CaptureClipDefaults(HelixProjectionCamera camera)
     {
         _defaultNearPlaneDistance = Math.Clamp(camera.NearPlaneDistance, 0.0005, 0.02);
         _defaultFarPlaneDistance = Math.Max(camera.FarPlaneDistance, _defaultNearPlaneDistance + 1);
     }
 
-    private void ApplyClipMode(ProjectionCamera camera)
+    private void ApplyClipMode(HelixProjectionCamera camera)
     {
         if (_isNearClippingRelaxed)
         {
@@ -603,23 +984,38 @@ public partial class MainWindow : Window
         projectionToggleButton.ToolTip = _isOrthographicView
             ? "Switch to perspective view"
             : "Switch to orthographic view";
-        projectionToggleButton.Content = CreateToolbarIcon("/DcmViewer/Images/perspective.png");
+        projectionToggleButton.Content = TryCreateToolbarIcon("/DcmViewer/Images/perspective.png");
     }
 
-    private static Image CreateToolbarIcon(string relativePath)
+    private static Image? TryCreateToolbarIcon(string relativePath)
     {
-        var image = new Image
+        try
         {
-            Width = 16,
-            Height = 16,
-            Stretch = Stretch.Uniform,
-            Source = new BitmapImage(new Uri($"pack://application:,,,{relativePath}", UriKind.Absolute))
-        };
+            var componentPath = relativePath.TrimStart('/');
+            var assemblyName = typeof(MainWindow).Assembly.GetName().Name;
+            var uri = new Uri($"pack://application:,,,/{assemblyName};component/{componentPath}", UriKind.Absolute);
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = uri;
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze();
 
-        return image;
+            return new Image
+            {
+                Width = 16,
+                Height = 16,
+                Stretch = Stretch.Uniform,
+                Source = bitmap
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
-    private void BindCameraPose(ProjectionCamera camera)
+    private void BindCameraPose(HelixProjectionCamera camera)
     {
         var positionBinding = new Binding(nameof(MainViewModel.CameraPosition))
         {
@@ -637,9 +1033,9 @@ public partial class MainWindow : Window
             Mode = BindingMode.OneWay
         };
 
-        BindingOperations.SetBinding(camera, ProjectionCamera.PositionProperty, positionBinding);
-        BindingOperations.SetBinding(camera, ProjectionCamera.LookDirectionProperty, lookBinding);
-        BindingOperations.SetBinding(camera, ProjectionCamera.UpDirectionProperty, upBinding);
+        BindingOperations.SetBinding(camera, HelixProjectionCamera.PositionProperty, positionBinding);
+        BindingOperations.SetBinding(camera, HelixProjectionCamera.LookDirectionProperty, lookBinding);
+        BindingOperations.SetBinding(camera, HelixProjectionCamera.UpDirectionProperty, upBinding);
     }
 
     private double CalculateOrthographicWidth(double cameraDistance, double fieldOfViewDegrees)
@@ -657,7 +1053,12 @@ public partial class MainWindow : Window
 
     private void OnCompositionTargetRendering(object? sender, EventArgs e)
     {
-        if (Viewport.Camera is ProjectionCamera camera && _isNearClippingRelaxed)
+        if (Viewport is null || !Viewport.IsLoaded || !Viewport.IsVisible)
+        {
+            return;
+        }
+
+        if (Viewport.Camera is HelixProjectionCamera camera && _isNearClippingRelaxed)
         {
             ApplyClipMode(camera);
         }
@@ -668,7 +1069,7 @@ public partial class MainWindow : Window
 
     private void SyncLightingToCamera()
     {
-        if (Viewport.Camera is not ProjectionCamera camera)
+        if (Viewport.Camera is not HelixProjectionCamera camera)
         {
             return;
         }
@@ -678,7 +1079,7 @@ public partial class MainWindow : Window
 
     private void UpdateZoomPercentLabel()
     {
-        if (Viewport.Camera is not ProjectionCamera camera)
+        if (Viewport.Camera is not HelixProjectionCamera camera)
         {
             return;
         }
@@ -695,31 +1096,134 @@ public partial class MainWindow : Window
             bounds.Y + (bounds.SizeY / 2.0),
             bounds.Z + (bounds.SizeZ / 2.0));
 
-        if (camera is OrthographicCamera orthographicCamera)
+        double zoomPercent;
+        if (camera is HelixOrthographicCamera orthographicCamera)
         {
+            var fitWidth = CalculateOrthographicFitWidth(bounds, camera.LookDirection, camera.UpDirection);
             var currentWidth = Math.Max(orthographicCamera.Width, 1e-9);
-            var ratio = _zoomReferenceOrthographicWidth / currentWidth;
-            if (_zoomReferenceOrthographicWidth < 1e-9 || ratio < 0.05 || ratio > 20)
-            {
-                _zoomReferenceOrthographicWidth = currentWidth;
-                ratio = 1.0;
-            }
-
-            var orthographicZoomPercent = ratio * 100.0;
-            var orthographicRoundedPercent = Math.Clamp((int)Math.Round(orthographicZoomPercent), 1, 9999);
-            ZoomPercentText.Text = $"Zoom: {orthographicRoundedPercent}%";
-            return;
+            zoomPercent = (fitWidth / currentWidth) * 100.0;
         }
-
-        var currentDistance = GetDistance(camera.Position, center);
-        if (_zoomReferenceDistance < 1e-9)
+        else
         {
-            _zoomReferenceDistance = currentDistance;
+            var fieldOfView = camera is HelixPerspectiveCamera perspective
+                ? perspective.FieldOfView
+                : DefaultPerspectiveFieldOfView;
+            var fitDistance = CalculatePerspectiveFitDistance(
+                bounds,
+                camera.LookDirection,
+                camera.UpDirection,
+                fieldOfView,
+                Viewport.ActualWidth,
+                Viewport.ActualHeight);
+            var currentDistance = GetDistance(camera.Position, center);
+            zoomPercent = (fitDistance / Math.Max(currentDistance, 1e-9)) * 100.0;
         }
 
-        var zoomPercent = (_zoomReferenceDistance / Math.Max(currentDistance, 1e-9)) * 100.0;
         var roundedPercent = Math.Clamp((int)Math.Round(zoomPercent), 1, 9999);
         ZoomPercentText.Text = $"Zoom: {roundedPercent}%";
+    }
+
+    private static IEnumerable<Point3D> EnumerateBoundsCorners(Rect3D bounds)
+    {
+        var x0 = bounds.X;
+        var y0 = bounds.Y;
+        var z0 = bounds.Z;
+        var x1 = x0 + bounds.SizeX;
+        var y1 = y0 + bounds.SizeY;
+        var z1 = z0 + bounds.SizeZ;
+
+        for (var ix = 0; ix < 2; ix++)
+        {
+            for (var iy = 0; iy < 2; iy++)
+            {
+                for (var iz = 0; iz < 2; iz++)
+                {
+                    yield return new Point3D(
+                        ix == 0 ? x0 : x1,
+                        iy == 0 ? y0 : y1,
+                        iz == 0 ? z0 : z1);
+                }
+            }
+        }
+    }
+
+    private static void ProjectBoundsToViewPlane(
+        Rect3D bounds,
+        Vector3D look,
+        Vector3D up,
+        out double widthExtent,
+        out double heightExtent)
+    {
+        look.Normalize();
+        up.Normalize();
+
+        var right = Vector3D.CrossProduct(look, up);
+        if (right.LengthSquared < 1e-9)
+        {
+            right = Vector3D.CrossProduct(look, new Vector3D(1, 0, 0));
+        }
+
+        right.Normalize();
+        var viewUp = Vector3D.CrossProduct(right, look);
+        viewUp.Normalize();
+
+        var center = new Point3D(
+            bounds.X + (bounds.SizeX * 0.5),
+            bounds.Y + (bounds.SizeY * 0.5),
+            bounds.Z + (bounds.SizeZ * 0.5));
+
+        var minRight = double.PositiveInfinity;
+        var maxRight = double.NegativeInfinity;
+        var minUp = double.PositiveInfinity;
+        var maxUp = double.NegativeInfinity;
+
+        foreach (var corner in EnumerateBoundsCorners(bounds))
+        {
+            var offset = corner - center;
+            var r = Vector3D.DotProduct(offset, right);
+            var u = Vector3D.DotProduct(offset, viewUp);
+            minRight = Math.Min(minRight, r);
+            maxRight = Math.Max(maxRight, r);
+            minUp = Math.Min(minUp, u);
+            maxUp = Math.Max(maxUp, u);
+        }
+
+        widthExtent = Math.Max(maxRight - minRight, 1e-6);
+        heightExtent = Math.Max(maxUp - minUp, 1e-6);
+    }
+
+    private double CalculateOrthographicFitWidth(Rect3D bounds, Vector3D look, Vector3D up)
+    {
+        ProjectBoundsToViewPlane(bounds, look, up, out var widthExtent, out var heightExtent);
+
+        var viewportWidth = Math.Max(Viewport.ActualWidth, 1.0);
+        var viewportHeight = Math.Max(Viewport.ActualHeight, 1.0);
+        var aspect = viewportWidth / viewportHeight;
+
+        return Math.Max(widthExtent, heightExtent * aspect) * ZoomExtentsPadding;
+    }
+
+    private static double CalculatePerspectiveFitDistance(
+        Rect3D bounds,
+        Vector3D look,
+        Vector3D up,
+        double fieldOfViewDegrees,
+        double viewportWidth,
+        double viewportHeight)
+    {
+        ProjectBoundsToViewPlane(bounds, look, up, out var widthExtent, out var heightExtent);
+
+        viewportWidth = Math.Max(viewportWidth, 1.0);
+        viewportHeight = Math.Max(viewportHeight, 1.0);
+        var aspect = viewportWidth / viewportHeight;
+
+        var fovRadians = Math.Clamp(fieldOfViewDegrees, 1.0, 179.0) * (Math.PI / 180.0);
+        var tanHalfFov = Math.Tan(fovRadians * 0.5);
+
+        var distanceForHeight = (heightExtent * 0.5) / tanHalfFov;
+        var distanceForWidth = (widthExtent * 0.5) / (tanHalfFov * aspect);
+
+        return Math.Max(distanceForHeight, distanceForWidth) * ZoomExtentsPadding;
     }
 
     private static double GetDistance(Point3D a, Point3D b)
@@ -782,13 +1286,19 @@ public partial class MainWindow : Window
     {
         SectionOffsetSlider.Visibility = _viewModel.IsSectionMode ? Visibility.Visible : Visibility.Collapsed;
         UpdateToolButtonStates();
+        if (IsEmbeddedHost)
+        {
+            EnsureEmbeddedHostAppearance();
+        }
+        else
+        {
+            ApplyViewportClearTransparency();
+        }
 
         if (!_viewModel.IsSectionMode)
         {
-            SectionCutGroup.IsEnabled = false;
-            SectionPlaneVisual.Content = null;
-            SectionPlaneOutlineVisual.Points = new Point3DCollection();
-            SectionPlaneOutlineVisual.IsRendering = false;
+            _viewModel.ApplySectionPlane(_activeSectionPlanePoint, _activeSectionPlaneNormal, false);
+            ClearSectionPlaneVisuals();
             SectionProfilePanel.Visibility = Visibility.Collapsed;
             SectionProfileCanvas.Children.Clear();
             _hasSectionProjectionMap = false;
@@ -800,6 +1310,18 @@ public partial class MainWindow : Window
         SectionProfileHintText.Text = "Click on mesh to place section plane";
         SectionProfileHintText.Visibility = Visibility.Visible;
 
+        if (IsEmbeddedHost)
+        {
+            PositionEmbeddedSectionProfilePanel();
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+            {
+                if (_viewModel.IsSectionMode)
+                {
+                    PositionEmbeddedSectionProfilePanel();
+                }
+            });
+        }
+
         var bounds = GetVisibleBounds();
         if (!bounds.IsEmpty)
         {
@@ -809,6 +1331,57 @@ public partial class MainWindow : Window
         UpdateSectionPlane();
     }
 
+    private void WatermarkCanvas_OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (IsEmbeddedHost && _viewModel.IsSectionMode)
+        {
+            PositionEmbeddedSectionProfilePanel();
+        }
+    }
+
+    private void PositionEmbeddedSectionProfilePanel()
+    {
+        var host = WatermarkCanvas;
+        var panelWidth = SectionProfilePanel.ActualWidth > 1 ? SectionProfilePanel.ActualWidth : SectionProfilePanel.Width;
+        var panelHeight = SectionProfilePanel.ActualHeight > 1 ? SectionProfilePanel.ActualHeight : SectionProfilePanel.Height;
+        var hostWidth = host.ActualWidth > 1 ? host.ActualWidth : ActualWidth;
+        var hostHeight = host.ActualHeight > 1 ? host.ActualHeight : ActualHeight;
+
+        SectionProfilePanel.HorizontalAlignment = HorizontalAlignment.Left;
+        SectionProfilePanel.VerticalAlignment = VerticalAlignment.Top;
+        var left = Math.Clamp(EmbeddedSectionPanelLeftInset, 0, Math.Max(0, hostWidth - panelWidth));
+        var top = Math.Max(0, hostHeight - panelHeight - EmbeddedSectionPanelBottomInset);
+        SectionProfilePanel.Margin = new Thickness(left, top, 0, 0);
+    }
+
+    private void EnsureSectionPlaneFillMaterial()
+    {
+        // LightSteelBlue (#B0C4DE) with soft transparency
+        const float alpha = 0.32f;
+        var fill = new HelixToolkit.Maths.Color4(176f / 255f, 196f / 255f, 222f / 255f, alpha);
+        SectionPlaneVisual.Material = new PhongMaterial
+        {
+            AmbientColor = fill * 0.75f,
+            DiffuseColor = fill,
+            EmissiveColor = new HelixToolkit.Maths.Color4(0, 0, 0, 0),
+            SpecularColor = new HelixToolkit.Maths.Color4(0.55f, 0.65f, 0.82f, alpha * 0.4f),
+            SpecularShininess = 14f
+        };
+        SectionPlaneVisual.IsTransparent = true;
+        SectionPlaneVisual.CullMode = SharpDX.Direct3D11.CullMode.None;
+        SectionPlaneVisual.RenderOrder = 2500;
+    }
+
+    private void ClearSectionPlaneVisuals()
+    {
+        SectionPlaneVisual.Geometry = null;
+        SectionPlaneVisual.Visibility = Visibility.Collapsed;
+        SectionPlaneOutlineVisual.Geometry = null;
+        SectionPlaneOutlineVisual.Visibility = Visibility.Collapsed;
+        MeasurementLine.Visibility = Visibility.Collapsed;
+        MeasurementText.Visibility = Visibility.Collapsed;
+    }
+
     private void Viewport_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (!_viewModel.IsSectionMode)
@@ -816,15 +1389,15 @@ public partial class MainWindow : Window
             return;
         }
 
-        var sectionHits = Viewport3DHelper.FindHits(Viewport.Viewport, e.GetPosition(Viewport));
-        var sectionHit = sectionHits.FirstOrDefault(h => h.Model is GeometryModel3D);
+        var sectionHits = Viewport.FindHits(e.GetPosition(Viewport));
+        var sectionHit = sectionHits.FirstOrDefault(h => h.ModelHit is MeshGeometryModel3D);
         if (sectionHit is null)
         {
             return;
         }
 
-        _sectionCenter = sectionHit.Position;
-        if (Viewport.Camera is ProjectionCamera sectionCamera)
+        _sectionCenter = new Point3D(sectionHit.PointHit.X, sectionHit.PointHit.Y, sectionHit.PointHit.Z);
+        if (Viewport.Camera is HelixProjectionCamera sectionCamera)
         {
             var look = sectionCamera.LookDirection;
             var up = sectionCamera.UpDirection;
@@ -842,20 +1415,15 @@ public partial class MainWindow : Window
             _sectionNormal = perpendicularNormal;
         }
 
-        // Always anchor a new plane exactly at the click point. Resetting offset to zero
-        // re-centers the slider so prior offset does not shift the new placement.
         _viewModel.SectionOffset = 0;
-
-        SectionCutGroup.IsEnabled = true;
         UpdateSectionPlane();
         e.Handled = true;
-        return;
     }
 
     private void UpdateMeasurementVisual()
     {
-        MeasurementLine.IsRendering = true;
-        MeasurementText.IsRendering = true;
+        MeasurementLine.Visibility = Visibility.Visible;
+        MeasurementText.Visibility = Visibility.Visible;
 
         if (_viewModel.IsSectionMode)
         {
@@ -885,17 +1453,10 @@ public partial class MainWindow : Window
 
     private void UpdateSectionPlane()
     {
-        if (SectionCutGroup is null)
-        {
-            return;
-        }
-
         if (!_viewModel.IsSectionMode)
         {
-            SectionCutGroup.IsEnabled = false;
-            SectionPlaneVisual.Content = null;
-            SectionPlaneOutlineVisual.Points = new Point3DCollection();
-            SectionPlaneOutlineVisual.IsRendering = false;
+            _viewModel.ApplySectionPlane(_activeSectionPlanePoint, _activeSectionPlaneNormal, false);
+            ClearSectionPlaneVisuals();
             SectionProfileHintText.Text = "Enable section and click on mesh to position plane";
             SectionProfileHintText.Visibility = Visibility.Visible;
             _hasSectionProjectionMap = false;
@@ -915,10 +1476,7 @@ public partial class MainWindow : Window
         _activeSectionPlanePoint = planePosition;
         _activeSectionPlaneNormal = normal;
 
-        SectionCutGroup.IsEnabled = true;
-        SectionCutGroup.CuttingPlanes.Clear();
-        SectionCutGroup.CuttingPlanes.Add(new Plane3D(planePosition, normal));
-
+        _viewModel.ApplySectionPlane(planePosition, normal, true);
         UpdateSectionPlaneVisual(planePosition, normal);
         UpdateSectionProfileView(planePosition, normal, resetCanvasTransform: false);
     }
@@ -926,7 +1484,7 @@ public partial class MainWindow : Window
     private void UpdateSectionPlaneVisual(Point3D center, Vector3D normal)
     {
         var up = new Vector3D(0, 1, 0);
-        if (Viewport.Camera is ProjectionCamera camera && camera.UpDirection.LengthSquared > 1e-9)
+        if (Viewport.Camera is HelixProjectionCamera camera && camera.UpDirection.LengthSquared > 1e-9)
         {
             up = camera.UpDirection;
         }
@@ -950,76 +1508,37 @@ public partial class MainWindow : Window
 
         var radius = Math.Max(_sectionVisualRadius, 4.0);
         const int segments = 64;
-        var positions = new Point3DCollection(segments + 1)
-        {
-            center
-        };
 
-        for (var i = 0; i < segments; i++)
-        {
-            var angle = (Math.PI * 2.0 * i) / segments;
-            var point = center + (axisX * (Math.Cos(angle) * radius)) + (axisY * (Math.Sin(angle) * radius));
-            positions.Add(point);
-        }
-
-        var triangles = new Int32Collection(segments * 3);
-        for (var i = 0; i < segments; i++)
-        {
-            var current = i + 1;
-            var next = ((i + 1) % segments) + 1;
-            triangles.Add(0);
-            triangles.Add(current);
-            triangles.Add(next);
-        }
-
-        var mesh = new MeshGeometry3D
-        {
-            Positions = positions,
-            TriangleIndices = triangles
-        };
-
-        // Use EmissiveMaterial only — not affected by scene lighting, renders exact ARGB colour.
-        // #00807D at higher opacity for darker appearance
-        var planeBrush = new SolidColorBrush(Color.FromArgb(200, 0, 128, 125));
-        var material = new EmissiveMaterial(planeBrush);
-
-        var planeModel = new GeometryModel3D
-        {
-            Geometry = mesh,
-            Material = material,
-            BackMaterial = material
-        };
-
-        SectionPlaneVisual.Content = planeModel;
-
-        // LinesVisual3D draws independent segments from consecutive pairs, so each
-        // edge of the circle must be encoded as (p_i, p_{i+1}) — two points per segment.
         var normalOffset = normal * 0.05;
+        var diskCenter = center + normalOffset;
         var ringPts = new Point3D[segments];
         for (var i = 0; i < segments; i++)
         {
             var angle = (Math.PI * 2.0 * i) / segments;
-            ringPts[i] = center + (axisX * (Math.Cos(angle) * radius)) + (axisY * (Math.Sin(angle) * radius)) + normalOffset;
+            ringPts[i] = diskCenter + (axisX * (Math.Cos(angle) * radius)) + (axisY * (Math.Sin(angle) * radius));
         }
 
-        var outlinePoints = new Point3DCollection(segments * 2);
+        SectionPlaneVisual.Geometry = SharpDxMeshFactory.CreateDiskGeometry(diskCenter, axisX, axisY, radius, segments);
+        SectionPlaneVisual.Visibility = Visibility.Visible;
+
+        var outlinePoints = new List<Point3D>(segments * 2);
         for (var i = 0; i < segments; i++)
         {
             outlinePoints.Add(ringPts[i]);
             outlinePoints.Add(ringPts[(i + 1) % segments]);
         }
 
-        SectionPlaneOutlineVisual.Points = outlinePoints;
-        SectionPlaneOutlineVisual.IsRendering = true;
+        SectionPlaneOutlineVisual.Geometry = SharpDxMeshFactory.CreateSegmentLineGeometry(outlinePoints);
+        SectionPlaneOutlineVisual.Visibility = Visibility.Visible;
     }
 
     private void UpdateToolButtonStates()
     {
-        SectionToggleButton.Background = _viewModel.IsSectionMode ? _activeToolBrush : null;
+        SectionToggleButton.Background = _viewModel.IsSectionMode ? _activeToolBrush : _toolbarButtonBackground;
         SectionToggleButton.Foreground = _viewModel.IsSectionMode ? _activeToolForegroundBrush : Brushes.Black;
-        SectionToggleButton.Content = CreateToolbarIcon(_viewModel.IsSectionMode ? "/DcmViewer/Images/turnoffsection.png" : "/DcmViewer/Images/sectionmode.png");
+        SectionToggleButton.Content = TryCreateToolbarIcon(_viewModel.IsSectionMode ? "/DcmViewer/Images/turnoffsection.png" : "/DcmViewer/Images/sectionmode.png");
 
-        MeasureToggleButton.Background = _viewModel.IsMeasureMode ? _activeToolBrush : null;
+        MeasureToggleButton.Background = _viewModel.IsMeasureMode ? _activeToolBrush : _toolbarButtonBackground;
         MeasureToggleButton.Foreground = _viewModel.IsMeasureMode ? _activeToolForegroundBrush : Brushes.Black;
     }
 
@@ -1192,7 +1711,7 @@ public partial class MainWindow : Window
         normal.Normalize();
 
         var axisY = new Vector3D(0, 1, 0);
-        if (Viewport.Camera is ProjectionCamera camera && camera.UpDirection.LengthSquared > 1e-9)
+        if (Viewport.Camera is HelixProjectionCamera camera && camera.UpDirection.LengthSquared > 1e-9)
         {
             axisY = camera.UpDirection;
         }

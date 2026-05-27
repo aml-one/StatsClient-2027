@@ -18,19 +18,20 @@ public static class SectionGeometryService
 
         foreach (var item in loadedFiles)
         {
-            if (!item.IsVisible || item.Model is not GeometryModel3D geometryModel || geometryModel.Geometry is not MeshGeometry3D mesh)
+            if (!item.IsVisible || item.MeshSnapshot is null)
             {
                 continue;
             }
 
+            var mesh = item.MeshSnapshot;
             var positions = mesh.Positions;
             var indices = mesh.TriangleIndices;
-            if (positions.Count == 0 || indices.Count < 3)
+            if (positions.Length == 0 || indices.Length < 3)
             {
                 continue;
             }
 
-            for (var i = 0; i + 2 < indices.Count; i += 3)
+            for (var i = 0; i + 2 < indices.Length; i += 3)
             {
                 var a = positions[indices[i]];
                 var b = positions[indices[i + 1]];

@@ -1,4 +1,6 @@
-﻿using StatsClient.MVVM.Core;
+﻿using DCMViewer.Services;
+using DcmViewerViewModel = DCMViewer.ViewModels.MainViewModel;
+using StatsClient.MVVM.Core;
 using StatsClient.MVVM.Model;
 using StatsClient.MVVM.ViewModel;
 using System.ComponentModel;
@@ -16,8 +18,10 @@ using TaskDialogIcon = Ookii.Dialogs.Wpf.TaskDialogIcon;
 using TaskDialogButton = Ookii.Dialogs.Wpf.TaskDialogButton;
 using ListView = System.Windows.Controls.ListView;
 using System.Windows.Input;
+using System.Windows.Threading;
 using KeyEventHandler = System.Windows.Input.KeyEventHandler;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using Task = System.Threading.Tasks.Task;
 
 namespace StatsClient.MVVM.View;
 
@@ -25,6 +29,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
 {
     private OrderInfoWindow? instance;
     private List<DCMFileItem>? _currentCaseFiles;
+    private DcmViewerViewModel? _hookedViewerViewModel;
     public OrderInfoWindow Instance
     {
         get => instance!;
@@ -53,10 +58,12 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         InitializeComponent();
         OrderInfoViewModel.Instance._InfoWindow = this;
         OrderInfoViewModel.Instance.ThreeShapeObject = ThreeShapeObject;
-        OrderInfoViewModel.Instance.UpdateForm();
+        OrderInfoViewModel.Instance.IsLoading = true;
 
         Loaded += OrderInfoWindow_Loaded;
         this.PreviewKeyDown += new KeyEventHandler(HandleEsc);
+        OrderInfoViewModel.Instance.PropertyChanged += OrderInfoViewModelOnPropertyChanged;
+        dcmViewer.Loaded += (_, _) => EnsureViewerLoadingHook();
     }
 
     private async void OrderInfoWindow_Loaded(object sender, RoutedEventArgs e)
@@ -68,19 +75,117 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             return;
         }
 
-        DCMFinderResult result = await System.Threading.Tasks.Task.Run(() => DCMFinder.FindForCase(OrderInfoViewModel.Instance.ThreeShapeObject));
-        if (result.AllFiles.Count == 0)
+        await RefreshOrderAsync();
+    }
+
+    public async Task RefreshOrderAsync()
+    {
+        if (OrderInfoViewModel.Instance.ThreeShapeObject is null)
         {
             return;
         }
 
-        _currentCaseFiles = result.AllFiles
-            .GroupBy(x => Path.GetFullPath(x.FilePath), StringComparer.OrdinalIgnoreCase)
-            .Select(x => x.First())
-            .ToList();
+        OrderInfoViewModel.Instance.IsLoading = true;
+        UpdateOverviewLoadingOverlay();
 
-        AddDefaultPreparationScans(_currentCaseFiles);
-        await dcmViewer.LoadCaseFilesAsync(_currentCaseFiles);
+        try
+        {
+            await Dispatcher.Yield(DispatcherPriority.Background);
+            await OrderInfoViewModel.Instance.UpdateForm();
+            await ReloadCaseFilesForCurrentOrderAsync();
+        }
+        finally
+        {
+            OrderInfoViewModel.Instance.IsLoading = false;
+            UpdateOverviewLoadingOverlay();
+        }
+    }
+
+    private void OrderInfoViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (string.Equals(e.PropertyName, nameof(OrderInfoViewModel.IsLoading), StringComparison.Ordinal))
+        {
+            UpdateOverviewLoadingOverlay();
+        }
+    }
+
+    private void EnsureViewerLoadingHook()
+    {
+        var viewModel = dcmViewer.ViewerViewModel;
+        if (viewModel is null || ReferenceEquals(viewModel, _hookedViewerViewModel))
+        {
+            return;
+        }
+
+        if (_hookedViewerViewModel is not null)
+        {
+            _hookedViewerViewModel.PropertyChanged -= ViewerViewModelOnPropertyChanged;
+        }
+
+        _hookedViewerViewModel = viewModel;
+        viewModel.PropertyChanged += ViewerViewModelOnPropertyChanged;
+        UpdateOverviewLoadingOverlay();
+        UpdateOrderInfoLeftPanelVisibility();
+    }
+
+    private void ViewerViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is "IsBusy" or "LoadProgress" or "StatusText")
+        {
+            Dispatcher.BeginInvoke(UpdateOverviewLoadingOverlay, DispatcherPriority.DataBind);
+        }
+
+        if (string.Equals(e.PropertyName, "IsSectionMode", StringComparison.Ordinal))
+        {
+            Dispatcher.BeginInvoke(UpdateOrderInfoLeftPanelVisibility, DispatcherPriority.DataBind);
+        }
+    }
+
+    private void UpdateOrderInfoLeftPanelVisibility()
+    {
+        if (OrderInfoLeftPanel is null)
+        {
+            return;
+        }
+
+        var hideForSection = dcmViewer.ViewerViewModel?.IsSectionMode == true;
+        OrderInfoLeftPanel.Visibility = hideForSection ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void UpdateOverviewLoadingOverlay()
+    {
+        if (OverviewLoadingOverlay is null)
+        {
+            return;
+        }
+
+        EnsureViewerLoadingHook();
+
+        var orderLoading = OrderInfoViewModel.Instance.IsLoading;
+        var viewer = dcmViewer.ViewerViewModel;
+        var scanLoading = viewer?.IsBusy == true;
+        var show = orderLoading || scanLoading;
+
+        OverviewLoadingOverlay.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+
+        if (scanLoading && viewer is not null)
+        {
+            OverviewLoadingStatusText.Text = string.IsNullOrWhiteSpace(viewer.StatusText)
+                ? "Loading scans..."
+                : viewer.StatusText;
+
+            var showProgress = viewer.LoadProgress > 0 && viewer.LoadProgress < 1;
+            OverviewLoadingProgress.Visibility = showProgress ? Visibility.Visible : Visibility.Collapsed;
+            if (showProgress)
+            {
+                OverviewLoadingProgress.Value = viewer.LoadProgress;
+            }
+        }
+        else
+        {
+            OverviewLoadingStatusText.Text = "Loading order...";
+            OverviewLoadingProgress.Visibility = Visibility.Collapsed;
+        }
     }
 
     private void HandleEsc(object sender, KeyEventArgs e)
@@ -216,6 +321,53 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         await dcmViewer.ReloadCaseFilesAsync(_currentCaseFiles);
     }
 
+    /// <summary>
+    /// Unloads the embedded DCM viewer so the 3Shape order folder is not locked during rename.
+    /// </summary>
+    public async Task ReleaseOrderFileLocksForRenameAsync()
+    {
+        _currentCaseFiles = null;
+        dcmViewer.UnloadViewer();
+        await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ApplicationIdle);
+    }
+
+    public static async Task ReleaseLocksIfViewingOrderAsync(string orderId)
+    {
+        if (string.IsNullOrWhiteSpace(orderId) || staticInstance is null || !staticInstance.IsLoaded)
+            return;
+
+        string? currentId = OrderInfoViewModel.Instance.ThreeShapeObject?.IntOrderID;
+        if (string.IsNullOrWhiteSpace(currentId) ||
+            !string.Equals(currentId, orderId, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        await staticInstance.ReleaseOrderFileLocksForRenameAsync();
+    }
+
+    public async Task ReloadCaseFilesForCurrentOrderAsync()
+    {
+        if (OrderInfoViewModel.Instance.ThreeShapeObject is null)
+            return;
+
+        DCMFinderResult result = await System.Threading.Tasks.Task.Run(() => DCMFinder.FindForCase(OrderInfoViewModel.Instance.ThreeShapeObject));
+        if (result.AllFiles.Count == 0)
+        {
+            _currentCaseFiles = [];
+            dcmViewer.UnloadViewer();
+            return;
+        }
+
+        _currentCaseFiles = result.AllFiles
+            .GroupBy(x => Path.GetFullPath(x.FilePath), StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.First())
+            .ToList();
+
+        AddDefaultPreparationScans(_currentCaseFiles);
+        await dcmViewer.LoadCaseFilesAsync(_currentCaseFiles);
+        EnsureViewerLoadingHook();
+        UpdateOverviewLoadingOverlay();
+    }
+
     private static DCMFileItem CreateCaseFileItem(OrderScanPickerItem item)
     {
         bool isCad = item.Group.Equals("CAD", StringComparison.OrdinalIgnoreCase) || item.FullPath.Contains($"{Path.DirectorySeparatorChar}CAD{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase);
@@ -225,7 +377,9 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             FilePath = item.FullPath,
             RelativePath = item.FullPath,
             DisplayName = Path.GetFileNameWithoutExtension(item.FullPath),
-            MaterialName = isCad ? "Zirconia" : "Model",
+            MaterialName = PrepScanMaterialRules.IsPreopScan(item.FullPath)
+                ? PrepScanMaterialRules.TextureName
+                : isCad ? "Zirconia" : "Model",
             GroupName = isCad ? "Restoration" : item.Group,
             SourceKind = isCad ? DCMFileSourceKind.DesignedElement : DCMFileSourceKind.ModelScan,
             IsDesigned = isCad
@@ -248,7 +402,6 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             .Select(x => Path.GetFullPath(x.FilePath))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var prepPatterns = new[] { "PrePreparationScan", "GenericDoublePrepScan" };
         foreach (var folder in new[] { scansFolder, cadFolder })
         {
             if (!Directory.Exists(folder))
@@ -267,8 +420,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
                     continue;
                 }
 
-                var fileName = Path.GetFileNameWithoutExtension(fullPath);
-                if (!prepPatterns.Any(pattern => fileName.Contains(pattern, StringComparison.OrdinalIgnoreCase)))
+                if (!PrepScanMaterialRules.IsPreopScan(fullPath))
                 {
                     continue;
                 }

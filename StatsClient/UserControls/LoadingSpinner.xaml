@@ -4,14 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:StatsClient.UserControls"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
+             Background="Transparent"
              d:DesignHeight="80" d:DesignWidth="80">
     <UserControl.Resources>
         <Color x:Key="FilledColor" A="95" B="3" R="252" G="132"/>
         <Color x:Key="UnfilledColor" A="0" B="0" R="255" G="0"/>
 
         <Style x:Key="BusyAnimationStyle" TargetType="Control">
-            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Background" Value="Transparent"/>
 
             <Setter Property="Template">
                 <Setter.Value>
@@ -265,7 +266,6 @@
                                     <Ellipse x:Name="ellipse7" Canvas.Top="34.25" Canvas.Left="7" />
                                     <Ellipse Width="39.5" Height="39.5" Canvas.Left="8.75" Canvas.Top="8" Visibility="Hidden"/>
                                 </Canvas>
-                                <Label Content="{Binding Path=Text}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
                     </ControlTemplate>

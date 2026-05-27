@@ -3,8 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:h="http://helix-toolkit.org/wpf"
-    xmlns:local="clr-namespace:DCMViewer"
+        xmlns:hx="http://helix-toolkit.org/wpf/SharpDX"
+        xmlns:local="clr-namespace:DCMViewer"
+        xmlns:vm="clr-namespace:DCMViewer.ViewModels"
+        xmlns:usercontrols="clr-namespace:StatsClient.UserControls"
         mc:Ignorable="d"
         Title="DCM Viewer"
         Height="920"
@@ -17,6 +19,7 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <local:WatermarkSizeConverter x:Key="WatermarkSizeConverter" />
+        <local:BindingProxy x:Key="ViewerBindingProxy" />
 
         <!-- Slider track segment buttons -->
         <Style x:Key="SliderRepeatButton"
@@ -276,6 +279,8 @@
                     Value="0" />
             <Setter Property="Margin"
                     Value="0,0,0,6" />
+            <Setter Property="Background"
+                    Value="#FFEDF2F8" />
         </Style>
 
         <!-- Round eye/visibility checkbox -->
@@ -485,6 +490,181 @@
                 </EventTrigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="ScanArchSectionHeaderText"
+               TargetType="TextBlock">
+            <Setter Property="Foreground"
+                    Value="#FF5A6B7D" />
+            <Setter Property="Background"
+                    Value="#FFE3E7EA" />
+            <Setter Property="Padding"
+                    Value="6,2,8,2" />
+            <Setter Property="FontSize"
+                    Value="9" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Margin"
+                    Value="2,8,0,2" />
+        </Style>
+
+        <DataTemplate x:Key="LoadedFileLayerRowTemplate">
+            <Grid Margin="0,2,0,2">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility"
+                                Value="Visible" />
+                        <Setter Property="Margin"
+                                Value="0,2,0,2" />
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding UseCategoryGroupControl}"
+                                               Value="True" />
+                                    <Condition Binding="{Binding Category}"
+                                               Value="{x:Static vm:MeshCategory.Restoration}" />
+                                    <Condition Binding="{Binding Data.ShowRestorationGroupExpander, Source={StaticResource ViewerBindingProxy}}"
+                                               Value="True" />
+                                    <Condition Binding="{Binding Data.IsRestorationGroupExpanded, Source={StaticResource ViewerBindingProxy}}"
+                                               Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding UseCategoryGroupControl}"
+                                               Value="True" />
+                                    <Condition Binding="{Binding Category}"
+                                               Value="{x:Static vm:MeshCategory.Abutment}" />
+                                    <Condition Binding="{Binding Data.ShowAbutmentGroupExpander, Source={StaticResource ViewerBindingProxy}}"
+                                               Value="True" />
+                                    <Condition Binding="{Binding Data.IsAbutmentGroupExpanded, Source={StaticResource ViewerBindingProxy}}"
+                                               Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="6" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="110" />
+                </Grid.ColumnDefinitions>
+
+                <CheckBox Grid.Column="0"
+                          IsEnabled="{Binding IsOpacityEnabled}"
+                          IsChecked="{Binding IsVisible, Mode=TwoWay}">
+                    <CheckBox.Style>
+                        <Style TargetType="CheckBox"
+                               BasedOn="{StaticResource FileRoundCheckBox}">
+                            <Setter Property="VerticalAlignment"
+                                    Value="Center" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding UseCategoryGroupControl}"
+                                                   Value="True" />
+                                        <Condition Binding="{Binding Category}"
+                                                   Value="{x:Static vm:MeshCategory.Restoration}" />
+                                        <Condition Binding="{Binding Data.ShowRestorationGroupExpander, Source={StaticResource ViewerBindingProxy}}"
+                                                   Value="True" />
+                                        <Condition Binding="{Binding Data.IsRestorationGroupExpanded, Source={StaticResource ViewerBindingProxy}}"
+                                                   Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Margin"
+                                            Value="24,0,0,0" />
+                                </MultiDataTrigger>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding UseCategoryGroupControl}"
+                                                   Value="True" />
+                                        <Condition Binding="{Binding Category}"
+                                                   Value="{x:Static vm:MeshCategory.Abutment}" />
+                                        <Condition Binding="{Binding Data.ShowAbutmentGroupExpander, Source={StaticResource ViewerBindingProxy}}"
+                                                   Value="True" />
+                                        <Condition Binding="{Binding Data.IsAbutmentGroupExpanded, Source={StaticResource ViewerBindingProxy}}"
+                                                   Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Margin"
+                                            Value="24,0,0,0" />
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </CheckBox.Style>
+                </CheckBox>
+
+                <Border Grid.Column="2"
+                        VerticalAlignment="Center"
+                        CornerRadius="2"
+                        Padding="4,1,4,1"
+                        MinWidth="0">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background"
+                                    Value="#FF2A323D" />
+                            <Setter Property="BorderBrush"
+                                    Value="Transparent" />
+                            <Setter Property="BorderThickness"
+                                    Value="1" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPackageLocked}"
+                                             Value="True">
+                                    <Setter Property="Background"
+                                            Value="#FF800000" />
+                                    <Setter Property="BorderBrush"
+                                            Value="#FFA33A3A" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsLoadFailed}"
+                                             Value="True">
+                                    <Setter Property="Background"
+                                            Value="#FF800000" />
+                                    <Setter Property="BorderBrush"
+                                            Value="#FFA33A3A" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock VerticalAlignment="Center"
+                               Foreground="#FFE8EDF3"
+                               FontSize="10"
+                               TextTrimming="CharacterEllipsis"
+                               TextWrapping="NoWrap"
+                               ToolTip="{Binding DisplayName}"
+                               Text="{Binding DisplayName}" />
+                </Border>
+
+                <Slider Grid.Column="4"
+                        IsEnabled="{Binding IsOpacityEnabled}"
+                        Width="110"
+                        HorizontalAlignment="Right"
+                        Tag="{Binding SliderKnobIconPath}"
+                        Value="{Binding Opacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        ToolTip="{Binding LoadError}"
+                        PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown">
+                    <Slider.Style>
+                        <Style TargetType="Slider"
+                               BasedOn="{StaticResource TopRightOpacitySlider}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPackageLocked}"
+                                             Value="True">
+                                    <Setter Property="Template"
+                                            Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsLoadFailed}"
+                                             Value="True">
+                                    <Setter Property="Template"
+                                            Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Slider.Style>
+                </Slider>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -492,15 +672,23 @@
 
         <Grid x:Name="WatermarkCanvas">
             <Grid.Background>
-                <RadialGradientBrush GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.8" RadiusY="0.8">
-                    <GradientStop Color="#FFFFFFFF" Offset="0.0" />
-                    <GradientStop Color="#FFF3F6F9" Offset="0.35" />
-                    <GradientStop Color="#FFD3D7DA" Offset="0.7" />
-                    <GradientStop Color="#FFB0B4B8" Offset="1.0" />
+                <RadialGradientBrush GradientOrigin="0.58,0.5"
+                                     Center="0.58,0.5"
+                                     RadiusX="0.92"
+                                     RadiusY="0.88">
+                    <GradientStop Color="#FFE5E9ED"
+                                  Offset="0.0" />
+                    <GradientStop Color="#FFE3E7EA"
+                                  Offset="0.35" />
+                    <GradientStop Color="#FFD8DCE0"
+                                  Offset="0.7" />
+                    <GradientStop Color="#FFC8CCD0"
+                                  Offset="1.0" />
                 </RadialGradientBrush>
             </Grid.Background>
 
-            <Image Source="pack://application:,,,/DcmViewer/Images/logo.png"
+            <Image x:Name="WatermarkLogoImage"
+                   Source="pack://application:,,,/DcmViewer/Images/logo.png"
                    Width="{Binding ElementName=WatermarkCanvas, Path=ActualWidth, Converter={StaticResource WatermarkSizeConverter}}"
                    Height="{Binding ElementName=WatermarkCanvas, Path=ActualHeight, Converter={StaticResource WatermarkSizeConverter}}"
                    MaxWidth="512"
@@ -512,7 +700,8 @@
                    IsHitTestVisible="False"
                    Panel.ZIndex="0" />
 
-                 <TextBlock Text="AmL"
+                 <TextBlock x:Name="WatermarkTextBlock"
+                            Text="AmL"
                       FontSize="80"
                       FontWeight="SemiBold"
                           Foreground="#FFB8A35C"
@@ -530,56 +719,48 @@
                     </TextBlock.Effect>
                  </TextBlock>
 
-            <h:HelixViewport3D ShowViewCube="True"
-                               x:Name="Viewport"
-                               ShowCoordinateSystem="True"
-                               IsRotationEnabled="True"
-                               CameraRotationMode="Trackball"
-                               RotateGesture="RightClick"
-                               IsPanEnabled="True"
-                               IsZoomEnabled="True"
-                               RotateAroundMouseDownPoint="False"
-                               ZoomExtentsWhenLoaded="True"
-                               Background="Transparent">
+            <hx:Viewport3DX ShowViewCube="True"
+                            x:Name="Viewport"
+                            ShowCoordinateSystem="True"
+                            IsRotationEnabled="True"
+                            CameraRotationMode="Trackball"
+                            IsPanEnabled="True"
+                            IsZoomEnabled="True"
+                            RotateAroundMouseDownPoint="False"
+                            ZoomExtentsWhenLoaded="True"
+                            EffectsManager="{Binding EffectsManager}"
+                            EnableSwapChainRendering="False"
+                            EnableRenderOrder="True"
+                            Background="#00000000"
+                            BackgroundColor="#00000000">
 
-                <h:HelixViewport3D.Camera>
-                    <PerspectiveCamera Position="{Binding CameraPosition}"
-                                       LookDirection="{Binding CameraLookDirection}"
-                                       UpDirection="{Binding CameraUpDirection}"
-                                       FieldOfView="45" />
-                </h:HelixViewport3D.Camera>
+                <hx:Viewport3DX.Camera>
+                    <hx:PerspectiveCamera FieldOfView="45"
+                                          CreateLeftHandSystem="False" />
+                </hx:Viewport3DX.Camera>
 
-                <h:CuttingPlaneGroup x:Name="SectionCutGroup"
-                                     IsEnabled="False"
-                                     Content="{Binding ModelGroup}" />
+                <hx:ItemsModel3D ItemsSource="{Binding SceneItems}" />
 
-                <ModelVisual3D x:Name="SectionPlaneVisual" />
-                <h:LinesVisual3D x:Name="SectionPlaneOutlineVisual"
-                                 IsRendering="False"
-                                 Thickness="1.0"
-                                 Color="#FF15459F" />
+                <hx:MeshGeometryModel3D x:Name="SectionPlaneVisual" Visibility="Collapsed" />
+                <hx:LineGeometryModel3D x:Name="SectionPlaneOutlineVisual"
+                                        Visibility="Collapsed"
+                                        Thickness="1.2"
+                                        Color="#FF7A98C4" />
 
-                <h:LinesVisual3D x:Name="MeasurementLine"
-                                 Thickness="2.4"
-                                 Color="#FF1F6FEB"
-                                 IsRendering="False" />
+                <hx:LineGeometryModel3D x:Name="MeasurementLine"
+                                        Visibility="Collapsed"
+                                        Thickness="2.4"
+                                        Color="#FF1F6FEB" />
 
-                <h:BillboardTextVisual3D x:Name="MeasurementText"
-                                         IsRendering="False"
-                                         Background="#DDF5F9FF"
-                                         BorderBrush="#FF8BA1B8"
-                                         BorderThickness="1"
-                                         Foreground="#FF1A2A3A"
-                                         Padding="6,3"
-                                         FontSize="13"
-                                         FontWeight="SemiBold"
-                                         Text="" />
-            </h:HelixViewport3D>
+                <hx:BillboardTextModel3D x:Name="MeasurementText"
+                                         Visibility="Collapsed" />
+            </hx:Viewport3DX>
 
 
 
 
-                                  <Grid  HorizontalAlignment="Right"
+                                  <Grid x:Name="TopRightChromeGrid"
+                    HorizontalAlignment="Right"
                     VerticalAlignment="Top"
                     Margin="0,10,10,0"
                     Panel.ZIndex="25">
@@ -595,14 +776,16 @@
                             Style="{StaticResource TopRightOverlayFadeStyle}"
                             Width="330">
 
-                    <StackPanel Margin="0,0,0,6">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  MaxHeight="450">
+                        <StackPanel>
                         <Grid Margin="0,2,0,2"
-                              Visibility="{Binding HasRestorationGroup, Converter={StaticResource BoolToVis}}">
+                              Visibility="{Binding ShowRestorationGroupHeader, Converter={StaticResource BoolToVis}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="6" />
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="18" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -615,11 +798,63 @@
                                     VerticalAlignment="Center"
                                     CornerRadius="2"
                                     Padding="4,1,4,1"
-                                    Background="#FF2A323D">
-                                <TextBlock VerticalAlignment="Center"
-                                           Foreground="#FFE8EDF3"
-                                           FontSize="10"
-                                           Text="{Binding RestorationGroupCount, StringFormat=Restorations ({0})}" />
+                                    Background="#FF2A323D"
+                                    Cursor="Hand"
+                                    ToolTip="Click to show or hide individual restorations">
+                                <Border.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding ToggleRestorationGroupExpandedCommand}" />
+                                </Border.InputBindings>
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid Width="10"
+                                          Height="10"
+                                          Margin="0,0,4,0"
+                                          VerticalAlignment="Center"
+                                          Visibility="{Binding ShowRestorationGroupExpander, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#FFB8C6D5"
+                                                   FontSize="9"
+                                                   Text="&#x25B6;">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility"
+                                                            Value="Visible" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRestorationGroupExpanded}"
+                                                                     Value="True">
+                                                            <Setter Property="Visibility"
+                                                                    Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#FFB8C6D5"
+                                                   FontSize="9"
+                                                   Text="&#x25BC;">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility"
+                                                            Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRestorationGroupExpanded}"
+                                                                     Value="True">
+                                                            <Setter Property="Visibility"
+                                                                    Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                    <TextBlock VerticalAlignment="Center"
+                                               Foreground="#FFE8EDF3"
+                                               FontSize="10"
+                                               Text="{Binding RestorationGroupCount, StringFormat=Restorations ({0})}" />
+                                </StackPanel>
                             </Border>
 
                             <Slider Grid.Column="4"
@@ -629,13 +864,17 @@
                                     PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
                         </Grid>
 
+                        <ItemsControl ItemsSource="{Binding RestorationGroupFiles}"
+                                      ItemTemplate="{StaticResource LoadedFileLayerRowTemplate}"
+                                      Visibility="{Binding HasRestorationSection, Converter={StaticResource BoolToVis}}" />
+
                         <Grid Margin="0,2,0,2"
-                              Visibility="{Binding HasAbutmentGroup, Converter={StaticResource BoolToVis}}">
+                              Visibility="{Binding ShowAbutmentGroupHeader, Converter={StaticResource BoolToVis}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="6" />
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="18" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -648,11 +887,63 @@
                                     VerticalAlignment="Center"
                                     CornerRadius="2"
                                     Padding="4,1,4,1"
-                                    Background="#FF2A323D">
-                                <TextBlock VerticalAlignment="Center"
-                                           Foreground="#FFE8EDF3"
-                                           FontSize="10"
-                                           Text="{Binding AbutmentGroupCount, StringFormat=Abutment ({0})}" />
+                                    Background="#FF2A323D"
+                                    Cursor="Hand"
+                                    ToolTip="Click to show or hide individual abutments">
+                                <Border.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding ToggleAbutmentGroupExpandedCommand}" />
+                                </Border.InputBindings>
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid Width="10"
+                                          Height="10"
+                                          Margin="0,0,4,0"
+                                          VerticalAlignment="Center"
+                                          Visibility="{Binding ShowAbutmentGroupExpander, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#FFB8C6D5"
+                                                   FontSize="9"
+                                                   Text="&#x25B6;">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility"
+                                                            Value="Visible" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsAbutmentGroupExpanded}"
+                                                                     Value="True">
+                                                            <Setter Property="Visibility"
+                                                                    Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="#FFB8C6D5"
+                                                   FontSize="9"
+                                                   Text="&#x25BC;">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility"
+                                                            Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsAbutmentGroupExpanded}"
+                                                                     Value="True">
+                                                            <Setter Property="Visibility"
+                                                                    Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                    <TextBlock VerticalAlignment="Center"
+                                               Foreground="#FFE8EDF3"
+                                               FontSize="10"
+                                               Text="{Binding AbutmentGroupCount, StringFormat=Abutment ({0})}" />
+                                </StackPanel>
                             </Border>
 
                             <Slider Grid.Column="4"
@@ -661,109 +952,30 @@
                                     Tag="/DcmViewer/Images/abutment.png"
                                     PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
                         </Grid>
-                    </StackPanel>
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  MaxHeight="450">
-                        <ItemsControl ItemsSource="{Binding LoadedFiles}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,2,0,2">
-                                        <Grid.Style>
-                                            <Style TargetType="Grid">
-                                                <Setter Property="Visibility"
-                                                        Value="Visible" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding UseCategoryGroupControl}"
-                                                                 Value="True">
-                                                        <Setter Property="Visibility"
-                                                                Value="Collapsed" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Grid.Style>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="6" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="8" />
-                                            <ColumnDefinition Width="120" />
-                                        </Grid.ColumnDefinitions>
+                        <ItemsControl ItemsSource="{Binding AbutmentGroupFiles}"
+                                      ItemTemplate="{StaticResource LoadedFileLayerRowTemplate}"
+                                      Visibility="{Binding HasAbutmentSection, Converter={StaticResource BoolToVis}}" />
 
-                                        <CheckBox Grid.Column="0"
-                                                  Style="{StaticResource FileRoundCheckBox}"
-                                                  IsEnabled="{Binding IsOpacityEnabled}"
-                                                  IsChecked="{Binding IsVisible, Mode=TwoWay}" />
+                        <TextBlock Text="UPPER"
+                                   Style="{StaticResource ScanArchSectionHeaderText}"
+                                   Visibility="{Binding HasUpperScanSection, Converter={StaticResource BoolToVis}}" />
 
-                                        <Border Grid.Column="2"
-                                                VerticalAlignment="Center"
-                                                CornerRadius="2"
-                                            Padding="4,1,4,1"
-                                            MinWidth="0">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background"
-                                                        Value="#FF2A323D" />
-                                                    <Setter Property="BorderBrush"
-                                                        Value="Transparent" />
-                                                    <Setter Property="BorderThickness"
-                                                            Value="1" />
-                                                    <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsPackageLocked}"
-                                                             Value="True">
-                                                        <Setter Property="Background"
-                                                            Value="#FF800000" />
-                                                        <Setter Property="BorderBrush"
-                                                            Value="#FFA33A3A" />
-                                                    </DataTrigger>
-                                                        <DataTrigger Binding="{Binding IsLoadFailed}"
-                                                                     Value="True">
-                                                            <Setter Property="Background"
-                                                                    Value="#FF800000" />
-                                                            <Setter Property="BorderBrush"
-                                                                    Value="#FFA33A3A" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <TextBlock VerticalAlignment="Center"
-                                                       Foreground="#FFE8EDF3"
-                                                       FontSize="10"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       TextWrapping="NoWrap"
-                                                       ToolTip="{Binding DisplayName}"
-                                                       Text="{Binding DisplayName}" />
-                                        </Border>
+                        <ItemsControl ItemsSource="{Binding UpperScanFiles}"
+                                      ItemTemplate="{StaticResource LoadedFileLayerRowTemplate}"
+                                      Visibility="{Binding HasUpperScanSection, Converter={StaticResource BoolToVis}}" />
 
-                                        <Slider Grid.Column="4"
-                                                IsEnabled="{Binding IsOpacityEnabled}"
-                                                Width="120"
-                                                Tag="{Binding SliderKnobIconPath}"
-                                                Value="{Binding Opacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                ToolTip="{Binding LoadError}"
-                                                PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown">
-                                            <Slider.Style>
-                                                <Style TargetType="Slider"
-                                                       BasedOn="{StaticResource TopRightOpacitySlider}">
-                                                    <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsPackageLocked}"
-                                                             Value="True">
-                                                        <Setter Property="Template"
-                                                            Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
-                                                    </DataTrigger>
-                                                        <DataTrigger Binding="{Binding IsLoadFailed}"
-                                                                     Value="True">
-                                                            <Setter Property="Template"
-                                                                    Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Slider.Style>
-                                        </Slider>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <TextBlock Text="LOWER"
+                                   Style="{StaticResource ScanArchSectionHeaderText}"
+                                   Visibility="{Binding HasLowerScanSection, Converter={StaticResource BoolToVis}}" />
+
+                        <ItemsControl ItemsSource="{Binding LowerScanFiles}"
+                                      ItemTemplate="{StaticResource LoadedFileLayerRowTemplate}"
+                                      Visibility="{Binding HasLowerScanSection, Converter={StaticResource BoolToVis}}" />
+
+                        <ItemsControl ItemsSource="{Binding OtherLoadedFiles}"
+                                      ItemTemplate="{StaticResource LoadedFileLayerRowTemplate}" />
+                        </StackPanel>
                     </ScrollViewer>
                 </StackPanel>
 
@@ -877,6 +1089,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="34" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="28" />
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0"
@@ -947,22 +1160,53 @@
                                    FontSize="12"
                                    IsHitTestVisible="False" />
                     </Grid>
+
+                    <Border Grid.Row="2"
+                            Background="#FFDDE8F2"
+                            BorderBrush="#FFB8C6D5"
+                            BorderThickness="0,1,0,0"
+                            Cursor="SizeAll"
+                            ToolTip="Drag to move window"
+                            MouseLeftButtonDown="SectionProfileHeader_OnMouseLeftButtonDown"
+                            MouseMove="SectionProfileHeader_OnMouseMove"
+                            MouseLeftButtonUp="SectionProfileHeader_OnMouseLeftButtonUp">
+                        <TextBlock Text="Drag here to move"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="#FF5A6B7D"
+                                   FontSize="10"
+                                   IsHitTestVisible="False" />
+                    </Border>
                 </Grid>
             </Border>
 
 
 
-            <!-- Status text bottom-left -->
-            <TextBlock Text="{Binding StatusText}"
+            <!-- Status text bottom-left (hidden while center loading overlay is shown) -->
+            <TextBlock x:Name="BottomStatusText"
+                       Text="{Binding StatusText}"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Bottom"
                        Margin="10,0,0,8"
                        FontSize="11"
                        Foreground="#BB364555"
                        IsHitTestVisible="False"
-                       Panel.ZIndex="5" />
+                       Panel.ZIndex="5">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsBusy}"
+                                         Value="True">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
 
-            <Border HorizontalAlignment="Left"
+            <Border x:Name="ZoomBadgeBorder"
+                    HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Margin="50,8,0,0"
                     Padding="6,3"
@@ -977,38 +1221,37 @@
                            Text="Zoom: 100%" />
             </Border>
 
-            <Grid Panel.ZIndex="200"
-                  Background="Transparent"
+            <Grid x:Name="EmbeddedBusyOverlay"
+                  Panel.ZIndex="200"
+                  Background="#33E5E9ED"
                   Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
                   IsHitTestVisible="True">
-                <Border HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Padding="26,22"
-                        Background="#F4FFFFFF"
-                        BorderBrush="#FFBFCAD4"
-                        BorderThickness="1"
-                        CornerRadius="10">
-                    <StackPanel HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <ProgressBar Width="220"
-                                     Height="8"
-                                     IsIndeterminate="True"
-                                     Foreground="#FF46627A"
-                                     Background="#FFE3EAF0" />
-                        <TextBlock Text="{Binding StatusText}"
-                                   Margin="0,12,0,0"
-                                   HorizontalAlignment="Center"
-                                   TextAlignment="Center"
-                                   Foreground="#FF24323E"
-                                   FontSize="13"
-                                   FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding LoadProgressPercentText}"
-                                   Margin="0,4,0,0"
-                                   HorizontalAlignment="Center"
-                                   Foreground="#FF516171"
-                                   FontSize="16" />
-                    </StackPanel>
-                </Border>
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <usercontrols:LoadingSpinner Width="80"
+                                                 Height="80" />
+                    <TextBlock Text="{Binding StatusText}"
+                               Margin="0,14,0,0"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Foreground="#FF364555"
+                               FontSize="14"
+                               FontWeight="SemiBold" />
+                    <ProgressBar Width="200"
+                                 Height="8"
+                                 Margin="0,12,0,0"
+                                 Minimum="0"
+                                 Maximum="1"
+                                 Value="{Binding LoadProgress, Mode=OneWay}"
+                                 IsIndeterminate="False"
+                                 Foreground="#FF46627A"
+                                 Background="#FFD0D8E0" />
+                    <TextBlock Text="{Binding LoadProgressPercentText}"
+                               Margin="0,6,0,0"
+                               HorizontalAlignment="Center"
+                               Foreground="#FF516171"
+                               FontSize="13" />
+                </StackPanel>
             </Grid>
         </Grid>
     </Grid>
