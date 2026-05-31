@@ -3,6 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
     <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Themes/ColorSchemes/ColorSchemeFoundation.xaml" />
         <ResourceDictionary Source="/Themes/ColorSchemes/ListViewItemColors.Light.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
