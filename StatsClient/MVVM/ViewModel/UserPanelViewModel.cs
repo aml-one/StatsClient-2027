@@ -1,4 +1,4 @@
-﻿using StatsClient.MVVM.Core;
+using StatsClient.MVVM.Core;
 using StatsClient.MVVM.Model;
 using StatsClient.MVVM.View;
 using System.Collections.Immutable;
@@ -454,7 +454,7 @@ public partial class UserPanelViewModel : ObservableObject
                         if (model.Models == "0")
                             model.Models = "";
                         else
-                            model.Models = "🗸";
+                            model.Models = "??";
 
                         if (model.OriginalSentOn == DateTime.Now.ToString("MM-dd-yyyy"))
                             model.SentOn = $"zToday";
@@ -526,7 +526,7 @@ public partial class UserPanelViewModel : ObservableObject
                             model.OrderID!.EndsWith("-ACH", StringComparison.CurrentCultureIgnoreCase))
                         {
                             model.ScrewRetained = true;
-                            model.CommentColor = "#b90ffa";
+                            model.CommentColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_B90FFA");
                         }
 
                         if (model.CommentIn3Shape!.Contains(" rush", StringComparison.CurrentCultureIgnoreCase) ||
@@ -586,7 +586,7 @@ public partial class UserPanelViewModel : ObservableObject
                                 model.Models = "";
                                 model.TotalUnits = "0";
                                 model.TotalUnitsWithPrefixZero = "00";
-                                model.CommentColor = "Gray";
+                                model.CommentColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Gray");
                                 model.SentOn = "No scan file";
                                 noScanFile = true;
                             }
@@ -594,7 +594,7 @@ public partial class UserPanelViewModel : ObservableObject
 
                         if (model.CommentIcon == "8")
                         {
-                            model.CommentColor = "Blue";
+                            model.CommentColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Blue");
                             model.SentOn = $"1Needs to change";
                         }
 

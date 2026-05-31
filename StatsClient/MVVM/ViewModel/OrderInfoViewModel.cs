@@ -921,7 +921,7 @@ public class OrderInfoViewModel : ObservableObject
             };
 
             Brush badgeBackground = CreateComputerBadgeBrush(computerName);
-            Brush badgeForeground = IsDarkBrushColor(badgeBackground) ? Brushes.White : Brushes.Black;
+            Brush badgeForeground = IsDarkBrushColor(badgeBackground) ? ColorSchemeResourceCatalog.GetBrush("WhiteBackground") : ColorSchemeResourceCatalog.GetBrush("BlackColor");
 
             Border computerBadge = new()
             {
@@ -947,11 +947,11 @@ public class OrderInfoViewModel : ObservableObject
             };
 
             if (dtm.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) == DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
-                dtbDateTime.Foreground = Brushes.Green;
+                dtbDateTime.Foreground = ColorSchemeResourceCatalog.GetBrush("GreenColor");
             else if (dtm.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) == DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
-                dtbDateTime.Foreground = Brushes.SteelBlue;
+                dtbDateTime.Foreground = ColorSchemeResourceCatalog.GetBrush("AgeColorSteel");
             else
-                dtbDateTime.Foreground = (Brush)bc.ConvertFrom("#FF666666")!;
+                dtbDateTime.Foreground = (Brush)bc.ConvertFrom(ColorSchemeResourceCatalog.GetHex("SchemeColor_FF666666"))!;
 
             dtbDateTime.Text = dateTime;
             stckPanel.Children.Add(dtbDateTime);
@@ -1017,7 +1017,7 @@ public class OrderInfoViewModel : ObservableObject
 
     private static Brush? TryCreatePanColorBrush(string? panNumber, string? panColor)
     {
-        if (string.IsNullOrWhiteSpace(panNumber) || string.IsNullOrWhiteSpace(panColor) || panColor == "#FFFFFF" || panColor == "Transparent")
+        if (string.IsNullOrWhiteSpace(panNumber) || string.IsNullOrWhiteSpace(panColor) || panColor == ColorSchemeResourceCatalog.GetHex("WhiteBackground") || panColor == ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Transparent"))
         {
             return null;
         }
@@ -1123,8 +1123,8 @@ public class OrderInfoViewModel : ObservableObject
             if (cacheMaterialChunk != string.Empty && !modelElementId.Contains("_"))
             {
                 xmlItems.Add(stCopyExists
-                    ? new XMLItemsDataModel(itemChunk, cacheMaterialChunk, modelJobIdChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, null, null, null, Brushes.Blue, null)
-                    : new XMLItemsDataModel(itemChunk, cacheMaterialChunk, modelJobIdChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, Brushes.DimGray, "FailedToValidate"));
+                    ? new XMLItemsDataModel(itemChunk, cacheMaterialChunk, modelJobIdChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, null, null, null, ColorSchemeResourceCatalog.GetBrush("BlueColor"), null)
+                    : new XMLItemsDataModel(itemChunk, cacheMaterialChunk, modelJobIdChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, manufacturingProcessIdChunk, manufacturerIdChunk, manufNameChunk, ColorSchemeResourceCatalog.GetBrush("NamedDimGray"), "FailedToValidate"));
 
                 cacheMaterialChunk = string.Empty;
             }
@@ -1310,7 +1310,7 @@ public class OrderInfoViewModel : ObservableObject
                 {
                     FontWeight = FontWeights.SemiBold,
                     FontSize = 12,
-                    Foreground = Brushes.Black,
+                    Foreground = ColorSchemeResourceCatalog.GetBrush("BlackColor"),
                     Text = designerName
                 };
                 stckPanel.Children.Add(dtbCompName);
@@ -1321,11 +1321,11 @@ public class OrderInfoViewModel : ObservableObject
                 };
 
                 if (dtm.ToString("yyyy-MM-dd") == DateTime.Now.ToString("yyyy-MM-dd"))
-                    dtbDateTime.Foreground = Brushes.Green;
+                    dtbDateTime.Foreground = ColorSchemeResourceCatalog.GetBrush("GreenColor");
                 else if (dtm.ToString("yyyy-MM-dd") == DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd"))
-                    dtbDateTime.Foreground = Brushes.SteelBlue;
+                    dtbDateTime.Foreground = ColorSchemeResourceCatalog.GetBrush("AgeColorSteel");
                 else
-                    dtbDateTime.Foreground = (Brush)bc.ConvertFrom("#FF666666")!;
+                    dtbDateTime.Foreground = (Brush)bc.ConvertFrom(ColorSchemeResourceCatalog.GetHex("SchemeColor_FF666666"))!;
 
                 dtbDateTime.Text = dateTime;
                 stckPanel.Children.Add(dtbDateTime);
@@ -1516,7 +1516,7 @@ public class OrderInfoViewModel : ObservableObject
                                 null,
                                 null,
                                 null,
-                                Brushes.Blue,
+                                ColorSchemeResourceCatalog.GetBrush("BlueColor"),
                                 null
                         ));
                     else
@@ -1530,7 +1530,7 @@ public class OrderInfoViewModel : ObservableObject
                                 ManufacturingProcessIDChunk,
                                 ManufacturerIDChunk,
                                 ManufNameChunk,
-                                Brushes.DimGray,
+                                ColorSchemeResourceCatalog.GetBrush("NamedDimGray"),
                                 "FailedToValidate"
                         ));
 

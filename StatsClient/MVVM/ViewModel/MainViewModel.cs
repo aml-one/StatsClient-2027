@@ -2906,7 +2906,7 @@ public partial class MainViewModel : ObservableObject
 
 
     #region PAN COLOR CHECKER PROPERTIES
-    private string pcPanColor = "#f7f4e6";
+    private string pcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F7F4E6");
     public string PcPanColor
     {
         get => pcPanColor;
@@ -3252,7 +3252,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private string windowBackground = "#c9bf97";
+    private string windowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
     public string WindowBackground
     {
         get => windowBackground;
@@ -3263,7 +3263,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private string classicColorSchemeWindowBackground = "#c9bf97";
+    private string classicColorSchemeWindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
     public string ClassicColorSchemeWindowBackground
     {
         get => classicColorSchemeWindowBackground;
@@ -3274,7 +3274,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private string colorSchemeWindowBackground = "#c9bf97";
+    private string colorSchemeWindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
     public string ColorSchemeWindowBackground
     {
         get => colorSchemeWindowBackground;
@@ -3285,7 +3285,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private string modernColorSchemeWindowBackground = "#EEEEEE";
+    private string modernColorSchemeWindowBackground = ColorSchemeResourceCatalog.GetHex("WindowBackgroundColor");
     public string ModernColorSchemeWindowBackground
     {
         get => modernColorSchemeWindowBackground;
@@ -3418,7 +3418,7 @@ public partial class MainViewModel : ObservableObject
         return $"{duplicate.PanNr}|{duplicate.OrderID_1}|{duplicate.OrderID_2}";
     }
 
-    private string panNrDuplicatesFontColor = "Red";
+    private string panNrDuplicatesFontColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Red");
     public string PanNrDuplicatesFontColor
     {
         get => panNrDuplicatesFontColor;
@@ -3721,12 +3721,9 @@ public partial class MainViewModel : ObservableObject
 
         ClickCommand = new RelayCommand(o => TestCommandMethod(o));
 
-        // classic color scheme
-        //WindowBackground = "#c9bf97";
-        //Modern color scheme
-
-        ColorSchemeWindowBackground = ModernColorSchemeWindowBackground;
-        WindowBackground = ColorSchemeWindowBackground;
+        // Window background comes from the active color scheme (Light/Dark).
+        InitializeColorSchemeCommands();
+        LoadAndApplyColorSchemeSetting();
 
         GeneralTimer.Tick += GeneralTimer_Tick;
         GeneralTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
@@ -4051,55 +4048,55 @@ public partial class MainViewModel : ObservableObject
 
         #region accountinfo bordercolors by category
         // for accountinfo bordercolors by category
-        bgBorderColors.TryAdd("#466f69", "");
-        bgBorderColors.TryAdd("#78804f", "");
-        bgBorderColors.TryAdd("#7d5f48", "");
-        bgBorderColors.TryAdd("#7a504c", "");
-        bgBorderColors.TryAdd("#485c7a", "");
-        bgBorderColors.TryAdd("#46596F", "");
-        bgBorderColors.TryAdd("#7a4076", "");
-        bgBorderColors.TryAdd("#67467d", "");
-        bgBorderColors.TryAdd("#7a464f", "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_466F69"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_78804F"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7D5F48"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A504C"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_485C7A"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("AccountInfoDefaultColor"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A4076"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_67467D"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A464F"), "");
 
-        bgBorderColors.TryAdd("#466f68", "");
-        bgBorderColors.TryAdd("#78804e", "");
-        bgBorderColors.TryAdd("#7d5f47", "");
-        bgBorderColors.TryAdd("#7a504b", "");
-        bgBorderColors.TryAdd("#485c79", "");
-        bgBorderColors.TryAdd("#46596E", "");
-        bgBorderColors.TryAdd("#7a4075", "");
-        bgBorderColors.TryAdd("#67467c", "");
-        bgBorderColors.TryAdd("#7a464d", "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_466F68"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_78804E"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7D5F47"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A504B"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_485C79"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_46596E"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A4075"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_67467C"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A464D"), "");
 
-        bgBorderColors.TryAdd("#466f67", "");
-        bgBorderColors.TryAdd("#78804d", "");
-        bgBorderColors.TryAdd("#7d5f46", "");
-        bgBorderColors.TryAdd("#7a504c", "");
-        bgBorderColors.TryAdd("#485c78", "");
-        bgBorderColors.TryAdd("#46596d", "");
-        bgBorderColors.TryAdd("#7a4074", "");
-        bgBorderColors.TryAdd("#67467b", "");
-        bgBorderColors.TryAdd("#7a464c", "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_466F67"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_78804D"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7D5F46"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A504C"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_485C78"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_46596D"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A4074"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_67467B"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A464C"), "");
 
-        bgBorderColors.TryAdd("#466f66", "");
-        bgBorderColors.TryAdd("#78804c", "");
-        bgBorderColors.TryAdd("#7d5f45", "");
-        bgBorderColors.TryAdd("#7a504b", "");
-        bgBorderColors.TryAdd("#485c77", "");
-        bgBorderColors.TryAdd("#46596c", "");
-        bgBorderColors.TryAdd("#7a4073", "");
-        bgBorderColors.TryAdd("#67467a", "");
-        bgBorderColors.TryAdd("#7a464b", "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_466F66"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_78804C"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7D5F45"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A504B"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_485C77"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_46596C"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A4073"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_67467A"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A464B"), "");
 
-        bgBorderColors.TryAdd("#466f65", "");
-        bgBorderColors.TryAdd("#78804b", "");
-        bgBorderColors.TryAdd("#7d5f44", "");
-        bgBorderColors.TryAdd("#7a504c", "");
-        bgBorderColors.TryAdd("#485c76", "");
-        bgBorderColors.TryAdd("#46596b", "");
-        bgBorderColors.TryAdd("#7a4072", "");
-        bgBorderColors.TryAdd("#674679", "");
-        bgBorderColors.TryAdd("#7a464b", "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_466F65"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_78804B"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7D5F44"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A504C"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_485C76"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_46596B"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A4072"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_674679"), "");
+        bgBorderColors.TryAdd(ColorSchemeResourceCatalog.GetHex("SchemeColor_7A464B"), "");
         #endregion accountinfo bordercolors by category
 
 
@@ -5049,81 +5046,82 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
-    private async Task BlinkWindow(string color = "yellow")
+    private async Task BlinkWindow(string? color = null)
     {
-        string FinalColor = "#c9bf97";
+        color ??= ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Yellow");
+        string FinalColor = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
 
         FinalColor = ColorSchemeWindowBackground;
 
-        if (color == "yellow")
+        if (color == ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Yellow"))
         {
-            WindowBackground = "#c9bf97";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(50);
-            WindowBackground = "#66595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_66595F");
             await Task.Delay(50);
-            WindowBackground = "#76795F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_76795F");
             await Task.Delay(50);
-            WindowBackground = "#86895F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_86895F");
             await Task.Delay(50);
-            WindowBackground = "#96995F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("AddSendToLineButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#A6A95F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_A6A95F");
             await Task.Delay(50);
-            WindowBackground = "#96995F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("AddSendToLineButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#86895F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_86895F");
             await Task.Delay(50);
-            WindowBackground = "#76795F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_76795F");
             await Task.Delay(50);
-            WindowBackground = "#66695F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_66695F");
             await Task.Delay(50);
         }
 
-        if (color == "green")
+        if (color == ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Green"))
         {
-            WindowBackground = "#c9bf97";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(50);
-            WindowBackground = "#56695F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56695F");
             await Task.Delay(50);
-            WindowBackground = "#56795F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("GrabANumberButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#56895F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56895F");
             await Task.Delay(50);
-            WindowBackground = "#56995F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56995F");
             await Task.Delay(50);
-            WindowBackground = "#56A95F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56A95F");
             await Task.Delay(50);
-            WindowBackground = "#56995F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56995F");
             await Task.Delay(50);
-            WindowBackground = "#56895F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56895F");
             await Task.Delay(50);
-            WindowBackground = "#56795F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("GrabANumberButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#56695F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56695F");
             await Task.Delay(50);
         }
 
-        if (color == "red")
+        if (color == ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Red"))
         {
-            WindowBackground = "#c9bf97";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(50);
-            WindowBackground = "#66595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_66595F");
             await Task.Delay(50);
-            WindowBackground = "#76595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("MarkAsRushButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#86595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_86595F");
             await Task.Delay(50);
-            WindowBackground = "#96595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_96595F");
             await Task.Delay(50);
-            WindowBackground = "#A6595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_A6595F");
             await Task.Delay(50);
-            WindowBackground = "#86595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_86595F");
             await Task.Delay(50);
-            WindowBackground = "#76595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("MarkAsRushButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#66595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_66595F");
             await Task.Delay(50);
-            WindowBackground = "#c9bf97";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(50);
         }
 
@@ -5133,79 +5131,79 @@ public partial class MainViewModel : ObservableObject
     {
         string color = obj.ToString()!;
 
-        string FinalColor = "#c9bf97";
+        string FinalColor = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
 
         FinalColor = ColorSchemeWindowBackground;
 
-        if (color == "yellow")
+        if (color == ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Yellow"))
         {
-            WindowBackground = "#c9bf97";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(50);
-            WindowBackground = "#66595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_66595F");
             await Task.Delay(50);
-            WindowBackground = "#76795F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_76795F");
             await Task.Delay(50);
-            WindowBackground = "#86895F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_86895F");
             await Task.Delay(50);
-            WindowBackground = "#96995F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("AddSendToLineButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#A6A95F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_A6A95F");
             await Task.Delay(50);
-            WindowBackground = "#96995F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("AddSendToLineButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#86895F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_86895F");
             await Task.Delay(50);
-            WindowBackground = "#76795F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_76795F");
             await Task.Delay(50);
-            WindowBackground = "#66695F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_66695F");
             await Task.Delay(50);
         }
 
-        if (color == "green")
+        if (color == ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Green"))
         {
-            WindowBackground = "#c9bf97";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(50);
-            WindowBackground = "#56695F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56695F");
             await Task.Delay(50);
-            WindowBackground = "#56795F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("GrabANumberButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#56895F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56895F");
             await Task.Delay(50);
-            WindowBackground = "#56995F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56995F");
             await Task.Delay(50);
-            WindowBackground = "#56A95F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56A95F");
             await Task.Delay(50);
-            WindowBackground = "#56995F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56995F");
             await Task.Delay(50);
-            WindowBackground = "#56895F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56895F");
             await Task.Delay(50);
-            WindowBackground = "#56795F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("GrabANumberButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#56695F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_56695F");
             await Task.Delay(50);
         }
 
-        if (color == "red")
+        if (color == ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Red"))
         {
-            WindowBackground = "#c9bf97";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(50);
-            WindowBackground = "#66595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_66595F");
             await Task.Delay(50);
-            WindowBackground = "#76595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("MarkAsRushButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#86595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_86595F");
             await Task.Delay(50);
-            WindowBackground = "#96595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_96595F");
             await Task.Delay(50);
-            WindowBackground = "#A6595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_A6595F");
             await Task.Delay(50);
-            WindowBackground = "#86595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_86595F");
             await Task.Delay(50);
-            WindowBackground = "#76595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("MarkAsRushButtonColor");
             await Task.Delay(50);
-            WindowBackground = "#66595F";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("SchemeColor_66595F");
             await Task.Delay(50);
-            WindowBackground = "#c9bf97";
+            WindowBackground = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(50);
         }
 
@@ -5232,54 +5230,54 @@ public partial class MainViewModel : ObservableObject
         {
             NoNumberRegisteredShowsNow = Visibility.Visible;
 
-            PcPanColor = "Black";
+            PcPanColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Black");
             PcPanColorFriendlyName = "Number not found!";
             PcPanNumber = "";
 
             await Task.Delay(300);
-            PcPanColor = "#c9bf97";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(300);
-            PcPanColor = "Black";
+            PcPanColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Black");
             await Task.Delay(300);
-            PcPanColor = "#c9bf97";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("ClassicWindowBackgroundColor");
             await Task.Delay(300);
-            PcPanColor = "Black";
+            PcPanColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Black");
             await Task.Delay(300);
 
-            PcPanColor = "#1a040a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_1A040A");
             await Task.Delay(100);
 
-            PcPanColor = "#2a140a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_2A140A");
             await Task.Delay(100);
 
-            PcPanColor = "#3a240a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_3A240A");
             await Task.Delay(100);
 
-            PcPanColor = "#4a340a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_4A340A");
             await Task.Delay(100);
 
-            PcPanColor = "#5a440a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_5A440A");
             await Task.Delay(100);
 
-            PcPanColor = "#6a540a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_6A540A");
             await Task.Delay(100);
 
-            PcPanColor = "#7a640a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_7A640A");
             await Task.Delay(100);
 
-            PcPanColor = "#8a741a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_8A741A");
             await Task.Delay(100);
 
-            PcPanColor = "#9a842a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_9A842A");
             await Task.Delay(100);
 
-            PcPanColor = "#aa943a";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_AA943A");
 
 
 
 
             await Task.Delay(500);
-            PcPanColor = "#f7f4e6";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F7F4E6");
             PcPanColorFriendlyName = "Check pan color";
             NoNumberRegisteredShowsNow = Visibility.Collapsed;
         }
@@ -5302,7 +5300,7 @@ public partial class MainViewModel : ObservableObject
             PcPanNumber = "";
 
             await Task.Delay(3500);
-            PcPanColor = "#f7f4e6";
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F7F4E6");
             PcPanColorFriendlyName = "Check pan color";
             PanColorShowsNow = Visibility.Collapsed;
 
@@ -5587,7 +5585,7 @@ public partial class MainViewModel : ObservableObject
             if (NextPanNumberGlobal != "")
                 NextPanNumberGlobal = "";
 
-            AddEventToEventListLocalDB($"Grabbed a pan number: {LastUsedPanNumber}", "Yellow");
+            AddEventToEventListLocalDB($"Grabbed a pan number: {LastUsedPanNumber}", ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Yellow"));
             ReadBackAllEvent();
         }
     }
@@ -5652,7 +5650,7 @@ public partial class MainViewModel : ObservableObject
                     {
                         Tag = number,
                         Margin = new Thickness(0),
-                        Background = Brushes.Transparent,
+                        Background = ColorSchemeResourceCatalog.GetBrush("TransparentBrush"),
                         Padding = new Thickness(0),
                         BorderThickness = new Thickness(0),
                         Width = 76,
@@ -5670,13 +5668,13 @@ public partial class MainViewModel : ObservableObject
                         Width = 70,
                         Height = 36,
                         ClipToBounds = true,
-                        BorderBrush = Brushes.DimGray,
+                        BorderBrush = ColorSchemeResourceCatalog.GetBrush("NamedDimGray"),
                         BorderThickness = new Thickness(0.5),
                     };
 
                     panBack.Effect = new DropShadowEffect
                     {
-                        Color = Colors.Black,
+                        Color = ColorSchemeResourceCatalog.GetColor("BlackColor_Cl"),
                         Direction = 320,
                         ShadowDepth = 3,
                         Opacity = 0.5,
@@ -5685,13 +5683,13 @@ public partial class MainViewModel : ObservableObject
 
                     Border stickerBorder = new()
                     {
-                        BorderBrush = Brushes.Silver,
+                        BorderBrush = ColorSchemeResourceCatalog.GetBrush("NamedSilver"),
                         BorderThickness = new Thickness(0.5),
                     };
 
                     Grid panSticker = new()
                     {
-                        Background = Brushes.White,
+                        Background = ColorSchemeResourceCatalog.GetBrush("WhiteBackground"),
                         Height = 20,
                         Margin = new Thickness(8, 6, 8, 6),
                     };
@@ -5701,7 +5699,7 @@ public partial class MainViewModel : ObservableObject
                         Text = number,
                         FontSize = 16,
                         FontWeight = FontWeights.SemiBold,
-                        Foreground = Brushes.Black,
+                        Foreground = ColorSchemeResourceCatalog.GetBrush("BlackColor"),
                         Cursor = Cursors.Hand,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
@@ -5739,7 +5737,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     Tag = panNumbr,
                     Margin = new Thickness(0),
-                    Background = Brushes.Transparent,
+                    Background = ColorSchemeResourceCatalog.GetBrush("TransparentBrush"),
                     Padding = new Thickness(0),
                     BorderThickness = new Thickness(0),
                     Width = 76,
@@ -5757,13 +5755,13 @@ public partial class MainViewModel : ObservableObject
                     Width = 70,
                     Height = 36,
                     ClipToBounds = true,
-                    BorderBrush = Brushes.DimGray,
+                    BorderBrush = ColorSchemeResourceCatalog.GetBrush("NamedDimGray"),
                     BorderThickness = new Thickness(0.5)
                 };
 
                 panBack.Effect = new DropShadowEffect
                 {
-                    Color = Colors.Black,
+                    Color = ColorSchemeResourceCatalog.GetColor("BlackColor_Cl"),
                     Direction = 320,
                     ShadowDepth = 3,
                     Opacity = 0.5,
@@ -5772,13 +5770,13 @@ public partial class MainViewModel : ObservableObject
 
                 Border stickerBorder = new()
                 {
-                    BorderBrush = Brushes.Silver,
+                    BorderBrush = ColorSchemeResourceCatalog.GetBrush("NamedSilver"),
                     BorderThickness = new Thickness(0.5),
                 };
 
                 Grid panSticker = new()
                 {
-                    Background = Brushes.White,
+                    Background = ColorSchemeResourceCatalog.GetBrush("WhiteBackground"),
                     Height = 20,
                     Margin = new Thickness(8, 6, 8, 6),
                 };
@@ -5788,7 +5786,7 @@ public partial class MainViewModel : ObservableObject
                     Text = panNumbr,
                     FontSize = 16,
                     FontWeight = FontWeights.SemiBold,
-                    Foreground = Brushes.Black,
+                    Foreground = ColorSchemeResourceCatalog.GetBrush("BlackColor"),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Padding = new Thickness(4, 0, 4, 0),
@@ -5865,7 +5863,7 @@ public partial class MainViewModel : ObservableObject
                             SystemSounds.Beep.Play();
                             SwitchToPrescriptionMakerTab();
                             ClearAllSearchCriteria();
-                            await BlinkWindow("red");
+                            await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Red"));
                             SystemSounds.Beep.Play();
                             ShowMessageBox("No more pan numbers", $"No more available pan numbers!", SMessageBoxButtons.Ok, NotificationIcon.Warning, 20, MainWindow.Instance);
                             NoMorePanNumberBoxShowed = true;
@@ -5954,7 +5952,7 @@ public partial class MainViewModel : ObservableObject
                             SystemSounds.Beep.Play();
                             SwitchToPrescriptionMakerTab();
                             ClearAllSearchCriteria();
-                            await BlinkWindow("red");
+                            await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Red"));
                             SystemSounds.Beep.Play();
                             ShowMessageBox("No more pan numbers", $"No more available pan numbers!", SMessageBoxButtons.Ok, NotificationIcon.Warning, 20, MainWindow.Instance);
                             NoMorePanNumberBoxShowed = true;
@@ -7018,23 +7016,23 @@ public partial class MainViewModel : ObservableObject
             }
 
             SystemSounds.Beep.Play();
-            await BlinkWindow("yellow");
+            await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Yellow"));
 
             // checking if there was a PNG image saved or not
             if (!File.Exists(FinalLocation + "\\" + DateTime.Now.ToString("MM-dd") + "\\" + NextPanNumber + ".png"))
             {
                 ShowNotificationMessage("Image was not saved!", $"There was no image saved of this prescription! Please check..", NotificationIcon.Error);
-                AddEventToEventListLocalDB($"Image was not saved! ({NextPanNumber})", "Red");
+                AddEventToEventListLocalDB($"Image was not saved! ({NextPanNumber})", ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Red"));
                 ReadBackAllEvent();
                 SystemSounds.Beep.Play();
-                await BlinkWindow("red");
+                await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Red"));
             }
             else
             {
                 ShowNotificationMessage("Image was saved!", $"Prescription image successfully saved!", NotificationIcon.Success);
-                AddEventToEventListLocalDB($"Prescription image successfully saved: {NextPanNumber}", "Green");
+                AddEventToEventListLocalDB($"Prescription image successfully saved: {NextPanNumber}", ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Green"));
                 ReadBackAllEvent();
-                await BlinkWindow("yellow");
+                await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Yellow"));
             }
         }));
     }
@@ -7208,13 +7206,13 @@ public partial class MainViewModel : ObservableObject
                 else
                 {
                     if (string.IsNullOrEmpty(model.IsCollected))
-                        model.LineColor = "#fa91c5"; // Today - not collected yet
+                        model.LineColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_FA91C5"); // Today - not collected yet
                     else
-                        model.LineColor = "Yellow"; // Today - collected but not processed yet
+                        model.LineColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Yellow"); // Today - collected but not processed yet
                 }
             }
             else if (postedDateTime.ToString("yyyy-MM-dd") == DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd"))
-                model.LineColor = "#c2effc"; // Yesterday
+                model.LineColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_C2EFFC"); // Yesterday
 
 
             PendingDigiNumbersWaitingToProcess.Add(model);
@@ -7253,10 +7251,10 @@ public partial class MainViewModel : ObservableObject
 
         if (PanNrDuplicatesList.Count > 0)
         {
-            if (PanNrDuplicatesFontColor == "Red")
-                PanNrDuplicatesFontColor = "Yellow";
+            if (PanNrDuplicatesFontColor == ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Red"))
+                PanNrDuplicatesFontColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Yellow");
             else
-                PanNrDuplicatesFontColor = "Red";
+                PanNrDuplicatesFontColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Red");
         }
 
         // Run background tasks
@@ -8067,7 +8065,7 @@ public partial class MainViewModel : ObservableObject
     {
         Application.Current.Dispatcher.Invoke(new Action(async () =>
         {
-            await BlinkWindow("red");
+            await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Red"));
             var message = newDuplicateCount == 1
                 ? "Possible duplicate use of pan number found!"
                 : $"{newDuplicateCount} possible duplicate pan number uses found!";
@@ -8155,8 +8153,8 @@ public partial class MainViewModel : ObservableObject
         string scanSource = "ssUnknown";
         string imageSource = @"\Images\ListViewIcons\" + IconSelect(processStatus, scanSource, processLock) + ".png";
         string panColor = GetBackPanColorHEX(panNumber);
-        if (string.IsNullOrWhiteSpace(panNumber) || panColor == "#FFFFFF")
-            panColor = "Transparent";
+        if (string.IsNullOrWhiteSpace(panNumber) || panColor == ColorSchemeResourceCatalog.GetHex("WhiteBackground"))
+            panColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Transparent");
 
         return new ThreeShapeOrdersModel
         {
@@ -8206,8 +8204,8 @@ public partial class MainViewModel : ObservableObject
 
         string iconSource = @"\Images\ListViewIcons\" + IconSelect(processStatus, scanSource, processLock) + ".png";
         string panColor = GetBackPanColorHEX(panNumber);
-        if (string.IsNullOrWhiteSpace(panNumber) || panColor == "#FFFFFF")
-            panColor = "Transparent";
+        if (string.IsNullOrWhiteSpace(panNumber) || panColor == ColorSchemeResourceCatalog.GetHex("WhiteBackground"))
+            panColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Transparent");
 
         string material = (archiveModel.CacheMaterialName ?? string.Empty).Replace("\"", "").Trim();
 
@@ -9967,9 +9965,9 @@ public partial class MainViewModel : ObservableObject
         {
             FilterString = keyWordOrFilter.Trim();
             //if (FilterInUse)
-            //    tbFilterString.Foreground = Brushes.DarkGreen;
+            //    tbFilterString.Foreground = ColorSchemeResourceCatalog.GetBrush("NamedDarkGreen");
             //else
-            //    tbFilterString.Foreground = Brushes.SteelBlue;
+            //    tbFilterString.Foreground = ColorSchemeResourceCatalog.GetBrush("AgeColorSteel");
 
             _MainWindow.pb3ShapeProgressBar.Value = 0;
             if (AllowToShowProgressBar)
@@ -10084,8 +10082,8 @@ public partial class MainViewModel : ObservableObject
                     string PanColorName = GetBackPanColorName(panNumber);
                     string PanColor = GetBackPanColorHEX(panNumber);
 
-                    if (panNumber == "" || PanColor == "#FFFFFF")
-                        PanColor = "Transparent";
+                    if (panNumber == "" || PanColor == ColorSchemeResourceCatalog.GetHex("WhiteBackground"))
+                        PanColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Transparent");
 
                     string Patient_FirstName = reader["Patient_FirstName"].ToString()!.Trim();
                     string Patient_LastName = reader["Patient_LastName"].ToString()!.Trim();
@@ -10208,7 +10206,7 @@ public partial class MainViewModel : ObservableObject
                         AlternateColoring = "noshade";
 
                     // alternate coloring
-                    if (PanColor == "#FFFFFF")
+                    if (PanColor == ColorSchemeResourceCatalog.GetHex("WhiteBackground"))
                         AlternateColoring = "nopancolor";
 
                     if (CacheMaterialName.Contains("NO MATERIAL"))
@@ -10634,6 +10632,9 @@ public partial class MainViewModel : ObservableObject
             _MainWindow.FolderSubscriptionTabPanel.Children.Add(_MainWindow.LabnextView);
         }
 
+        if (_MainWindow.FolderSubscriptionTabPanel.Children.Contains(_MainWindow.LabnextView))
+            ApplyLabnextViewEmbeddedHostConstraints();
+
         if (_MainWindow.webviewLabnext.IsInitialized)
         {
             _MainWindow.webviewLabnext.ZoomFactor = 0.75;
@@ -10653,6 +10654,29 @@ public partial class MainViewModel : ObservableObject
             _MainWindow.paymentIssuePanelLabnextView.Children.Remove(_MainWindow.LabnextView);
             _MainWindow.LabnextTabPanel.Children.Add(_MainWindow.LabnextView);
         }
+
+        if (_MainWindow.LabnextTabPanel.Children.Contains(_MainWindow.LabnextView))
+            ApplyLabnextViewStandaloneHostConstraints();
+    }
+
+    /// <summary>
+    /// LabnextView declares MinWidth=790 for the dedicated Labnext tab. When embedded beside
+    /// the folder list it must fit its column (host MinWidth=820) or the WebView HWND paints over the list.
+    /// </summary>
+    private void ApplyLabnextViewEmbeddedHostConstraints()
+    {
+        _MainWindow.LabnextView.MinWidth = 0;
+        _MainWindow.LabnextView.MaxWidth = double.PositiveInfinity;
+        _MainWindow.LabnextView.HorizontalAlignment = HorizontalAlignment.Stretch;
+        _MainWindow.LabnextView.VerticalAlignment = VerticalAlignment.Stretch;
+    }
+
+    private void ApplyLabnextViewStandaloneHostConstraints()
+    {
+        _MainWindow.LabnextView.MinWidth = 790;
+        _MainWindow.LabnextView.MaxWidth = double.PositiveInfinity;
+        _MainWindow.LabnextView.HorizontalAlignment = HorizontalAlignment.Stretch;
+        _MainWindow.LabnextView.VerticalAlignment = VerticalAlignment.Stretch;
     }
 
     private void MoveLabnextViewToPaymentIssueTab()
@@ -10671,6 +10695,9 @@ public partial class MainViewModel : ObservableObject
                 _MainWindow.paymentIssuePanelLabnextView.Children.Add(_MainWindow.LabnextView);
             }
         }
+
+        if (_MainWindow.paymentIssuePanelLabnextView.Children.Contains(_MainWindow.LabnextView))
+            ApplyLabnextViewEmbeddedHostConstraints();
     }
 
     private async void SearchForPanNumberInLabnextForFolderSubscription()
@@ -10938,26 +10965,26 @@ public partial class MainViewModel : ObservableObject
     private void ResetDigiSystemColors()
     {
         DigiSystemColors.Clear();
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFfcf0cc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFfcccfc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFfcd1cc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFcce1fc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFeffccc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFcefccc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFcccefc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFfce2cc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFccfced") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFccf6fc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add((new BrushConverter().ConvertFromString("#FFe9ccfc") as SolidColorBrush)!, true);
-        DigiSystemColors.Add(Brushes.WhiteSmoke, true);
-        DigiSystemColors.Add(Brushes.LightYellow, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFFCF0CC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFFCCCFC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFFCD1CC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFCCE1FC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFEFFCCC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFCEFCCC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFCCCEFC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFFCE2CC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFCCFCED")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFCCF6FC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add((new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FFE9CCFC")) as SolidColorBrush)!, true);
+        DigiSystemColors.Add(ColorSchemeResourceCatalog.GetBrush("NamedWhiteSmoke"), true);
+        DigiSystemColors.Add(ColorSchemeResourceCatalog.GetBrush("NamedLightYellow"), true);
         DigiSystemColors.Add(Brushes.LightPink, true);
-        DigiSystemColors.Add(Brushes.Black, true);
-        DigiSystemColors.Add(Brushes.LightCoral, true);
-        DigiSystemColors.Add(Brushes.Yellow, true);
+        DigiSystemColors.Add(ColorSchemeResourceCatalog.GetBrush("BlackColor"), true);
+        DigiSystemColors.Add(ColorSchemeResourceCatalog.GetBrush("NamedLightCoral"), true);
+        DigiSystemColors.Add(ColorSchemeResourceCatalog.GetBrush("NamedYellow"), true);
         DigiSystemColors.Add(Brushes.LightSeaGreen, true);
         DigiSystemColors.Add(Brushes.CornflowerBlue, true);
-        DigiSystemColors.Add(Brushes.DeepPink, true);
+        DigiSystemColors.Add(ColorSchemeResourceCatalog.GetBrush("NamedDeepPink"), true);
         DigiSystemColors.Add(Brushes.Violet, true);
     }
 
@@ -10991,7 +11018,7 @@ public partial class MainViewModel : ObservableObject
             //    {
             //        Text = $"{pendingDigiName} ⇢ Got {PendingDigiNumbersWaitingToProcessInt} new case (In-house)",
             //        FontSize = fontSize,
-            //        Foreground = new BrushConverter().ConvertFromString("#FF8ce4ff") as SolidColorBrush,
+            //        Foreground = new BrushConverter().ConvertFromString(ColorSchemeResourceCatalog.GetHex("SchemeColor_FF8CE4FF")) as SolidColorBrush,
             //        FontWeight = FontWeights.SemiBold,
             //    };
 
@@ -11005,7 +11032,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     Text = $"Trios ⇢ Got {NewTriosCaseInInboxCount} new case",
                     FontSize = fontSize,
-                    Foreground = Brushes.LightGreen,
+                    Foreground = ColorSchemeResourceCatalog.GetBrush("NamedLightGreen"),
                     FontWeight = FontWeights.SemiBold,
                 };
 
@@ -11013,7 +11040,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     Text = $"Trios ⇢ Got {NewTriosCaseInInboxCount} new case",
                     FontSize = fontSizeCopy,
-                    Foreground = Brushes.LightGreen,
+                    Foreground = ColorSchemeResourceCatalog.GetBrush("NamedLightGreen"),
                     FontWeight = FontWeights.SemiBold,
                 };
 
@@ -11025,7 +11052,7 @@ public partial class MainViewModel : ObservableObject
 
             foreach (var item in catchedEmails)
             {
-                Brush textColor = Brushes.LightGreen;
+                Brush textColor = ColorSchemeResourceCatalog.GetBrush("NamedLightGreen");
                 foreach (var color in DigiSystemColors)
                 {
                     if (color.Value == true)
@@ -11338,14 +11365,14 @@ public partial class MainViewModel : ObservableObject
                     //        //Setter setterButtonBg = new()
                     //        //{
                     //        //    Property = Button.BackgroundProperty,
-                    //        //    Value = Brushes.Red
+                    //        //    Value = ColorSchemeResourceCatalog.GetBrush("RedColor")
                     //        //};
 
 
 
                     //        //s.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
-                    //        //s.Setters.Add(new Setter(Button.BorderBrushProperty, Brushes.Transparent));
-                    //        //s.Setters.Add(new Setter(Button.BackgroundProperty, Brushes.Transparent));
+                    //        //s.Setters.Add(new Setter(Button.BorderBrushProperty, ColorSchemeResourceCatalog.GetBrush("TransparentBrush")));
+                    //        //s.Setters.Add(new Setter(Button.BackgroundProperty, ColorSchemeResourceCatalog.GetBrush("TransparentBrush")));
 
 
                     //        //Button btn = new()
@@ -11602,7 +11629,7 @@ public partial class MainViewModel : ObservableObject
     //        SearchHistoryForContextMenu.Add(new MenuItem()
     //        {
     //            Header = "Search History",
-    //            Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#e6c235")!,
+    //            Background = (SolidColorBrush)new BrushConverter().ConvertFrom(ColorSchemeResourceCatalog.GetHex("HomeButtonColor"))!,
     //            FontSize = 14,
     //            FontWeight = FontWeights.Bold,
     //            IsEnabled = false,
@@ -11964,7 +11991,7 @@ public partial class MainViewModel : ObservableObject
                 AddEventToEventListLocalDB($"iTero Zip file downloaded: {LastIteroZipFileId}", "SteelBlue");
                 ReadBackAllEvent();
                 SystemSounds.Beep.Play();
-                await BlinkWindow("green");
+                await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Green"));
                 ZipArchiveIconGrowAnimation();
                 CountiTeroFolders();
             }));
@@ -11976,10 +12003,10 @@ public partial class MainViewModel : ObservableObject
                 Application.Current.Dispatcher.Invoke(new Action(async () =>
                 {
                     ShowNotificationMessage("iTero Case Download Issue", $"There is a new Itero case downloaded but the file is CORRUPT! Please download it again! Id: {LastIteroZipFileId}", NotificationIcon.Error, false);
-                    AddEventToEventListLocalDB($"iTero Zip file issue: {LastIteroZipFileId}", "#F66D06");
+                    AddEventToEventListLocalDB($"iTero Zip file issue: {LastIteroZipFileId}", ColorSchemeResourceCatalog.GetHex("SchemeColor_F66D06"));
                     ReadBackAllEvent();
                     SystemSounds.Beep.Play();
-                    await BlinkWindow("red");
+                    await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Red"));
                 }));
                 return;
             }
@@ -12610,8 +12637,8 @@ public partial class MainViewModel : ObservableObject
                 string panNumber = DeterminePanNumber(reader["IntOrderID"].ToString()!, reader["Patient_LastName"].ToString()!, reader["Patient_FirstName"].ToString()!);
                 string CaseStatus = CaseStatusSelect(reader["MaxProcessStatusID"].ToString()!, reader["ScanSource"].ToString()!, "plReady");
                 string ImageSource = @"\Images\ListViewIcons\" + IconSelect(reader["MaxProcessStatusID"].ToString()!, reader["ScanSource"].ToString()!, "plReady") + ".png";
-                string PanColorName = "Green";
-                string PanColor = "#068506";
+                string PanColorName = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Green");
+                string PanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_068506");
 
 
                 string createDateFriendly = reader["MaxCreateDate"].ToString()!;
@@ -12626,7 +12653,7 @@ public partial class MainViewModel : ObservableObject
                              CleanLettersFromItems(reader["Items"].ToString()) == $"#{SelectedPaymentIssueForDesigner.TeethNumbers.Replace("-", ",")}") && panNumber == SelectedPaymentIssueForDesigner.PanNumber.ToString())
                         {
                             PanColorName = "Orange";
-                            PanColor = "#F46900";
+                            PanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F46900");
                         }
 
 
@@ -12752,7 +12779,7 @@ public partial class MainViewModel : ObservableObject
                 string CaseStatus = CaseStatusSelect(reader["MaxProcessStatusID"].ToString()!, reader["ScanSource"].ToString()!, "plReady");
                 string ImageSource = @"\Images\ListViewIcons\" + IconSelect(reader["MaxProcessStatusID"].ToString()!, reader["ScanSource"].ToString()!, "plReady") + ".png";
                 string PanColorName = "Purple";
-                string PanColor = "#8D088D";
+                string PanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_8D088D");
 
                 string createDateFriendly = reader["MaxCreateDate"].ToString()!;
 
@@ -12766,7 +12793,7 @@ public partial class MainViewModel : ObservableObject
                              CleanLettersFromItems(reader["Items"].ToString()) == $"#{SelectedPaymentIssueForDesigner.TeethNumbers.Replace("-", ",")}") && panNumber == SelectedPaymentIssueForDesigner.PanNumber.ToString())
                         {
                             PanColorName = "Orange";
-                            PanColor = "#F46900";
+                            PanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F46900");
                         }
 
                     if (!PossibleOrdersFrom3ShapeForLabnextMatch.Contains(PossibleOrdersFrom3ShapeForLabnextMatch.FirstOrDefault(x => x.IntOrderID == reader["IntOrderID"].ToString())!))
@@ -12877,7 +12904,7 @@ public partial class MainViewModel : ObservableObject
 
                 string ImageSource = @"\Images\HomeButtons\archives.png";
                 string PanColorName = "SteelBlue";
-                string PanColor = "#4884B6";
+                string PanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_4884B6");
 
                 string createDateFriendly = UnixTimeStampToDateTime(reader["CreateDate"].ToString()!, false, true);
 
@@ -12888,7 +12915,7 @@ public partial class MainViewModel : ObservableObject
                              CleanLettersFromItems(reader["Items"].ToString()) == $"#{SelectedPaymentIssueForDesigner.TeethNumbers.Replace("-", ",")}") && panNumber == SelectedPaymentIssueForDesigner.PanNumber.ToString())
                         {
                             PanColorName = "Orange";
-                            PanColor = "#F46900";
+                            PanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F46900");
                         }
 
                     if (!PossibleOrdersFrom3ShapeForLabnextMatch.Contains(PossibleOrdersFrom3ShapeForLabnextMatch.FirstOrDefault(x => x.IntOrderID == reader["OrderID"].ToString())!))
@@ -13011,7 +13038,7 @@ public partial class MainViewModel : ObservableObject
 
                 string ImageSource = @"\Images\HomeButtons\archives.png";
                 string PanColorName = "BlueViolet";
-                string PanColor = "#902DEC";
+                string PanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_902DEC");
 
                 string createDateFriendly = UnixTimeStampToDateTime(reader["CreateDate"].ToString()!, false, true);
 
@@ -13022,7 +13049,7 @@ public partial class MainViewModel : ObservableObject
                              CleanLettersFromItems(reader["Items"].ToString()) == $"#{SelectedPaymentIssueForDesigner.TeethNumbers.Replace("-", ",")}") && panNumber == SelectedPaymentIssueForDesigner.PanNumber.ToString())
                         {
                             PanColorName = "Orange";
-                            PanColor = "#F46900";
+                            PanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F46900");
                         }
 
                     if (!PossibleOrdersFrom3ShapeForLabnextMatch.Contains(PossibleOrdersFrom3ShapeForLabnextMatch.FirstOrDefault(x => x.IntOrderID == reader["OrderID"].ToString())!))

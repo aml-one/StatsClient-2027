@@ -11,16 +11,16 @@
                             <ColumnDefinition Width="auto"/>
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <Ellipse x:Name="E_Filling" Margin="1.5" StrokeThickness="1.5" Stroke="#0A0C0D">
+                        <Ellipse x:Name="E_Filling" Margin="1.5" StrokeThickness="1.5" Stroke="{StaticResource CircleCheckBoxBackground}">
                             <Ellipse.Fill>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Offset="0" Color="#FFF"/>
-                                    <GradientStop Offset="0.2" Color="#FF474E51"/>
-                                    <GradientStop Offset="1" Color="#FF737A7D"/>
+                                    <GradientStop Offset="0" Color="{StaticResource WhiteBackground_Cl}"/>
+                                    <GradientStop Offset="0.2" Color="{StaticResource CircleCheckBoxBorderOuter_Cl}"/>
+                                    <GradientStop Offset="1" Color="{StaticResource CircleCheckBoxBorderInner_Cl}"/>
                                 </LinearGradientBrush>
                             </Ellipse.Fill>
                         </Ellipse>
-                        <Ellipse x:Name="E_Outline" Stroke="#6A6E71" StrokeThickness="1.5"/>
+                        <Ellipse x:Name="E_Outline" Stroke="{StaticResource CircleCheckBoxGlyph}" StrokeThickness="1.5"/>
                         <Ellipse x:Name="E_Bloom" Margin="2.5" Opacity="1" StrokeThickness="2" Stroke="{TemplateBinding Foreground}" Visibility="Hidden">
                             <Ellipse.Effect>
                                 <BlurEffect Radius="3"></BlurEffect>
@@ -29,19 +29,19 @@
                         <Ellipse x:Name="E_Flare" Margin="3.5" StrokeThickness="0.7">
                             <Ellipse.OpacityMask>
                                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                    <GradientStop Color="#00000000" Offset="0.402"/>
-                                    <GradientStop Color="Black" Offset="0"/>
-                                    <GradientStop Color="#A9A9A9A9" Offset="0.076"/>
-                                    <GradientStop Color="#35353535" Offset="0.275"/>
+                                    <GradientStop Color="{StaticResource ViewerTransparentBackground_Cl}" Offset="0.402"/>
+                                    <GradientStop Color="{StaticResource BlackColor_Cl}" Offset="0"/>
+                                    <GradientStop Color="{StaticResource SchemeColor_A9A9A9A9_Cl}" Offset="0.076"/>
+                                    <GradientStop Color="{StaticResource SchemeColor_35353535_Cl}" Offset="0.275"/>
                                 </LinearGradientBrush>
                             </Ellipse.OpacityMask>
                             <Ellipse.Stroke>
                                 <LinearGradientBrush EndPoint="1,0" StartPoint="0,0">
-                                    <GradientStop Color="#EE858C8F" Offset="0"/>
-                                    <GradientStop Color="#EE858C8F" Offset="0.4"/>
-                                    <GradientStop Color="#858C8F" Offset="0.5"/>
-                                    <GradientStop Color="#EE858C8F" Offset="0.6"/>
-                                    <GradientStop Color="#EE858C8F" Offset="1"/>
+                                    <GradientStop Color="{StaticResource SchemeColor_EE858C8F_Cl}" Offset="0"/>
+                                    <GradientStop Color="{StaticResource SchemeColor_EE858C8F_Cl}" Offset="0.4"/>
+                                    <GradientStop Color="{StaticResource CircleCheckBoxCheckFill_Cl}" Offset="0.5"/>
+                                    <GradientStop Color="{StaticResource SchemeColor_EE858C8F_Cl}" Offset="0.6"/>
+                                    <GradientStop Color="{StaticResource SchemeColor_EE858C8F_Cl}" Offset="1"/>
                                 </LinearGradientBrush>
                             </Ellipse.Stroke>
                         </Ellipse>
@@ -59,9 +59,9 @@
                             <Setter TargetName="E_Filling" Property="Fill">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Offset="0" Color="#FFFFFFFF"/>
+                                        <GradientStop Offset="0" Color="{StaticResource WhiteBackground_Cl}"/>
                                         <GradientStop Offset="0.2" Color="{TemplateBinding Background}"/>
-                                        <GradientStop Offset="1" Color="#FFFFFFFF"/>
+                                        <GradientStop Offset="1" Color="{StaticResource WhiteBackground_Cl}"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
@@ -69,9 +69,9 @@
                                 <Setter.Value>
                                     <LinearGradientBrush EndPoint="1,0" StartPoint="0,0">
                                         <GradientStop Color="{TemplateBinding Foreground}" Offset="0"/>
-                                        <GradientStop Color="#EEFEFCDD" Offset="0.4"/>
-                                        <GradientStop Color="#FEFCDD" Offset="0.5"/>
-                                        <GradientStop Color="#EEFEFCDD" Offset="0.6"/>
+                                        <GradientStop Color="{StaticResource CircleCheckBoxCheckGlow_Cl}" Offset="0.4"/>
+                                        <GradientStop Color="{StaticResource CircleCheckBoxCheckGlow_Cl}" Offset="0.5"/>
+                                        <GradientStop Color="{StaticResource CircleCheckBoxCheckGlow_Cl}" Offset="0.6"/>
                                         <GradientStop Color="{TemplateBinding Foreground}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>

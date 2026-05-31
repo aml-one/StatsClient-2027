@@ -10,9 +10,7 @@
         Background="{DynamicResource PrimaryColor}">
     <Window.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Themes/ModernColorScheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.MergedDictionaries>            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
     <Grid Margin="16">

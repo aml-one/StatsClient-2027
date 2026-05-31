@@ -394,7 +394,7 @@ public partial class PanStackVisionReviewWindow : Window
 
                 cell.Text = string.Empty;
 
-                cell.Background = Brushes.White;
+                cell.Background = ColorSchemeResourceCatalog.GetBrush("WhiteBackground");
 
             }
 
@@ -476,7 +476,7 @@ public partial class PanStackVisionReviewWindow : Window
                 Height = markerHeight,
                 CornerRadius = new CornerRadius(4),
                 Background = new SolidColorBrush(Color.FromArgb(210, 22, 163, 74)),
-                BorderBrush = Brushes.White,
+                BorderBrush = ColorSchemeResourceCatalog.GetBrush("WhiteBackground"),
                 BorderThickness = new Thickness(1.5),
                 ToolTip = $"Pan {label.Number} ({label.Confidence:P0})",
                 Child = new TextBlock
@@ -484,7 +484,7 @@ public partial class PanStackVisionReviewWindow : Window
                     Text = label.Number,
                     FontSize = Math.Clamp(markerHeight * 0.42, 9, 15),
                     FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.White,
+                    Foreground = ColorSchemeResourceCatalog.GetBrush("WhiteBackground"),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     TextAlignment = TextAlignment.Center
@@ -831,7 +831,7 @@ public partial class PanStackVisionReviewWindow : Window
 
             Margin = new Thickness(3),
 
-            Background = Brushes.White,
+            Background = ColorSchemeResourceCatalog.GetBrush("WhiteBackground"),
 
             IsEnabled = false
 
@@ -912,7 +912,7 @@ public partial class PanStackVisionReviewWindow : Window
         var digits = NormalizeDigits(cell.Text);
         if (digits.Length == 0)
         {
-            cell.Background = Brushes.White;
+            cell.Background = ColorSchemeResourceCatalog.GetBrush("WhiteBackground");
             cell.BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225));
             cell.BorderThickness = new Thickness(1);
             cell.ToolTip = null;

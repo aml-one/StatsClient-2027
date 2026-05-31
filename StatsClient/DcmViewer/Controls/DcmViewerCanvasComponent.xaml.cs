@@ -136,7 +136,7 @@ public partial class DcmViewerCanvasComponent : UserControl
     public DcmViewerCanvasComponent()
     {
         InitializeComponent();
-        Background = Brushes.Transparent;
+        Background = ColorSchemeResourceCatalog.GetBrush("TransparentBrush");
         ApplyViewportClearTransparency();
         ConfigureViewportGestures();
         UpdateBackgroundBrush();

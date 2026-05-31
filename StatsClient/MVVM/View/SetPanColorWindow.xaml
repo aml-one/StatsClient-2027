@@ -1,4 +1,4 @@
-﻿<Window x:Class="StatsClient.MVVM.View.SetPanColorWindow"
+<Window x:Class="StatsClient.MVVM.View.SetPanColorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,8 +18,8 @@
         AllowsTransparency="True"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Background="Transparent"
-        Foreground="Black">
+        Background="{DynamicResource TransparentBrush}"
+        Foreground="{DynamicResource BlackColor}">
 
     <Window.DataContext>
         <viewmodel:SetPanColorViewModel />
@@ -29,9 +29,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Themes/ScrollBar.xaml" />
-                <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
-                <ResourceDictionary Source="/Themes/ModernColorScheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/LvItemModern.xaml" />            </ResourceDictionary.MergedDictionaries>
             <converter:DarkColorBoolToColorConverter x:Key="DarkColorBoolToColorConverter" />
         </ResourceDictionary>
     </Window.Resources>
@@ -39,17 +37,17 @@
 
     <Border CornerRadius="8,8,4,8"
             BorderThickness="0.5"
-            BorderBrush="Black"
+            BorderBrush="{DynamicResource BlackColor}"
             Background="{DynamicResource PrimaryDarkColor}"
             ClipToBounds="True">
         <Border CornerRadius="4"
                 BorderThickness="0.5"
                 Margin="5"
-                BorderBrush="Black"
+                BorderBrush="{DynamicResource BlackColor}"
                 Background="{DynamicResource PrimaryColor}"
                 ClipToBounds="True">
             <Grid Margin="4">
-                <TextBlock Text="╳"
+                <TextBlock Text="?"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Top"
                            Cursor="Hand"
@@ -71,12 +69,12 @@
                     <TextBlock Text="{Binding WindowTitle}"
                                d:Text="Pick the new color:"
                                Grid.Row="0"
-                               Foreground="Black"
+                               Foreground="{DynamicResource BlackColor}"
                                Margin="4,0,0,0"
                                VerticalAlignment="Bottom"
                                HorizontalAlignment="Left"/>
                     
-                    <ListView Background="Transparent"
+                    <ListView Style="{StaticResource LvListViewSetPanColor}"
                               BorderThickness="0"
                               Grid.Row="1"
                               ItemsSource="{Binding AvailablePanColors}"
@@ -86,13 +84,13 @@
                                Margin="0,0,14,0" 
                                Grid.Row="2">
                         <TextBlock Text="Pan number:"
-                                   Foreground="Black"
+                                   Foreground="{DynamicResource BlackColor}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left" />
                         
                         <TextBlock Text="{Binding PanNumber}"
                                    d:Text="8008"
-                                   d:Foreground="Black"
+                                   d:Foreground="{DynamicResource BlackColor}"
                                    Foreground="{Binding IsItDarkColor, Converter={StaticResource DarkColorBoolToColorConverter}}"
                                    Background="{Binding OriginalColor}"
                                    FontSize="14"

@@ -515,7 +515,7 @@ internal class Functions
 
     public static Color GetPixelColor(BitmapSource bitmap, int x, int y)
     {
-        Color color = Colors.White;
+        Color color = ColorSchemeResourceCatalog.GetColor("WindowBackgroundColor");
         try
         {
             var bytesPerPixel = (bitmap.Format.BitsPerPixel + 7) / 8;
@@ -534,7 +534,7 @@ internal class Functions
             }
             else
             {
-                color = Colors.White;
+                color = ColorSchemeResourceCatalog.GetColor("WindowBackgroundColor");
             }
         }
         catch
@@ -684,7 +684,11 @@ internal class Functions
             using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(finalImage))
             {
                 //set background color
-                g.Clear(System.Drawing.Color.White);
+                g.Clear(System.Drawing.Color.FromArgb(
+                    ColorSchemeResourceCatalog.GetColor("WindowBackgroundColor").A,
+                    ColorSchemeResourceCatalog.GetColor("WindowBackgroundColor").R,
+                    ColorSchemeResourceCatalog.GetColor("WindowBackgroundColor").G,
+                    ColorSchemeResourceCatalog.GetColor("WindowBackgroundColor").B));
 
                 //go through each image and draw it on the final image
                 int offset = 0;

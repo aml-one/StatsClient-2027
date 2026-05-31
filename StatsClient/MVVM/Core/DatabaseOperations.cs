@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
+using StatsClient.MVVM.Core;
 using StatsClient.MVVM.Model;
 using StatsClient.MVVM.ViewModel;
 using Syncfusion.Windows.Shared;
@@ -488,7 +489,7 @@ public partial class DatabaseOperations
             {
                 string currentTime = reader["CurrentTime"].ToString()!;
                 string serviceStatus = "Healthy";
-                string foreColor = "LightGreen";
+                string foreColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_LightGreen");
 
                 _ = int.TryParse(reader["ExpectedDifference"].ToString(), out int expectedDifference);
                 _ = int.TryParse(reader["ExpectedDifferenceNightTime"].ToString(), out int expectedDifferenceNightTime);
@@ -591,23 +592,23 @@ public partial class DatabaseOperations
                 switch (serviceStatus)
                 {
                     case "Healthy":
-                        foreColor = "LightGreen";
+                        foreColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_LightGreen");
                         break;
 
                     case "Sleeping":
-                        foreColor = "LightBlue";
+                        foreColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_LightBlue");
                         break;
 
                     case "Late to report":
-                        foreColor = "Yellow";
+                        foreColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Yellow");
                         break;
 
                     case "Struggling":
-                        foreColor = "#f5bd5d";
+                        foreColor = ColorSchemeResourceCatalog.GetHex("HealthReportStrugglingColor");
                         break;
 
                     case "Dead / Stopped":
-                        foreColor = "#ff7a95";
+                        foreColor = ColorSchemeResourceCatalog.GetHex("HealthReportDeadColor");
                         break;
                 }
 
@@ -2315,8 +2316,8 @@ public partial class DatabaseOperations
                     string PanColorName = GetBackPanColorName(panNumber);
                     string PanColor = GetBackPanColorHEX(panNumber);
 
-                    if (panNumber == "" || PanColor == "#FFFFFF")
-                        PanColor = "Transparent";
+                    if (panNumber == "" || PanColor == ColorSchemeResourceCatalog.GetHex("WhiteBackground"))
+                        PanColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Transparent");
 
                     string Patient_FirstName = reader["Patient_FirstName"].ToString()!.Trim();
                     string Patient_LastName = reader["Patient_LastName"].ToString()!.Trim();
@@ -2418,7 +2419,7 @@ public partial class DatabaseOperations
 
 
                     // alternate coloring
-                    if (PanColor == "#FFFFFF")
+                    if (PanColor == ColorSchemeResourceCatalog.GetHex("WhiteBackground"))
                         AlternateColoring = "nopancolor";
 
                     if (CacheMaterialName.Contains("NO MATERIAL"))
@@ -3039,7 +3040,8 @@ public partial class DatabaseOperations
             }
             catch
             {
-                return Color.White;
+                var white = ColorSchemeResourceCatalog.GetColor("WindowBackgroundColor");
+                return Color.FromArgb(white.A, white.R, white.G, white.B);
             }
 
         }
@@ -3049,7 +3051,7 @@ public partial class DatabaseOperations
     {
         string color;
         if (panNumbr == "")
-            return "#FFFFFF";
+            return ColorSchemeResourceCatalog.GetHex("WhiteBackground");
         else
         {
             try
@@ -3062,7 +3064,7 @@ public partial class DatabaseOperations
                 _ = int.TryParse(rgb[2], out int blue);
 
                 if (red == 0 && green == 0 && blue == 0)
-                    return "#FFFFFF";
+                    return ColorSchemeResourceCatalog.GetHex("WhiteBackground");
 
                 Color PanColor = Color.FromArgb(red, green, blue);
                 string hex = "#" + PanColor.R.ToString("X2") + PanColor.G.ToString("X2") + PanColor.B.ToString("X2");
@@ -3070,7 +3072,7 @@ public partial class DatabaseOperations
             }
             catch
             {
-                return "#FFFFFF";
+                return ColorSchemeResourceCatalog.GetHex("WhiteBackground");
             }
 
         }

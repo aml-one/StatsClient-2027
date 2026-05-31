@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Windows.Media;
+using StatsClient.MVVM.Core;
 
 namespace DCMViewer.Services;
 
@@ -49,8 +50,27 @@ public static class MaterialLibrary
         "WAX"
     };
 
-    private static readonly Dictionary<string, MaterialPalette> _palettes =
-        new(StringComparer.OrdinalIgnoreCase)
+    private static Color ResolveColor(string key, byte fallbackR, byte fallbackG, byte fallbackB) =>
+        ColorSchemeResourceCatalog.TryGetColor(key, out var color)
+            ? color
+            : Color.FromRgb(fallbackR, fallbackG, fallbackB);
+
+    private static Color Darken(Color color, double factor) =>
+        Color.FromRgb(
+            (byte)(color.R * factor),
+            (byte)(color.G * factor),
+            (byte)(color.B * factor));
+
+    private static Color Lighten(Color color, double factor) =>
+        Color.FromRgb(
+            (byte)Math.Min(255, color.R + (255 - color.R) * factor),
+            (byte)Math.Min(255, color.G + (255 - color.G) * factor),
+            (byte)Math.Min(255, color.B + (255 - color.B) * factor));
+
+    private static Dictionary<string, MaterialPalette> BuildPalettes()
+    {
+        var preopBase = ResolveColor("ViewerMaterialPreopColor", 165, 184, 232);
+        return new Dictionary<string, MaterialPalette>(StringComparer.OrdinalIgnoreCase)
         {
             ["Model"]    = new MaterialPalette(
                 Color.FromRgb(202, 202, 202),
@@ -71,11 +91,10 @@ public static class MaterialLibrary
                 AmbientScale: 0.18,
                 EmissiveScale: 0.06),
 
-            // PrePreparationScan / GenericDoublePrepScan — 3Shape preop periwinkle (#A5B8E8).
             ["Preop"] = new MaterialPalette(
-                FrontDiffuse: Color.FromRgb(165, 184, 232),
-                BackDiffuse: Color.FromRgb(125, 148, 205),
-                FrontSpecular: Color.FromRgb(210, 222, 248),
+                FrontDiffuse: preopBase,
+                BackDiffuse: Darken(preopBase, 0.76),
+                FrontSpecular: Lighten(preopBase, 0.35),
                 SpecularShininessOverride: 78,
                 SpecularIntensityScale: 0.92,
                 AmbientScale: 0.24,
@@ -116,15 +135,19 @@ public static class MaterialLibrary
                 Color.FromRgb(252, 252, 248),
                 Color.FromRgb(220, 220, 210)),
         };
+    }
+
+    private static readonly Lazy<Dictionary<string, MaterialPalette>> _palettes =
+        new(BuildPalettes);
 
     /// <summary>Ordered list of available texture names (for ComboBox binding).</summary>
     public static IReadOnlyList<string> Names => _names;
 
     /// <summary>Returns the palette for <paramref name="name"/>, or the default palette if not found.</summary>
     public static MaterialPalette Get(string name) =>
-        _palettes.TryGetValue(name, out var p) ? p : _palettes[DefaultName];
+        _palettes.Value.TryGetValue(name, out var p) ? p : _palettes.Value[DefaultName];
 
     /// <summary>Returns true if the library contains an entry with this name.</summary>
     public static bool Contains(string name) =>
-        !string.IsNullOrWhiteSpace(name) && _palettes.ContainsKey(name);
+        !string.IsNullOrWhiteSpace(name) && _palettes.Value.ContainsKey(name);
 }

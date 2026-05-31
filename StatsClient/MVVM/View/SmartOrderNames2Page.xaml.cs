@@ -67,13 +67,13 @@ namespace StatsClient.MVVM.View
         private void RenameButton_GotFocus(object sender, RoutedEventArgs e)
         {
             renameButton.Background = new SolidColorBrush(Color.FromArgb(255, 0, 128, 72));
-            renameButton.Foreground = Brushes.Beige;
+            renameButton.Foreground = ColorSchemeResourceCatalog.GetBrush("NamedBeige");
         }
 
         private void RenameButton_LostFocus(object sender, RoutedEventArgs e)
         {
             renameButton.Background = new SolidColorBrush(Color.FromArgb(255, 82, 105, 94));
-            renameButton.Foreground = Brushes.Silver;
+            renameButton.Foreground = ColorSchemeResourceCatalog.GetBrush("NamedSilver");
         }
 
         

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using HelixToolkit.Wpf.SharpDX;
+using StatsClient.MVVM.Core;
 
 namespace DCMViewer.Services;
 
@@ -38,7 +39,7 @@ internal static class EmbeddedViewerBackdrop
 
     public static void ApplyEmbeddedRenderClear(Viewport3DX viewport)
     {
-        viewport.Background = Brushes.Transparent;
+        viewport.Background = ColorSchemeResourceCatalog.GetBrush("TransparentBrush");
         viewport.BackgroundColor = HostRenderClearColor;
         viewport.EnableSwapChainRendering = false;
     }

@@ -1,4 +1,5 @@
 ﻿using StatsClient.MVVM.Model;
+using StatsClient.MVVM.Core;
 using System;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -135,8 +136,9 @@ namespace StatsClient.MVVM.Core
         #region event Table
 
 
-        public static string AddEventToEventListLocalDB(string eventStr, string eventColor = "Black")
+        public static string AddEventToEventListLocalDB(string eventStr, string? eventColor = null)
         {
+            eventColor ??= ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Black");
             try
             {
                 using SQLiteConnection m_dbConnection = new("Data Source=" + DataBasePath + ";Version=3;");

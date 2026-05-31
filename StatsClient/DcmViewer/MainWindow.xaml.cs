@@ -342,7 +342,7 @@ public partial class MainWindow : Window
         EmbeddedViewerBackdrop.ApplyEmbeddedHostAppearance(WatermarkCanvas, Viewport);
         if (Content is Grid hostRoot)
         {
-            hostRoot.Background = Brushes.Transparent;
+            hostRoot.Background = ColorSchemeResourceCatalog.GetBrush("TransparentBrush");
         }
 
         // Leave room for Order Info left/right overlay panels on full-bleed canvas.
@@ -520,7 +520,7 @@ public partial class MainWindow : Window
 
         if (isEmbeddedHost)
         {
-            Background = Brushes.Transparent;
+            Background = ColorSchemeResourceCatalog.GetBrush("TransparentBrush");
             ShowInTaskbar = false;
             ShowActivated = false;
             ConfigureViewportGestures();
@@ -1044,7 +1044,7 @@ public partial class MainWindow : Window
             : "Relax near clipping";
         clippingToggleButton.Content = TryCreateToolbarIcon("/DcmViewer/Images/clipping.png");
         clippingToggleButton.Background = _isNearClippingRelaxed ? _activeToolBrush : null;
-        clippingToggleButton.Foreground = _isNearClippingRelaxed ? _activeToolForegroundBrush : Brushes.Black;
+        clippingToggleButton.Foreground = _isNearClippingRelaxed ? _activeToolForegroundBrush : ColorSchemeResourceCatalog.GetBrush("BlackColor");
     }
 
     private void CaptureClipDefaults(HelixProjectionCamera camera)
@@ -1504,9 +1504,9 @@ public partial class MainWindow : Window
 
     private void EnsureSectionPlaneFillMaterial()
     {
-        // LightSteelBlue (#B0C4DE) with soft transparency
+        var ring = ColorSchemeResourceCatalog.GetColor("ViewerSculptRingColor");
         const float alpha = 0.32f;
-        var fill = new HelixToolkit.Maths.Color4(176f / 255f, 196f / 255f, 222f / 255f, alpha);
+        var fill = new HelixToolkit.Maths.Color4(ring.R / 255f, ring.G / 255f, ring.B / 255f, alpha);
         SectionPlaneVisual.Material = new PhongMaterial
         {
             AmbientColor = fill * 0.75f,
@@ -1703,11 +1703,11 @@ public partial class MainWindow : Window
     private void UpdateToolButtonStates()
     {
         SectionToggleButton.Background = _viewModel.IsSectionMode ? _activeToolBrush : _toolbarButtonBackground;
-        SectionToggleButton.Foreground = _viewModel.IsSectionMode ? _activeToolForegroundBrush : Brushes.Black;
+        SectionToggleButton.Foreground = _viewModel.IsSectionMode ? _activeToolForegroundBrush : ColorSchemeResourceCatalog.GetBrush("BlackColor");
         SectionToggleButton.Content = TryCreateToolbarIcon(_viewModel.IsSectionMode ? "/DcmViewer/Images/turnoffsection.png" : "/DcmViewer/Images/sectionmode.png");
 
         MeasureToggleButton.Background = _viewModel.IsMeasureMode ? _activeToolBrush : _toolbarButtonBackground;
-        MeasureToggleButton.Foreground = _viewModel.IsMeasureMode ? _activeToolForegroundBrush : Brushes.Black;
+        MeasureToggleButton.Foreground = _viewModel.IsMeasureMode ? _activeToolForegroundBrush : ColorSchemeResourceCatalog.GetBrush("BlackColor");
 
         if (FindName("SculptToggleButton") is Button sculptToggleButton)
         {
@@ -1720,7 +1720,7 @@ public partial class MainWindow : Window
     private void ApplyActiveToolbarButtonState(Button button, bool isActive)
     {
         button.Background = isActive ? _activeToolBrush : _toolbarButtonBackground;
-        button.Foreground = isActive ? _activeToolForegroundBrush : Brushes.Black;
+        button.Foreground = isActive ? _activeToolForegroundBrush : ColorSchemeResourceCatalog.GetBrush("BlackColor");
         button.BorderBrush = isActive
             ? new SolidColorBrush(Color.FromRgb(42, 106, 163))
             : new SolidColorBrush(Color.FromRgb(189, 199, 210));
@@ -2455,7 +2455,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            fill = Brushes.Black;
+            fill = ColorSchemeResourceCatalog.GetBrush("BlackColor");
         }
 
         var marker = new Ellipse

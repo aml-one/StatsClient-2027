@@ -14,28 +14,28 @@
             BorderThickness="0"
             Width="76"
             Height="42"
-            Background="Transparent"
+            Background="{DynamicResource TransparentBrush}"
             Command="{Binding DataContext.ClickOnPanNumberCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
             CommandParameter="{Binding PanNumber}">
         <Button.Content>
             <Border Background="{Binding PanColor}"
-                    d:Background="Red"
+                    d:Background="{DynamicResource RedColor}"
                     Width="70"
                     Height="36"
                     Margin="3"
                     CornerRadius="2"
-                    BorderBrush="#555"
+                    BorderBrush="{DynamicResource SettingsInputBackground}"
                     BorderThickness="0.50">
 
-                <Grid Background="White"
+                <Grid Background="{DynamicResource WhiteBackground}"
                       Margin="8,6"
                       Width="50"
                       Height="20">
-                    <Border BorderBrush="#BBB"
+                    <Border BorderBrush="{DynamicResource EslScrollbarThumb}"
                             BorderThickness="0.5">
                         <TextBlock Text="{Binding PanNumber}"
                                    d:Text="20080"
-                                   Foreground="Black"
+                                   Foreground="{DynamicResource BlackColor}"
                                    FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"

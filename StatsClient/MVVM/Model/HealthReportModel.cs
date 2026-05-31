@@ -1,5 +1,7 @@
 ﻿namespace StatsClient.MVVM.Model;
 
+using StatsClient.MVVM.Core;
+
 public class HealthReportModel
 {
     public string? TaskName { get; set; }
@@ -14,5 +16,5 @@ public class HealthReportModel
     public bool NoNightTime { get; set; } = false;
 
     public string ServiceStatus { get; set; } = "healthy";
-    public string ForeColor { get; set; } = "LightGreen";
+    public string ForeColor { get; set; } = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_LightGreen");
 }

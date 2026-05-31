@@ -37,9 +37,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
     private DcmViewerViewModel? _hookedViewerViewModel;
     private OrderScanPickerWindow? _scanPickerWindow;
 
-    private const double ScanPickerOffsetLeft = 70;
-    private const double ScanPickerOffsetBottomAnchor = 520;
-    private const double ScanPickerOffsetTopAdjustment = 43;
+    private const double ScanPickerGapAboveButton = 6;
     public OrderInfoWindow Instance
     {
         get => instance!;
@@ -307,6 +305,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         {
             _scanPickerWindow.RefreshItems(candidates);
             PositionScanPickerWindow();
+            Dispatcher.BeginInvoke(PositionScanPickerWindow, DispatcherPriority.Loaded);
             _scanPickerWindow.Activate();
             return;
         }
@@ -321,9 +320,11 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         };
         _scanPickerWindow.Closed += ScanPickerWindow_Closed;
 
-        PositionScanPickerWindow();
         _scanPickerWindow.Show();
+        _scanPickerWindow.UpdateLayout();
+        PositionScanPickerWindow();
         KeepScanPickerAboveOwner();
+        Dispatcher.BeginInvoke(PositionScanPickerWindow, DispatcherPriority.Loaded);
     }
 
     private void ScanPickerWindow_Closed(object? sender, EventArgs e)
@@ -337,13 +338,43 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
 
     private void PositionScanPickerWindow()
     {
-        if (_scanPickerWindow is not { IsVisible: true })
+        if (_scanPickerWindow is null)
         {
             return;
         }
 
-        _scanPickerWindow.Left = Left + ScanPickerOffsetLeft;
-        _scanPickerWindow.Top = Top + (ActualHeight - ScanPickerOffsetBottomAnchor) + ScanPickerOffsetTopAdjustment;
+        UpdateLayout();
+
+        if (addScanButton is { IsVisible: true, ActualWidth: > 0, ActualHeight: > 0 })
+        {
+            var buttonOrigin = addScanButton.PointToScreen(new Point(0, 0));
+            var pickerWidth = _scanPickerWindow.ActualWidth > 0 ? _scanPickerWindow.ActualWidth : _scanPickerWindow.Width;
+            var pickerHeight = _scanPickerWindow.ActualHeight > 0 ? _scanPickerWindow.ActualHeight : _scanPickerWindow.Height;
+
+            _scanPickerWindow.Left = buttonOrigin.X + (addScanButton.ActualWidth - pickerWidth) / 2;
+            _scanPickerWindow.Top = buttonOrigin.Y - pickerHeight - ScanPickerGapAboveButton;
+
+            var workArea = SystemParameters.WorkArea;
+            if (_scanPickerWindow.Left + pickerWidth > workArea.Right)
+            {
+                _scanPickerWindow.Left = workArea.Right - pickerWidth;
+            }
+
+            if (_scanPickerWindow.Left < workArea.Left)
+            {
+                _scanPickerWindow.Left = workArea.Left;
+            }
+
+            if (_scanPickerWindow.Top < workArea.Top)
+            {
+                _scanPickerWindow.Top = buttonOrigin.Y + addScanButton.ActualHeight + ScanPickerGapAboveButton;
+            }
+
+            return;
+        }
+
+        _scanPickerWindow.Left = Left + 70;
+        _scanPickerWindow.Top = Top + ActualHeight - _scanPickerWindow.Height - ScanPickerGapAboveButton;
     }
 
     private void KeepScanPickerAboveOwner()

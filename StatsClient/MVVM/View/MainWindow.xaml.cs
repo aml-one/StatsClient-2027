@@ -1,4 +1,5 @@
 ﻿using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
 using StatsClient.MVVM.Core;
 using StatsClient.MVVM.ViewModel;
 using System.ComponentModel;
@@ -9,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using static StatsClient.MVVM.Core.DatabaseOperations;
 using static StatsClient.MVVM.Core.Functions;
 using static StatsClient.MVVM.Core.LocalSettingsDB;
@@ -24,6 +26,10 @@ namespace StatsClient.MVVM.View;
 /// </summary>
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
+    public WebView2 webview => serverLogPanel.WebView;
+
+    public TextBox tbSearchAccInfos => accountInfosPanel.SearchBox;
+
     private DateTime _lastLabnextAutoLoginAttemptUtc = DateTime.MinValue;
     private bool _isLabnextAutoLoginInProgress;
 
@@ -338,19 +344,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         MainViewModel.Instance.SmartOrderNamesWindow.Owner = this;
     }
 
-    private void Webview_CoreWebView2InitializationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs e)
-    {
-        webview.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
-        webview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-        
-        MainViewModel.Instance.ServerLogWebViewIsInitialized = true;
-    }
-
-    private void Webview_MouseWheel(object sender, MouseWheelEventArgs e)
-    {
-        MainViewModel.Instance.ScrollServerLogToBottom = false;
-    }
-
     private void WebviewLabnext_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
     {
         webviewLabnext.CoreWebView2.Settings.IsPasswordAutosaveEnabled = true;
@@ -442,6 +435,65 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         // preventing column from resize
         e.Handled = true;
         ((GridViewColumnHeader)sender).Column.Width = 260;
+    }
+
+    private void ListViewFolderSubscription_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ListView listView)
+            return;
+
+        AlignFolderSubscriptionGridViewHeader(listView);
+        listView.SizeChanged += (_, _) => AlignFolderSubscriptionGridViewHeader(listView);
+    }
+
+    private static void AlignFolderSubscriptionGridViewHeader(ListView listView)
+    {
+        var headerPresenter = FindVisualChild<GridViewHeaderRowPresenter>(listView);
+        if (headerPresenter == null)
+            return;
+
+        var scrollbarWidth = 0.0;
+        foreach (var scrollViewer in FindVisualChildren<ScrollViewer>(listView))
+        {
+            if (scrollViewer.ComputedVerticalScrollBarVisibility != Visibility.Visible)
+                continue;
+
+            if (scrollViewer.Template?.FindName("PART_VerticalScrollBar", scrollViewer) is ScrollBar bar && bar.ActualWidth > 0)
+                scrollbarWidth = Math.Max(scrollbarWidth, bar.ActualWidth);
+            else
+                scrollbarWidth = Math.Max(scrollbarWidth, SystemParameters.VerticalScrollBarWidth);
+        }
+
+        headerPresenter.Margin = new Thickness(0, 0, scrollbarWidth, 0);
+    }
+
+    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T match)
+                return match;
+
+            var nested = FindVisualChild<T>(child);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T match)
+                yield return match;
+
+            foreach (var nested in FindVisualChildren<T>(child))
+                yield return nested;
+        }
     }
 
     

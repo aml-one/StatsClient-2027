@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+using StatsClient.MVVM.Core;
 
 namespace StatsClient.MVVM.Converters;
 
@@ -9,19 +10,18 @@ public class IncostistencyToColorConverterConverter : IMultiValueConverter
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
         if (!string.IsNullOrEmpty(values[0] as string) && !string.IsNullOrEmpty(values[1] as string))
-            return (SolidColorBrush)new BrushConverter().ConvertFrom("#00571C")!;
-        
+            return ColorSchemeResourceCatalog.GetBrush("InconsistencyBothFilledColor");
+
         if (values[2] as bool? == true)
-            return (SolidColorBrush)new BrushConverter().ConvertFrom("#06A2B0")!;
+            return ColorSchemeResourceCatalog.GetBrush("InconsistencyFlaggedColor");
 
         if (values[0] as string == "")
-            return (SolidColorBrush)new BrushConverter().ConvertFrom("#E1005A")!;
-        
-        if (values[1] as string == "")
-            return (SolidColorBrush)new BrushConverter().ConvertFrom("#B07F0B")!;
-        
+            return ColorSchemeResourceCatalog.GetBrush("InconsistencyEmptyFirstColor");
 
-        return Brushes.White;
+        if (values[1] as string == "")
+            return ColorSchemeResourceCatalog.GetBrush("InconsistencyEmptySecondColor");
+
+        return ColorSchemeResourceCatalog.GetBrush("InconsistencyEmptyBackground");
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

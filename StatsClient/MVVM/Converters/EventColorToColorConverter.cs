@@ -10,7 +10,7 @@ public class EventColorToColorConverter : IValueConverter
     {
         return (SolidColorBrush)new BrushConverter().ConvertFrom(value as string)!;
 
-        //return Brushes.White;
+        //return ColorSchemeResourceCatalog.GetBrush("WhiteBackground");
     }
 
     

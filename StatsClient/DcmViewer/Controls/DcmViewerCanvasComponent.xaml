@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:hx="http://helix-toolkit.org/wpf/SharpDX"
              mc:Ignorable="d"
-             Background="Transparent"
+             Background="{DynamicResource TransparentBrush}"
              d:DesignHeight="700"
              d:DesignWidth="1000">
     <Grid x:Name="WatermarkCanvas">
@@ -25,7 +25,7 @@
                    Text="AmL"
                    FontSize="80"
                    FontWeight="SemiBold"
-                   Foreground="#FFB8A35C"
+                   Foreground="{DynamicResource ViewerWatermarkText}"
                    Opacity="0.05"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
@@ -35,7 +35,7 @@
                 <DropShadowEffect ShadowDepth="0"
                                   BlurRadius="26"
                                   Opacity="0.16"
-                                  Color="#FF000000" />
+                                  Color="{DynamicResource ViewerShadowColor_Cl}" />
             </TextBlock.Effect>
         </TextBlock>
 
@@ -52,8 +52,8 @@
                       UseLayoutRounding="True"
                       EnableSwapChainRendering="False"
                       EnableRenderOrder="True"
-                      Background="#00000000"
-                      BackgroundColor="#00000000">
+                      Background="{DynamicResource ViewerTransparentBackground}"
+                      BackgroundColor="{DynamicResource ViewerTransparentBackground_Cl}">
 
             <hx:Viewport3DX.Camera>
                 <hx:PerspectiveCamera FieldOfView="45"
@@ -64,11 +64,11 @@
             <hx:LineGeometryModel3D x:Name="SectionPlaneOutlineVisual"
                                     Visibility="Collapsed"
                                     Thickness="1.0"
-                                    Color="#FF15459F" />
+                                    Color="{DynamicResource ViewerMeasurementColorDark_Cl}" />
             <hx:LineGeometryModel3D x:Name="MeasurementLine"
                                     Visibility="Collapsed"
                                     Thickness="2.4"
-                                    Color="#FF1F6FEB" />
+                                    Color="{DynamicResource ViewerMeasurementColor_Cl}" />
             <hx:BillboardTextModel3D x:Name="MeasurementText"
                                      Visibility="Collapsed" />
         </hx:Viewport3DX>

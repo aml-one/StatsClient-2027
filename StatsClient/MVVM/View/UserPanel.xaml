@@ -31,7 +31,7 @@
             <Style x:Key="lvHeaderStyle"
                    TargetType="{x:Type GridViewColumnHeader}">
                 <Setter Property="Background"
-                        Value="WhiteSmoke" />
+                        Value="{DynamicResource NamedWhiteSmoke}" />
                 <Setter Property="HorizontalContentAlignment"
                         Value="Left" />
                 <Setter Property="BorderThickness"
@@ -46,7 +46,7 @@
                 <DockPanel HorizontalAlignment="Left"
                            LastChildFill="False">
                     <TextBlock FontSize="11"
-                               Foreground="Black"
+                               Foreground="{DynamicResource BlackColor}"
                                FontWeight="Normal"
                                Padding="8,0,0,0"
                                Width="{TemplateBinding Width}"
@@ -96,9 +96,9 @@
                 BorderThickness="0"
                 CornerRadius="8"
                 Margin="0,4,0,0"
-                Background="#ECECEC">
+                Background="{DynamicResource SchemeColor_ECECEC}">
             <Border.Effect>
-                <DropShadowEffect Color="#30000000"
+                <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                   BlurRadius="12"
                                   ShadowDepth="3"
                                   Opacity="0.2"
@@ -132,7 +132,7 @@
                        Visibility="{Binding TotalUnitsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                        Margin="-65,0,0,0">
                     <Image.Effect>
-                        <DropShadowEffect Color="#30000000"
+                        <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                           BlurRadius="10"
                                           ShadowDepth="2"
                                           Opacity="0.2"
@@ -143,18 +143,18 @@
 
                 <core:OutlinedTextBlock Text="{Binding TotalUnitsFinal}"
                                         Grid.Column="0"
-                                        Stroke="#2C3E50"
+                                        Stroke="{DynamicResource FilterButtonForeground}"
                                         StrokePosition="Outside"
                                         FontSize="40"
                                         FontWeight="SemiBold"
-                                        Fill="#27AE60"
+                                        Fill="{DynamicResource PaymentStatusPaidColor}"
                                         StrokeThickness="1"
                                         HorizontalAlignment="Center"
                                         Visibility="{Binding TotalUnitsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                                         Margin="3,-8,3,0" />
                 <d:Label Grid.Column="0"
                          Content="13"
-                         Foreground="#27AE60"
+                         Foreground="{DynamicResource PaymentStatusPaidColor}"
                          FontSize="40"
                          HorizontalAlignment="Center"
                          Margin="3,-8,3,-8" />
@@ -163,7 +163,7 @@
                        Grid.Column="0"
                        Margin="0,-8,0,0"
                        FontSize="10"
-                       Foreground="#27AE60"
+                       Foreground="{DynamicResource PaymentStatusPaidColor}"
                        Visibility="{Binding TotalUnitsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                        HorizontalAlignment="Center" />
 
@@ -179,7 +179,7 @@
                        Visibility="{Binding TotalCrownsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                        Margin="-50,0,0,0">
                     <Image.Effect>
-                        <DropShadowEffect Color="#30000000"
+                        <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                           BlurRadius="10"
                                           ShadowDepth="2"
                                           Opacity="0.2"
@@ -188,18 +188,18 @@
                 </Image>
                 <core:OutlinedTextBlock Text="{Binding TotalCrownsFinal}"
                                         Grid.Column="1"
-                                        Stroke="#2C3E50"
+                                        Stroke="{DynamicResource FilterButtonForeground}"
                                         StrokePosition="Outside"
                                         FontSize="30"
                                         FontWeight="SemiBold"
-                                        Fill="#3498DB"
+                                        Fill="{DynamicResource SchemeColor_3498DB}"
                                         HorizontalAlignment="Center"
                                         StrokeThickness="1"
                                         Visibility="{Binding TotalCrownsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                                         Margin="3" />
                 <d:Label Grid.Column="1"
                          Content="13"
-                         Foreground="#3498DB"
+                         Foreground="{DynamicResource SchemeColor_3498DB}"
                          FontSize="30"
                          HorizontalAlignment="Center"
                          Margin="3,-1,3,-8" />
@@ -209,7 +209,7 @@
                        Grid.Column="1"
                        Margin="0,-8,0,0"
                        FontSize="10"
-                       Foreground="#3498DB"
+                       Foreground="{DynamicResource SchemeColor_3498DB}"
                        Visibility="{Binding TotalCrownsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                        HorizontalAlignment="Center" />
 
@@ -224,7 +224,7 @@
                        Visibility="{Binding TotalAbutmentsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                        Margin="-50,0,0,0">
                     <Image.Effect>
-                        <DropShadowEffect Color="#30000000"
+                        <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                           BlurRadius="10"
                                           ShadowDepth="2"
                                           Opacity="0.2"
@@ -233,18 +233,18 @@
                 </Image>
                 <core:OutlinedTextBlock Text="{Binding TotalAbutmentsFinal}"
                                         Grid.Column="2"
-                                        Stroke="#2C3E50"
+                                        Stroke="{DynamicResource FilterButtonForeground}"
                                         StrokePosition="Outside"
                                         FontSize="30"
                                         FontWeight="SemiBold"
-                                        Fill="#9B59B6"
+                                        Fill="{DynamicResource SchemeColor_9B59B6}"
                                         StrokeThickness="1"
                                         HorizontalAlignment="Center"
                                         Visibility="{Binding TotalAbutmentsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                                         Margin="3" />
                 <d:Label Grid.Column="2"
                          Content="13"
-                         Foreground="#9B59B6"
+                         Foreground="{DynamicResource SchemeColor_9B59B6}"
                          FontSize="30"
                          HorizontalAlignment="Center"
                          Margin="3,-1,3,-8" />
@@ -254,7 +254,7 @@
                        Grid.Column="2"
                        Margin="0,-8,0,0"
                        FontSize="10"
-                       Foreground="#9B59B6"
+                       Foreground="{DynamicResource SchemeColor_9B59B6}"
                        Visibility="{Binding TotalAbutmentsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
                        HorizontalAlignment="Center" />
 
@@ -268,7 +268,7 @@
                        VerticalAlignment="Center"
                        Margin="-65,0,0,0">
                     <Image.Effect>
-                        <DropShadowEffect Color="#30000000"
+                        <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                           BlurRadius="10"
                                           ShadowDepth="2"
                                           Opacity="0.2"
@@ -277,17 +277,17 @@
                 </Image>
                 <core:OutlinedTextBlock Text="{Binding TotalOrdersFinal}"
                                         Grid.Column="3"
-                                        Stroke="#2C3E50"
+                                        Stroke="{DynamicResource FilterButtonForeground}"
                                         StrokePosition="Outside"
                                         FontSize="40"
                                         FontWeight="SemiBold"
-                                        Fill="#16A085"
+                                        Fill="{DynamicResource SchemeColor_16A085}"
                                         StrokeThickness="1"
                                         HorizontalAlignment="Center"
                                         Margin="3,-8,3,0" />
                 <d:Label Grid.Column="3"
                          Content="13"
-                         Foreground="#16A085"
+                         Foreground="{DynamicResource SchemeColor_16A085}"
                          FontSize="40"
                          HorizontalAlignment="Center"
                          Margin="3,-10,3,-8" />
@@ -297,7 +297,7 @@
                        Grid.Column="3"
                        Margin="0,-8,0,0"
                        FontSize="10"
-                       Foreground="#16A085"
+                       Foreground="{DynamicResource SchemeColor_16A085}"
                        HorizontalAlignment="Center" />
 
 
@@ -306,7 +306,7 @@
                        Grid.Column="4"
                        Margin="0,-6,0,0"
                        FontSize="9"
-                       Foreground="#E67E22"
+                       Foreground="{DynamicResource SchemeColor_E67E22}"
                        Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top" />
@@ -334,11 +334,11 @@
                         <core:OutlinedTextBlock Text="{Binding TotalUnitsLeftOverFinal}"
                                                 Grid.Column="0"
                                                 Grid.Row="0"
-                                                Stroke="#2C3E50"
+                                                Stroke="{DynamicResource FilterButtonForeground}"
                                                 StrokePosition="Outside"
                                                 FontSize="16"
                                                 FontWeight="SemiBold"
-                                                Fill="#E67E22"
+                                                Fill="{DynamicResource SchemeColor_E67E22}"
                                                 StrokeThickness="1"
                                                 HorizontalAlignment="Left" />
                     </StackPanel>
@@ -355,11 +355,11 @@
                                Margin="0,-5,2,0"
                                VerticalAlignment="Center" />
                         <core:OutlinedTextBlock Text="{Binding TotalUnitsTodayFinal}"
-                                                Stroke="#2C3E50"
+                                                Stroke="{DynamicResource FilterButtonForeground}"
                                                 StrokePosition="Outside"
                                                 FontSize="16"
                                                 FontWeight="SemiBold"
-                                                Fill="#F39C12"
+                                                Fill="{DynamicResource SchemeColor_F39C12}"
                                                 StrokeThickness="1"
                                                 HorizontalAlignment="Left" />
                     </StackPanel>
@@ -367,14 +367,14 @@
                     <d:Label Grid.Column="0"
                              Grid.Row="0"
                              Content="13"
-                             Foreground="#E67E22"
+                             Foreground="{DynamicResource SchemeColor_E67E22}"
                              FontSize="16"
                              HorizontalAlignment="Left"
                              Margin="12,2,-2,-8" />
                     <d:Label Grid.Column="0"
                              Grid.Row="1"
                              Content="13"
-                             Foreground="#F39C12"
+                             Foreground="{DynamicResource SchemeColor_F39C12}"
                              FontSize="16"
                              HorizontalAlignment="Left"
                              Margin="12,-1,3,-8" />
@@ -385,7 +385,7 @@
                        Grid.Column="4"
                        Margin="0,-7,2,0"
                        FontSize="9"
-                       Foreground="#F39C12"
+                       Foreground="{DynamicResource SchemeColor_F39C12}"
                        Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}"
                        HorizontalAlignment="Left" />
 
@@ -395,7 +395,7 @@
                        Grid.Column="5"
                        Margin="0,-6,0,0"
                        FontSize="9"
-                       Foreground="#E74C3C"
+                       Foreground="{DynamicResource PaymentStatusUnpaidColor}"
                        Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top" />
@@ -423,11 +423,11 @@
                                Margin="0,0,2,0"
                                VerticalAlignment="Center" />
                         <core:OutlinedTextBlock Text="{Binding TotalOrdersLeftOversFinal}"
-                                                Stroke="#2C3E50"
+                                                Stroke="{DynamicResource FilterButtonForeground}"
                                                 StrokePosition="Outside"
                                                 FontSize="16"
                                                 FontWeight="SemiBold"
-                                                Fill="#E74C3C"
+                                                Fill="{DynamicResource PaymentStatusUnpaidColor}"
                                                 StrokeThickness="1"
                                                 HorizontalAlignment="Left" />
                     </StackPanel>
@@ -444,11 +444,11 @@
                                Margin="0,-5,2,0"
                                VerticalAlignment="Center" />
                         <core:OutlinedTextBlock Text="{Binding TotalOrdersTodayFinal}"
-                                                Stroke="#2C3E50"
+                                                Stroke="{DynamicResource FilterButtonForeground}"
                                                 StrokePosition="Outside"
                                                 FontSize="16"
                                                 FontWeight="SemiBold"
-                                                Fill="#F39C12"
+                                                Fill="{DynamicResource SchemeColor_F39C12}"
                                                 StrokeThickness="1"
                                                 HorizontalAlignment="Left" />
                     </StackPanel>
@@ -456,14 +456,14 @@
                     <d:Label Grid.Column="0"
                              Grid.Row="0"
                              Content="13"
-                             Foreground="#E74C3C"
+                             Foreground="{DynamicResource PaymentStatusUnpaidColor}"
                              FontSize="16"
                              HorizontalAlignment="Left"
                              Margin="15,2,-2,-8" />
                     <d:Label Grid.Column="0"
                              Grid.Row="1"
                              Content="13"
-                             Foreground="#F39C12"
+                             Foreground="{DynamicResource SchemeColor_F39C12}"
                              FontSize="16"
                              HorizontalAlignment="Left"
                              Margin="15,-2,3,-8" />
@@ -475,7 +475,7 @@
                        Grid.Column="5"
                        Margin="0,-7,2,0"
                        FontSize="9"
-                       Foreground="#F39C12"
+                       Foreground="{DynamicResource SchemeColor_F39C12}"
                        Visibility="{Binding TotalOrdersTodaySameAsAllTimeTotal}"
                        HorizontalAlignment="Left" />
 
@@ -486,11 +486,11 @@
 
         <Border Grid.Row="1"
                 Margin="0,4,0,3"
-                Background="White"
+                Background="{DynamicResource WhiteBackground}"
                 CornerRadius="6"
                 BorderThickness="0">
             <Border.Effect>
-                <DropShadowEffect Color="#30000000"
+                <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                   BlurRadius="8"
                                   ShadowDepth="2"
                                   Opacity="0.15"
@@ -502,12 +502,12 @@
                 <TextBlock Text="Designer:" 
                            FontWeight="Normal"
                            FontSize="10"
-                           Foreground="#7F8C8D"
+                           Foreground="{DynamicResource SchemeColor_7F8C8D}"
                            VerticalAlignment="Center"
                            Margin="0,0,6,0"/>
                 <TextBlock Text="{Binding DesignerName}" 
                            d:Text="Designer Name"
-                           Foreground="#27AE60"
+                           Foreground="{DynamicResource PaymentStatusPaidColor}"
                            FontWeight="SemiBold"
                            VerticalAlignment="Center"
                            Margin="0,0,0,0"
@@ -516,15 +516,15 @@
         </Border>
 
         <Grid Grid.Row="2"
-              Background="#F5F7FA">
+              Background="{DynamicResource SchemeColor_F5F7FA}">
 
             <core:OutlinedTextBlock Text="{Binding DesignerName}"
                                     Grid.Column="3"
-                                    Stroke="#E8E8E8"
+                                    Stroke="{DynamicResource VeryLightGrayColor}"
                                     StrokePosition="Outside"
                                     FontSize="60"
                                     FontWeight="SemiBold"
-                                    Fill="#ECF0F1"
+                                    Fill="{DynamicResource SchemeColor_ECF0F1}"
                                     Opacity="0.4"
                                     Panel.ZIndex="2"
                                     StrokeThickness="1"
@@ -534,7 +534,7 @@
             <d:Label Grid.Column="3"
                      Content="Designer Name"
                      FontWeight="SemiBold"
-                     Foreground="#ECF0F1"
+                     Foreground="{DynamicResource SchemeColor_ECF0F1}"
                      Opacity="0.4"
                      FontSize="60"
                      Panel.ZIndex="2"
@@ -549,7 +549,7 @@
                   AlternationCount="2"
                   Grid.Row="2"
                   Panel.ZIndex="2"
-                  BorderBrush="#BBBBBB"
+                  BorderBrush="{DynamicResource EslScrollbarThumb}"
                   Opacity="0.94"
                   SizeChanged="ListViewLeft_SizeChanged">
             <ListView.Resources>
@@ -618,7 +618,7 @@
 
                                                     <TextBlock Text="{Binding Name, Converter={StaticResource RemoveFirstCharFromStringIfItsZConverter}}"
                                                                FontWeight="Bold"
-                                                               Foreground="Gray"
+                                                               Foreground="{DynamicResource NamedGray}"
                                                                FontSize="18"
                                                                VerticalAlignment="Bottom"
                                                                Grid.Column="0" />
@@ -629,7 +629,7 @@
 
                                                         <TextBlock Text="{Binding ItemCount}"
                                                                    FontSize="16"
-                                                                   Foreground="Green"
+                                                                   Foreground="{DynamicResource GreenColor}"
                                                                    FontWeight="Bold"
                                                                    FontStyle="Italic"
                                                                    Margin="10,0,0,0"
@@ -639,7 +639,7 @@
                                                         <TextBlock Text="cases"
                                                                    FontSize="16"
                                                                    Padding="5,0,0,0"
-                                                                   Foreground="Silver"
+                                                                   Foreground="{DynamicResource NamedSilver}"
                                                                    FontStyle="Italic"
                                                                    VerticalAlignment="Bottom"
                                                                    HorizontalAlignment="Right" />
@@ -658,13 +658,13 @@
             </ListView.GroupStyle>
         </ListView>
 
-        <Border Background="White"
+        <Border Background="{DynamicResource WhiteBackground}"
                 Margin="0,0,0,3"
                 BorderThickness="0"
                 CornerRadius="6"
                 Grid.Row="3">
             <Border.Effect>
-                <DropShadowEffect Color="#30000000"
+                <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                   BlurRadius="8"
                                   ShadowDepth="2"
                                   Opacity="0.15"
@@ -680,7 +680,7 @@
 
 
                 <TextBlock Text="SEARCH"
-                           Foreground="#7F8C8D"
+                           Foreground="{DynamicResource SchemeColor_7F8C8D}"
                            FontSize="10"
                            FontWeight="SemiBold"
                            Padding="7,0"
@@ -689,7 +689,7 @@
                 <TextBox Text="{Binding Search, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Grid.Column="1"
                          BorderThickness="0"
-                         Background="Transparent"
+                         Background="{DynamicResource TransparentBrush}"
                          Padding="4,0,0,0">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="KeyDown">
@@ -700,7 +700,7 @@
 
                 <TextBlock Text="╳"
                            Grid.Column="2"
-                           Foreground="#E74C3C"
+                           Foreground="{DynamicResource PaymentStatusUnpaidColor}"
                            FontSize="10"
                            FontWeight="SemiBold"
                            Padding="10,0"

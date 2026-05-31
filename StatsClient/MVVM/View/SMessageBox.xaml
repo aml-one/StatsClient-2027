@@ -21,7 +21,7 @@
         WindowState="Normal"
         Loaded="Window_Loaded"
         AllowsTransparency="True"
-        Foreground="Black">
+        Foreground="{DynamicResource BlackColor}">
 
     <WindowChrome.WindowChrome>
         <WindowChrome ResizeBorderThickness="5,5,5,5"
@@ -42,13 +42,13 @@
 
     <Border CornerRadius="8,8,4,8"
             BorderThickness="0.5"
-            BorderBrush="Black"
-            Background="#FFF"
+            BorderBrush="{DynamicResource BlackColor}"
+            Background="{DynamicResource MessageBoxBackground}"
             Opacity="0.95"
             ClipToBounds="True">
 
         <Grid>
-            <Ellipse Fill="Green"
+            <Ellipse Fill="{DynamicResource GreenColor}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                      Width="4000"
@@ -76,7 +76,7 @@
             </Ellipse>
             <Border CornerRadius="8,8,4,8"
                     BorderThickness="0.65"
-                    BorderBrush="Black"
+                    BorderBrush="{DynamicResource BlackColor}"
                     Panel.ZIndex="10"
                     Opacity="1"
                     Margin="4"
@@ -84,10 +84,10 @@
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0.5"
                                          EndPoint="1,0.5">
-                        <GradientStop Color="#C6C9CF"
+                        <GradientStop Color="{DynamicResource MessageBoxHeaderGradientStart}"
                                       Offset="0.0" />
                         
-                        <GradientStop Color="#B6B9BF"
+                        <GradientStop Color="{DynamicResource MessageBoxHeaderGradientEnd}"
                                       Offset="1.0" />
                     </LinearGradientBrush>
                 </Border.Background>
@@ -111,8 +111,8 @@
 
 
                         <Border Grid.Row="0"
-                                Background="Transparent"
-                                BorderBrush="#666"
+                                Background="{DynamicResource TransparentBrush}"
+                                BorderBrush="{DynamicResource MessageBoxTitleBorder}"
                                 CornerRadius="8,8,0,0"
                                 ClipToBounds="True"
                                 Cursor="Hand"
@@ -130,7 +130,7 @@
                                 <TextBlock Text="{Binding SMessageTitle}"
                                            d:Text="Message Title"
                                            FontWeight="SemiBold"
-                                           Foreground="Black"
+                                           Foreground="{DynamicResource BlackColor}"
                                            Padding="2,2"
                                            Margin="0,0,0,0"
                                            FontSize="14"
@@ -139,7 +139,7 @@
                                 <TextBlock d:Text="113"
                                            HorizontalAlignment="Right"
                                            VerticalAlignment="Center"
-                                           Foreground="#333"
+                                           Foreground="{DynamicResource MessageBoxSubtitleForeground}"
                                            FontSize="10"
                                            x:Name="countDownTimer"
                                            Margin="6,0" />
@@ -157,20 +157,20 @@
                                        VerticalAlignment="Center"
                                        Padding="26,4,6,4"
                                        TextWrapping="Wrap"
-                                       Foreground="#000"
+                                       Foreground="{DynamicResource MessageBoxBodyForeground}"
                                        FontSize="15"
                                        Visibility="Collapsed"
                                        d:Visibility="Visible"
                                        FontFamily="Arial" />
 
-                            <core:OutlinedTextBlock Stroke="#777"
+                            <core:OutlinedTextBlock Stroke="{DynamicResource MessageBoxHintForeground}"
                                                     StrokePosition="Outside"
                                                     FontSize="15"
                                                     FontFamily="Arial"
                                                     VerticalAlignment="Center"
                                                     TextWrapping="Wrap"
                                                     FontWeight="Normal"
-                                                    Fill="#111"
+                                                    Fill="{DynamicResource MessageBoxBodyFill}"
                                                     StrokeThickness="0.35"
                                                     Margin="26,4,6,4"
                                                     Grid.Column="1"

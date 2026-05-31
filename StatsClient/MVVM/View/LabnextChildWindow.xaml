@@ -15,7 +15,7 @@
         <ProgressBar Value="40"
                      Height="2"
                      BorderThickness="0"
-                     Background="#FFF"
+                     Background="{DynamicResource PopupSurfaceBackground}"
                      IsIndeterminate="True"
                      Grid.Row="0"
                      Name="progressBar" />

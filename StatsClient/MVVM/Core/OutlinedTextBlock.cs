@@ -300,7 +300,7 @@ public class OutlinedTextBlock : FrameworkElement
           FlowDirection,
           new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
           FontSize,
-          Brushes.Black);
+          ColorSchemeResourceCatalog.GetBrush("BlackColor"));
 
         UpdateFormattedText();
     }

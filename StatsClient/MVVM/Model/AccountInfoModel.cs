@@ -1,5 +1,7 @@
 ﻿namespace StatsClient.MVVM.Model;
 
+using StatsClient.MVVM.Core;
+
 public class AccountInfoModel
 {
     public string? FriendlyName { get; set; }
@@ -9,7 +11,7 @@ public class AccountInfoModel
     public AccountCredential? Credentials { get; set; }
     public string? ApplicationName { get; set; }
     public string? ApplicationPath { get; set; }
-    public string? Color { get; set; } = "#46596F";
+    public string? Color { get; set; } = ColorSchemeResourceCatalog.GetHex("AccountInfoDefaultColor");
 }
 
 public class AccountCredential

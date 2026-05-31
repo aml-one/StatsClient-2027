@@ -7,14 +7,13 @@
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:viewmodel="clr-namespace:StatsClient.MVVM.ViewModel"
              mc:Ignorable="d"
-             Foreground="Black"
+             Foreground="{DynamicResource BlackColor}"
              d:Width="250">
 
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
-                <ResourceDictionary Source="/Themes/ClassicColorScheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
             <Style x:Key="HiddenHeaderStyle"
@@ -30,23 +29,24 @@
     </UserControl.DataContext>
 
     <Border BorderThickness="0"
-            Background="White"
+            Background="{DynamicResource PopupSurfaceBackground}"
             CornerRadius="8"
             Padding="8,6">
         <Border.Effect>
-            <DropShadowEffect Color="#40000000"
+            <DropShadowEffect Color="{DynamicResource PopupShadowColor}"
                               Direction="270"
                               ShadowDepth="3"
                               BlurRadius="12"
                               Opacity="0.25" />
         </Border.Effect>
         <Grid Margin="4,2">
-            <ListView ItemsSource="{Binding MenuItems}"
+            <ListView
+                                      Style="{StaticResource LvListViewMainMenu}" ItemsSource="{Binding MenuItems}"
                       SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
                       ItemContainerStyle="{StaticResource LvItemMainMenu}"
                       AlternationCount="2"
-                      Background="Transparent"
-                      Foreground="Black"
+                      Background="{DynamicResource TransparentBrush}"
+                      Foreground="{DynamicResource BlackColor}"
                       x:Name="mainMenuListView"
                       BorderThickness="0">
                 <ListView.View>

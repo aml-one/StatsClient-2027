@@ -1,0 +1,500 @@
+<UserControl x:Class="StatsClient.MVVM.View.AccountInfosTabPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="clr-namespace:StatsClient.MVVM.Core"
+             xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700"
+             d:DesignWidth="1200">
+    <UserControl.Resources>
+        <converter:EmptyToHiddenConverter x:Key="EmptyToHiddenConverter" />
+
+        <Style x:Key="AccountInfoSearchBox" TargetType="TextBox">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Background" Value="{DynamicResource ImmersiveInputBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ImmersiveInputBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Shell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource ImmersiveFocusRing_Cl}" />
+                                <Setter TargetName="Shell" Property="Background" Value="{StaticResource WhiteBackground}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AccountInfoClearButton" TargetType="Button">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="MinWidth" Value="64" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveAccentBlue}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="7"
+                                Background="{DynamicResource ImmersiveAccentBlueLight}"
+                                BorderBrush="{DynamicResource ImmersiveAccentBlueBorder}"
+                                BorderThickness="1"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Btn" Property="Background" Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AccountInfoCategoryComboItem"
+               TargetType="ComboBoxItem">
+            <Setter Property="SnapsToDevicePixels"
+                    Value="True" />
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Stretch" />
+            <Setter Property="Padding"
+                    Value="10,8" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="FontSize"
+                    Value="13" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemShell"
+                                CornerRadius="5"
+                                Margin="0,1"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{DynamicResource TransparentBrush}"
+                                HorizontalAlignment="Stretch"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted"
+                                     Value="True">
+                                <Setter TargetName="ItemShell"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueLight}" />
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource ImmersiveAccentBlue}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected"
+                                     Value="True">
+                                <Setter TargetName="ItemShell"
+                                        Property="Background"
+                                        Value="{StaticResource SchemeColor_FFECFEFF}" />
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource ImmersiveAccentBlue}" />
+                                <Setter Property="FontWeight"
+                                        Value="SemiBold" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AccountInfoCategoryComboToggle"
+               TargetType="ToggleButton">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Focusable"
+                    Value="False" />
+            <Setter Property="ClickMode"
+                    Value="Press" />
+            <Setter Property="Background"
+                    Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AccountInfoCategoryCombo"
+               TargetType="ComboBox">
+            <Setter Property="Height"
+                    Value="34" />
+            <Setter Property="Width"
+                    Value="180" />
+            <Setter Property="FontSize"
+                    Value="13" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="Background"
+                    Value="{DynamicResource ImmersiveInputBackground}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource ImmersiveInputBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="Padding"
+                    Value="12,0,32,0" />
+            <Setter Property="ItemContainerStyle"
+                    Value="{StaticResource AccountInfoCategoryComboItem}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border x:Name="ComboShell"
+                                    CornerRadius="7"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" />
+
+                            <ToggleButton x:Name="ToggleButton"
+                                          Style="{StaticResource AccountInfoCategoryComboToggle}"
+                                          Focusable="False"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press" />
+
+                            <ContentPresenter x:Name="ContentSite"
+                                              Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                              IsHitTestVisible="False" />
+
+                            <Path Data="M0,0 L4,4 L8,0 Z"
+                                  Fill="{DynamicResource ImmersiveTextMuted}"
+                                  Width="8"
+                                  Height="5"
+                                  Stretch="Fill"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,12,0"
+                                  IsHitTestVisible="False" />
+
+                            <Popup x:Name="Popup"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   PopupAnimation="Fade">
+                                <Border x:Name="DropDownBorder"
+                                        MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        Margin="0,4,0,0"
+                                        CornerRadius="8"
+                                        Background="{DynamicResource WhiteBackground}"
+                                        BorderBrush="{DynamicResource ImmersiveInputBorder}"
+                                        BorderThickness="1"
+                                        Padding="2">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                                          BlurRadius="16"
+                                                          ShadowDepth="0"
+                                                          Opacity="0.18" />
+                                    </Border.Effect>
+                                    <ScrollViewer SnapsToDevicePixels="True"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="ComboShell"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveFocusRing_Cl}" />
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen"
+                                     Value="True">
+                                <Setter TargetName="ComboShell"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveFocusRing_Cl}" />
+                                <Setter TargetName="ComboShell"
+                                        Property="Background"
+                                        Value="{StaticResource WhiteBackground}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource SchemeColor_FF94A3B8}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Undo app-wide ScrollBar.xaml 24px left gutter inside this list. -->
+        <Style x:Key="AccountInfoListScrollViewer"
+               TargetType="{x:Type ScrollViewer}">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ScrollContentPresenter Grid.Column="0"
+                                                    CanContentScroll="{TemplateBinding CanContentScroll}" />
+                            <ScrollBar x:Name="PART_VerticalScrollBar"
+                                       Grid.Row="0"
+                                       Grid.Column="1"
+                                       Orientation="Vertical"
+                                       Value="{TemplateBinding VerticalOffset}"
+                                       Maximum="{TemplateBinding ScrollableHeight}"
+                                       ViewportSize="{TemplateBinding ViewportHeight}"
+                                       Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
+                            <ScrollBar x:Name="PART_HorizontalScrollBar"
+                                       Grid.Row="1"
+                                       Grid.Column="0"
+                                       Orientation="Horizontal"
+                                       Value="{TemplateBinding HorizontalOffset}"
+                                       Maximum="{TemplateBinding ScrollableWidth}"
+                                       ViewportSize="{TemplateBinding ViewportWidth}"
+                                       Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid ClipToBounds="True">
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{DynamicResource ImmersiveGradientStart_Cl}" Offset="0" />
+                <GradientStop Color="{DynamicResource ImmersiveGradientMid_Cl}" Offset="0.45" />
+                <GradientStop Color="{DynamicResource ImmersiveGradientEnd_Cl}" Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Ellipse Width="380"
+                 Height="380"
+                 HorizontalAlignment="Right"
+                 VerticalAlignment="Top"
+                 Margin="0,-70,-50,0"
+                 Opacity="0.24"
+                 IsHitTestVisible="False">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="{DynamicResource SchemeColor_FFC4B5FD_Cl}" Offset="0" />
+                    <GradientStop Color="{DynamicResource SchemeColor_00C4B5FD_Cl}" Offset="1" />
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <Ellipse Width="320"
+                 Height="320"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Bottom"
+                 Margin="-50,0,0,-60"
+                 Opacity="0.2"
+                 IsHitTestVisible="False">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="{DynamicResource ImmersiveOrbCyan_Cl}" Offset="0" />
+                    <GradientStop Color="{DynamicResource ImmersiveOrbCyanTransparent_Cl}" Offset="1" />
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <Grid Margin="16,14,16,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0"
+                        Margin="0,0,0,14"
+                        Opacity="0">
+                <StackPanel.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="1"
+                                                 Duration="0:0:0.45" />
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                 From="-10"
+                                                 To="0"
+                                                 Duration="0:0:0.45">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </StackPanel.Triggers>
+                <StackPanel.RenderTransform>
+                    <TranslateTransform Y="0" />
+                </StackPanel.RenderTransform>
+                <TextBlock Text="Credentials &amp; access"
+                           FontSize="13"
+                           Foreground="{DynamicResource ImmersiveTextMuted}"
+                           HorizontalAlignment="Left" />
+                <core:OutlinedTextBlock Stroke="{DynamicResource WhiteBackground}"
+                                        StrokePosition="Outside"
+                                        FontSize="30"
+                                        FontWeight="SemiBold"
+                                        Fill="{DynamicResource ImmersiveTextPrimary}"
+                                        StrokeThickness="3"
+                                        Text="Account Infos"
+                                        Margin="0,2,0,0" />
+            </StackPanel>
+
+            <Border Grid.Row="1"
+                    CornerRadius="9"
+                    Padding="14,12"
+                    Margin="0,0,0,12"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="1"
+                    Background="{DynamicResource ImmersiveGlassBackground}"
+                    Opacity="0">
+                <Border.Effect>
+                    <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                      BlurRadius="16"
+                                      ShadowDepth="0"
+                                      Opacity="0.12" />
+                </Border.Effect>
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.08">
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="1"
+                                                 Duration="0:0:0.45" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Border.Triggers>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="240" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Search"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0" />
+
+                    <TextBox Grid.Column="1"
+                             x:Name="tbSearchAccInfos"
+                             Style="{StaticResource AccountInfoSearchBox}"
+                             Text="{Binding SearchInAccountInfos, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Button Grid.Column="2"
+                            Content="Clear"
+                            Margin="8,0,0,0"
+                            Style="{StaticResource AccountInfoClearButton}"
+                            Visibility="{Binding SearchInAccountInfos, Converter={StaticResource EmptyToHiddenConverter}}"
+                            d:Visibility="Visible"
+                            Command="{Binding ClearAccInfoSearchCommand}" />
+
+                    <TextBlock Grid.Column="3"
+                               Text="Category"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+                               VerticalAlignment="Center"
+                               Margin="18,0,10,0" />
+
+                    <ComboBox Grid.Column="4"
+                              Style="{StaticResource AccountInfoCategoryCombo}"
+                              SelectedItem="{Binding SelectedAccountInfoCategory}"
+                              ItemsSource="{Binding AccountInfoCategories}" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2"
+                    Padding="0,6,0,6"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="0"
+                    Background="{DynamicResource TransparentBrush}"
+                    Opacity="0">
+                <Border.Effect>
+                    <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                      BlurRadius="18"
+                                      ShadowDepth="0"
+                                      Opacity="0.14" />
+                </Border.Effect>
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.16">
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="1"
+                                                 Duration="0:0:0.5" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Border.Triggers>
+                <ListView Style="{StaticResource LvListViewAccountInfo}"
+                          BorderThickness="0"
+                          HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding AccountInfoList}"
+                          ItemContainerStyle="{StaticResource LvItemAccountInfo}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListView.Resources>
+                        <Style TargetType="{x:Type ScrollViewer}"
+                               BasedOn="{StaticResource AccountInfoListScrollViewer}" />
+                    </ListView.Resources>
+                </ListView>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using StatsClient.MVVM.Core;
 
 namespace StatsClient.MVVM.View;
 
@@ -20,17 +21,19 @@ public partial class OrderXmlCompareWindow : Window
     private string _stCopyText = string.Empty;
     private bool _hasStCopy;
 
-    private static readonly SolidColorBrush ForegroundDefault = Brush("#FFD4D4D4");
-    private static readonly SolidColorBrush ForegroundLineNo = Brush("#FF6A9955");
-    private static readonly SolidColorBrush ForegroundMarkerAdded = Brush("#FF89D185");
-    private static readonly SolidColorBrush ForegroundMarkerRemoved = Brush("#FFF48771");
-    private static readonly SolidColorBrush ForegroundTag = Brush("#FF569CD6");
-    private static readonly SolidColorBrush ForegroundAttr = Brush("#FF9CDCFE");
-    private static readonly SolidColorBrush ForegroundValue = Brush("#FFCE9178");
-    private static readonly SolidColorBrush ForegroundComment = Brush("#FF6A9955");
-    private static readonly SolidColorBrush BgRemoved = Brush("#FF44252B");
-    private static readonly SolidColorBrush BgAdded = Brush("#FF1F4A36");
-    private static readonly SolidColorBrush BgSpacer = Brush("#FF26282B");
+    private static SolidColorBrush ThemeBrush(string key) => ColorSchemeResourceCatalog.GetBrush(key);
+
+    private static readonly SolidColorBrush ForegroundDefault = ThemeBrush("CodeEditorForeground");
+    private static readonly SolidColorBrush ForegroundLineNo = ThemeBrush("CodeSyntaxLineNumber");
+    private static readonly SolidColorBrush ForegroundMarkerAdded = ThemeBrush("CodeSyntaxMarkerAdded");
+    private static readonly SolidColorBrush ForegroundMarkerRemoved = ThemeBrush("CodeSyntaxMarkerRemoved");
+    private static readonly SolidColorBrush ForegroundTag = ThemeBrush("CodeSyntaxTag");
+    private static readonly SolidColorBrush ForegroundAttr = ThemeBrush("CodeSyntaxAttribute");
+    private static readonly SolidColorBrush ForegroundValue = ThemeBrush("CodeSyntaxValue");
+    private static readonly SolidColorBrush ForegroundComment = ThemeBrush("CodeSyntaxComment");
+    private static readonly SolidColorBrush BgRemoved = ThemeBrush("CodeSyntaxBgRemoved");
+    private static readonly SolidColorBrush BgAdded = ThemeBrush("CodeSyntaxBgAdded");
+    private static readonly SolidColorBrush BgSpacer = ThemeBrush("CodeSyntaxBgSpacer");
 
     public OrderXmlCompareWindow(string xmlFilePath, string stCopyFilePath)
     {
@@ -293,7 +296,7 @@ public partial class OrderXmlCompareWindow : Window
                 DiffKind.Added => BgAdded,
                 DiffKind.Removed => BgRemoved,
                 DiffKind.Spacer => BgSpacer,
-                _ => Brushes.Transparent
+                _ => ColorSchemeResourceCatalog.GetBrush("TransparentBrush")
             };
 
             string lineNoText = lineNo.HasValue ? lineNo.Value.ToString().PadLeft(lineDigits) : new string(' ', lineDigits);
@@ -339,7 +342,7 @@ public partial class OrderXmlCompareWindow : Window
             FontSize = 13,
             LineHeight = 16,
             Foreground = ForegroundDefault,
-            Background = Brushes.Transparent,
+            Background = ColorSchemeResourceCatalog.GetBrush("TransparentBrush"),
             ColumnWidth = 200000,
             PageWidth = 200000,
             IsOptimalParagraphEnabled = false

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="StatsClient.MVVM.View.SentOutCasesPage"
+<UserControl x:Class="StatsClient.MVVM.View.SentOutCasesPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -15,14 +15,12 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Themes/ScrollBar.xaml" />
-                <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
-                <ResourceDictionary Source="/Themes/ModernColorScheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/LvItemModern.xaml" />            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="#F5F7FA"
-          d:Background="#F5F7FA"
+    <Grid Background="{DynamicResource SchemeColor_F5F7FA}"
+          d:Background="{DynamicResource SchemeColor_F5F7FA}"
           HorizontalAlignment="Stretch"
           Margin="-2,-4,-4,0">
         <Grid.RowDefinitions>
@@ -37,10 +35,10 @@
         <Grid Grid.Row="1"
               Grid.Column="0"
               Grid.ColumnSpan="2"
-              Background="White"
+              Background="{DynamicResource WhiteBackground}"
               Margin="4,0,4,4">
             <Grid.Effect>
-                <DropShadowEffect Color="#30000000"
+                <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                   BlurRadius="8"
                                   ShadowDepth="2"
                                   Opacity="0.15"
@@ -59,12 +57,12 @@
                         VerticalAlignment="Center">
                 <Label Content="Last change in database:"
                        FontSize="13"
-                       Foreground="#7F8C8D"
+                       Foreground="{DynamicResource SchemeColor_7F8C8D}"
                        Margin="0,0,-4,0" />
 
                 <Label Content="{Binding LastDBUpdateLocalTime}"
                        d:Content="Fetching data.."
-                       d:Foreground="#27AE60"
+                       d:Foreground="{DynamicResource PaymentStatusPaidColor}"
                        FontSize="13"
                        Foreground="{Binding UpdateTimeColor}"
                        Opacity="{Binding UpdateTimeOpacity}"

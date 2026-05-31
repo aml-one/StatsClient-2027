@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
+using System.Windows.Media;
+using StatsClient.MVVM.Core;
 
 namespace StatsClient.MVVM.Converters;
 
@@ -11,12 +13,11 @@ class AgeToGlowConverter : IValueConverter
         _ = DateTime.TryParse(value as string, out DateTime postedTime);
 
         double difference = (currentTime - postedTime).TotalSeconds;
-        
+
         if (difference < 3600)
-            return "Yellow";
+            return ColorSchemeResourceCatalog.GetBrush("GlowColorYellow");
 
-
-        return "White";
+        return ColorSchemeResourceCatalog.GetBrush("GlowColorWhite");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -1,5 +1,7 @@
 ﻿namespace StatsClient.MVVM.Model;
 
+using StatsClient.MVVM.Core;
+
 public class ProcessedPanNumberModel
 {
     public string? Id { get; set; }
@@ -12,5 +14,5 @@ public class ProcessedPanNumberModel
     public string? IsCollected { get; set; }
     public string? IsProcessed { get; set; }
     public string? PostedTimeForSorting { get; set; }
-    public string? LineColor { get; set; } = "Black";
+    public string? LineColor { get; set; } = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Black");
 }

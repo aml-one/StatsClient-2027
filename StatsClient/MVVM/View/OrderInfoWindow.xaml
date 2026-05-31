@@ -23,8 +23,8 @@
         AllowsTransparency="True"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Background="Transparent"
-        Foreground="Black">
+        Background="{DynamicResource TransparentBrush}"
+        Foreground="{DynamicResource BlackColor}">
     <Window.DataContext>
         <viewmodel:OrderInfoViewModel />
     </Window.DataContext>
@@ -41,9 +41,7 @@
                 <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
                 <ResourceDictionary Source="/Themes/ControlStyles.xaml" />
                 <ResourceDictionary Source="/Themes/TabControlStyles.xaml" />
-                <ResourceDictionary Source="/Themes/CircleCheckBox.xaml" />
-                <ResourceDictionary Source="/Themes/ModernColorScheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/CircleCheckBox.xaml" />            </ResourceDictionary.MergedDictionaries>
 
             <converter:EmptyToHiddenConverter x:Key="EmptyToHiddenConverter" />
             <converter:EmptyToCollapsedConverter x:Key="EmptyToCollapsedConverter" />
@@ -54,13 +52,13 @@
 
     <Border CornerRadius="8,8,4,8"
             BorderThickness="0.5"
-            BorderBrush="Black"
+            BorderBrush="{DynamicResource BlackColor}"
             Background="{DynamicResource PrimaryDarkColor}"
             ClipToBounds="True">
         <Border CornerRadius="8,8,8,8"
                 BorderThickness="0.5"
                 Margin="10"
-                BorderBrush="Black"
+                BorderBrush="{DynamicResource BlackColor}"
                 ClipToBounds="True">
             <Border.Style>
                 <Style TargetType="Border">
@@ -70,7 +68,7 @@
                         <DataTrigger Binding="{Binding IsArchiveOrder}"
                                      Value="True">
                             <Setter Property="Background"
-                                    Value="#FFDCE5F2" />
+                                    Value="{StaticResource ArchiveOrderBackground}" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -84,7 +82,7 @@
                     <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
 
-                <Border Background="IndianRed"
+                <Border Background="{DynamicResource DialogCloseButtonBackground}"
                         Width="65"
                         Height="40"
                         HorizontalAlignment="Right"
@@ -99,16 +97,18 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
 
-                    <TextBlock Text="╳"
+                    <TextBlock Text="&#x2573;"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Margin="0,0,0,0"
+                               Foreground="{DynamicResource WhiteBackground}"
+                               FontWeight="Bold"
                                Panel.ZIndex="50"
                                FontSize="16" />
 
                 </Border>
 
-                <Border BorderBrush="#CCC"
+                <Border BorderBrush="{DynamicResource VitaButtonBorderLight}"
                         BorderThickness="0,0,0,1"
                         Grid.Row="0">
                     <DockPanel>
@@ -126,8 +126,8 @@
                                  FontSize="20"
                                  Margin="0,0,0,0"
                                  BorderThickness="0"
-                                 Background="Transparent"
-                                 Foreground="Black"
+                                 Background="{DynamicResource TransparentBrush}"
+                                 Foreground="{DynamicResource BlackColor}"
                                  Cursor="Arrow"
                                  IsReadOnly="True"
                                  FontWeight="Light"
@@ -138,7 +138,7 @@
                                 Height="25"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Left"
-                                Background="Transparent"
+                                Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
                                 Margin="20,0,10,4"
                                 ToolTip="Rename order"
@@ -185,7 +185,7 @@
                                         FontSize="9"
                                         BorderThickness="0"
                                         Foreground="{DynamicResource OrderInfoPtNameColor}"
-                                        Background="Transparent"
+                                        Background="{DynamicResource TransparentBrush}"
                                         Tag="{Binding FirstName}"
                                         Command="{Binding SearchCommand}"
                                         CommandParameter="{Binding FirstName}"
@@ -193,7 +193,7 @@
                                     <Button.Style>
                                         <Style TargetType="{x:Type Button}">
                                             <Setter Property="Background"
-                                                    Value="LightBlue" />
+                                                    Value="{DynamicResource NamedLightBlue}" />
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="{x:Type Button}">
@@ -208,7 +208,7 @@
                                                             <Trigger Property="IsMouseOver"
                                                                      Value="True">
                                                                 <Setter Property="Background"
-                                                                        Value="{DynamicResource LightGreenColor}"
+                                                                        Value="{StaticResource LightGreenColor}"
                                                                         TargetName="Border" />
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
@@ -244,7 +244,7 @@
                                         FontSize="9"
                                         BorderThickness="0"
                                         Foreground="{DynamicResource OrderInfoPtNameColor}"
-                                        Background="Transparent"
+                                        Background="{DynamicResource TransparentBrush}"
                                         Tag="{Binding LastName}"
                                         Command="{Binding SearchCommand}"
                                         CommandParameter="{Binding LastName}"
@@ -252,7 +252,7 @@
                                     <Button.Style>
                                         <Style TargetType="{x:Type Button}">
                                             <Setter Property="Background"
-                                                    Value="LightBlue" />
+                                                    Value="{DynamicResource NamedLightBlue}" />
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="{x:Type Button}">
@@ -267,7 +267,7 @@
                                                             <Trigger Property="IsMouseOver"
                                                                      Value="True">
                                                                 <Setter Property="Background"
-                                                                        Value="{DynamicResource LightGreenColor}"
+                                                                        Value="{StaticResource LightGreenColor}"
                                                                         TargetName="Border" />
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
@@ -289,13 +289,13 @@
                     <DockPanel Grid.Column="2">
                         <StackPanel  Width="110"
                                      Margin="20,0">
-                            <Border BorderBrush="#222"
+                            <Border BorderBrush="{DynamicResource OrderInfoDividerDark}"
                                     BorderThickness="1"
                                     Margin="10"
                                     Padding="13,5"
                                     CornerRadius="3"
                                     Background="{Binding ThreeShapeObject.PanColor}"
-                                    d:Background="Red"
+                                    d:Background="{DynamicResource RedColor}"
                                     x:Name="brPanColor"
                                     Cursor="Hand"
                                     Tag="{Binding ThreeShapeObject.PanNumber}"
@@ -307,14 +307,14 @@
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
                                 <Border CornerRadius="2"
-                                        Background="White"
-                                        BorderBrush="#DDD"
+                                        Background="{DynamicResource WhiteBackground}"
+                                        BorderBrush="{DynamicResource VeryLightGrayColor}"
                                         BorderThickness="1">
                                     <TextBlock Text="{Binding ThreeShapeObject.PanNumber}"
                                                d:Text="8008"
                                                VerticalAlignment="Center"
                                                HorizontalAlignment="Center"
-                                               Foreground="Black"
+                                               Foreground="{DynamicResource BlackColor}"
                                                Padding="0,0"
                                                Margin="-2,-3,-2,-1"
                                                FontSize="20"
@@ -340,7 +340,7 @@
                                             FontSize="9"
                                             BorderThickness="0"
                                             Foreground="{DynamicResource OrderInfoPtNameColor}"
-                                            Background="Transparent"
+                                            Background="{DynamicResource TransparentBrush}"
                                             Tag="{Binding Customer}"
                                             Command="{Binding SearchCommand}"
                                             CommandParameter="{Binding Customer}"
@@ -348,7 +348,7 @@
                                         <Button.Style>
                                             <Style TargetType="{x:Type Button}">
                                                 <Setter Property="Background"
-                                                        Value="LightBlue" />
+                                                        Value="{DynamicResource NamedLightBlue}" />
                                                 <Setter Property="Template">
                                                     <Setter.Value>
                                                         <ControlTemplate TargetType="{x:Type Button}">
@@ -363,7 +363,7 @@
                                                                 <Trigger Property="IsMouseOver"
                                                                          Value="True">
                                                                     <Setter Property="Background"
-                                                                            Value="{DynamicResource LightGreenColor}"
+                                                                            Value="{StaticResource LightGreenColor}"
                                                                             TargetName="Border" />
                                                                 </Trigger>
                                                             </ControlTemplate.Triggers>
@@ -400,7 +400,7 @@
                         <!-- Full-bleed 3D canvas; gradient lives on the viewer. Side panels float above. -->
                         <Grid Margin="0">
                             <dcm:DcmViewerCanvasComponent x:Name="dcmViewer"
-                                                          Background="Transparent"
+                                                          Background="{DynamicResource TransparentBrush}"
                                                           UseFullAppShell="True"
                                                           IsBackgroundTransparent="True" />
 
@@ -410,38 +410,38 @@
                                     Width="400"
                                     Margin="10,8,0,8"
                                     Panel.ZIndex="20"
-                                    Background="#A8E5E9ED"
+                                    Background="{DynamicResource GlassPanelBackground}"
                                     CornerRadius="4"
-                                    BorderBrush="#55A8B0B8"
+                                    BorderBrush="{DynamicResource GlassPanelBorder}"
                                     BorderThickness="1">
                                 <ScrollViewer Margin="12,10,12,10"
                                               VerticalScrollBarVisibility="Auto"
-                                              Background="Transparent">
-                                    <Grid Background="Transparent">
+                                              Background="{DynamicResource TransparentBrush}">
+                                    <Grid Background="{DynamicResource TransparentBrush}">
                                         <StackPanel>
                                             <StackPanel Margin="0,1,15,8">
                                                 <TextBlock Text="DIGITAL CASE"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding DigitalCase}"
                                                            d:Text="DIGITAL CASE"
                                                            VerticalAlignment="Top"
-                                                           Foreground="Black"
+                                                           Foreground="{DynamicResource BlackColor}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbDigitalCase" />
                                                 <TextBlock Text="TRAY SYSTEM"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold"
                                                            Margin="0,3,0,0"
                                                            Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
                                                 <TextBlock Text="{Binding TraySystem}"
                                                            d:Text="TRAY SYSTEM"
                                                            VerticalAlignment="Top"
-                                                           Foreground="Black"
+                                                           Foreground="{DynamicResource BlackColor}"
                                                            x:Name="tbTraySystem"
                                                            Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
                                             </StackPanel>
@@ -450,12 +450,12 @@
                                                 <TextBlock Text="SCANNER"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Scanner}"
                                                            d:Text="SCANNER"
                                                            VerticalAlignment="Top"
-                                                           Foreground="Black"
+                                                           Foreground="{DynamicResource BlackColor}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbScanner" />
                                             </StackPanel>
@@ -464,12 +464,12 @@
                                                 <TextBlock Text="STATUS"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Status}"
                                                            d:Text="STATUS"
                                                            VerticalAlignment="Top"
-                                                           Foreground="Black"
+                                                           Foreground="{DynamicResource BlackColor}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbStatus" />
                                             </StackPanel>
@@ -478,12 +478,12 @@
                                                 <TextBlock Text="CREATED"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Created}"
                                                            d:Text="CREATED"
                                                            VerticalAlignment="Top"
-                                                           Foreground="Black"
+                                                           Foreground="{DynamicResource BlackColor}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbCreated" />
                                             </StackPanel>
@@ -493,12 +493,12 @@
                                                 <TextBlock Text="SCANNED"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Scanned}"
                                                            d:Text="SCANNED"
                                                            VerticalAlignment="Top"
-                                                           Foreground="Black"
+                                                           Foreground="{DynamicResource BlackColor}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbScanned" />
                                             </StackPanel>
@@ -509,13 +509,13 @@
                                                 <TextBlock Text="MATERIAL"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold"
                                                            x:Name="tbMaterialTitle" />
                                                 <TextBlock Text="{Binding Material}"
                                                            d:Text="MATERIAL"
                                                            VerticalAlignment="Top"
-                                                           Foreground="Black"
+                                                           Foreground="{DynamicResource BlackColor}"
                                                            Margin="0,0,15,0"
                                                            TextWrapping="Wrap"
                                                            x:Name="tbMaterial" />
@@ -525,12 +525,12 @@
                                                 <TextBlock Text="MANUFACTURER"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Manufacturer}"
                                                            d:Text="MANUFACURER"
                                                            VerticalAlignment="Top"
-                                                           Foreground="Black"
+                                                           Foreground="{DynamicResource BlackColor}"
                                                            Margin="0,0,15,0"
                                                            TextWrapping="Wrap"
                                                            x:Name="tbManufacturer" />
@@ -549,14 +549,14 @@
                                                 <TextBlock Text="COMMENTS"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="#888"
+                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Comments}"
                                                            d:Text="COMMENTS"
                                                            VerticalAlignment="Top"
                                                            Margin="0,0,5,0"
                                                            FontSize="11"
-                                                           Foreground="#006800"
+                                                           Foreground="{DynamicResource SchemeColor_006800}"
                                                            TextWrapping="Wrap"
                                                            x:Name="tbComments" />
                                             </StackPanel>
@@ -578,17 +578,17 @@
                                 </Grid.RowDefinitions>
 
                                 <Border Grid.Row="0"
-                                        Background="#A8E5E9ED"
+                                        Background="{DynamicResource GlassPanelBackground}"
                                         CornerRadius="4"
-                                        BorderBrush="#55A8B0B8"
+                                        BorderBrush="{DynamicResource GlassPanelBorder}"
                                         BorderThickness="1"
                                         Margin="0,0,0,6"
                                         x:Name="borderLastTouchedByPanel">
                                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                        <StackPanel Background="Transparent">
+                                        <StackPanel Background="{DynamicResource TransparentBrush}">
                                             <TextBlock Text="LAST TOUCHED BY"
                                                        FontSize="11"
-                                                       Foreground="#555"
+                                                       Foreground="{DynamicResource SettingsInputBackground}"
                                                        HorizontalAlignment="Left"
                                                        Margin="14,8,0,0"
                                                        FontWeight="SemiBold" />
@@ -599,19 +599,19 @@
                                                 <StackPanel Margin="0,0,0,8">
                                                     <TextBlock Text="Stats Server"
                                                                FontSize="12"
-                                                               Foreground="Black"
+                                                               Foreground="{DynamicResource BlackColor}"
                                                                FontWeight="SemiBold" />
                                                     <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
                                                                FontSize="9"
-                                                               Foreground="#666" />
+                                                               Foreground="{DynamicResource OrderInfoHintForeground}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,0,8">
                                                     <TextBlock Text="Stats Server"
-                                                               Foreground="Black"
+                                                               Foreground="{DynamicResource BlackColor}"
                                                                FontWeight="SemiBold" />
                                                     <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
                                                                FontSize="9"
-                                                               Foreground="#666" />
+                                                               Foreground="{DynamicResource OrderInfoHintForeground}" />
                                                 </StackPanel>
 
 
@@ -623,21 +623,21 @@
 
 
                                 <Grid Grid.Row="2"
-                                      Background="Transparent">
+                                      Background="{DynamicResource TransparentBrush}">
                                     <Grid.ContextMenu>
                                         <ContextMenu x:Name="designerContextMenu" />
                                     </Grid.ContextMenu>
 
-                                    <Border Background="#A8E5E9ED"
+                                    <Border Background="{DynamicResource GlassPanelBackground}"
                                             CornerRadius="4"
-                                            BorderBrush="#55A8B0B8"
+                                            BorderBrush="{DynamicResource GlassPanelBorder}"
                                             BorderThickness="1"
                                             x:Name="borderLastDesignedByPanel">
                                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                            <StackPanel Background="Transparent">
+                                            <StackPanel Background="{DynamicResource TransparentBrush}">
                                                 <TextBlock Text="DESIGNED BY"
                                                            FontSize="12"
-                                                           Foreground="#555"
+                                                           Foreground="{DynamicResource SettingsInputBackground}"
                                                            HorizontalAlignment="Left"
                                                            FontWeight="SemiBold"
                                                            Margin="14,0,0,0" />
@@ -647,11 +647,11 @@
                                                             Margin="15,5,15,15">
                                                     <StackPanel Margin="0,0,0,8">
                                                         <TextBlock Text="Designer Name"
-                                                                   Foreground="Black"
+                                                                   Foreground="{DynamicResource BlackColor}"
                                                                    FontWeight="SemiBold" />
                                                         <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
                                                                    FontSize="9"
-                                                                   Foreground="#666" />
+                                                                   Foreground="{DynamicResource OrderInfoHintForeground}" />
                                                     </StackPanel>
                                                 </StackPanel>
                                             </StackPanel>
@@ -665,30 +665,30 @@
                                     Panel.ZIndex="600"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"
-                                    Background="#55000000"
+                                    Background="{DynamicResource BlackSeeThruColor}"
                                     Visibility="Collapsed"
                                     IsHitTestVisible="False">
                                 <Border HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Padding="24,20"
                                         MaxWidth="420"
-                                        Background="#E6F8FAFD"
-                                        BorderBrush="#AAB8C6D5"
+                                        Background="{DynamicResource ModalCardBackground}"
+                                        BorderBrush="{DynamicResource ModalCardBorder}"
                                         BorderThickness="1"
                                         CornerRadius="10">
                                     <StackPanel HorizontalAlignment="Center">
                                         <Border HorizontalAlignment="Center"
                                                 Padding="12"
-                                                Background="#CCFFFFFF"
+                                                Background="{DynamicResource FilterSectionCardBackground}"
                                                 CornerRadius="36">
                                             <usercontrols:LoadingSpinner Width="56"
                                                                          Height="56" />
                                         </Border>
                                         <Border Margin="0,14,0,0"
                                                 Padding="12,8"
-                                                Background="#DFFFFFFF"
+                                                Background="{DynamicResource SchemeColor_DFFFFFFF}"
                                                 CornerRadius="6"
-                                                BorderBrush="#88B8C6D5"
+                                                BorderBrush="{DynamicResource ModalCardBorderLight}"
                                                 BorderThickness="1">
                                             <TextBlock x:Name="OverviewLoadingStatusText"
                                                        Text="Loading..."
@@ -698,7 +698,7 @@
                                                        MaxWidth="340"
                                                        FontSize="13"
                                                        FontWeight="SemiBold"
-                                                       Foreground="#FF1A2836" />
+                                                       Foreground="{DynamicResource ModalTitleForeground}" />
                                         </Border>
                                         <ProgressBar x:Name="OverviewLoadingProgress"
                                                      Width="160"
@@ -707,8 +707,8 @@
                                                      Minimum="0"
                                                      Maximum="1"
                                                      Visibility="Collapsed"
-                                                     Foreground="#FF46627A"
-                                                     Background="#FFD0D8E0"
+                                                     Foreground="{DynamicResource ModalBodyForeground}"
+                                                     Background="{DynamicResource ModalChipBackground}"
                                                      BorderThickness="0" />
                                     </StackPanel>
                                 </Border>
@@ -733,11 +733,11 @@
                                                          EndPoint="0 1">
                                         <LinearGradientBrush.GradientStops>
                                             <GradientStop Offset="0.1"
-                                                          Color="#FFF" />
+                                                          Color="{DynamicResource WhiteBackground_Cl}" />
                                             <GradientStop Offset="0.5"
-                                                          Color="#FFF" />
+                                                          Color="{DynamicResource WhiteBackground_Cl}" />
                                             <GradientStop Offset="1"
-                                                          Color="#EFEFEF" />
+                                                          Color="{DynamicResource SchemeColor_EFEFEF_Cl}" />
                                         </LinearGradientBrush.GradientStops>
                                     </LinearGradientBrush>
                                 </StackPanel.Background>
@@ -745,14 +745,14 @@
                                 <TextBlock Text="Dental System Version:"
                                            FontSize="10"
                                            FontWeight="SemiBold"
-                                           Foreground="Black"
+                                           Foreground="{DynamicResource BlackColor}"
                                            Margin="6,0,0,0"
                                            VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding DentalSystemVersion}"
                                            d:Text="2018-1"
                                            FontSize="10"
                                            FontWeight="Bold"
-                                           Foreground="DarkGreen"
+                                           Foreground="{DynamicResource NamedDarkGreen}"
                                            VerticalAlignment="Center"
                                            Margin="3,0,10,0"
                                            x:Name="tbDentalSystemVersion" />
@@ -761,19 +761,19 @@
                                            FontSize="10"
                                            FontWeight="Normal"
                                            Margin="3,0,13,0"
-                                           Foreground="Silver"
+                                           Foreground="{DynamicResource NamedSilver}"
                                            VerticalAlignment="Center" />
 
                                 <TextBlock Text="Design Module Now:"
                                            FontSize="10"
                                            FontWeight="SemiBold"
-                                           Foreground="Black"
+                                           Foreground="{DynamicResource BlackColor}"
                                            VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding DesignModuleActual}"
                                            d:Text="DD2018"
                                            FontSize="10"
                                            FontWeight="Bold"
-                                           Foreground="Blue"
+                                           Foreground="{DynamicResource BlueColor}"
                                            VerticalAlignment="Center"
                                            Margin="3,0,10,0"
                                            x:Name="tbDesignModuleActual" />
@@ -782,7 +782,7 @@
                                            FontSize="10"
                                            FontWeight="Normal"
                                            Margin="3,0,13,0"
-                                           Foreground="Silver"
+                                           Foreground="{DynamicResource NamedSilver}"
                                            VerticalAlignment="Center"
                                            Visibility="{Binding DesignModuleOriginal, Converter={StaticResource EmptyToHiddenConverter}}"
                                            d:Visibility="Visible" />
@@ -790,7 +790,7 @@
                                 <TextBlock Text="Original Design Module:"
                                            FontSize="10"
                                            FontWeight="SemiBold"
-                                           Foreground="Black"
+                                           Foreground="{DynamicResource BlackColor}"
                                            VerticalAlignment="Center"
                                            Visibility="{Binding DesignModuleOriginal, Converter={StaticResource EmptyToHiddenConverter}}"
                                            d:Visibility="Visible" />
@@ -798,7 +798,7 @@
                                            d:Text="DD2021"
                                            FontSize="10"
                                            FontWeight="Bold"
-                                           Foreground="DarkViolet"
+                                           Foreground="{DynamicResource NamedDarkViolet}"
                                            VerticalAlignment="Center"
                                            Margin="3,0,10,0"
                                            x:Name="tbDesignModuleOriginal"
@@ -811,7 +811,7 @@
                                            FontSize="10"
                                            FontWeight="Normal"
                                            Margin="3,0,13,0"
-                                           Foreground="Silver"
+                                           Foreground="{DynamicResource NamedSilver}"
                                            VerticalAlignment="Center"
                                            Visibility="{Binding OriginalOrderID, Converter={StaticResource EmptyToHiddenConverter}}"
                                            d:Visibility="Visible" />
@@ -820,14 +820,14 @@
                                            FontSize="10"
                                            FontWeight="SemiBold"
                                            VerticalAlignment="Center"
-                                           Foreground="Black"
+                                           Foreground="{DynamicResource BlackColor}"
                                            Visibility="{Binding OriginalOrderID, Converter={StaticResource EmptyToHiddenConverter}}"
                                            d:Visibility="Visible" />
                                 <TextBlock Text="{Binding OriginalOrderID}"
                                            d:Text="Original Order ID"
                                            FontSize="10"
                                            FontWeight="Bold"
-                                           Foreground="#9d6612"
+                                           Foreground="{DynamicResource SchemeColor_9D6612}"
                                            VerticalAlignment="Center"
                                            Margin="3,0,10,0"
                                            x:Name="tbOriginalOrderID" />
@@ -835,11 +835,12 @@
 
 
 
-                            <ListView Grid.Row="1"
+                            <ListView
+                                      Style="{StaticResource LvListViewForItemList}" Grid.Row="1"
                                       x:Name="listViewItems"
                                       ScrollViewer.CanContentScroll="False"
                                       BorderThickness="0,1,0,0"
-                                      BorderBrush="#CCCCCC"
+                                      BorderBrush="{DynamicResource VitaButtonBorderLight}"
                                       Padding="0,10,0,0"
                                       AlternationCount="2"
                                       ItemsSource="{Binding TDM_ItemsList}"
@@ -877,13 +878,14 @@
 
                     <TabItem Header="Images"
                              x:Name="tabPageImages"
-                             Background="#666">
+                             Background="{DynamicResource OrderInfoFooterBackground}">
 
 
-                        <ListView x:Name="Thumbnails"
+                        <ListView
+                                      Style="{StaticResource LvListViewImages}" x:Name="Thumbnails"
                                   AllowDrop="True"
                                   Drop="Thumbnails_Drop"
-                                  Background="#EEE"
+                                  Background="{DynamicResource WindowBackgroundColor}"
                                   BorderThickness="0"
                                   ItemsSource="{Binding ImageList}"
                                   ItemContainerStyle="{StaticResource LvItemImages}">
@@ -911,7 +913,7 @@
                                 Height="44"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Left"
-                                Background="Transparent"
+                                Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
                                 Margin="-4,0,10,0"
                                 ToolTip="Open up order source directory"
@@ -920,11 +922,12 @@
                                 <Image Source="/Images/ToolBar/folder.png" />
                             </Button.Content>
                         </Button>
-                        <Button Width="44"
+                        <Button x:Name="addScanButton"
+                                Width="44"
                                 Height="44"
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Left"
-                                Background="Transparent"
+                                Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
                                 Margin="0,0,10,-2"
                                 ToolTip="Load/Unload scans"
@@ -932,7 +935,7 @@
                             <TextBlock Text="+"
                                        FontSize="28"
                                        FontWeight="Bold"
-                                       Foreground="#FF1F9D49"
+                                       Foreground="{DynamicResource SemanticSuccessColor}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center" />
                         </Button>
@@ -940,15 +943,15 @@
                                 Height="44"
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Left"
-                                Background="Transparent"
+                                Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
                                 Margin="0,0,10,-2"
                                 ToolTip="Reload selected scans"
                                 Click="RefreshScansButton_Click">
-                            <TextBlock Text="↻"
+                            <TextBlock Text="&#x21BB;"
                                        FontSize="24"
                                        FontWeight="SemiBold"
-                                       Foreground="#FF2A6AA3"
+                                       Foreground="{DynamicResource SemanticLinkColor}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center" />
                         </Button>
@@ -957,7 +960,7 @@
                                 Height="44"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Left"
-                                Background="Transparent"
+                                Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
                                 Margin="0,0,10,0"
                                 ToolTip="Open XML / stCopy compare"
@@ -970,7 +973,7 @@
                                 Height="44"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Left"
-                                Background="Transparent"
+                                Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
                                 Margin="0,0,10,0"
                                 ToolTip="Show discovered DCM files"
@@ -983,12 +986,12 @@
                             <TextBlock Text="ITEMS"
                                        FontSize="10"
                                        VerticalAlignment="Top"
-                                       Foreground="#888"
+                                       Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
                                        FontWeight="SemiBold" />
                             <TextBlock Text="{Binding Items}"
                                        d:Text="ITEMS"
                                        x:Name="tbItems"
-                                       Foreground="Black"
+                                       Foreground="{DynamicResource BlackColor}"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,0" />
                         </StackPanel>
@@ -1008,7 +1011,7 @@
                                 Height="44"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Right"
-                                Background="Transparent"
+                                Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
                                 ToolTip="Generate Zipped Order"
                                 Command="{Binding GenerateArchiveZipCommand}"
@@ -1022,7 +1025,7 @@
                                 Height="44"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Right"
-                                Background="Transparent"
+                                Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
                                 ToolTip="Import order"
                                 Grid.Column="2"

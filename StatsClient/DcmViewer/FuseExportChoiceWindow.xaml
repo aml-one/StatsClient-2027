@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         FontFamily="Segoe UI"
-        Background="#FFF6F7F9">
+        Background="{DynamicResource DialogBackground}">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -22,11 +22,11 @@
                        Text="Merge visible scans"
                        FontSize="14"
                        FontWeight="SemiBold"
-                       Foreground="#FF2A3A52"
+                       Foreground="{DynamicResource DialogTitleForeground}"
                        TextWrapping="Wrap" />
             <TextBlock Text="Choose how to combine the visible scans into one STL file."
                        Margin="0,6,0,0"
-                       Foreground="#FF64748B"
+                       Foreground="{DynamicResource DialogSecondaryForeground}"
                        TextWrapping="Wrap" />
         </StackPanel>
 
@@ -38,10 +38,10 @@
                 <StackPanel>
                     <TextBlock Text="Unified shell"
                                FontWeight="SemiBold"
-                               Foreground="#FF0F172A" />
+                               Foreground="{DynamicResource DialogBodyForeground}" />
                     <TextBlock Text="Keeps scan triangles and removes duplicate faces where parts touch — one layer at contacts, full detail elsewhere. You will mark the working (inner) side on each layer next."
                                Margin="0,4,0,0"
-                               Foreground="#FF64748B"
+                               Foreground="{DynamicResource DialogSecondaryForeground}"
                                TextWrapping="Wrap" />
                 </StackPanel>
             </RadioButton>
@@ -51,12 +51,12 @@
                         Visibility="Collapsed">
                 <CheckBox x:Name="CleanupArtifactsCheckBox"
                           Content="Clean up saved STL artifacts"
-                          Foreground="#FF334155"
+                          Foreground="{DynamicResource DialogBodyForegroundAlt}"
                           Checked="CleanupControls_OnChanged"
                           Unchecked="CleanupControls_OnChanged" />
                 <TextBlock Text="Removes tiny loner triangles from the exported file only. The viewer preview is unchanged."
                            Margin="22,4,0,8"
-                           Foreground="#FF64748B"
+                           Foreground="{DynamicResource DialogSecondaryForeground}"
                            FontSize="11"
                            TextWrapping="Wrap" />
                 <Grid Margin="22,0,0,0"
@@ -69,7 +69,7 @@
                     <TextBlock Grid.Column="0"
                                Text="Strength"
                                VerticalAlignment="Center"
-                               Foreground="#FF475569" />
+                               Foreground="{DynamicResource DialogMutedForeground}" />
                     <Slider x:Name="CleanupStrengthSlider"
                             Grid.Column="1"
                             Margin="10,0,10,0"
@@ -82,7 +82,7 @@
                                Grid.Column="2"
                                MinWidth="28"
                                VerticalAlignment="Center"
-                               Foreground="#FF475569"
+                               Foreground="{DynamicResource DialogMutedForeground}"
                                FontWeight="SemiBold" />
                 </Grid>
             </StackPanel>
@@ -94,10 +94,10 @@
                 <StackPanel>
                     <TextBlock Text="Solid combine (default)"
                                FontWeight="SemiBold"
-                               Foreground="#FF0F172A" />
+                               Foreground="{DynamicResource DialogBodyForeground}" />
                     <TextBlock Text="Keeps every scan triangle — opaque, but overlapping parts stay as separate layers."
                                Margin="0,4,0,0"
-                               Foreground="#FF64748B"
+                               Foreground="{DynamicResource DialogSecondaryForeground}"
                                TextWrapping="Wrap" />
                 </StackPanel>
             </RadioButton>
@@ -108,10 +108,10 @@
                 <StackPanel>
                     <TextBlock Text="Voxel envelope"
                                FontWeight="SemiBold"
-                               Foreground="#FF0F172A" />
+                               Foreground="{DynamicResource DialogBodyForeground}" />
                     <TextBlock Text="Remeshes into one outer shell — can look thin or see-through."
                                Margin="0,4,0,0"
-                               Foreground="#FF64748B"
+                               Foreground="{DynamicResource DialogSecondaryForeground}"
                                TextWrapping="Wrap" />
                 </StackPanel>
             </RadioButton>

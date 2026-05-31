@@ -12,9 +12,9 @@
             <Rectangle.Fill>
                 <LinearGradientBrush StartPoint="0,0"
                                      EndPoint="0,1">
-                    <GradientStop Color="#FF34D9F5"
+                    <GradientStop Color="{DynamicResource AccentColor_Cl}"
                                   Offset="0" />
-                    <GradientStop Color="#0034D9F5"
+                    <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
                                   Offset="1" />
                 </LinearGradientBrush>
             </Rectangle.Fill>
@@ -34,20 +34,20 @@
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="1,0">
-                        <GradientStop Color="#FF1A2836"
+                        <GradientStop Color="{DynamicResource SchemeColor_FF1A2836_Cl}"
                                       Offset="0" />
-                        <GradientStop Color="#FF243447"
+                        <GradientStop Color="{DynamicResource SchemeColor_FF243447_Cl}"
                                       Offset="0.55" />
-                        <GradientStop Color="#FF2A3A52"
+                        <GradientStop Color="{DynamicResource SchemeColor_FF2A3A52_Cl}"
                                       Offset="1" />
                     </LinearGradientBrush>
                 </Border.Background>
                 <Border.BorderBrush>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="1,0">
-                        <GradientStop Color="#8834D9F5"
+                        <GradientStop Color="{DynamicResource ImmersiveFocusRing_Cl}"
                                       Offset="0" />
-                        <GradientStop Color="#44D6B97A"
+                        <GradientStop Color="{DynamicResource SchemeColor_44D6B97A_Cl}"
                                       Offset="1" />
                     </LinearGradientBrush>
                 </Border.BorderBrush>
@@ -60,9 +60,9 @@
                                  VerticalAlignment="Center">
                             <Ellipse.Fill>
                                 <RadialGradientBrush>
-                                    <GradientStop Color="#FF9AF4FF"
+                                    <GradientStop Color="{DynamicResource SchemeColor_FF9AF4FF_Cl}"
                                                   Offset="0" />
-                                    <GradientStop Color="#FF34D9F5"
+                                    <GradientStop Color="{DynamicResource AccentColor_Cl}"
                                                   Offset="1" />
                                 </RadialGradientBrush>
                             </Ellipse.Fill>
@@ -70,14 +70,14 @@
                         <TextBlock Text="FILTER CASES"
                                    FontSize="11"
                                    FontWeight="Bold"
-                                   Foreground="#FFE8F4FF"
+                                   Foreground="{DynamicResource ImmersiveFilterButtonHoverGradientEnd}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
                     <TextBlock Text="Quick access"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Center"
                                FontSize="10"
-                               Foreground="#88A8B8C8" />
+                               Foreground="{DynamicResource SchemeColor_88A8B8C8}" />
                 </Grid>
             </Border>
 

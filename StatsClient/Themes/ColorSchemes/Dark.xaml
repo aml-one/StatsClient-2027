@@ -1,0 +1,1399 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Themes/ColorSchemes/ListViewItemColors.Dark.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ================================================================== -->
+    <!-- StatsClient Color Scheme: Light                                    -->
+    <!-- Captures the current application palette. Swap this dictionary   -->
+    <!-- (or individual keys) to retheme the app.                           -->
+    <!--                                                                    -->
+    <!-- Resource type conventions (wrong type = runtime XAML crash):       -->
+    <!--   SolidColorBrush  -> Background, Foreground, BorderBrush, Fill,   -->
+    <!--                        Stroke, Setter Value on brush properties    -->
+    <!--   Color            -> GradientStop.Color, DropShadowEffect.Color,  -->
+    <!--                        SolidColorBrush.Color="{DynamicResource}"   -->
+    <!--   *_Cl suffix      -> always Color (shadows, gradients, effects)   -->
+    <!--   *Brush suffix    -> always SolidColorBrush                       -->
+    <!--   *Color (legacy)  -> usually SolidColorBrush; exceptions listed   -->
+    <!--                        as <Color x:Key="..."> below                 -->
+    <!-- ================================================================== -->
+
+    <!-- #region Scheme metadata -->
+    <sys:String x:Key="ColorSchemeName">Dark</sys:String>
+    <!-- #endregion -->
+
+    <!-- #region Window chrome -->
+    <!-- Main window / tab strip backgrounds (also bound via MainViewModel.WindowBackground) -->
+    <Color x:Key="WindowBackgroundColor">#EEEEEE</Color>
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}" />
+    <!-- #endregion -->
+
+    <!-- #region Primary surfaces -->
+    <SolidColorBrush x:Key="PrimaryColor">#EEEEEE</SolidColorBrush>
+    <SolidColorBrush x:Key="PrimaryDarkColor">#C7C7C9</SolidColorBrush>
+    <SolidColorBrush x:Key="ThreeShapeHeaderBackgroundColor">#E6E6E6</SolidColorBrush>
+    <SolidColorBrush x:Key="PrimaryDarkTitleBarColor">#A2A2A2</SolidColorBrush>
+    <SolidColorBrush x:Key="HomeButtonsAreaBackground">#ECF1F1</SolidColorBrush>
+    <SolidColorBrush x:Key="DarkGrayBackround">#FF646363</SolidColorBrush>
+    <SolidColorBrush x:Key="WhiteBackground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="VeryLightGrayColor">#E8E8E8</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Text -->
+    <SolidColorBrush x:Key="LightTextColor">BlanchedAlmond</SolidColorBrush>
+    <SolidColorBrush x:Key="BlackColor">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="TodayButtonForeground">#013101</SolidColorBrush>
+    <SolidColorBrush x:Key="LastIteroIDTextColor">#066D06</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoPtNameColor">#09905C</SolidColorBrush>
+    <SolidColorBrush x:Key="DarkYellowColor">#B09F0F</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsHintText">#BBBBBB</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSectionTitle">#FFFFFF</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Translucent overlays -->
+    <SolidColorBrush x:Key="VerySeeThruWhiteBackground">#11FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="VerySeeThruBlackBackground">#11000000</SolidColorBrush>
+    <SolidColorBrush x:Key="SeeThruWhiteBackground">#EEFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="SeeThruBlackBackground">#EE000000</SolidColorBrush>
+    <SolidColorBrush x:Key="SeeThruGrayBackground">#D5999999</SolidColorBrush>
+    <SolidColorBrush x:Key="BlackSeeThruColor">#aa000000</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Borders & shadows -->
+    <SolidColorBrush x:Key="LightGrayBorderAndShadowColor">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="DarkGrayBorderAndShadowColor">#444444</SolidColorBrush>
+    <Color x:Key="LightGrayBorderAndShadowColor_Cl">#888888</Color>
+    <Color x:Key="BlackColor_Cl">#000000</Color>
+    <Color x:Key="PrimaryDarkColor_Cl">#C7C7C9</Color>
+    <!-- #endregion -->
+
+    <!-- #region Title bar & navigation -->
+    <SolidColorBrush x:Key="TitleBarButtonOverBackground">#B2BFD9</SolidColorBrush>
+    <SolidColorBrush x:Key="RefreshButtonColor">#35e6c6</SolidColorBrush>
+    <SolidColorBrush x:Key="HomeButtonColor">#e6c235</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Semantic colors -->
+    <SolidColorBrush x:Key="RedColor">#FF1D06</SolidColorBrush>
+    <SolidColorBrush x:Key="GreenColor">#04C100</SolidColorBrush>
+    <SolidColorBrush x:Key="BlueColor">#009DE7</SolidColorBrush>
+    <SolidColorBrush x:Key="PurpleColor">#BC51F4</SolidColorBrush>
+    <SolidColorBrush x:Key="LightGreenColor">#CCFFCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LightPrpleColor">#CCCCFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LightPinkColor">#ffabb6</SolidColorBrush>
+    <SolidColorBrush x:Key="IteroFilesCount">#FF1D06</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Fields & panels -->
+    <SolidColorBrush x:Key="CreamYellowFieldColor">#EFE7C9</SolidColorBrush>
+    <SolidColorBrush x:Key="EmptyPansBackground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="EmptyPansBorder">#999999</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsInputBackground">#555555</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsListBackground">#777777</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Action buttons -->
+    <SolidColorBrush x:Key="ShowRxButtonColor">#C6BE13</SolidColorBrush>
+    <SolidColorBrush x:Key="GrabANumberButtonColor">#56795F</SolidColorBrush>
+    <SolidColorBrush x:Key="MarkAsRushButtonColor">#76595F</SolidColorBrush>
+    <SolidColorBrush x:Key="AddSendToLineButtonColor">#96995F</SolidColorBrush>
+    <SolidColorBrush x:Key="AddMissingButtonColor">#76995F</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region RX / prescription -->
+    <SolidColorBrush x:Key="RXEventsTitle">#667466</SolidColorBrush>
+    <SolidColorBrush x:Key="RXLogTitleBackground">#666674</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Today button gradient -->
+    <Color x:Key="TodayButtonGradient_Top_Cl">#FFFB9D</Color>
+    <Color x:Key="TodayButtonGradient_Middle_Cl">#FCE418</Color>
+    <Color x:Key="TodayButtonGradient_Bottom_Cl">#D9C51E</Color>
+    <!-- #endregion -->
+
+    <!-- #region Tab control (legacy top tabs) -->
+    <SolidColorBrush x:Key="TabItem.Selected.Background">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="TabItem.Selected.Border">#ACACAC</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Settings side-tab panel -->
+    <SolidColorBrush x:Key="SettingsTabHeaderBackground">#66696F</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsOuterBackground">#484C4F</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsPanelBackground">#52585E</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsPanelBorder">#3A4046</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabControlBackground">#52585E</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabControlBorder">#3A4046</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabBackground">#3D4246</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabBorder">#2E3338</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabForeground">#B8C0C8</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabSelectedBackground">#555B63</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabSelectedBorder">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabSelectedForeground">#F1F5F9</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabHoverBackground">#454B52</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabHoverForeground">#DCE3EA</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabAccent">#60A5FA</SolidColorBrush>
+    <SolidColorBrush x:Key="SettingsSideTabDisabledForeground">#6B7280</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Control palette (HealthReport list, legacy controls) -->
+    <Color x:Key="ControlLightColor">White</Color>
+    <Color x:Key="ControlMediumColor">#FF7381F9</Color>
+    <Color x:Key="ControlDarkColor">#FF211AA9</Color>
+    <Color x:Key="BorderLightColor">#FFCCCCCC</Color>
+    <Color x:Key="BorderMediumColor">#FF888888</Color>
+    <Color x:Key="BorderDarkColor">#FF444444</Color>
+    <Color x:Key="DisabledBorderLightColor">#FFAAAAAA</Color>
+    <Color x:Key="DisabledBorderDarkColor">#FF888888</Color>
+    <!-- #endregion -->
+
+    <!-- #region Scrollbar -->
+    <SolidColorBrush x:Key="EslScrollbarThumb" Color="#BBBBBB" />
+    <SolidColorBrush x:Key="EslScrollbarTrack" Color="#00000000" />
+    <SolidColorBrush x:Key="EslScrollbarThumbHover" Color="#999999" />
+    <SolidColorBrush x:Key="EslScrollbarThumbPressed" Color="#777777" />
+    <!-- #endregion -->
+
+    <!-- #region Legacy tab control (TabControlStyles) -->
+    <SolidColorBrush x:Key="TabLegacyBackground">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="TabLegacyBorder">#222222</SolidColorBrush>
+    <SolidColorBrush x:Key="TabLegacyForegroundNormal">#AAAAAA</SolidColorBrush>
+    <SolidColorBrush x:Key="TabLegacyForegroundDisabled">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="TabLegacyForegroundSelected">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="TabLegacyForegroundSelectedAlt">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="TabLegacyForegroundHover">#AAAAAA</SolidColorBrush>
+    <SolidColorBrush x:Key="TabShapeSelectedBackground">#E8E8E8</SolidColorBrush>
+    <SolidColorBrush x:Key="TabShapeHighlightBackground">#F1DC86</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Vita / cream button styles (ControlStyles) -->
+    <SolidColorBrush x:Key="VitaButtonBackgroundDark">#46494F</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBorderLight">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonForegroundMid">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonAccentGold">#E3BD22</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonHoverGray">#86898F</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonHoverGrayAlt">#A6A98F</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBorderGold">#FFE8C94F</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellow">#F7DD74</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellowAlt">#FEED74</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellowBright">#FDF979</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellowLight">#FFFF94</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundMint">#B7FCE2</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundMintAlt">#D7FCE2</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundMintLight">#F7FCE2</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellowGreen">#F7ED74</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellowPale">#F7FD74</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellowDull">#D7DD74</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellowSoft">#D7ED74</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundYellowFade">#D7FD74</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundPink">#F7CDD4</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundGrayGreen">#D7DDD4</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundGrayGreenAlt">#C2DDD4</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundGrayGreenDark">#B2DDD4</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundGrayGreenDeep">#77DDD4</SolidColorBrush>
+    <SolidColorBrush x:Key="VitaButtonBackgroundOrange">#AB4505</SolidColorBrush>
+    <SolidColorBrush x:Key="ComboBoxToggleBackground">#E1CE81</SolidColorBrush>
+    <SolidColorBrush x:Key="ComboBoxToggleBorder">#FF97A0A5</SolidColorBrush>
+    <SolidColorBrush x:Key="ComboBoxInnerBackground">#EFE7C9</SolidColorBrush>
+    <SolidColorBrush x:Key="ComboBoxArrowBackground">#DCC15B</SolidColorBrush>
+    <SolidColorBrush x:Key="FilterSectionCardBackground">#CCFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveFilterButtonHoverGradientStart">#FFF7FBFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveFilterButtonHoverGradientEnd">#FFE8F4FF</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveFilterButtonHoverBorder">#5534D9F5</SolidColorBrush>
+    <Color x:Key="ImmersiveFilterButtonHoverGradientStart_Cl">#FFF7FBFF</Color>
+    <Color x:Key="ImmersiveFilterButtonHoverGradientEnd_Cl">#FFE8F4FF</Color>
+    <Color x:Key="ImmersiveOrbCyanTransparent_Cl">#00B8E8F5</Color>
+    <Color x:Key="ImmersiveOrbPeachTransparent_Cl">#00FFD6E8</Color>
+    <Color x:Key="ImmersiveOrbMintTransparent_Cl">#00D4F5C8</Color>
+    <Color x:Key="ImmersiveOrbLavenderTransparent_Cl">#00E8D4F8</Color>
+    <!-- #endregion -->
+
+    <!-- #region CircleCheckBox -->
+    <SolidColorBrush x:Key="CircleCheckBoxBackground">#0A0C0D</SolidColorBrush>
+    <SolidColorBrush x:Key="CircleCheckBoxBorderOuter">#FF474E51</SolidColorBrush>
+    <SolidColorBrush x:Key="CircleCheckBoxBorderInner">#FF737A7D</SolidColorBrush>
+    <SolidColorBrush x:Key="CircleCheckBoxGlyph">#6A6E71</SolidColorBrush>
+    <SolidColorBrush x:Key="CircleCheckBoxCheckFill">#858C8F</SolidColorBrush>
+    <SolidColorBrush x:Key="CircleCheckBoxCheckGlow">#EEFEFCDD</SolidColorBrush>
+    <Color x:Key="CircleCheckBoxCheckGlow_Cl">#FEFCDD</Color>
+    <!-- #endregion -->
+
+    <!-- #region Expander -->
+    <SolidColorBrush x:Key="ExpanderHeaderForeground">#FF333333</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderHeaderBackground">#FFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderHeaderBorder">#FF333333</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderToggleForeground">#FF5593FF</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderContentBackground">#FFF3F9FF</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderContentForeground">#FF000000</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderHoverBorder">#FF3C77DD</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderHoverBackground">#FFD9ECFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderDisabledForeground">#FFBCBCBC</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderDisabledBackground">#FFE6E6E6</SolidColorBrush>
+    <SolidColorBrush x:Key="ExpanderDisabledBorder">#FF707070</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region SearchBoxTitleBar -->
+    <SolidColorBrush x:Key="SearchBoxBorder">#444444</SolidColorBrush>
+    <SolidColorBrush x:Key="SearchBoxForeground">#666666</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Converters -->
+    <SolidColorBrush x:Key="PaymentStatusPaidColor">#27AE60</SolidColorBrush>
+    <SolidColorBrush x:Key="PaymentStatusUnpaidColor">#E74C3C</SolidColorBrush>
+    <SolidColorBrush x:Key="PaymentStatusUnknownColor">Gray</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyBothFilledColor">#00571C</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyFlaggedColor">#06A2B0</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyEmptyFirstColor">#E1005A</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyEmptySecondColor">#B07F0B</SolidColorBrush>
+    <SolidColorBrush x:Key="AgeColorFresh">SeaGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="AgeColorRecent">LimeGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="AgeColorGreen">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="AgeColorSteel">SteelBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="AgeColorBlue">Blue</SolidColorBrush>
+    <SolidColorBrush x:Key="AgeColorMaroon">Maroon</SolidColorBrush>
+    <SolidColorBrush x:Key="AgeColorDefault">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderByColorFresh">YellowGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderByColorMedium">Yellow</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderByColorStale">Orange</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderByColorOld">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="ValidationValidForeground">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="ValidationInvalidForeground">Red</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Named WPF colors (White, Black, Blue, etc.) -->
+    <SolidColorBrush x:Key="TransparentBrush">Transparent</SolidColorBrush>
+    <Color x:Key="TransparentColor_Cl">#00000000</Color>
+    <SolidColorBrush x:Key="NamedYellow">Yellow</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedGray">Gray</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedSilver">Silver</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedBrown">Brown</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedBeige">Beige</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedLightBlue">LightBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedLightGreen">LightGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedLightYellow">LightYellow</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedLightSteelBlue">LightSteelBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedDeepPink">DeepPink</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedDarkGreen">DarkGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedDarkViolet">DarkViolet</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedDarkRed">DarkRed</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedWhiteSmoke">WhiteSmoke</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedDimGray">DimGray</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedPink">Pink</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedLightCoral">LightCoral</SolidColorBrush>
+    <SolidColorBrush x:Key="NamedOrange">Orange</SolidColorBrush>
+    <SolidColorBrush x:Key="OutlineStrokeWhite">White</SolidColorBrush>
+    <SolidColorBrush x:Key="GlowColorYellow">Yellow</SolidColorBrush>
+    <SolidColorBrush x:Key="GlowColorWhite">White</SolidColorBrush>
+    <SolidColorBrush x:Key="HealthReportLateColor">Yellow</SolidColorBrush>
+    <SolidColorBrush x:Key="EventColorDefault">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="PanLineColorDefault">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="PanDuplicateAlertColor">Red</SolidColorBrush>
+    <SolidColorBrush x:Key="CommentColorMuted">Gray</SolidColorBrush>
+    <SolidColorBrush x:Key="CommentColorHighlight">Blue</SolidColorBrush>
+    <SolidColorBrush x:Key="PanColorNameGreen">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyEmptyBackground">White</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerToolInactiveForeground">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="XmlCompareTransparentBackground">Transparent</SolidColorBrush>
+    <sys:String x:Key="NamedColorString_Black">Black</sys:String>
+    <sys:String x:Key="NamedColorString_White">White</sys:String>
+    <sys:String x:Key="NamedColorString_Red">Red</sys:String>
+    <sys:String x:Key="NamedColorString_Yellow">Yellow</sys:String>
+    <sys:String x:Key="NamedColorString_Green">Green</sys:String>
+    <sys:String x:Key="NamedColorString_Gray">Gray</sys:String>
+    <sys:String x:Key="NamedColorString_Blue">Blue</sys:String>
+    <sys:String x:Key="NamedColorString_Transparent">Transparent</sys:String>
+    <sys:String x:Key="NamedColorString_LightGreen">LightGreen</sys:String>
+    <sys:String x:Key="NamedColorString_LightBlue">LightBlue</sys:String>
+    <sys:String x:Key="BlinkColor_Yellow">yellow</sys:String>
+    <sys:String x:Key="BlinkColor_Green">green</sys:String>
+    <sys:String x:Key="BlinkColor_Red">red</sys:String>
+    <!-- #endregion -->
+
+    <!-- #region Filter / immersive UI (ControlStyles helpers) -->
+    <SolidColorBrush x:Key="FilterButtonForeground">#2C3E50</SolidColorBrush>
+    <SolidColorBrush x:Key="FilterButtonHoverBackground">#EBF5FB</SolidColorBrush>
+    <SolidColorBrush x:Key="FilterButtonPressedBackground">#D6EAF8</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveFilterButtonForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveFilterButtonGlow">#2234D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveFilterButtonBorder">#22000000</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Legacy classic scheme reference (for blink animations / fallback) -->
+    <Color x:Key="ClassicWindowBackgroundColor">#c9bf97</Color>
+    <SolidColorBrush x:Key="ClassicWindowBackgroundBrush" Color="{StaticResource ClassicWindowBackgroundColor}" />
+    <!-- #endregion -->
+
+    <!-- #region Shared modern dialog (EncodeIdentify, OrderScanPicker, FuseExport, PanStack) -->
+    <SolidColorBrush x:Key="DialogBackground">#F6F7F9</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogBackgroundAlt">#F4F5F7</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogSurfaceBackground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogBorder">#CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogBorderStrong">#BECAD8</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogTitleForeground">#2A3A52</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogSubtitleForeground">#1B2A38</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogBodyForeground">#0F172A</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogBodyForegroundAlt">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogSecondaryForeground">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogMutedForeground">#475569</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogGroupHeaderBackground">#E8EFF6</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogInfoPanelBackground">#E8EEF5</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogAccentBlue">#2563EB</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogAccentBlueDark">#1D4ED8</SolidColorBrush>
+    <SolidColorBrush x:Key="SemanticSuccessColor">#1F9D49</SolidColorBrush>
+    <SolidColorBrush x:Key="SemanticErrorColor">#D64545</SolidColorBrush>
+    <SolidColorBrush x:Key="SemanticLinkColor">#2A6AA3</SolidColorBrush>
+    <SolidColorBrush x:Key="SemanticLinkHoverBackground">#C5D8EE</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Glass / modal panels (OrderInfo, DcmViewer overlays) -->
+    <SolidColorBrush x:Key="GlassPanelBackground">#A8E5E9ED</SolidColorBrush>
+    <SolidColorBrush x:Key="GlassPanelBorder">#55A8B0B8</SolidColorBrush>
+    <SolidColorBrush x:Key="ModalCardBackground">#E6F8FAFD</SolidColorBrush>
+    <SolidColorBrush x:Key="ModalCardBorder">#AAB8C6D5</SolidColorBrush>
+    <SolidColorBrush x:Key="ModalCardBorderLight">#88B8C6D5</SolidColorBrush>
+    <SolidColorBrush x:Key="ModalTitleForeground">#1A2836</SolidColorBrush>
+    <SolidColorBrush x:Key="ModalBodyForeground">#46627A</SolidColorBrush>
+    <SolidColorBrush x:Key="ModalChipBackground">#D0D8E0</SolidColorBrush>
+    <SolidColorBrush x:Key="ArchiveOrderBackground">#DCE5F2</SolidColorBrush>
+    <SolidColorBrush x:Key="DialogCloseButtonBackground">IndianRed</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Code editor (OrderXmlCompare) -->
+    <SolidColorBrush x:Key="CodeEditorBackground">#1E1E1E</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeEditorPanelBackground">#252526</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeEditorHeaderBackground">#2D2D30</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeEditorBorder">#3F3F46</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeEditorForeground">#D4D4D4</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeEditorTitleForeground">#DCDCAA</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeEditorStatusForeground">#9CDCFE</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeEditorProgressForeground">#4EC9B0</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeDiffRemovedBackground">#3D1111</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeDiffRemovedForeground">#F48771</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeDiffAddedBackground">#1D4F3F</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeDiffAddedForeground">#89D185</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeEditorCountForeground">#FFFFFF</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Message box -->
+    <SolidColorBrush x:Key="MessageBoxBackground">#FFFFFF</SolidColorBrush>
+    <Color x:Key="MessageBoxHeaderGradientStart">#C6C9CF</Color>
+    <Color x:Key="MessageBoxHeaderGradientEnd">#B6B9BF</Color>
+    <SolidColorBrush x:Key="MessageBoxTitleBorder">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxBodyForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxSubtitleForeground">#333333</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxHintForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxBodyFill">#111111</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Popup / menu -->
+    <SolidColorBrush x:Key="PopupSurfaceBackground">#FFFFFF</SolidColorBrush>
+    <Color x:Key="PopupShadowColor">#40000000</Color>
+    <!-- #endregion -->
+
+    <!-- #region Splash screen -->
+    <SolidColorBrush x:Key="SplashBackground">#111827</SolidColorBrush>
+    <Color x:Key="SplashAccentBlue">#60A5FA</Color>
+    <Color x:Key="SplashAccentBlueLight">#38BDF8</Color>
+    <SolidColorBrush x:Key="SplashWarningOrange">#FB923C</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashWarningOrangeDark">#F59E0B</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashTitleForeground">#E8F4FD</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashBodyForeground">#F8FAFC</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashHintForeground">#88AACCEE</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashMutedForeground">#33AABBCC</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashCardBackground">#2B313D</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashCardBorder">#3D4654</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashOverlayBackground">#CC000000</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region DcmViewer -->
+    <SolidColorBrush x:Key="ViewerSliderThumbFill">#D0D9E2</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerSliderThumbStroke">#7C8FA3</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerSliderThumbHover">#A0B4C8</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerSliderThumbPressed">#B8C8D8</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerSliderTrackLight">#5A7090</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerSliderTrackDark">#38475A</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerPanelBackground">#EDF2F8</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerPanelBackgroundAlt">#E8EDF3</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerPanelBorder">#BDC7D2</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerPanelBorderStrong">#4A5F72</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerSuccessStroke">#2E9B49</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerSuccessBackground">#E8F6EC</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerSuccessHover">#7A9EC0</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerErrorStroke">#7A1F33</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerErrorBackground">#F5E6EA</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerErrorAccent">#9E3A4A</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerDarkTrackLight">#4A1320</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerDarkTrackDark">#2B0A12</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerLabelMuted">#5A6B7D</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerControlBackground">#E3E7EA</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerToolbarBackground">#2A323D</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerToolbarForeground">#E8EDF3</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerToggleOff">#800000</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerToggleOffHover">#A33A3A</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerLabelForeground">#B8C6D5</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerWatermarkText">#B8A35C</SolidColorBrush>
+    <Color x:Key="ViewerWatermarkGradientStart">#E5E9ED</Color>
+    <Color x:Key="ViewerWatermarkGradientMid1">#E3E7EA</Color>
+    <Color x:Key="ViewerWatermarkGradientMid2">#D8DCE0</Color>
+    <Color x:Key="ViewerWatermarkGradientEnd">#C8CCD0</Color>
+    <Color x:Key="ViewerSectionPlaneColor">#7A98C4</Color>
+    <Color x:Key="ViewerMeasurementColor">#1F6FEB</Color>
+    <Color x:Key="ViewerHighlightColor">#3DDC78</Color>
+    <SolidColorBrush x:Key="ViewerInfoPanelBackground">#EAF2F7FD</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerInfoPanelHeaderBackground">#DDE8F2</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerInfoPanelTitleForeground">#1D2A38</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerInfoPanelBodyForeground">#5A6B7D</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerWindowBackground">#F4F7FA</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerStatusForeground">#AA2A3A48</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerMenuForeground">#4A5C6C</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerOverlayBackground">#F4F7FB</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerOverlayBorder">#99B8C6D5</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerPanelTitleForeground">#23313E</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerPanelSubBackground">#F0F8FCFD</SolidColorBrush>
+    <SolidColorBrush x:Key="ViewerTransparentBackground">#00000000</SolidColorBrush>
+    <Color x:Key="ViewerShadowColor">#FF000000</Color>
+    <SolidColorBrush x:Key="ViewerChromeBorder">#B8C6D5</SolidColorBrush>
+    <SolidColorBrush x:Key="ImageViewportBackground">#1E1E1E</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region OrderInfo / misc window accents -->
+    <SolidColorBrush x:Key="OrderInfoDivider">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoDividerDark">#222222</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoHintForeground">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoFooterBackground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoFooterForeground">#EEEEEE</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameAccent">#65a7b5</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameCommentAccent">#32a89e</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameDivider">#CCCCCC</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Accent & loading -->
+    <SolidColorBrush x:Key="AccentColor">#34D9F5</SolidColorBrush>
+    <Color x:Key="LoadingSpinnerFilledColor">#5FFC8403</Color>
+    <Color x:Key="LoadingSpinnerUnfilledColor">#00FF0000</Color>
+    <!-- #endregion -->
+
+    <!-- #region Health report status colors -->
+    <SolidColorBrush x:Key="HealthReportStrugglingColor">#F5BD5D</SolidColorBrush>
+    <SolidColorBrush x:Key="HealthReportDeadColor">#FF7A95</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Home module tile tints (Tag strings for ColorToPastelAccentConverter) -->
+    <sys:String x:Key="HomeTileLabnextTint">#33A7F3D0</sys:String>
+    <sys:String x:Key="HomeTileRxMakerTint">#33B8E8F5</sys:String>
+    <sys:String x:Key="HomeTileArchivesTint">#33FDE68A</sys:String>
+    <sys:String x:Key="HomeTilePanStackTint">#33FBCFE8</sys:String>
+    <sys:String x:Key="HomeTileEncodeTint">#33C4B5FD</sys:String>
+    <sys:String x:Key="HomeTileHealthTint">#33FED7AA</sys:String>
+    <sys:String x:Key="HomeTileSettingsTint">#33FCA5A5</sys:String>
+    <!-- #endregion -->
+
+    <!-- #region OrderXmlCompare syntax (extends code editor) -->
+    <SolidColorBrush x:Key="CodeSyntaxLineNumber">#FF6A9955</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxMarkerAdded">#FF89D185</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxMarkerRemoved">#FFF48771</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxTag">#FF569CD6</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxAttribute">#FF9CDCFE</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxValue">#FFCE9178</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxComment">#FF6A9955</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxBgRemoved">#FF44252B</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxBgAdded">#FF1F4A36</SolidColorBrush>
+    <SolidColorBrush x:Key="CodeSyntaxBgSpacer">#FF26282B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region DcmViewer materials -->
+    <Color x:Key="ViewerMaterialPreopColor">#A5B8E8</Color>
+    <Color x:Key="ViewerSculptRingColor">#B0C4DE</Color>
+    <!-- #endregion -->
+    <Color x:Key="ImmersiveGradientStart_Cl">#FFF5F8FC</Color>
+    <Color x:Key="ImmersiveGradientMid_Cl">#FFEEF6F3</Color>
+    <Color x:Key="ImmersiveGradientEnd_Cl">#FFF0EFF8</Color>
+    <Color x:Key="ImmersiveOrbCyan_Cl">#FFB8E8F5</Color>
+    <Color x:Key="ImmersiveOrbLavender_Cl">#FFE8D4F8</Color>
+    <Color x:Key="ImmersiveOrbPeach_Cl">#FFFFD6E8</Color>
+    <Color x:Key="ImmersiveOrbMint_Cl">#FFD4F5C8</Color>
+    <Color x:Key="ImmersiveCardShadow_Cl">#5534D9F5</Color>
+    <Color x:Key="ImmersiveFocusRing_Cl">#8834D9F5</Color>
+    <SolidColorBrush x:Key="ImmersiveGlassBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveGlassBackgroundStrong">#FAFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveGlassBorder">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveInputBackground">#FAFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveInputBorder">#FFCBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveTextPrimary">#FF334155</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveTextSecondary">#FF475569</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveTextMuted">#FF64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveAccentBlue">#FF0369A1</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveAccentBlueLight">#FFE0F2FE</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveAccentBlueBorder">#FFBAE6FD</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveSuccessText">#FF059669</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveStatusCyan">#FF0FAEE4</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveStatusRed">#FFE40F0F</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersivePendingDigiAccent">#9922FC</SolidColorBrush>
+    <SolidColorBrush x:Key="ImmersiveScanTeal">#FF059D8A</SolidColorBrush>
+    <!-- #endregion -->
+
+
+    <!-- #region Auto-migrated tokens -->
+    <SolidColorBrush x:Key="SchemeColor_0034D9F5">#0034D9F5</SolidColorBrush>
+    <Color x:Key="SchemeColor_0034D9F5_Cl">#0034D9F5</Color>
+    <SolidColorBrush x:Key="SchemeColor_003A4558">#003A4558</SolidColorBrush>
+    <Color x:Key="SchemeColor_003A4558_Cl">#003A4558</Color>
+    <SolidColorBrush x:Key="SchemeColor_0066CC">#0066CC</SolidColorBrush>
+    <Color x:Key="SchemeColor_0066CC_Cl">#0066CC</Color>
+    <SolidColorBrush x:Key="SchemeColor_006800">#006800</SolidColorBrush>
+    <Color x:Key="SchemeColor_006800_Cl">#006800</Color>
+    <SolidColorBrush x:Key="SchemeColor_007D45">#007D45</SolidColorBrush>
+    <Color x:Key="SchemeColor_007D45_Cl">#007D45</Color>
+    <SolidColorBrush x:Key="SchemeColor_008048">#008048</SolidColorBrush>
+    <Color x:Key="SchemeColor_008048_Cl">#008048</Color>
+    <SolidColorBrush x:Key="SchemeColor_008269">#008269</SolidColorBrush>
+    <Color x:Key="SchemeColor_008269_Cl">#008269</Color>
+    <SolidColorBrush x:Key="SchemeColor_009B9B9B">#009B9B9B</SolidColorBrush>
+    <Color x:Key="SchemeColor_009B9B9B_Cl">#009B9B9B</Color>
+    <SolidColorBrush x:Key="SchemeColor_00B078">#00B078</SolidColorBrush>
+    <Color x:Key="SchemeColor_00B078_Cl">#00B078</Color>
+    <SolidColorBrush x:Key="SchemeColor_00C4B5FD">#00C4B5FD</SolidColorBrush>
+    <Color x:Key="SchemeColor_00C4B5FD_Cl">#00C4B5FD</Color>
+    <SolidColorBrush x:Key="SchemeColor_00CB98">#00CB98</SolidColorBrush>
+    <Color x:Key="SchemeColor_00CB98_Cl">#00CB98</Color>
+    <SolidColorBrush x:Key="SchemeColor_00CBD5E1">#00CBD5E1</SolidColorBrush>
+    <Color x:Key="SchemeColor_00CBD5E1_Cl">#00CBD5E1</Color>
+    <SolidColorBrush x:Key="SchemeColor_00FFFFFF">#00FFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_00FFFFFF_Cl">#00FFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_015D78">#015D78</SolidColorBrush>
+    <Color x:Key="SchemeColor_015D78_Cl">#015D78</Color>
+    <SolidColorBrush x:Key="SchemeColor_068506">#068506</SolidColorBrush>
+    <Color x:Key="SchemeColor_068506_Cl">#068506</Color>
+    <SolidColorBrush x:Key="SchemeColor_06A6BE">#06A6BE</SolidColorBrush>
+    <Color x:Key="SchemeColor_06A6BE_Cl">#06A6BE</Color>
+    <SolidColorBrush x:Key="SchemeColor_0B0A0A">#0B0A0A</SolidColorBrush>
+    <Color x:Key="SchemeColor_0B0A0A_Cl">#0B0A0A</Color>
+    <SolidColorBrush x:Key="SchemeColor_0CE10C">#0CE10C</SolidColorBrush>
+    <Color x:Key="SchemeColor_0CE10C_Cl">#0CE10C</Color>
+    <SolidColorBrush x:Key="SchemeColor_0DFFFFFF">#0DFFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_0DFFFFFF_Cl">#0DFFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_0FBAEF">#0FBAEF</SolidColorBrush>
+    <Color x:Key="SchemeColor_0FBAEF_Cl">#0FBAEF</Color>
+    <SolidColorBrush x:Key="SchemeColor_11A7F3D0">#11A7F3D0</SolidColorBrush>
+    <Color x:Key="SchemeColor_11A7F3D0_Cl">#11A7F3D0</Color>
+    <SolidColorBrush x:Key="SchemeColor_11C4B5FD">#11C4B5FD</SolidColorBrush>
+    <Color x:Key="SchemeColor_11C4B5FD_Cl">#11C4B5FD</Color>
+    <SolidColorBrush x:Key="SchemeColor_1260A5FA">#1260A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_1260A5FA_Cl">#1260A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_14FFFFFF">#14FFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_14FFFFFF_Cl">#14FFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_16111827">#16111827</SolidColorBrush>
+    <Color x:Key="SchemeColor_16111827_Cl">#16111827</Color>
+    <SolidColorBrush x:Key="SchemeColor_1638BDF8">#1638BDF8</SolidColorBrush>
+    <Color x:Key="SchemeColor_1638BDF8_Cl">#1638BDF8</Color>
+    <SolidColorBrush x:Key="SchemeColor_16A085">#16A085</SolidColorBrush>
+    <Color x:Key="SchemeColor_16A085_Cl">#16A085</Color>
+    <SolidColorBrush x:Key="SchemeColor_1860A5FA">#1860A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_1860A5FA_Cl">#1860A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_1A040A">#1A040A</SolidColorBrush>
+    <Color x:Key="SchemeColor_1A040A_Cl">#1A040A</Color>
+    <SolidColorBrush x:Key="SchemeColor_1E1A16">#1E1A16</SolidColorBrush>
+    <Color x:Key="SchemeColor_1E1A16_Cl">#1E1A16</Color>
+    <SolidColorBrush x:Key="SchemeColor_1E38BDF8">#1E38BDF8</SolidColorBrush>
+    <Color x:Key="SchemeColor_1E38BDF8_Cl">#1E38BDF8</Color>
+    <SolidColorBrush x:Key="SchemeColor_22101820">#22101820</SolidColorBrush>
+    <Color x:Key="SchemeColor_22101820_Cl">#22101820</Color>
+    <SolidColorBrush x:Key="SchemeColor_2238BDF8">#2238BDF8</SolidColorBrush>
+    <Color x:Key="SchemeColor_2238BDF8_Cl">#2238BDF8</Color>
+    <SolidColorBrush x:Key="SchemeColor_2260A5FA">#2260A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_2260A5FA_Cl">#2260A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_22CBD5E1">#22CBD5E1</SolidColorBrush>
+    <Color x:Key="SchemeColor_22CBD5E1_Cl">#22CBD5E1</Color>
+    <SolidColorBrush x:Key="SchemeColor_22FBCFE8">#22FBCFE8</SolidColorBrush>
+    <Color x:Key="SchemeColor_22FBCFE8_Cl">#22FBCFE8</Color>
+    <SolidColorBrush x:Key="SchemeColor_22FDBA74">#22FDBA74</SolidColorBrush>
+    <Color x:Key="SchemeColor_22FDBA74_Cl">#22FDBA74</Color>
+    <SolidColorBrush x:Key="SchemeColor_22FFFFFF">#22FFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_22FFFFFF_Cl">#22FFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_2A140A">#2A140A</SolidColorBrush>
+    <Color x:Key="SchemeColor_2A140A_Cl">#2A140A</Color>
+    <SolidColorBrush x:Key="SchemeColor_30000000">#30000000</SolidColorBrush>
+    <Color x:Key="SchemeColor_30000000_Cl">#30000000</Color>
+    <SolidColorBrush x:Key="SchemeColor_33000000">#33000000</SolidColorBrush>
+    <Color x:Key="SchemeColor_33000000_Cl">#33000000</Color>
+    <SolidColorBrush x:Key="SchemeColor_331122">#331122</SolidColorBrush>
+    <Color x:Key="SchemeColor_331122_Cl">#331122</Color>
+    <SolidColorBrush x:Key="SchemeColor_332A3544">#332A3544</SolidColorBrush>
+    <Color x:Key="SchemeColor_332A3544_Cl">#332A3544</Color>
+    <SolidColorBrush x:Key="SchemeColor_3334D9F5">#3334D9F5</SolidColorBrush>
+    <Color x:Key="SchemeColor_3334D9F5_Cl">#3334D9F5</Color>
+    <SolidColorBrush x:Key="SchemeColor_33A7F3D0">#33A7F3D0</SolidColorBrush>
+    <Color x:Key="SchemeColor_33A7F3D0_Cl">#33A7F3D0</Color>
+    <SolidColorBrush x:Key="SchemeColor_33B8E8F5">#33B8E8F5</SolidColorBrush>
+    <Color x:Key="SchemeColor_33B8E8F5_Cl">#33B8E8F5</Color>
+    <SolidColorBrush x:Key="SchemeColor_33C4B5FD">#33C4B5FD</SolidColorBrush>
+    <Color x:Key="SchemeColor_33C4B5FD_Cl">#33C4B5FD</Color>
+    <SolidColorBrush x:Key="SchemeColor_33D6B97A">#33D6B97A</SolidColorBrush>
+    <Color x:Key="SchemeColor_33D6B97A_Cl">#33D6B97A</Color>
+    <SolidColorBrush x:Key="SchemeColor_33E0F2FE">#33E0F2FE</SolidColorBrush>
+    <Color x:Key="SchemeColor_33E0F2FE_Cl">#33E0F2FE</Color>
+    <SolidColorBrush x:Key="SchemeColor_33FB923C">#33FB923C</SolidColorBrush>
+    <Color x:Key="SchemeColor_33FB923C_Cl">#33FB923C</Color>
+    <SolidColorBrush x:Key="SchemeColor_33FBCFE8">#33FBCFE8</SolidColorBrush>
+    <Color x:Key="SchemeColor_33FBCFE8_Cl">#33FBCFE8</Color>
+    <SolidColorBrush x:Key="SchemeColor_33FCA5A5">#33FCA5A5</SolidColorBrush>
+    <Color x:Key="SchemeColor_33FCA5A5_Cl">#33FCA5A5</Color>
+    <SolidColorBrush x:Key="SchemeColor_33FDE68A">#33FDE68A</SolidColorBrush>
+    <Color x:Key="SchemeColor_33FDE68A_Cl">#33FDE68A</Color>
+    <SolidColorBrush x:Key="SchemeColor_33FED7AA">#33FED7AA</SolidColorBrush>
+    <Color x:Key="SchemeColor_33FED7AA_Cl">#33FED7AA</Color>
+    <SolidColorBrush x:Key="SchemeColor_33FFFFFF">#33FFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_33FFFFFF_Cl">#33FFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_3498DB">#3498DB</SolidColorBrush>
+    <Color x:Key="SchemeColor_3498DB_Cl">#3498DB</Color>
+    <SolidColorBrush x:Key="SchemeColor_35353535">#35353535</SolidColorBrush>
+    <Color x:Key="SchemeColor_35353535_Cl">#35353535</Color>
+    <SolidColorBrush x:Key="SchemeColor_36494F">#36494F</SolidColorBrush>
+    <Color x:Key="SchemeColor_36494F_Cl">#36494F</Color>
+    <SolidColorBrush x:Key="SchemeColor_3A240A">#3A240A</SolidColorBrush>
+    <Color x:Key="SchemeColor_3A240A_Cl">#3A240A</Color>
+    <SolidColorBrush x:Key="SchemeColor_440000">#440000</SolidColorBrush>
+    <Color x:Key="SchemeColor_440000_Cl">#440000</Color>
+    <SolidColorBrush x:Key="SchemeColor_44000000">#44000000</SolidColorBrush>
+    <Color x:Key="SchemeColor_44000000_Cl">#44000000</Color>
+    <SolidColorBrush x:Key="SchemeColor_44B8E8F5">#44B8E8F5</SolidColorBrush>
+    <Color x:Key="SchemeColor_44B8E8F5_Cl">#44B8E8F5</Color>
+    <SolidColorBrush x:Key="SchemeColor_44C4B5FD">#44C4B5FD</SolidColorBrush>
+    <Color x:Key="SchemeColor_44C4B5FD_Cl">#44C4B5FD</Color>
+    <SolidColorBrush x:Key="SchemeColor_44D6B97A">#44D6B97A</SolidColorBrush>
+    <Color x:Key="SchemeColor_44D6B97A_Cl">#44D6B97A</Color>
+    <SolidColorBrush x:Key="SchemeColor_46596B">#46596B</SolidColorBrush>
+    <Color x:Key="SchemeColor_46596B_Cl">#46596B</Color>
+    <SolidColorBrush x:Key="SchemeColor_46596C">#46596C</SolidColorBrush>
+    <Color x:Key="SchemeColor_46596C_Cl">#46596C</Color>
+    <SolidColorBrush x:Key="SchemeColor_46596D">#46596D</SolidColorBrush>
+    <Color x:Key="SchemeColor_46596D_Cl">#46596D</Color>
+    <SolidColorBrush x:Key="SchemeColor_46596E">#46596E</SolidColorBrush>
+    <Color x:Key="SchemeColor_46596E_Cl">#46596E</Color>
+    <SolidColorBrush x:Key="SchemeColor_466F65">#466F65</SolidColorBrush>
+    <Color x:Key="SchemeColor_466F65_Cl">#466F65</Color>
+    <SolidColorBrush x:Key="SchemeColor_466F66">#466F66</SolidColorBrush>
+    <Color x:Key="SchemeColor_466F66_Cl">#466F66</Color>
+    <SolidColorBrush x:Key="SchemeColor_466F67">#466F67</SolidColorBrush>
+    <Color x:Key="SchemeColor_466F67_Cl">#466F67</Color>
+    <SolidColorBrush x:Key="SchemeColor_466F68">#466F68</SolidColorBrush>
+    <Color x:Key="SchemeColor_466F68_Cl">#466F68</Color>
+    <SolidColorBrush x:Key="SchemeColor_466F69">#466F69</SolidColorBrush>
+    <Color x:Key="SchemeColor_466F69_Cl">#466F69</Color>
+    <SolidColorBrush x:Key="SchemeColor_485C76">#485C76</SolidColorBrush>
+    <Color x:Key="SchemeColor_485C76_Cl">#485C76</Color>
+    <SolidColorBrush x:Key="SchemeColor_485C77">#485C77</SolidColorBrush>
+    <Color x:Key="SchemeColor_485C77_Cl">#485C77</Color>
+    <SolidColorBrush x:Key="SchemeColor_485C78">#485C78</SolidColorBrush>
+    <Color x:Key="SchemeColor_485C78_Cl">#485C78</Color>
+    <SolidColorBrush x:Key="SchemeColor_485C79">#485C79</SolidColorBrush>
+    <Color x:Key="SchemeColor_485C79_Cl">#485C79</Color>
+    <SolidColorBrush x:Key="SchemeColor_485C7A">#485C7A</SolidColorBrush>
+    <Color x:Key="SchemeColor_485C7A_Cl">#485C7A</Color>
+    <SolidColorBrush x:Key="SchemeColor_4884B6">#4884B6</SolidColorBrush>
+    <Color x:Key="SchemeColor_4884B6_Cl">#4884B6</Color>
+    <SolidColorBrush x:Key="SchemeColor_4A340A">#4A340A</SolidColorBrush>
+    <Color x:Key="SchemeColor_4A340A_Cl">#4A340A</Color>
+    <SolidColorBrush x:Key="SchemeColor_4C494F">#4C494F</SolidColorBrush>
+    <Color x:Key="SchemeColor_4C494F_Cl">#4C494F</Color>
+    <SolidColorBrush x:Key="SchemeColor_5060A5FA">#5060A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_5060A5FA_Cl">#5060A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_52B80C">#52B80C</SolidColorBrush>
+    <Color x:Key="SchemeColor_52B80C_Cl">#52B80C</Color>
+    <SolidColorBrush x:Key="SchemeColor_5560A5FA">#5560A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_5560A5FA_Cl">#5560A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_55B02200">#55B02200</SolidColorBrush>
+    <Color x:Key="SchemeColor_55B02200_Cl">#55B02200</Color>
+    <SolidColorBrush x:Key="SchemeColor_55FFEDB0">#55FFEDB0</SolidColorBrush>
+    <Color x:Key="SchemeColor_55FFEDB0_Cl">#55FFEDB0</Color>
+    <SolidColorBrush x:Key="SchemeColor_55FFFFFF">#55FFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_55FFFFFF_Cl">#55FFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_56695F">#56695F</SolidColorBrush>
+    <Color x:Key="SchemeColor_56695F_Cl">#56695F</Color>
+    <SolidColorBrush x:Key="SchemeColor_56895F">#56895F</SolidColorBrush>
+    <Color x:Key="SchemeColor_56895F_Cl">#56895F</Color>
+    <SolidColorBrush x:Key="SchemeColor_56995F">#56995F</SolidColorBrush>
+    <Color x:Key="SchemeColor_56995F_Cl">#56995F</Color>
+    <SolidColorBrush x:Key="SchemeColor_56A95F">#56A95F</SolidColorBrush>
+    <Color x:Key="SchemeColor_56A95F_Cl">#56A95F</Color>
+    <SolidColorBrush x:Key="SchemeColor_580085">#580085</SolidColorBrush>
+    <Color x:Key="SchemeColor_580085_Cl">#580085</Color>
+    <SolidColorBrush x:Key="SchemeColor_5A440A">#5A440A</SolidColorBrush>
+    <Color x:Key="SchemeColor_5A440A_Cl">#5A440A</Color>
+    <SolidColorBrush x:Key="SchemeColor_5EB000">#5EB000</SolidColorBrush>
+    <Color x:Key="SchemeColor_5EB000_Cl">#5EB000</Color>
+    <SolidColorBrush x:Key="SchemeColor_6038BDF8">#6038BDF8</SolidColorBrush>
+    <Color x:Key="SchemeColor_6038BDF8_Cl">#6038BDF8</Color>
+    <SolidColorBrush x:Key="SchemeColor_6602C7FA">#6602C7FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_6602C7FA_Cl">#6602C7FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_6634D9F5">#6634D9F5</SolidColorBrush>
+    <Color x:Key="SchemeColor_6634D9F5_Cl">#6634D9F5</Color>
+    <SolidColorBrush x:Key="SchemeColor_66595F">#66595F</SolidColorBrush>
+    <Color x:Key="SchemeColor_66595F_Cl">#66595F</Color>
+    <SolidColorBrush x:Key="SchemeColor_66695F">#66695F</SolidColorBrush>
+    <Color x:Key="SchemeColor_66695F_Cl">#66695F</Color>
+    <SolidColorBrush x:Key="SchemeColor_668898A8">#668898A8</SolidColorBrush>
+    <Color x:Key="SchemeColor_668898A8_Cl">#668898A8</Color>
+    <SolidColorBrush x:Key="SchemeColor_66FFFFFF">#66FFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_66FFFFFF_Cl">#66FFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_674679">#674679</SolidColorBrush>
+    <Color x:Key="SchemeColor_674679_Cl">#674679</Color>
+    <SolidColorBrush x:Key="SchemeColor_67467A">#67467A</SolidColorBrush>
+    <Color x:Key="SchemeColor_67467A_Cl">#67467A</Color>
+    <SolidColorBrush x:Key="SchemeColor_67467B">#67467B</SolidColorBrush>
+    <Color x:Key="SchemeColor_67467B_Cl">#67467B</Color>
+    <SolidColorBrush x:Key="SchemeColor_67467C">#67467C</SolidColorBrush>
+    <Color x:Key="SchemeColor_67467C_Cl">#67467C</Color>
+    <SolidColorBrush x:Key="SchemeColor_67467D">#67467D</SolidColorBrush>
+    <Color x:Key="SchemeColor_67467D_Cl">#67467D</Color>
+    <SolidColorBrush x:Key="SchemeColor_6A540A">#6A540A</SolidColorBrush>
+    <Color x:Key="SchemeColor_6A540A_Cl">#6A540A</Color>
+    <SolidColorBrush x:Key="SchemeColor_6D4702">#6D4702</SolidColorBrush>
+    <Color x:Key="SchemeColor_6D4702_Cl">#6D4702</Color>
+    <SolidColorBrush x:Key="SchemeColor_7060A5FA">#7060A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_7060A5FA_Cl">#7060A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_70879462">#70879462</SolidColorBrush>
+    <Color x:Key="SchemeColor_70879462_Cl">#70879462</Color>
+    <SolidColorBrush x:Key="SchemeColor_76795F">#76795F</SolidColorBrush>
+    <Color x:Key="SchemeColor_76795F_Cl">#76795F</Color>
+    <SolidColorBrush x:Key="SchemeColor_76999F">#76999F</SolidColorBrush>
+    <Color x:Key="SchemeColor_76999F_Cl">#76999F</Color>
+    <SolidColorBrush x:Key="SchemeColor_77000000">#77000000</SolidColorBrush>
+    <Color x:Key="SchemeColor_77000000_Cl">#77000000</Color>
+    <SolidColorBrush x:Key="SchemeColor_78804B">#78804B</SolidColorBrush>
+    <Color x:Key="SchemeColor_78804B_Cl">#78804B</Color>
+    <SolidColorBrush x:Key="SchemeColor_78804C">#78804C</SolidColorBrush>
+    <Color x:Key="SchemeColor_78804C_Cl">#78804C</Color>
+    <SolidColorBrush x:Key="SchemeColor_78804D">#78804D</SolidColorBrush>
+    <Color x:Key="SchemeColor_78804D_Cl">#78804D</Color>
+    <SolidColorBrush x:Key="SchemeColor_78804E">#78804E</SolidColorBrush>
+    <Color x:Key="SchemeColor_78804E_Cl">#78804E</Color>
+    <SolidColorBrush x:Key="SchemeColor_78804F">#78804F</SolidColorBrush>
+    <Color x:Key="SchemeColor_78804F_Cl">#78804F</Color>
+    <SolidColorBrush x:Key="SchemeColor_79BBF2">#79BBF2</SolidColorBrush>
+    <Color x:Key="SchemeColor_79BBF2_Cl">#79BBF2</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A4072">#7A4072</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A4072_Cl">#7A4072</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A4073">#7A4073</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A4073_Cl">#7A4073</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A4074">#7A4074</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A4074_Cl">#7A4074</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A4075">#7A4075</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A4075_Cl">#7A4075</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A4076">#7A4076</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A4076_Cl">#7A4076</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A464B">#7A464B</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A464B_Cl">#7A464B</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A464C">#7A464C</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A464C_Cl">#7A464C</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A464D">#7A464D</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A464D_Cl">#7A464D</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A464F">#7A464F</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A464F_Cl">#7A464F</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A504B">#7A504B</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A504B_Cl">#7A504B</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A504C">#7A504C</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A504C_Cl">#7A504C</Color>
+    <SolidColorBrush x:Key="SchemeColor_7A640A">#7A640A</SolidColorBrush>
+    <Color x:Key="SchemeColor_7A640A_Cl">#7A640A</Color>
+    <SolidColorBrush x:Key="SchemeColor_7D5F44">#7D5F44</SolidColorBrush>
+    <Color x:Key="SchemeColor_7D5F44_Cl">#7D5F44</Color>
+    <SolidColorBrush x:Key="SchemeColor_7D5F45">#7D5F45</SolidColorBrush>
+    <Color x:Key="SchemeColor_7D5F45_Cl">#7D5F45</Color>
+    <SolidColorBrush x:Key="SchemeColor_7D5F46">#7D5F46</SolidColorBrush>
+    <Color x:Key="SchemeColor_7D5F46_Cl">#7D5F46</Color>
+    <SolidColorBrush x:Key="SchemeColor_7D5F47">#7D5F47</SolidColorBrush>
+    <Color x:Key="SchemeColor_7D5F47_Cl">#7D5F47</Color>
+    <SolidColorBrush x:Key="SchemeColor_7D5F48">#7D5F48</SolidColorBrush>
+    <Color x:Key="SchemeColor_7D5F48_Cl">#7D5F48</Color>
+    <SolidColorBrush x:Key="SchemeColor_7F8C8D">#7F8C8D</SolidColorBrush>
+    <Color x:Key="SchemeColor_7F8C8D_Cl">#7F8C8D</Color>
+    <SolidColorBrush x:Key="SchemeColor_8366EF">#8366EF</SolidColorBrush>
+    <Color x:Key="SchemeColor_8366EF_Cl">#8366EF</Color>
+    <SolidColorBrush x:Key="SchemeColor_850D0D">#850D0D</SolidColorBrush>
+    <Color x:Key="SchemeColor_850D0D_Cl">#850D0D</Color>
+    <SolidColorBrush x:Key="SchemeColor_85FFCE">#85FFCE</SolidColorBrush>
+    <Color x:Key="SchemeColor_85FFCE_Cl">#85FFCE</Color>
+    <SolidColorBrush x:Key="SchemeColor_86595F">#86595F</SolidColorBrush>
+    <Color x:Key="SchemeColor_86595F_Cl">#86595F</Color>
+    <SolidColorBrush x:Key="SchemeColor_86895F">#86895F</SolidColorBrush>
+    <Color x:Key="SchemeColor_86895F_Cl">#86895F</Color>
+    <SolidColorBrush x:Key="SchemeColor_8860A5FA">#8860A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_8860A5FA_Cl">#8860A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_886B8CFF">#886B8CFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_886B8CFF_Cl">#886B8CFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_88A8B8C8">#88A8B8C8</SolidColorBrush>
+    <Color x:Key="SchemeColor_88A8B8C8_Cl">#88A8B8C8</Color>
+    <SolidColorBrush x:Key="SchemeColor_88FBCFE8">#88FBCFE8</SolidColorBrush>
+    <Color x:Key="SchemeColor_88FBCFE8_Cl">#88FBCFE8</Color>
+    <SolidColorBrush x:Key="SchemeColor_88FFFFFF">#88FFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_88FFFFFF_Cl">#88FFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_8A741A">#8A741A</SolidColorBrush>
+    <Color x:Key="SchemeColor_8A741A_Cl">#8A741A</Color>
+    <SolidColorBrush x:Key="SchemeColor_8CE4FF">#8CE4FF</SolidColorBrush>
+    <Color x:Key="SchemeColor_8CE4FF_Cl">#8CE4FF</Color>
+    <SolidColorBrush x:Key="SchemeColor_8D088D">#8D088D</SolidColorBrush>
+    <Color x:Key="SchemeColor_8D088D_Cl">#8D088D</Color>
+    <SolidColorBrush x:Key="SchemeColor_902DEC">#902DEC</SolidColorBrush>
+    <Color x:Key="SchemeColor_902DEC_Cl">#902DEC</Color>
+    <SolidColorBrush x:Key="SchemeColor_950D58">#950D58</SolidColorBrush>
+    <Color x:Key="SchemeColor_950D58_Cl">#950D58</Color>
+    <SolidColorBrush x:Key="SchemeColor_96595F">#96595F</SolidColorBrush>
+    <Color x:Key="SchemeColor_96595F_Cl">#96595F</Color>
+    <SolidColorBrush x:Key="SchemeColor_9938BDF8">#9938BDF8</SolidColorBrush>
+    <Color x:Key="SchemeColor_9938BDF8_Cl">#9938BDF8</Color>
+    <SolidColorBrush x:Key="SchemeColor_9A842A">#9A842A</SolidColorBrush>
+    <Color x:Key="SchemeColor_9A842A_Cl">#9A842A</Color>
+    <SolidColorBrush x:Key="SchemeColor_9B59B6">#9B59B6</SolidColorBrush>
+    <Color x:Key="SchemeColor_9B59B6_Cl">#9B59B6</Color>
+    <SolidColorBrush x:Key="SchemeColor_9D6612">#9D6612</SolidColorBrush>
+    <Color x:Key="SchemeColor_9D6612_Cl">#9D6612</Color>
+    <SolidColorBrush x:Key="SchemeColor_A6595F">#A6595F</SolidColorBrush>
+    <Color x:Key="SchemeColor_A6595F_Cl">#A6595F</Color>
+    <SolidColorBrush x:Key="SchemeColor_A6898F">#A6898F</SolidColorBrush>
+    <Color x:Key="SchemeColor_A6898F_Cl">#A6898F</Color>
+    <SolidColorBrush x:Key="SchemeColor_A6A95F">#A6A95F</SolidColorBrush>
+    <Color x:Key="SchemeColor_A6A95F_Cl">#A6A95F</Color>
+    <SolidColorBrush x:Key="SchemeColor_A9A9A9A9">#A9A9A9A9</SolidColorBrush>
+    <Color x:Key="SchemeColor_A9A9A9A9_Cl">#A9A9A9A9</Color>
+    <SolidColorBrush x:Key="SchemeColor_AA050810">#AA050810</SolidColorBrush>
+    <Color x:Key="SchemeColor_AA050810_Cl">#AA050810</Color>
+    <SolidColorBrush x:Key="SchemeColor_AA34D9F5">#AA34D9F5</SolidColorBrush>
+    <Color x:Key="SchemeColor_AA34D9F5_Cl">#AA34D9F5</Color>
+    <SolidColorBrush x:Key="SchemeColor_AA60A5FA">#AA60A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_AA60A5FA_Cl">#AA60A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_AA943A">#AA943A</SolidColorBrush>
+    <Color x:Key="SchemeColor_AA943A_Cl">#AA943A</Color>
+    <SolidColorBrush x:Key="SchemeColor_B90FFA">#B90FFA</SolidColorBrush>
+    <Color x:Key="SchemeColor_B90FFA_Cl">#B90FFA</Color>
+    <SolidColorBrush x:Key="SchemeColor_BB64748B">#BB64748B</SolidColorBrush>
+    <Color x:Key="SchemeColor_BB64748B_Cl">#BB64748B</Color>
+    <SolidColorBrush x:Key="SchemeColor_C0392B">#C0392B</SolidColorBrush>
+    <Color x:Key="SchemeColor_C0392B_Cl">#C0392B</Color>
+    <SolidColorBrush x:Key="SchemeColor_C2EFFC">#C2EFFC</SolidColorBrush>
+    <Color x:Key="SchemeColor_C2EFFC_Cl">#C2EFFC</Color>
+    <SolidColorBrush x:Key="SchemeColor_C6696F">#C6696F</SolidColorBrush>
+    <Color x:Key="SchemeColor_C6696F_Cl">#C6696F</Color>
+    <SolidColorBrush x:Key="SchemeColor_C6F9CF">#C6F9CF</SolidColorBrush>
+    <Color x:Key="SchemeColor_C6F9CF_Cl">#C6F9CF</Color>
+    <SolidColorBrush x:Key="SchemeColor_C8C8C8">#C8C8C8</SolidColorBrush>
+    <Color x:Key="SchemeColor_C8C8C8_Cl">#C8C8C8</Color>
+    <SolidColorBrush x:Key="SchemeColor_C8D2E1">#C8D2E1</SolidColorBrush>
+    <Color x:Key="SchemeColor_C8D2E1_Cl">#C8D2E1</Color>
+    <SolidColorBrush x:Key="SchemeColor_C96F11">#C96F11</SolidColorBrush>
+    <Color x:Key="SchemeColor_C96F11_Cl">#C96F11</Color>
+    <SolidColorBrush x:Key="SchemeColor_CC020408">#CC020408</SolidColorBrush>
+    <Color x:Key="SchemeColor_CC020408_Cl">#CC020408</Color>
+    <SolidColorBrush x:Key="SchemeColor_CC121826">#CC121826</SolidColorBrush>
+    <Color x:Key="SchemeColor_CC121826_Cl">#CC121826</Color>
+    <SolidColorBrush x:Key="SchemeColor_CC60A5FA">#CC60A5FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_CC60A5FA_Cl">#CC60A5FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_CFA362">#CFA362</SolidColorBrush>
+    <Color x:Key="SchemeColor_CFA362_Cl">#CFA362</Color>
+    <SolidColorBrush x:Key="SchemeColor_D1CCB8">#D1CCB8</SolidColorBrush>
+    <Color x:Key="SchemeColor_D1CCB8_Cl">#D1CCB8</Color>
+    <SolidColorBrush x:Key="SchemeColor_D80C1018">#D80C1018</SolidColorBrush>
+    <Color x:Key="SchemeColor_D80C1018_Cl">#D80C1018</Color>
+    <SolidColorBrush x:Key="SchemeColor_D907D0">#D907D0</SolidColorBrush>
+    <Color x:Key="SchemeColor_D907D0_Cl">#D907D0</Color>
+    <SolidColorBrush x:Key="SchemeColor_DE766B">#DE766B</SolidColorBrush>
+    <Color x:Key="SchemeColor_DE766B_Cl">#DE766B</Color>
+    <SolidColorBrush x:Key="SchemeColor_DEDBBD">#DEDBBD</SolidColorBrush>
+    <Color x:Key="SchemeColor_DEDBBD_Cl">#DEDBBD</Color>
+    <SolidColorBrush x:Key="SchemeColor_DEF4AD">#DEF4AD</SolidColorBrush>
+    <Color x:Key="SchemeColor_DEF4AD_Cl">#DEF4AD</Color>
+    <SolidColorBrush x:Key="SchemeColor_DFFFFFFF">#DFFFFFFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_DFFFFFFF_Cl">#DFFFFFFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_E610141C">#E610141C</SolidColorBrush>
+    <Color x:Key="SchemeColor_E610141C_Cl">#E610141C</Color>
+    <SolidColorBrush x:Key="SchemeColor_E67E22">#E67E22</SolidColorBrush>
+    <Color x:Key="SchemeColor_E67E22_Cl">#E67E22</Color>
+    <SolidColorBrush x:Key="SchemeColor_E8B4D8">#E8B4D8</SolidColorBrush>
+    <Color x:Key="SchemeColor_E8B4D8_Cl">#E8B4D8</Color>
+    <SolidColorBrush x:Key="SchemeColor_E9DC9A">#E9DC9A</SolidColorBrush>
+    <Color x:Key="SchemeColor_E9DC9A_Cl">#E9DC9A</Color>
+    <SolidColorBrush x:Key="SchemeColor_ECECEC">#ECECEC</SolidColorBrush>
+    <Color x:Key="SchemeColor_ECECEC_Cl">#ECECEC</Color>
+    <SolidColorBrush x:Key="SchemeColor_ECF0F1">#ECF0F1</SolidColorBrush>
+    <Color x:Key="SchemeColor_ECF0F1_Cl">#ECF0F1</Color>
+    <SolidColorBrush x:Key="SchemeColor_EE010204">#EE010204</SolidColorBrush>
+    <Color x:Key="SchemeColor_EE010204_Cl">#EE010204</Color>
+    <SolidColorBrush x:Key="SchemeColor_EE858C8F">#EE858C8F</SolidColorBrush>
+    <Color x:Key="SchemeColor_EE858C8F_Cl">#EE858C8F</Color>
+    <SolidColorBrush x:Key="SchemeColor_EEF3F8">#EEF3F8</SolidColorBrush>
+    <Color x:Key="SchemeColor_EEF3F8_Cl">#EEF3F8</Color>
+    <SolidColorBrush x:Key="SchemeColor_EEF5FAFF">#EEF5FAFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_EEF5FAFF_Cl">#EEF5FAFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_EFEFEF">#EFEFEF</SolidColorBrush>
+    <Color x:Key="SchemeColor_EFEFEF_Cl">#EFEFEF</Color>
+    <SolidColorBrush x:Key="SchemeColor_F0F7FB">#F0F7FB</SolidColorBrush>
+    <Color x:Key="SchemeColor_F0F7FB_Cl">#F0F7FB</Color>
+    <SolidColorBrush x:Key="SchemeColor_F2F6FA">#F2F6FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_F2F6FA_Cl">#F2F6FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_F39C12">#F39C12</SolidColorBrush>
+    <Color x:Key="SchemeColor_F39C12_Cl">#F39C12</Color>
+    <SolidColorBrush x:Key="SchemeColor_F46900">#F46900</SolidColorBrush>
+    <Color x:Key="SchemeColor_F46900_Cl">#F46900</Color>
+    <SolidColorBrush x:Key="SchemeColor_F5BD5D">#F5BD5D</SolidColorBrush>
+    <Color x:Key="SchemeColor_F5BD5D_Cl">#F5BD5D</Color>
+    <SolidColorBrush x:Key="SchemeColor_F5F5F5">#F5F5F5</SolidColorBrush>
+    <Color x:Key="SchemeColor_F5F5F5_Cl">#F5F5F5</Color>
+    <SolidColorBrush x:Key="SchemeColor_F5F7FA">#F5F7FA</SolidColorBrush>
+    <Color x:Key="SchemeColor_F5F7FA_Cl">#F5F7FA</Color>
+    <SolidColorBrush x:Key="SchemeColor_F66D06">#F66D06</SolidColorBrush>
+    <Color x:Key="SchemeColor_F66D06_Cl">#F66D06</Color>
+    <SolidColorBrush x:Key="SchemeColor_F7F4E6">#F7F4E6</SolidColorBrush>
+    <Color x:Key="SchemeColor_F7F4E6_Cl">#F7F4E6</Color>
+    <SolidColorBrush x:Key="SchemeColor_F8FA82">#F8FA82</SolidColorBrush>
+    <Color x:Key="SchemeColor_F8FA82_Cl">#F8FA82</Color>
+    <SolidColorBrush x:Key="SchemeColor_FA91C5">#FA91C5</SolidColorBrush>
+    <Color x:Key="SchemeColor_FA91C5_Cl">#FA91C5</Color>
+    <SolidColorBrush x:Key="SchemeColor_FAD282">#FAD282</SolidColorBrush>
+    <Color x:Key="SchemeColor_FAD282_Cl">#FAD282</Color>
+    <SolidColorBrush x:Key="SchemeColor_FBFF00">#FBFF00</SolidColorBrush>
+    <Color x:Key="SchemeColor_FBFF00_Cl">#FBFF00</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF0284C7">#FF0284C7</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF0284C7_Cl">#FF0284C7</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF065F46">#FF065F46</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF065F46_Cl">#FF065F46</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF166534">#FF166534</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF166534_Cl">#FF166534</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF16A34A">#FF16A34A</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF16A34A_Cl">#FF16A34A</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF1A2836">#FF1A2836</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF1A2836_Cl">#FF1A2836</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF1F4A36">#FF1F4A36</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF1F4A36_Cl">#FF1F4A36</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF243447">#FF243447</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF243447_Cl">#FF243447</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF26282B">#FF26282B</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF26282B_Cl">#FF26282B</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF2A3A52">#FF2A3A52</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF2A3A52_Cl">#FF2A3A52</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF44252B">#FF44252B</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF44252B_Cl">#FF44252B</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF569CD6">#FF569CD6</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF569CD6_Cl">#FF569CD6</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF5B21B6">#FF5B21B6</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF5B21B6_Cl">#FF5B21B6</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF666666">#FF666666</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF666666_Cl">#FF666666</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF6A9955">#FF6A9955</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF6A9955_Cl">#FF6A9955</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF7A95">#FF7A95</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF7A95_Cl">#FF7A95</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF7C3AED">#FF7C3AED</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF7C3AED_Cl">#FF7C3AED</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF7DD3FC">#FF7DD3FC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF7DD3FC_Cl">#FF7DD3FC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF809D">#FF809D</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF809D_Cl">#FF809D</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF86EFAC">#FF86EFAC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF86EFAC_Cl">#FF86EFAC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF89D185">#FF89D185</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF89D185_Cl">#FF89D185</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF8CE4FF">#FF8CE4FF</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF8CE4FF_Cl">#FF8CE4FF</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF94A3B8">#FF94A3B8</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF94A3B8_Cl">#FF94A3B8</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF9AF4FF">#FF9AF4FF</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF9AF4FF_Cl">#FF9AF4FF</Color>
+    <SolidColorBrush x:Key="SchemeColor_FF9CDCFE">#FF9CDCFE</SolidColorBrush>
+    <Color x:Key="SchemeColor_FF9CDCFE_Cl">#FF9CDCFE</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFAA00">#FFAA00</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFAA00_Cl">#FFAA00</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFB45309">#FFB45309</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFB45309_Cl">#FFB45309</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFB91C1C">#FFB91C1C</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFB91C1C_Cl">#FFB91C1C</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFBE123C">#FFBE123C</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFBE123C_Cl">#FFBE123C</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFC4B5FD">#FFC4B5FD</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFC4B5FD_Cl">#FFC4B5FD</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFCCCEFC">#FFCCCEFC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFCCCEFC_Cl">#FFCCCEFC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFCCE1FC">#FFCCE1FC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFCCE1FC_Cl">#FFCCE1FC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFCCF6FC">#FFCCF6FC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFCCF6FC_Cl">#FFCCF6FC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFCCFCED">#FFCCFCED</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFCCFCED_Cl">#FFCCFCED</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFCE9178">#FFCE9178</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFCE9178_Cl">#FFCE9178</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFCEFCCC">#FFCEFCCC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFCEFCCC_Cl">#FFCEFCCC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFD1FAE5">#FFD1FAE5</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFD1FAE5_Cl">#FFD1FAE5</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFD4D4D4">#FFD4D4D4</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFD4D4D4_Cl">#FFD4D4D4</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFE2E8F0">#FFE2E8F0</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFE2E8F0_Cl">#FFE2E8F0</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFE9CCFC">#FFE9CCFC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFE9CCFC_Cl">#FFE9CCFC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFEBE6">#FFEBE6</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFEBE6_Cl">#FFEBE6</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFECFEFF">#FFECFEFF</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFECFEFF_Cl">#FFECFEFF</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFEDE9FE">#FFEDE9FE</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFEDE9FE_Cl">#FFEDE9FE</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFEF4444">#FFEF4444</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFEF4444_Cl">#FFEF4444</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFEFFCCC">#FFEFFCCC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFEFFCCC_Cl">#FFEFFCCC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFF1F5F9">#FFF1F5F9</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFF1F5F9_Cl">#FFF1F5F9</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFF48771">#FFF48771</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFF48771_Cl">#FFF48771</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFF59E0B">#FFF59E0B</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFF59E0B_Cl">#FFF59E0B</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFF7F4E6">#FFF7F4E6</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFF7F4E6_Cl">#FFF7F4E6</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFFB923C">#FFFB923C</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFFB923C_Cl">#FFFB923C</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFFCCCFC">#FFFCCCFC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFFCCCFC_Cl">#FFFCCCFC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFFCD1CC">#FFFCD1CC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFFCD1CC_Cl">#FFFCD1CC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFFCE2CC">#FFFCE2CC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFFCE2CC_Cl">#FFFCE2CC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFFCF0CC">#FFFCF0CC</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFFCF0CC_Cl">#FFFCF0CC</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFFDA4AF">#FFFDA4AF</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFFDA4AF_Cl">#FFFDA4AF</Color>
+    <SolidColorBrush x:Key="SchemeColor_FFFFE4E6">#FFFFE4E6</SolidColorBrush>
+    <Color x:Key="SchemeColor_FFFFE4E6_Cl">#FFFFE4E6</Color>
+    <!-- #endregion -->
+
+    <!-- #region Auto-added _Cl companions -->
+    <Color x:Key="..._Cl">below                 --></Color>
+    <Color x:Key="AccentColor_Cl">#34D9F5</Color>
+    <Color x:Key="AddMissingButtonColor_Cl">#76995F</Color>
+    <Color x:Key="AddSendToLineButtonColor_Cl">#96995F</Color>
+    <Color x:Key="AgeColorBlue_Cl">Blue</Color>
+    <Color x:Key="AgeColorDefault_Cl">Black</Color>
+    <Color x:Key="AgeColorFresh_Cl">SeaGreen</Color>
+    <Color x:Key="AgeColorGreen_Cl">Green</Color>
+    <Color x:Key="AgeColorMaroon_Cl">Maroon</Color>
+    <Color x:Key="AgeColorRecent_Cl">LimeGreen</Color>
+    <Color x:Key="AgeColorSteel_Cl">SteelBlue</Color>
+    <Color x:Key="ArchiveOrderBackground_Cl">#DCE5F2</Color>
+    <Color x:Key="BlackSeeThruColor_Cl">#aa000000</Color>
+    <Color x:Key="BlueColor_Cl">#009DE7</Color>
+    <Color x:Key="CircleCheckBoxBackground_Cl">#0A0C0D</Color>
+    <Color x:Key="CircleCheckBoxBorderInner_Cl">#FF737A7D</Color>
+    <Color x:Key="CircleCheckBoxBorderOuter_Cl">#FF474E51</Color>
+    <Color x:Key="CircleCheckBoxCheckFill_Cl">#858C8F</Color>
+    <Color x:Key="CircleCheckBoxGlyph_Cl">#6A6E71</Color>
+    <Color x:Key="CodeDiffAddedBackground_Cl">#1D4F3F</Color>
+    <Color x:Key="CodeDiffAddedForeground_Cl">#89D185</Color>
+    <Color x:Key="CodeDiffRemovedBackground_Cl">#3D1111</Color>
+    <Color x:Key="CodeDiffRemovedForeground_Cl">#F48771</Color>
+    <Color x:Key="CodeEditorBackground_Cl">#1E1E1E</Color>
+    <Color x:Key="CodeEditorBorder_Cl">#3F3F46</Color>
+    <Color x:Key="CodeEditorCountForeground_Cl">#FFFFFF</Color>
+    <Color x:Key="CodeEditorForeground_Cl">#D4D4D4</Color>
+    <Color x:Key="CodeEditorHeaderBackground_Cl">#2D2D30</Color>
+    <Color x:Key="CodeEditorPanelBackground_Cl">#252526</Color>
+    <Color x:Key="CodeEditorProgressForeground_Cl">#4EC9B0</Color>
+    <Color x:Key="CodeEditorStatusForeground_Cl">#9CDCFE</Color>
+    <Color x:Key="CodeEditorTitleForeground_Cl">#DCDCAA</Color>
+    <Color x:Key="CodeSyntaxAttribute_Cl">#FF9CDCFE</Color>
+    <Color x:Key="CodeSyntaxBgAdded_Cl">#FF1F4A36</Color>
+    <Color x:Key="CodeSyntaxBgRemoved_Cl">#FF44252B</Color>
+    <Color x:Key="CodeSyntaxBgSpacer_Cl">#FF26282B</Color>
+    <Color x:Key="CodeSyntaxComment_Cl">#FF6A9955</Color>
+    <Color x:Key="CodeSyntaxLineNumber_Cl">#FF6A9955</Color>
+    <Color x:Key="CodeSyntaxMarkerAdded_Cl">#FF89D185</Color>
+    <Color x:Key="CodeSyntaxMarkerRemoved_Cl">#FFF48771</Color>
+    <Color x:Key="CodeSyntaxTag_Cl">#FF569CD6</Color>
+    <Color x:Key="CodeSyntaxValue_Cl">#FFCE9178</Color>
+    <Color x:Key="ComboBoxArrowBackground_Cl">#DCC15B</Color>
+    <Color x:Key="ComboBoxInnerBackground_Cl">#EFE7C9</Color>
+    <Color x:Key="ComboBoxToggleBackground_Cl">#E1CE81</Color>
+    <Color x:Key="ComboBoxToggleBorder_Cl">#FF97A0A5</Color>
+    <Color x:Key="CommentColorHighlight_Cl">Blue</Color>
+    <Color x:Key="CommentColorMuted_Cl">Gray</Color>
+    <Color x:Key="CreamYellowFieldColor_Cl">#EFE7C9</Color>
+    <Color x:Key="DarkGrayBackround_Cl">#FF646363</Color>
+    <Color x:Key="DarkGrayBorderAndShadowColor_Cl">#444444</Color>
+    <Color x:Key="DarkYellowColor_Cl">#B09F0F</Color>
+    <Color x:Key="DialogAccentBlueDark_Cl">#1D4ED8</Color>
+    <Color x:Key="DialogAccentBlue_Cl">#2563EB</Color>
+    <Color x:Key="DialogBackgroundAlt_Cl">#F4F5F7</Color>
+    <Color x:Key="DialogBackground_Cl">#F6F7F9</Color>
+    <Color x:Key="DialogBodyForegroundAlt_Cl">#334155</Color>
+    <Color x:Key="DialogBodyForeground_Cl">#0F172A</Color>
+    <Color x:Key="DialogBorderStrong_Cl">#BECAD8</Color>
+    <Color x:Key="DialogBorder_Cl">#CBD5E1</Color>
+    <Color x:Key="DialogCloseButtonBackground_Cl">IndianRed</Color>
+    <Color x:Key="DialogGroupHeaderBackground_Cl">#E8EFF6</Color>
+    <Color x:Key="DialogInfoPanelBackground_Cl">#E8EEF5</Color>
+    <Color x:Key="DialogMutedForeground_Cl">#475569</Color>
+    <Color x:Key="DialogSecondaryForeground_Cl">#64748B</Color>
+    <Color x:Key="DialogSubtitleForeground_Cl">#1B2A38</Color>
+    <Color x:Key="DialogSurfaceBackground_Cl">#FFFFFF</Color>
+    <Color x:Key="DialogTitleForeground_Cl">#2A3A52</Color>
+    <Color x:Key="EmptyPansBackground_Cl">#777777</Color>
+    <Color x:Key="EmptyPansBorder_Cl">#999999</Color>
+    <Color x:Key="EslScrollbarThumbHover_Cl">#999999</Color>
+    <Color x:Key="EslScrollbarThumbPressed_Cl">#777777</Color>
+    <Color x:Key="EslScrollbarThumb_Cl">#BBBBBB</Color>
+    <Color x:Key="EslScrollbarTrack_Cl">#00000000</Color>
+    <Color x:Key="EventColorDefault_Cl">Black</Color>
+    <Color x:Key="ExpanderContentBackground_Cl">#FFF3F9FF</Color>
+    <Color x:Key="ExpanderContentForeground_Cl">#FF000000</Color>
+    <Color x:Key="ExpanderDisabledBackground_Cl">#FFE6E6E6</Color>
+    <Color x:Key="ExpanderDisabledBorder_Cl">#FF707070</Color>
+    <Color x:Key="ExpanderDisabledForeground_Cl">#FFBCBCBC</Color>
+    <Color x:Key="ExpanderHeaderBackground_Cl">#FFFFFFFF</Color>
+    <Color x:Key="ExpanderHeaderBorder_Cl">#FF333333</Color>
+    <Color x:Key="ExpanderHeaderForeground_Cl">#FF333333</Color>
+    <Color x:Key="ExpanderHoverBackground_Cl">#FFD9ECFF</Color>
+    <Color x:Key="ExpanderHoverBorder_Cl">#FF3C77DD</Color>
+    <Color x:Key="ExpanderToggleForeground_Cl">#FF5593FF</Color>
+    <Color x:Key="FilterButtonForeground_Cl">#2C3E50</Color>
+    <Color x:Key="FilterButtonHoverBackground_Cl">#EBF5FB</Color>
+    <Color x:Key="FilterButtonPressedBackground_Cl">#D6EAF8</Color>
+    <Color x:Key="FilterSectionCardBackground_Cl">#CCFFFFFF</Color>
+    <Color x:Key="GlassPanelBackground_Cl">#A8E5E9ED</Color>
+    <Color x:Key="GlassPanelBorder_Cl">#55A8B0B8</Color>
+    <Color x:Key="GlowColorWhite_Cl">White</Color>
+    <Color x:Key="GlowColorYellow_Cl">Yellow</Color>
+    <Color x:Key="GrabANumberButtonColor_Cl">#56795F</Color>
+    <Color x:Key="GreenColor_Cl">#04C100</Color>
+    <Color x:Key="HealthReportDeadColor_Cl">#FF7A95</Color>
+    <Color x:Key="HealthReportLateColor_Cl">Yellow</Color>
+    <Color x:Key="HealthReportStrugglingColor_Cl">#F5BD5D</Color>
+    <Color x:Key="HomeButtonColor_Cl">#e6c235</Color>
+    <Color x:Key="HomeButtonsAreaBackground_Cl">#ECF1F1</Color>
+    <Color x:Key="ImageViewportBackground_Cl">#1E1E1E</Color>
+    <Color x:Key="ImmersiveAccentBlueBorder_Cl">#FFBAE6FD</Color>
+    <Color x:Key="ImmersiveAccentBlueLight_Cl">#FFE0F2FE</Color>
+    <Color x:Key="ImmersiveAccentBlue_Cl">#FF0369A1</Color>
+    <Color x:Key="ImmersiveFilterButtonBorder_Cl">#22000000</Color>
+    <Color x:Key="ImmersiveFilterButtonForeground_Cl">#1E293B</Color>
+    <Color x:Key="ImmersiveFilterButtonGlow_Cl">#2234D9F5</Color>
+    <Color x:Key="ImmersiveFilterButtonHoverBorder_Cl">#5534D9F5</Color>
+    <Color x:Key="ImmersiveGlassBackgroundStrong_Cl">#FAFFFFFF</Color>
+    <Color x:Key="ImmersiveGlassBackground_Cl">#F8FFFFFF</Color>
+    <Color x:Key="ImmersiveGlassBorder_Cl">#44CBD5E1</Color>
+    <Color x:Key="ImmersiveInputBackground_Cl">#FAFFFFFF</Color>
+    <Color x:Key="ImmersiveInputBorder_Cl">#FFCBD5E1</Color>
+    <Color x:Key="ImmersivePendingDigiAccent_Cl">#9922FC</Color>
+    <Color x:Key="ImmersiveScanTeal_Cl">#FF059D8A</Color>
+    <Color x:Key="ImmersiveStatusCyan_Cl">#FF0FAEE4</Color>
+    <Color x:Key="ImmersiveStatusRed_Cl">#FFE40F0F</Color>
+    <Color x:Key="ImmersiveSuccessText_Cl">#FF059669</Color>
+    <Color x:Key="ImmersiveTextMuted_Cl">#FF64748B</Color>
+    <Color x:Key="ImmersiveTextPrimary_Cl">#FF334155</Color>
+    <Color x:Key="ImmersiveTextSecondary_Cl">#FF475569</Color>
+    <Color x:Key="InconsistencyBothFilledColor_Cl">#00571C</Color>
+    <Color x:Key="InconsistencyEmptyBackground_Cl">White</Color>
+    <Color x:Key="InconsistencyEmptyFirstColor_Cl">#E1005A</Color>
+    <Color x:Key="InconsistencyEmptySecondColor_Cl">#B07F0B</Color>
+    <Color x:Key="InconsistencyFlaggedColor_Cl">#06A2B0</Color>
+    <Color x:Key="IteroFilesCount_Cl">#FF1D06</Color>
+    <Color x:Key="LastIteroIDTextColor_Cl">#066D06</Color>
+    <Color x:Key="LightGreenColor_Cl">#CCFFCC</Color>
+    <Color x:Key="LightPinkColor_Cl">#ffabb6</Color>
+    <Color x:Key="LightPrpleColor_Cl">#CCCCFF</Color>
+    <Color x:Key="LightTextColor_Cl">BlanchedAlmond</Color>
+    <Color x:Key="MarkAsRushButtonColor_Cl">#76595F</Color>
+    <Color x:Key="MessageBoxBackground_Cl">#FFFFFF</Color>
+    <Color x:Key="MessageBoxBodyFill_Cl">#111111</Color>
+    <Color x:Key="MessageBoxBodyForeground_Cl">#000000</Color>
+    <Color x:Key="MessageBoxHeaderGradientEnd_Cl">#B6B9BF</Color>
+    <Color x:Key="MessageBoxHeaderGradientStart_Cl">#C6C9CF</Color>
+    <Color x:Key="MessageBoxHintForeground_Cl">#777777</Color>
+    <Color x:Key="MessageBoxSubtitleForeground_Cl">#333333</Color>
+    <Color x:Key="MessageBoxTitleBorder_Cl">#666666</Color>
+    <Color x:Key="ModalBodyForeground_Cl">#46627A</Color>
+    <Color x:Key="ModalCardBackground_Cl">#E6F8FAFD</Color>
+    <Color x:Key="ModalCardBorderLight_Cl">#88B8C6D5</Color>
+    <Color x:Key="ModalCardBorder_Cl">#AAB8C6D5</Color>
+    <Color x:Key="ModalChipBackground_Cl">#D0D8E0</Color>
+    <Color x:Key="ModalTitleForeground_Cl">#1A2836</Color>
+    <Color x:Key="NamedBeige_Cl">Beige</Color>
+    <Color x:Key="NamedBrown_Cl">Brown</Color>
+    <Color x:Key="NamedDarkGreen_Cl">DarkGreen</Color>
+    <Color x:Key="NamedDarkRed_Cl">DarkRed</Color>
+    <Color x:Key="NamedDarkViolet_Cl">DarkViolet</Color>
+    <Color x:Key="NamedDeepPink_Cl">DeepPink</Color>
+    <Color x:Key="NamedDimGray_Cl">DimGray</Color>
+    <Color x:Key="NamedGray_Cl">Gray</Color>
+    <Color x:Key="NamedLightBlue_Cl">LightBlue</Color>
+    <Color x:Key="NamedLightCoral_Cl">LightCoral</Color>
+    <Color x:Key="NamedLightGreen_Cl">LightGreen</Color>
+    <Color x:Key="NamedLightSteelBlue_Cl">LightSteelBlue</Color>
+    <Color x:Key="NamedLightYellow_Cl">LightYellow</Color>
+    <Color x:Key="NamedOrange_Cl">Orange</Color>
+    <Color x:Key="NamedPink_Cl">Pink</Color>
+    <Color x:Key="NamedSilver_Cl">Silver</Color>
+    <Color x:Key="NamedWhiteSmoke_Cl">WhiteSmoke</Color>
+    <Color x:Key="NamedYellow_Cl">Yellow</Color>
+    <Color x:Key="OrderByColorFresh_Cl">YellowGreen</Color>
+    <Color x:Key="OrderByColorMedium_Cl">Yellow</Color>
+    <Color x:Key="OrderByColorOld_Cl">Black</Color>
+    <Color x:Key="OrderByColorStale_Cl">Orange</Color>
+    <Color x:Key="OrderInfoDividerDark_Cl">#222222</Color>
+    <Color x:Key="OrderInfoDivider_Cl">#CCCCCC</Color>
+    <Color x:Key="OrderInfoFooterBackground_Cl">#666666</Color>
+    <Color x:Key="OrderInfoFooterForeground_Cl">#EEEEEE</Color>
+    <Color x:Key="OrderInfoHintForeground_Cl">#888888</Color>
+    <Color x:Key="OrderInfoPtNameColor_Cl">#09905C</Color>
+    <Color x:Key="OrderRenameAccent_Cl">#65a7b5</Color>
+    <Color x:Key="OrderRenameCommentAccent_Cl">#32a89e</Color>
+    <Color x:Key="OrderRenameDivider_Cl">#CCCCCC</Color>
+    <Color x:Key="OutlineStrokeWhite_Cl">White</Color>
+    <Color x:Key="PanColorNameGreen_Cl">Green</Color>
+    <Color x:Key="PanDuplicateAlertColor_Cl">Red</Color>
+    <Color x:Key="PanLineColorDefault_Cl">Black</Color>
+    <Color x:Key="PaymentStatusPaidColor_Cl">#27AE60</Color>
+    <Color x:Key="PaymentStatusUnknownColor_Cl">Gray</Color>
+    <Color x:Key="PaymentStatusUnpaidColor_Cl">#E74C3C</Color>
+    <Color x:Key="PopupSurfaceBackground_Cl">#FFFFFF</Color>
+    <Color x:Key="PrimaryColor_Cl">#EEEEEE</Color>
+    <Color x:Key="PrimaryDarkTitleBarColor_Cl">#A2A2A2</Color>
+    <Color x:Key="PurpleColor_Cl">#BC51F4</Color>
+    <Color x:Key="RXEventsTitle_Cl">#667466</Color>
+    <Color x:Key="RXLogTitleBackground_Cl">#666674</Color>
+    <Color x:Key="RedColor_Cl">#FF1D06</Color>
+    <Color x:Key="RefreshButtonColor_Cl">#35e6c6</Color>
+    <Color x:Key="SearchBoxBorder_Cl">#444444</Color>
+    <Color x:Key="SearchBoxForeground_Cl">#666666</Color>
+    <Color x:Key="SeeThruBlackBackground_Cl">#EE000000</Color>
+    <Color x:Key="SeeThruGrayBackground_Cl">#D5999999</Color>
+    <Color x:Key="SeeThruWhiteBackground_Cl">#EEFFFFFF</Color>
+    <Color x:Key="SemanticErrorColor_Cl">#D64545</Color>
+    <Color x:Key="SemanticLinkColor_Cl">#2A6AA3</Color>
+    <Color x:Key="SemanticLinkHoverBackground_Cl">#C5D8EE</Color>
+    <Color x:Key="SemanticSuccessColor_Cl">#1F9D49</Color>
+    <Color x:Key="SettingsHintText_Cl">#BBBBBB</Color>
+    <Color x:Key="SettingsInputBackground_Cl">#555555</Color>
+    <Color x:Key="SettingsListBackground_Cl">#777777</Color>
+    <Color x:Key="SettingsOuterBackground_Cl">#484C4F</Color>
+    <Color x:Key="SettingsPanelBackground_Cl">#52585E</Color>
+    <Color x:Key="SettingsPanelBorder_Cl">#3A4046</Color>
+    <Color x:Key="SettingsSectionTitle_Cl">#FFFFFF</Color>
+    <Color x:Key="SettingsSideTabAccent_Cl">#60A5FA</Color>
+    <Color x:Key="SettingsSideTabBackground_Cl">#3D4246</Color>
+    <Color x:Key="SettingsSideTabBorder_Cl">#2E3338</Color>
+    <Color x:Key="SettingsSideTabControlBackground_Cl">#52585E</Color>
+    <Color x:Key="SettingsSideTabControlBorder_Cl">#3A4046</Color>
+    <Color x:Key="SettingsSideTabDisabledForeground_Cl">#6B7280</Color>
+    <Color x:Key="SettingsSideTabForeground_Cl">#B8C0C8</Color>
+    <Color x:Key="SettingsSideTabHoverBackground_Cl">#454B52</Color>
+    <Color x:Key="SettingsSideTabHoverForeground_Cl">#DCE3EA</Color>
+    <Color x:Key="SettingsSideTabSelectedBackground_Cl">#555B63</Color>
+    <Color x:Key="SettingsSideTabSelectedBorder_Cl">#64748B</Color>
+    <Color x:Key="SettingsSideTabSelectedForeground_Cl">#F1F5F9</Color>
+    <Color x:Key="SettingsTabHeaderBackground_Cl">#66696F</Color>
+    <Color x:Key="ShowRxButtonColor_Cl">#C6BE13</Color>
+    <Color x:Key="SplashAccentBlueLight_Cl">#38BDF8</Color>
+    <Color x:Key="SplashAccentBlue_Cl">#60A5FA</Color>
+    <Color x:Key="SplashBackground_Cl">#111827</Color>
+    <Color x:Key="SplashBodyForeground_Cl">#F8FAFC</Color>
+    <Color x:Key="SplashCardBackground_Cl">#2B313D</Color>
+    <Color x:Key="SplashCardBorder_Cl">#3D4654</Color>
+    <Color x:Key="SplashHintForeground_Cl">#88AACCEE</Color>
+    <Color x:Key="SplashMutedForeground_Cl">#33AABBCC</Color>
+    <Color x:Key="SplashOverlayBackground_Cl">#CC000000</Color>
+    <Color x:Key="SplashTitleForeground_Cl">#E8F4FD</Color>
+    <Color x:Key="SplashWarningOrangeDark_Cl">#F59E0B</Color>
+    <Color x:Key="SplashWarningOrange_Cl">#FB923C</Color>
+    <Color x:Key="TabItem.Selected.Background_Cl">#FFFFFF</Color>
+    <Color x:Key="TabItem.Selected.Border_Cl">#ACACAC</Color>
+    <Color x:Key="TabLegacyBackground_Cl">#888888</Color>
+    <Color x:Key="TabLegacyBorder_Cl">#222222</Color>
+    <Color x:Key="TabLegacyForegroundDisabled_Cl">#777777</Color>
+    <Color x:Key="TabLegacyForegroundHover_Cl">#AAAAAA</Color>
+    <Color x:Key="TabLegacyForegroundNormal_Cl">#AAAAAA</Color>
+    <Color x:Key="TabLegacyForegroundSelectedAlt_Cl">#CCCCCC</Color>
+    <Color x:Key="TabLegacyForegroundSelected_Cl">#000000</Color>
+    <Color x:Key="TabShapeHighlightBackground_Cl">#F1DC86</Color>
+    <Color x:Key="TabShapeSelectedBackground_Cl">#E8E8E8</Color>
+    <Color x:Key="ThreeShapeHeaderBackgroundColor_Cl">#E6E6E6</Color>
+    <Color x:Key="TitleBarButtonOverBackground_Cl">#B2BFD9</Color>
+    <Color x:Key="TodayButtonForeground_Cl">#013101</Color>
+    <Color x:Key="TransparentBrush_Cl">Transparent</Color>
+    <Color x:Key="ValidationInvalidForeground_Cl">Red</Color>
+    <Color x:Key="ValidationValidForeground_Cl">Black</Color>
+    <Color x:Key="VeryLightGrayColor_Cl">#E8E8E8</Color>
+    <Color x:Key="VerySeeThruBlackBackground_Cl">#11000000</Color>
+    <Color x:Key="VerySeeThruWhiteBackground_Cl">#11FFFFFF</Color>
+    <Color x:Key="ViewerChromeBorder_Cl">#B8C6D5</Color>
+    <Color x:Key="ViewerControlBackground_Cl">#E3E7EA</Color>
+    <Color x:Key="ViewerDarkTrackDark_Cl">#2B0A12</Color>
+    <Color x:Key="ViewerDarkTrackLight_Cl">#4A1320</Color>
+    <Color x:Key="ViewerErrorAccent_Cl">#9E3A4A</Color>
+    <Color x:Key="ViewerErrorBackground_Cl">#F5E6EA</Color>
+    <Color x:Key="ViewerErrorStroke_Cl">#7A1F33</Color>
+    <Color x:Key="ViewerInfoPanelBackground_Cl">#EAF2F7FD</Color>
+    <Color x:Key="ViewerInfoPanelBodyForeground_Cl">#5A6B7D</Color>
+    <Color x:Key="ViewerInfoPanelHeaderBackground_Cl">#DDE8F2</Color>
+    <Color x:Key="ViewerInfoPanelTitleForeground_Cl">#1D2A38</Color>
+    <Color x:Key="ViewerLabelForeground_Cl">#B8C6D5</Color>
+    <Color x:Key="ViewerLabelMuted_Cl">#5A6B7D</Color>
+    <Color x:Key="ViewerMenuForeground_Cl">#4A5C6C</Color>
+    <Color x:Key="ViewerOverlayBackground_Cl">#F4F7FB</Color>
+    <Color x:Key="ViewerOverlayBorder_Cl">#99B8C6D5</Color>
+    <Color x:Key="ViewerPanelBackgroundAlt_Cl">#E8EDF3</Color>
+    <Color x:Key="ViewerPanelBackground_Cl">#EDF2F8</Color>
+    <Color x:Key="ViewerPanelBorderStrong_Cl">#4A5F72</Color>
+    <Color x:Key="ViewerPanelBorder_Cl">#BDC7D2</Color>
+    <Color x:Key="ViewerPanelSubBackground_Cl">#F0F8FCFD</Color>
+    <Color x:Key="ViewerPanelTitleForeground_Cl">#23313E</Color>
+    <Color x:Key="ViewerSliderThumbFill_Cl">#D0D9E2</Color>
+    <Color x:Key="ViewerSliderThumbHover_Cl">#A0B4C8</Color>
+    <Color x:Key="ViewerSliderThumbPressed_Cl">#B8C8D8</Color>
+    <Color x:Key="ViewerSliderThumbStroke_Cl">#7C8FA3</Color>
+    <Color x:Key="ViewerSliderTrackDark_Cl">#38475A</Color>
+    <Color x:Key="ViewerSliderTrackLight_Cl">#5A7090</Color>
+    <Color x:Key="ViewerStatusForeground_Cl">#AA2A3A48</Color>
+    <Color x:Key="ViewerSuccessBackground_Cl">#E8F6EC</Color>
+    <Color x:Key="ViewerSuccessHover_Cl">#7A9EC0</Color>
+    <Color x:Key="ViewerSuccessStroke_Cl">#2E9B49</Color>
+    <Color x:Key="ViewerToggleOffHover_Cl">#A33A3A</Color>
+    <Color x:Key="ViewerToggleOff_Cl">#800000</Color>
+    <Color x:Key="ViewerToolInactiveForeground_Cl">Black</Color>
+    <Color x:Key="ViewerToolbarBackground_Cl">#2A323D</Color>
+    <Color x:Key="ViewerToolbarForeground_Cl">#E8EDF3</Color>
+    <Color x:Key="ViewerTransparentBackground_Cl">#00000000</Color>
+    <Color x:Key="ViewerWatermarkGradientEnd_Cl">#C8CCD0</Color>
+    <Color x:Key="ViewerWatermarkGradientMid1_Cl">#E3E7EA</Color>
+    <Color x:Key="ViewerWatermarkGradientMid2_Cl">#D8DCE0</Color>
+    <Color x:Key="ViewerWatermarkGradientStart_Cl">#E5E9ED</Color>
+    <Color x:Key="ViewerWatermarkText_Cl">#B8A35C</Color>
+    <Color x:Key="ViewerWindowBackground_Cl">#F4F7FA</Color>
+    <Color x:Key="VitaButtonAccentGold_Cl">#E3BD22</Color>
+    <Color x:Key="VitaButtonBackgroundDark_Cl">#46494F</Color>
+    <Color x:Key="VitaButtonBackgroundGrayGreenAlt_Cl">#C2DDD4</Color>
+    <Color x:Key="VitaButtonBackgroundGrayGreenDark_Cl">#B2DDD4</Color>
+    <Color x:Key="VitaButtonBackgroundGrayGreenDeep_Cl">#77DDD4</Color>
+    <Color x:Key="VitaButtonBackgroundGrayGreen_Cl">#D7DDD4</Color>
+    <Color x:Key="VitaButtonBackgroundMintAlt_Cl">#D7FCE2</Color>
+    <Color x:Key="VitaButtonBackgroundMintLight_Cl">#F7FCE2</Color>
+    <Color x:Key="VitaButtonBackgroundMint_Cl">#B7FCE2</Color>
+    <Color x:Key="VitaButtonBackgroundOrange_Cl">#AB4505</Color>
+    <Color x:Key="VitaButtonBackgroundPink_Cl">#F7CDD4</Color>
+    <Color x:Key="VitaButtonBackgroundYellowAlt_Cl">#FEED74</Color>
+    <Color x:Key="VitaButtonBackgroundYellowBright_Cl">#FDF979</Color>
+    <Color x:Key="VitaButtonBackgroundYellowDull_Cl">#D7DD74</Color>
+    <Color x:Key="VitaButtonBackgroundYellowFade_Cl">#D7FD74</Color>
+    <Color x:Key="VitaButtonBackgroundYellowGreen_Cl">#F7ED74</Color>
+    <Color x:Key="VitaButtonBackgroundYellowLight_Cl">#FFFF94</Color>
+    <Color x:Key="VitaButtonBackgroundYellowPale_Cl">#F7FD74</Color>
+    <Color x:Key="VitaButtonBackgroundYellowSoft_Cl">#D7ED74</Color>
+    <Color x:Key="VitaButtonBackgroundYellow_Cl">#F7DD74</Color>
+    <Color x:Key="VitaButtonBorderGold_Cl">#FFE8C94F</Color>
+    <Color x:Key="VitaButtonBorderLight_Cl">#CCCCCC</Color>
+    <Color x:Key="VitaButtonForegroundMid_Cl">#666666</Color>
+    <Color x:Key="VitaButtonHoverGrayAlt_Cl">#A6A98F</Color>
+    <Color x:Key="VitaButtonHoverGray_Cl">#86898F</Color>
+    <Color x:Key="WhiteBackground_Cl">#FFFFFF</Color>
+    <Color x:Key="XmlCompareTransparentBackground_Cl">Transparent</Color>
+    <!-- #endregion -->
+</ResourceDictionary>

@@ -1,6 +1,7 @@
-﻿using System.Drawing;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows.Data;
+using System.Windows.Media;
+using StatsClient.MVVM.Core;
 
 namespace StatsClient.MVVM.Converters;
 
@@ -11,27 +12,27 @@ public class AgeToColorConverter : IValueConverter
         if (value is int i)
         {
             if (i == 0)
-                return "SeaGreen";
+                return ColorSchemeResourceCatalog.GetBrush("AgeColorFresh");
 
             if (i == 1)
-                return "LimeGreen";
+                return ColorSchemeResourceCatalog.GetBrush("AgeColorRecent");
 
             if (i == 2)
-                return "Green";
+                return ColorSchemeResourceCatalog.GetBrush("AgeColorGreen");
 
             if (i > 2 && i < 7)
-                return "SteelBlue";
+                return ColorSchemeResourceCatalog.GetBrush("AgeColorSteel");
 
             if (i > 7 && i < 14)
-                return "Blue";
+                return ColorSchemeResourceCatalog.GetBrush("AgeColorBlue");
 
             if (i > 14 && i < 35)
-                return "Maroon";
+                return ColorSchemeResourceCatalog.GetBrush("AgeColorMaroon");
 
-            return "Black";
-        }   
+            return ColorSchemeResourceCatalog.GetBrush("AgeColorDefault");
+        }
 
-        return "Black";
+        return ColorSchemeResourceCatalog.GetBrush("AgeColorDefault");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

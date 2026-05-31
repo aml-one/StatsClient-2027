@@ -1,0 +1,1220 @@
+<UserControl x:Class="StatsClient.MVVM.View.HomeTabPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:core="clr-namespace:StatsClient.MVVM.Core"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700"
+             d:DesignWidth="1400">
+    <UserControl.Resources>
+        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converter:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
+        <converter:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
+
+        <Style x:Key="HomeModuleTile"
+               TargetType="Button">
+            <Setter Property="Width"
+                    Value="136" />
+            <Setter Property="Height"
+                    Value="152" />
+            <Setter Property="Margin"
+                    Value="6,6" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
+            <Setter Property="Background"
+                    Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="RenderTransformOrigin"
+                    Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1"
+                                    ScaleY="1" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid RenderTransformOrigin="0.5,0.5">
+                            <Border x:Name="Glow"
+                                    CornerRadius="18"
+                                    Margin="-4"
+                                    Opacity="0"
+                                    Background="{TemplateBinding Tag}" />
+                            <Border x:Name="Card"
+                                    CornerRadius="16"
+                                    BorderThickness="1.5"
+                                    Padding="12,14,12,10"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0"
+                                                         EndPoint="1,1">
+                                        <GradientStop Color="{DynamicResource ImmersiveGlassBackground_Cl}"
+                                                      Offset="0" />
+                                        <GradientStop Color="{DynamicResource SchemeColor_EEF5FAFF_Cl}"
+                                                      Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0"
+                                                         EndPoint="1,1">
+                                        <GradientStop Color="{DynamicResource SchemeColor_88FFFFFF_Cl}"
+                                                      Offset="0" />
+                                        <GradientStop Color="{DynamicResource SchemeColor_44000000_Cl}"
+                                                      Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
+                                <Border.Effect>
+                                    <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                                      BlurRadius="16"
+                                                      ShadowDepth="0"
+                                                      Opacity="0.18" />
+                                </Border.Effect>
+                                <Border.RenderTransform>
+                                    <TranslateTransform Y="0" />
+                                </Border.RenderTransform>
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Card"
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                             To="-6"
+                                                             Duration="0:0:0.22">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetName="Glow"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.35"
+                                                             Duration="0:0:0.22" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Card"
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                             To="0"
+                                                             Duration="0:0:0.2" />
+                                            <DoubleAnimation Storyboard.TargetName="Glow"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0"
+                                                             Duration="0:0:0.2" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+                                <Setter TargetName="Card"
+                                        Property="Opacity"
+                                        Value="0.92" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HomeTileRevealBase"
+               TargetType="Border">
+            <Setter Property="Opacity"
+                    Value="0" />
+            <Setter Property="RenderTransformOrigin"
+                    Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="24" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HomeTileReveal1"
+               TargetType="Border"
+               BasedOn="{StaticResource HomeTileRevealBase}">
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard BeginTime="0:0:0.04">
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             Duration="0:0:0.45" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="0"
+                                             Duration="0:0:0.55">
+                                <DoubleAnimation.EasingFunction>
+                                    <BackEase EasingMode="EaseOut"
+                                              Amplitude="0.35" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="HomeTileReveal2"
+               TargetType="Border"
+               BasedOn="{StaticResource HomeTileRevealBase}">
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard BeginTime="0:0:0.08">
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             Duration="0:0:0.45" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="0"
+                                             Duration="0:0:0.55">
+                                <DoubleAnimation.EasingFunction>
+                                    <BackEase EasingMode="EaseOut"
+                                              Amplitude="0.35" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="HomeTileReveal3"
+               TargetType="Border"
+               BasedOn="{StaticResource HomeTileRevealBase}">
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard BeginTime="0:0:0.12">
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             Duration="0:0:0.45" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="0"
+                                             Duration="0:0:0.55">
+                                <DoubleAnimation.EasingFunction>
+                                    <BackEase EasingMode="EaseOut"
+                                              Amplitude="0.35" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="HomeTileReveal4"
+               TargetType="Border"
+               BasedOn="{StaticResource HomeTileRevealBase}">
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard BeginTime="0:0:0.16">
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             Duration="0:0:0.45" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="0"
+                                             Duration="0:0:0.55">
+                                <DoubleAnimation.EasingFunction>
+                                    <BackEase EasingMode="EaseOut"
+                                              Amplitude="0.35" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="HomeTileReveal5"
+               TargetType="Border"
+               BasedOn="{StaticResource HomeTileRevealBase}">
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard BeginTime="0:0:0.20">
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             Duration="0:0:0.45" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="0"
+                                             Duration="0:0:0.55">
+                                <DoubleAnimation.EasingFunction>
+                                    <BackEase EasingMode="EaseOut"
+                                              Amplitude="0.35" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="HomeTileReveal6"
+               TargetType="Border"
+               BasedOn="{StaticResource HomeTileRevealBase}">
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard BeginTime="0:0:0.24">
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             Duration="0:0:0.45" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="0"
+                                             Duration="0:0:0.55">
+                                <DoubleAnimation.EasingFunction>
+                                    <BackEase EasingMode="EaseOut"
+                                              Amplitude="0.35" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="HomeTileReveal7"
+               TargetType="Border"
+               BasedOn="{StaticResource HomeTileRevealBase}">
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard BeginTime="0:0:0.28">
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             Duration="0:0:0.45" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="0"
+                                             Duration="0:0:0.55">
+                                <DoubleAnimation.EasingFunction>
+                                    <BackEase EasingMode="EaseOut"
+                                              Amplitude="0.35" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="HomeModuleTitle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="13" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="HorizontalAlignment"
+                    Value="Center" />
+            <Setter Property="TextAlignment"
+                    Value="Center" />
+            <Setter Property="TextWrapping"
+                    Value="Wrap" />
+            <Setter Property="Margin"
+                    Value="0,4,0,0" />
+        </Style>
+
+        <Style x:Key="PanWellTextBox"
+               TargetType="TextBox">
+            <Setter Property="Background"
+                    Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="Padding"
+                    Value="12,8,40,8" />
+            <Setter Property="CaretBrush"
+                    Value="{DynamicResource ImmersiveFilterButtonForeground}" />
+            <Setter Property="SelectionBrush"
+                    Value="{DynamicResource ImmersiveCardShadow_Cl}" />
+            <Setter Property="FontSize"
+                    Value="26" />
+            <Setter Property="FontWeight"
+                    Value="Bold" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+            <Setter Property="Focusable"
+                    Value="True" />
+            <Setter Property="IsHitTestVisible"
+                    Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{DynamicResource TransparentBrush}"
+                                BorderThickness="0"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PanActionCircleButton"
+               TargetType="Button">
+            <Setter Property="Width"
+                    Value="34" />
+            <Setter Property="Height"
+                    Value="34" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
+            <Setter Property="Background"
+                    Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Ellipse x:Name="Glow"
+                                     Margin="-3"
+                                     Opacity="0"
+                                     Fill="{DynamicResource ImmersiveFilterButtonGlow}" />
+                            <Ellipse x:Name="Circle"
+                                     Fill="{TemplateBinding Background}"
+                                     Stroke="{DynamicResource FilterSectionCardBackground}"
+                                     StrokeThickness="2"
+                                     RenderTransformOrigin="0.5,0.5">
+                                <Ellipse.RenderTransform>
+                                    <ScaleTransform ScaleX="1"
+                                                    ScaleY="1" />
+                                </Ellipse.RenderTransform>
+                                <Ellipse.Effect>
+                                    <DropShadowEffect Color="{DynamicResource PopupShadowColor_Cl}"
+                                                      BlurRadius="8"
+                                                      ShadowDepth="1"
+                                                      Opacity="0.25" />
+                                </Ellipse.Effect>
+                            </Ellipse>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Glow"
+                                        Property="Opacity"
+                                        Value="1" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Circle"
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                             To="1.08"
+                                                             Duration="0:0:0.15" />
+                                            <DoubleAnimation Storyboard.TargetName="Circle"
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                             To="1.08"
+                                                             Duration="0:0:0.15" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Circle"
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                             To="1"
+                                                             Duration="0:0:0.15" />
+                                            <DoubleAnimation Storyboard.TargetName="Circle"
+                                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                             To="1"
+                                                             Duration="0:0:0.15" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid ClipToBounds="True">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseDown">
+                <i:InvokeCommandAction Command="{Binding ResetQuickSearchOnHomeTabCommand}" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+
+        <!-- Pastel ambient background -->
+        <Grid IsHitTestVisible="False">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0"
+                                     EndPoint="1,1">
+                    <GradientStop Color="{DynamicResource ImmersiveGradientStart_Cl}"
+                                  Offset="0" />
+                    <GradientStop Color="{DynamicResource ImmersiveGradientMid_Cl}"
+                                  Offset="0.45" />
+                    <GradientStop Color="{DynamicResource ImmersiveGradientEnd_Cl}"
+                                  Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
+
+            <Ellipse Width="420"
+                     Height="420"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Top"
+                     Margin="-80,-60,0,0"
+                     Opacity="0.35">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{DynamicResource ImmersiveOrbCyan_Cl}"
+                                      Offset="0" />
+                        <GradientStop Color="{DynamicResource ImmersiveOrbCyanTransparent_Cl}"
+                                      Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <TranslateTransform X="0"
+                                        Y="0" />
+                </Ellipse.RenderTransform>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever"
+                                        AutoReverse="True">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                 From="-20"
+                                                 To="30"
+                                                 Duration="0:0:8" />
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                 From="0"
+                                                 To="25"
+                                                 Duration="0:0:10" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <Ellipse Width="360"
+                     Height="360"
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Bottom"
+                     Margin="0,0,-40,-80"
+                     Opacity="0.28">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{DynamicResource ImmersiveOrbPeach_Cl}"
+                                      Offset="0" />
+                        <GradientStop Color="{DynamicResource ImmersiveOrbPeachTransparent_Cl}"
+                                      Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <TranslateTransform X="0"
+                                        Y="0" />
+                </Ellipse.RenderTransform>
+                <Ellipse.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever"
+                                        AutoReverse="True">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                 From="15"
+                                                 To="-25"
+                                                 Duration="0:0:9" />
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 From="0.22"
+                                                 To="0.34"
+                                                 Duration="0:0:5"
+                                                 AutoReverse="True" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <Ellipse Width="280"
+                     Height="280"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Margin="0,-40,0,0"
+                     Opacity="0.2">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="{DynamicResource ImmersiveOrbMint_Cl}"
+                                      Offset="0" />
+                        <GradientStop Color="{DynamicResource ImmersiveOrbMintTransparent_Cl}"
+                                      Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Grid>
+
+        <Image Source="/Images/stats_2025_Q512.png"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Bottom"
+               Margin="-110,0,0,-300"
+               Opacity="0.06"
+               Panel.ZIndex="0"
+               IsHitTestVisible="False" />
+
+        <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                                StrokePosition="Outside"
+                                FontSize="140"
+                                FontWeight="SemiBold"
+                                Fill="{DynamicResource DialogCloseButtonBackground}"
+                                Panel.ZIndex="0"
+                                StrokeThickness="4"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Text="{Binding SoftwareVersion, StringFormat='v\{0}'}"
+                                Opacity="0.045"
+                                Margin="-15,0,-20,-46"
+                                IsHitTestVisible="False" />
+
+        <Grid Panel.ZIndex="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Top status bar -->
+            <Grid Grid.Row="0"
+                  Margin="16,8,16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Command="{Binding StartProgramUpdateCommand}"
+                            Style="{StaticResource BlankButtonNew}"
+                            Margin="0,0,12,0">
+                        <Border CornerRadius="7"
+                                Padding="10,5"
+                                MinHeight="30"
+                                Background="{DynamicResource SchemeColor_FFD1FAE5}"
+                                BorderBrush="{DynamicResource SchemeColor_FF86EFAC}"
+                                BorderThickness="1"
+                                Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
+                                d:Visibility="Visible">
+                            <Border.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever"
+                                                    AutoReverse="True">
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                             From="0.85"
+                                                             To="1"
+                                                             Duration="0:0:1.2" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Border.Triggers>
+                            <TextBlock Text="{Binding UpdateAvailableText}"
+                                       d:Text="Update available!"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SchemeColor_FF166534}"
+                                       Cursor="Hand" />
+                        </Border>
+                    </Button>
+
+                    <Grid Visibility="{Binding CbSettingModuleDebug, Converter={StaticResource BoolToVisibilityConverter}}"
+                          d:Visibility="Visible">
+                        <Button Command="{Binding SwitchToDebugMessagesTabCommand}"
+                                Style="{StaticResource BlankButtonNew}">
+                            <Border CornerRadius="8"
+                                    MinWidth="36"
+                                    MinHeight="30"
+                                    Background="{DynamicResource SchemeColor_FFFFE4E6}"
+                                    BorderBrush="{DynamicResource SchemeColor_FFFDA4AF}"
+                                    BorderThickness="1"
+                                    Visibility="{Binding DebugMessages.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
+                                    d:Visibility="Visible">
+                                <TextBlock Text="{Binding DebugMessages.Count}"
+                                           d:Text="17"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource SchemeColor_FFBE123C}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           ToolTip="Debug Messages" />
+                            </Border>
+                        </Button>
+                    </Grid>
+
+                    <Button Content="View Server Log"
+                            Height="30"
+                            Padding="12,0"
+                            Margin="12,0,0,0"
+                            Cursor="Hand"
+                            Command="{Binding SwitchToServerLogTabCommand}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="LogBtn"
+                                        CornerRadius="7"
+                                        Background="{DynamicResource ImmersiveAccentBlueLight}"
+                                        BorderBrush="{DynamicResource SchemeColor_FF7DD3FC}"
+                                        BorderThickness="1"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver"
+                                             Value="True">
+                                        <Setter TargetName="LogBtn"
+                                                Property="Background"
+                                                Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Button.Foreground>
+                            <SolidColorBrush Color="{DynamicResource ImmersiveAccentBlue_Cl}" />
+                        </Button.Foreground>
+                        <Button.FontSize>12</Button.FontSize>
+                        <Button.FontWeight>SemiBold</Button.FontWeight>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Module launcher -->
+            <Grid Grid.Row="1"
+                  VerticalAlignment="Center"
+                  Margin="0,12,0,12">
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center"
+                                Margin="0,0,0,24"
+                                Opacity="0">
+                        <StackPanel.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         To="1"
+                                                         Duration="0:0:0.6" />
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         From="-12"
+                                                         To="0"
+                                                         Duration="0:0:0.55">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </StackPanel.Triggers>
+                        <StackPanel.RenderTransform>
+                            <TranslateTransform Y="0" />
+                        </StackPanel.RenderTransform>
+                        <TextBlock Text="Welcome back"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource ImmersiveTextMuted}"
+                                   HorizontalAlignment="Center" />
+                        <core:OutlinedTextBlock Stroke="{DynamicResource WhiteBackground}"
+                                                StrokePosition="Outside"
+                                                FontSize="36"
+                                                FontWeight="SemiBold"
+                                                Fill="{DynamicResource ImmersiveTextPrimary}"
+                                                StrokeThickness="3"
+                                                Text="Stats Systems"
+                                                HorizontalAlignment="Center"
+                                                Margin="0,2,0,0" />
+                    </StackPanel>
+
+                    <WrapPanel HorizontalAlignment="Center"
+                               MaxWidth="1050">
+
+                        <Border Style="{StaticResource HomeTileReveal1}"
+                                Visibility="{Binding CbSettingModuleLabnext, Converter={StaticResource BoolToVisibilityConverter}}"
+                                d:Visibility="Visible">
+                            <Button Command="{Binding SwitchToLabnextTabCommand}"
+                                    Style="{StaticResource HomeModuleTile}"
+                                    Tag="{DynamicResource HomeTileLabnextTint}">
+                                <StackPanel>
+                                    <Image Source="/Images/HomeButtons/labnext.png"
+                                           Height="72"
+                                           Width="56" />
+                                    <TextBlock Text="Labnext"
+                                               Style="{StaticResource HomeModuleTitle}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <Border Style="{StaticResource HomeTileReveal2}">
+                            <Button Command="{Binding SwitchTo3ShapeOrdersTabCommand}"
+                                    Style="{StaticResource HomeModuleTile}"
+                                    Tag="{DynamicResource HomeTileRxMakerTint}">
+                                <StackPanel>
+                                    <Image Source="/Images/HomeButtons/threeshape.png"
+                                           Height="72"
+                                           Width="68" />
+                                    <TextBlock Text="3Shape Orders"
+                                               Style="{StaticResource HomeModuleTitle}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <Border Style="{StaticResource HomeTileReveal3}">
+                            <Button Command="{Binding SwitchToSentOutCasesTabCommand}"
+                                    Style="{StaticResource HomeModuleTile}"
+                                    Tag="{DynamicResource HomeTileArchivesTint}">
+                                <StackPanel>
+                                    <Image Source="/Images/HomeButtons/sentoutcases.png"
+                                           Height="72"
+                                           Width="72" />
+                                    <TextBlock Text="Sent Out Cases"
+                                               Style="{StaticResource HomeModuleTitle}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <Border Style="{StaticResource HomeTileReveal4}"
+                                Visibility="{Binding CbSettingModulePrescriptionMaker, Converter={StaticResource BoolToVisibilityConverter}}"
+                                d:Visibility="Visible">
+                            <Button Command="{Binding SwitchToPrescriptionMakerTabCommand}"
+                                    Style="{StaticResource HomeModuleTile}"
+                                    Tag="{DynamicResource HomeTilePanStackTint}">
+                                <StackPanel>
+                                    <Image Source="/Images/HomeButtons/rx.png"
+                                           Height="72"
+                                           Width="78" />
+                                    <TextBlock Text="Rx Maker"
+                                               Style="{StaticResource HomeModuleTitle}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <Border Style="{StaticResource HomeTileReveal5}"
+                                Visibility="{Binding CbSettingModuleAccountInfos, Converter={StaticResource BoolToVisibilityConverter}}"
+                                d:Visibility="Visible">
+                            <Button Command="{Binding SwitchToAccountInfosTabCommand}"
+                                    Style="{StaticResource HomeModuleTile}"
+                                    Tag="{DynamicResource HomeTileEncodeTint}">
+                                <StackPanel>
+                                    <Image Source="/Images/HomeButtons/accounts.png"
+                                           Height="72"
+                                           Width="62" />
+                                    <TextBlock Text="Account Infos"
+                                               Style="{StaticResource HomeModuleTitle}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <Border Style="{StaticResource HomeTileReveal6}"
+                                Visibility="{Binding CbSettingModuleFolderSubscription, Converter={StaticResource BoolToVisibilityConverter}}"
+                                d:Visibility="Visible">
+                            <Button Command="{Binding SwitchToFolderSubscriptionTabCommand}"
+                                    Style="{StaticResource HomeModuleTile}"
+                                    Tag="{DynamicResource HomeTileHealthTint}">
+                                <StackPanel>
+                                    <Image Source="/Images/HomeButtons/folder.png"
+                                           Height="72"
+                                           Width="62" />
+                                    <TextBlock Text="Folder Subscr."
+                                               Style="{StaticResource HomeModuleTitle}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <Border Style="{StaticResource HomeTileReveal7}">
+                            <Button Command="{Binding SwitchToPaymentTabCommand}"
+                                    Style="{StaticResource HomeModuleTile}"
+                                    Tag="{DynamicResource HomeTileSettingsTint}">
+                                <StackPanel>
+                                    <Grid Width="78"
+                                          Height="72">
+                                        <Image Source="/Images/HomeButtons/bill.png"
+                                               Height="72"
+                                               Width="56"
+                                               HorizontalAlignment="Center" />
+                                        <Border CornerRadius="7"
+                                                Background="{DynamicResource SchemeColor_FFEF4444}"
+                                                BorderBrush="{DynamicResource SchemeColor_FFB91C1C}"
+                                                BorderThickness="1"
+                                                MinWidth="26"
+                                                Height="26"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Margin="0,4,0,0"
+                                                Visibility="{Binding PaymentIssueCount, Converter={StaticResource ZeroToCollapsedConverter}}"
+                                                d:Visibility="Visible">
+                                            <TextBlock Text="{Binding PaymentIssueCount}"
+                                                       d:Text="3"
+                                                       Foreground="{DynamicResource WhiteBackground}"
+                                                       FontSize="13"
+                                                       FontWeight="Bold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0" />
+                                        </Border>
+                                    </Grid>
+                                    <TextBlock Text="Payments"
+                                               Style="{StaticResource HomeModuleTitle}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- Bottom: pan checker + branding -->
+            <Grid Grid.Row="2"
+                  Margin="16,0,16,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+
+                <Border Grid.Column="0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        CornerRadius="8"
+                        Padding="14,8"
+                        Opacity="0"
+                        Background="{DynamicResource FilterSectionCardBackground}"
+                        BorderBrush="{DynamicResource SchemeColor_44B8E8F5}"
+                        BorderThickness="1"
+                        Visibility="{Binding ArchivesCount, Converter={StaticResource ZeroToVisibleConverter}}"
+                        d:Visibility="Visible">
+                    <Border.Effect>
+                        <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                          BlurRadius="12"
+                                          ShadowDepth="0"
+                                          Opacity="0.15" />
+                    </Border.Effect>
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     Duration="0:0:0.5" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                    <StackPanel>
+                        <TextBlock Text="Archives Datastore"
+                                   Foreground="{DynamicResource ImmersiveTextSecondary}"
+                                   FontWeight="SemiBold"
+                                   FontSize="13"
+                                   Margin="0,0,0,6" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="0"
+                                       Text="Total orders:"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="2"
+                                       Text="{Binding TotalOrdersInArchivesDatastore}"
+                                       d:Text="11"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SchemeColor_FF16A34A}"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="0"
+                                       Text="Between dates:"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="2"
+                                       Text="{Binding OrdersInArchivesDatastoreBetweenDates}"
+                                       d:Text="11"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SchemeColor_FF0284C7}"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="0"
+                                       Text="Last rebuild:"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="2"
+                                       Text="{Binding LastArchivesDatastoreRebuildDate}"
+                                       d:Text="11"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SchemeColor_FFB45309}"
+                                       FontWeight="SemiBold" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Check Pan Color panel -->
+                <Border Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        Width="268"
+                        CornerRadius="9"
+                        Padding="0"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Center"
+                        Opacity="0"
+                        ClipToBounds="True">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="{DynamicResource ImmersiveInputBackground_Cl}"
+                                          Offset="0" />
+                            <GradientStop Color="{DynamicResource SchemeColor_F0F7FB_Cl}"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="{DynamicResource ImmersiveFocusRing_Cl}"
+                                          Offset="0" />
+                            <GradientStop Color="{DynamicResource SchemeColor_44C4B5FD_Cl}"
+                                          Offset="0.5" />
+                            <GradientStop Color="{DynamicResource SchemeColor_88FBCFE8_Cl}"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.BorderBrush>
+                    <Border.BorderThickness>1.5</Border.BorderThickness>
+                    <Border.Effect>
+                        <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                          BlurRadius="22"
+                                          ShadowDepth="0"
+                                          Opacity="0.2" />
+                    </Border.Effect>
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard BeginTime="0:0:0.3">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     Duration="0:0:0.5" />
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                     From="14"
+                                                     To="0"
+                                                     Duration="0:0:0.48">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                    <Border.RenderTransform>
+                        <TranslateTransform Y="0" />
+                    </Border.RenderTransform>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                CornerRadius="9,9,0,0"
+                                Padding="14,10"
+                                BorderThickness="0,0,0,1"
+                                BorderBrush="{DynamicResource SchemeColor_22CBD5E1}">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0"
+                                                     EndPoint="1,0">
+                                    <GradientStop Color="{DynamicResource ImmersiveFilterButtonGlow_Cl}"
+                                                  Offset="0" />
+                                    <GradientStop Color="{DynamicResource SchemeColor_11A7F3D0_Cl}"
+                                                  Offset="0.5" />
+                                    <GradientStop Color="{DynamicResource SchemeColor_22FBCFE8_Cl}"
+                                                  Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <TextBlock Text="{Binding PcPanColorFriendlyName}"
+                                       d:Text="Check pan color"
+                                       Foreground="{DynamicResource ImmersiveAccentBlue}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       TextAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"
+                                       HorizontalAlignment="Center" />
+                        </Border>
+
+                        <Grid Grid.Row="1"
+                              Margin="14,10,14,0"
+                              Height="54">
+                            <Border CornerRadius="8"
+                                    ClipToBounds="True"
+                                    Background="{Binding PcPanColor}"
+                                    d:Background="{DynamicResource SchemeColor_FFF7F4E6}"
+                                    BorderBrush="{DynamicResource SchemeColor_BB64748B}"
+                                    BorderThickness="1">
+                                <Grid>
+                                    <Rectangle Opacity="0.08"
+                                               IsHitTestVisible="False">
+                                        <Rectangle.Fill>
+                                            <LinearGradientBrush StartPoint="0,0"
+                                                                 EndPoint="0,1">
+                                                <GradientStop Color="{DynamicResource WhiteBackground_Cl}"
+                                                              Offset="0" />
+                                                <GradientStop Color="{DynamicResource SchemeColor_00FFFFFF_Cl}"
+                                                              Offset="0.45" />
+                                                <GradientStop Color="{DynamicResource SchemeColor_33000000_Cl}"
+                                                              Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                    <TextBox Style="{StaticResource PanWellTextBox}"
+                                             HorizontalAlignment="Stretch"
+                                             VerticalAlignment="Stretch"
+                                             d:Text="8000"
+                                             IsTabStop="False"
+                                             Focusable="True"
+                                             Foreground="{DynamicResource BlackColor}"
+                                             MaxLength="8"
+                                             Text="{Binding PcPanNumber, UpdateSourceTrigger=PropertyChanged}">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Enter"
+                                                        Command="{Binding PcCheckPanColorCommand}" />
+                                        </TextBox.InputBindings>
+                                    </TextBox>
+                                </Grid>
+                            </Border>
+
+                            <Grid HorizontalAlignment="Right"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,6,0"
+                                  Width="34"
+                                  Height="34"
+                                  Panel.ZIndex="2"
+                                  Background="{DynamicResource TransparentBrush}">
+                                <Button Style="{StaticResource PanActionCircleButton}"
+                                        Background="{DynamicResource ImmersiveAccentBlueLight}"
+                                        ToolTip="Change color"
+                                        Visibility="{Binding PanColorShowsNow}"
+                                        d:Visibility="Hidden"
+                                        Command="{Binding ChangeColorCommand}">
+                                    <Image Source="/Images/Other/edit.png"
+                                           Width="16"
+                                           Height="16" />
+                                </Button>
+                                <Button Style="{StaticResource PanActionCircleButton}"
+                                        Background="{DynamicResource SchemeColor_FFD1FAE5}"
+                                        ToolTip="Add new number"
+                                        Visibility="{Binding NoNumberRegisteredShowsNow}"
+                                        d:Visibility="Visible"
+                                        Command="{Binding AddNewNumberCommand}">
+                                    <Image Source="/Images/Other/add.png"
+                                           Width="16"
+                                           Height="16" />
+                                </Button>
+                            </Grid>
+                        </Grid>
+
+                        <StackPanel Grid.Row="2"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Margin="14,8,14,12">
+                            <TextBlock Text="Enter a pan number"
+                                       Foreground="{DynamicResource SchemeColor_FF94A3B8}"
+                                       FontSize="10.5"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="  +  "
+                                       Foreground="{DynamicResource ImmersiveInputBorder}"
+                                       FontSize="10"
+                                       VerticalAlignment="Center" />
+                            <Border CornerRadius="6"
+                                    Background="{DynamicResource SchemeColor_FFF1F5F9}"
+                                    BorderBrush="{DynamicResource SchemeColor_FFE2E8F0}"
+                                    BorderThickness="1"
+                                    Padding="6,2"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="Enter ↵"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}"
+                                           FontSize="10"
+                                           FontWeight="SemiBold" />
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Bottom"
+                            Opacity="0.55"
+                            Margin="0,0,4,0">
+                    <StackPanel.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="0.55"
+                                                     Duration="0:0:0.8" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </StackPanel.Triggers>
+                    <Image Source="/Images/stats_2025_Q512.png"
+                           Height="40"
+                           Margin="0,0,6,0" />
+                    <core:OutlinedTextBlock Stroke="{DynamicResource WhiteBackground}"
+                                            StrokePosition="Outside"
+                                            FontSize="36"
+                                            FontWeight="SemiBold"
+                                            Fill="{DynamicResource ImmersiveTextPrimary}"
+                                            StrokeThickness="3"
+                                            Text="Stats 2027"
+                                            VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <!-- Hidden designer stats (preserved, collapsed) -->
+        <Grid HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Panel.ZIndex="1"
+              Visibility="Collapsed"
+              Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="36" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition />
+                <RowDefinition Height="30" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="Designed Unit Counts"
+                       Foreground="{DynamicResource BlackColor}"
+                       FontWeight="Thin"
+                       HorizontalAlignment="Center"
+                       FontSize="22"
+                       Grid.ColumnSpan="3"
+                       Grid.Row="0" />
+            <ListView Grid.Row="1"
+                      BorderThickness="0"
+                      Background="{DynamicResource WhiteBackground}"
+                      Margin="10,0,0,0"
+                      ItemsSource="{Binding DesignerUnitCountsList}" />
+        </Grid>
+    </Grid>
+</UserControl>

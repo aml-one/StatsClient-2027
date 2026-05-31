@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
+using System.Windows.Media;
+using StatsClient.MVVM.Core;
 
 namespace StatsClient.MVVM.Converters;
 
@@ -9,13 +11,12 @@ public class BoolToFGColorConverter : IValueConverter
     {
         if (value is bool val)
         {
-            if (val)
-                return "Black";
-            else
-                return "Red";
+            return val
+                ? ColorSchemeResourceCatalog.GetBrush("ValidationValidForeground")
+                : ColorSchemeResourceCatalog.GetBrush("ValidationInvalidForeground");
         }
 
-        return "Black";
+        return ColorSchemeResourceCatalog.GetBrush("ValidationValidForeground");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -6,13 +6,13 @@
              mc:Ignorable="d"
              d:DesignHeight="320"
              d:DesignWidth="420"
-             Background="Transparent">
+             Background="{DynamicResource TransparentBrush}">
     <UserControl.Resources>
         <Style x:Key="FuturisticProgressBar"
                TargetType="ProgressBar">
             <Setter Property="Height" Value="6" />
-            <Setter Property="Background" Value="#332A3544" />
-            <Setter Property="Foreground" Value="#FF34D9F5" />
+            <Setter Property="Background" Value="{DynamicResource SchemeColor_332A3544}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentColor}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -21,7 +21,7 @@
                             <Border x:Name="PART_Track"
                                     CornerRadius="3"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="#4434D9F5"
+                                    BorderBrush="{DynamicResource ImmersiveFilterButtonGlow}"
                                     BorderThickness="1" />
                             <Border x:Name="PART_Indicator"
                                     CornerRadius="3"
@@ -30,7 +30,7 @@
                                 <Border.Effect>
                                     <DropShadowEffect ShadowDepth="0"
                                                       BlurRadius="14"
-                                                      Color="#FF34D9F5"
+                                                      Color="{DynamicResource AccentColor_Cl}"
                                                       Opacity="0.85" />
                                 </Border.Effect>
                             </Border>
@@ -96,29 +96,29 @@
         <Border.Background>
             <LinearGradientBrush StartPoint="0,0"
                                  EndPoint="1,1">
-                <GradientStop Color="#E610141C"
+                <GradientStop Color="{DynamicResource SchemeColor_E610141C_Cl}"
                               Offset="0" />
-                <GradientStop Color="#D80C1018"
+                <GradientStop Color="{DynamicResource SchemeColor_D80C1018_Cl}"
                               Offset="0.55" />
-                <GradientStop Color="#CC121826"
+                <GradientStop Color="{DynamicResource SchemeColor_CC121826_Cl}"
                               Offset="1" />
             </LinearGradientBrush>
         </Border.Background>
         <Border.BorderBrush>
             <LinearGradientBrush StartPoint="0,0"
                                  EndPoint="1,1">
-                <GradientStop Color="#8834D9F5"
+                <GradientStop Color="{DynamicResource ImmersiveFocusRing_Cl}"
                               Offset="0" />
-                <GradientStop Color="#4434D9F5"
+                <GradientStop Color="{DynamicResource ImmersiveFilterButtonGlow_Cl}"
                               Offset="0.5" />
-                <GradientStop Color="#886B8CFF"
+                <GradientStop Color="{DynamicResource SchemeColor_886B8CFF_Cl}"
                               Offset="1" />
             </LinearGradientBrush>
         </Border.BorderBrush>
         <Border.Effect>
             <DropShadowEffect ShadowDepth="0"
                               BlurRadius="36"
-                              Color="#5534D9F5"
+                              Color="{DynamicResource ImmersiveCardShadow_Cl}"
                               Opacity="0.55" />
         </Border.Effect>
 
@@ -134,11 +134,11 @@
                 <Rectangle.Fill>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="0,1">
-                        <GradientStop Color="#0034D9F5"
+                        <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
                                       Offset="0" />
-                        <GradientStop Color="#5534D9F5"
+                        <GradientStop Color="{DynamicResource ImmersiveCardShadow_Cl}"
                                       Offset="0.5" />
-                        <GradientStop Color="#0034D9F5"
+                        <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
                                       Offset="1" />
                     </LinearGradientBrush>
                 </Rectangle.Fill>
@@ -153,9 +153,9 @@
                              Opacity="0.18">
                         <Ellipse.Fill>
                             <RadialGradientBrush>
-                                <GradientStop Color="#5534D9F5"
+                                <GradientStop Color="{DynamicResource ImmersiveCardShadow_Cl}"
                                               Offset="0" />
-                                <GradientStop Color="#0034D9F5"
+                                <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
                                               Offset="1" />
                             </RadialGradientBrush>
                         </Ellipse.Fill>
@@ -164,7 +164,7 @@
                     <Ellipse x:Name="OrbitRingOuter"
                              Width="98"
                              Height="98"
-                             Stroke="#6634D9F5"
+                             Stroke="{DynamicResource SchemeColor_6634D9F5}"
                              StrokeThickness="1.2"
                              StrokeDashArray="3 9"
                              RenderTransformOrigin="0.5,0.5">
@@ -176,7 +176,7 @@
                     <Ellipse x:Name="OrbitRingMid"
                              Width="74"
                              Height="74"
-                             Stroke="#886B8CFF"
+                             Stroke="{DynamicResource SchemeColor_886B8CFF}"
                              StrokeThickness="1.4"
                              StrokeDashArray="2 6"
                              RenderTransformOrigin="0.5,0.5">
@@ -188,7 +188,7 @@
                     <Ellipse x:Name="OrbitRingInner"
                              Width="50"
                              Height="50"
-                             Stroke="#AA34D9F5"
+                             Stroke="{DynamicResource SchemeColor_AA34D9F5}"
                              StrokeThickness="1.6"
                              StrokeDashArray="1.5 4"
                              RenderTransformOrigin="0.5,0.5">
@@ -207,18 +207,18 @@
                         </Ellipse.RenderTransform>
                         <Ellipse.Fill>
                             <RadialGradientBrush>
-                                <GradientStop Color="#FF9AF4FF"
+                                <GradientStop Color="{DynamicResource SchemeColor_FF9AF4FF_Cl}"
                                               Offset="0" />
-                                <GradientStop Color="#FF34D9F5"
+                                <GradientStop Color="{DynamicResource AccentColor_Cl}"
                                               Offset="0.55" />
-                                <GradientStop Color="#0034D9F5"
+                                <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
                                               Offset="1" />
                             </RadialGradientBrush>
                         </Ellipse.Fill>
                         <Ellipse.Effect>
                             <DropShadowEffect ShadowDepth="0"
                                               BlurRadius="18"
-                                              Color="#FF34D9F5"
+                                              Color="{DynamicResource AccentColor_Cl}"
                                               Opacity="0.95" />
                         </Ellipse.Effect>
                     </Ellipse>
@@ -228,7 +228,7 @@
                            HorizontalAlignment="Center"
                            FontSize="10"
                            FontWeight="SemiBold"
-                           Foreground="#6634D9F5" />
+                           Foreground="{DynamicResource SchemeColor_6634D9F5}" />
 
                 <TextBlock Text="{Binding StatusText, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            Margin="0,8,0,0"
@@ -238,12 +238,12 @@
                            MaxWidth="320"
                            FontSize="15"
                            FontWeight="SemiBold"
-                           Foreground="#FFE8F4FF"
+                           Foreground="{DynamicResource ImmersiveFilterButtonHoverGradientEnd}"
                            LineHeight="22">
                     <TextBlock.Effect>
                         <DropShadowEffect ShadowDepth="0"
                                           BlurRadius="8"
-                                          Color="#5534D9F5"
+                                          Color="{DynamicResource ImmersiveCardShadow_Cl}"
                                           Opacity="0.35" />
                     </TextBlock.Effect>
                 </TextBlock>
@@ -261,14 +261,14 @@
                                HorizontalAlignment="Left"
                                FontSize="22"
                                FontWeight="Bold"
-                               Foreground="#FF34D9F5"
+                               Foreground="{DynamicResource AccentColor}"
                                FontFamily="Segoe UI" />
                     <TextBlock Text="complete"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Bottom"
                                Margin="0,0,0,3"
                                FontSize="11"
-                               Foreground="#668898A8"
+                               Foreground="{DynamicResource SchemeColor_668898A8}"
                                FontWeight="SemiBold" />
                 </Grid>
 
@@ -283,8 +283,8 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="Root"
                                     CornerRadius="8"
-                                    Background="#22101820"
-                                    BorderBrush="#5534D9F5"
+                                    Background="{DynamicResource SchemeColor_22101820}"
+                                    BorderBrush="{DynamicResource ImmersiveCardShadow_Cl}"
                                     BorderThickness="1"
                                     Padding="12,6">
                                 <ContentPresenter HorizontalAlignment="Center"
@@ -294,15 +294,15 @@
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="Root"
                                             Property="Background"
-                                            Value="#3334D9F5" />
+                                            Value="{StaticResource SchemeColor_3334D9F5}" />
                                     <Setter TargetName="Root"
                                             Property="BorderBrush"
-                                            Value="#AA34D9F5" />
+                                            Value="{StaticResource SchemeColor_AA34D9F5}" />
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
                                     <Setter TargetName="Root"
                                             Property="Background"
-                                            Value="#5534D9F5" />
+                                            Value="{StaticResource ImmersiveCardShadow_Cl}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -310,9 +310,9 @@
                     <Button.Foreground>
                         <LinearGradientBrush StartPoint="0,0"
                                              EndPoint="1,0">
-                            <GradientStop Color="#FFE8F4FF"
+                            <GradientStop Color="{DynamicResource ImmersiveFilterButtonHoverGradientEnd_Cl}"
                                           Offset="0" />
-                            <GradientStop Color="#FF9AF4FF"
+                            <GradientStop Color="{DynamicResource SchemeColor_FF9AF4FF_Cl}"
                                           Offset="1" />
                         </LinearGradientBrush>
                     </Button.Foreground>

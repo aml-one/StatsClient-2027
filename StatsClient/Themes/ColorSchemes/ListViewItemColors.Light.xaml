@@ -1,0 +1,1045 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Per-ListView and per-ListViewItem colors (Light). No shared tokens. -->
+    <!-- XAML rules: DynamicResource on element/Style.Setter props; StaticResource in Trigger/DataTrigger setters; *_Cl for Color-only props. -->
+
+    <!-- #region ListView containers -->
+    <SolidColorBrush x:Key="LvListViewAccountInfo_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewExportHistory_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewHealthReports_ListBackground" Color="{StaticResource WindowBackgroundColor}" />
+    <SolidColorBrush x:Key="LvListViewHealthReports_ListBorderBrush">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvListViewImportHistory_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewSetPanColor_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvPendingDigitalCases_ListBackground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvListViewArchives_Background">#DFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvListViewArchives_BorderBrush">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvListView3ShapeOrders_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListView3ShapeOrders_BorderBrush">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvListViewFolderSubscription_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewPrescriptionInconsistencys_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewPrescriptionMakerEvents_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewDuplicates_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewIssues_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewWrongfulPaymentsSummary_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewWrongfulPaymentsUnitsSummary_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewWrongfulPaymentsTotalLoss_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewCasesPaidForWrongDesigner_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListView3ShapePaymentIssue_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewSentHealthReports_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewGlobalSearch_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewMainMenu_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewForItemList_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewImages_Background" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvListViewSentOutCases_Background" Color="{StaticResource TransparentColor_Cl}" />
+
+    <!-- #endregion -->
+
+    <!-- #region LvAvailablePanNumberCountList -->
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_ComputerFill">#529f68</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_CountFill">#42ff48</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_NameFill">#f2ff48</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_Stroke">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvAvailablePanNumberCountList_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvImportHistoryAnnouncement -->
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_EventFill">#529f68</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_NameFill">#f2ff48</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_OrderFill">#42ff48</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_Stroke">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvImportHistoryAnnouncement_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItem3ShapeOrderModelListForPaymentIssue -->
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_CreatedDateForeground">#E72C00</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_ItemsForeground">#D907D0</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapeOrderModelListForPaymentIssue_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItem3ShapePayment -->
+    <SolidColorBrush x:Key="LvItem3ShapePayment_CreatedDateForeground">#E72C00</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapePayment_ItemsForeground">#D907D0</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapePayment_PatientFirstForeground">#5EB000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItem3ShapePayment_PatientLastForeground">#00B078</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemAccountInfo -->
+    <SolidColorBrush x:Key="LvItemAccountInfo_ActionBorderBrush">#5534D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ActionHoverBackground">#FFBAE6FD</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_BadgeBackground">#FFE0F2FE</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_BadgeBorderBrush">#FFBAE6FD</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_BadgeForeground">#FF0369A1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_CopyBtnHoverBackground">#FFBAE6FD</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_CredentialsBackground">#FFF8FAFC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_CredentialsBorderBrush">#FFE2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_HoverBackground">#FFF0F9FF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_HoverBorderBrush">#8834D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_IconBackground">#FFF8FAFC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_IconBorderBrush">#FFE2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemAccountInfo_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_PasswordForeground">#FF0369A1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_SelectedBackground">#FFE0F2FE</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_SelectedBorderBrush">#AA34D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ShowPassBackground">#FFF3E8FF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ShowPassBorderBrush">#FFDDD6FE</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_ShowPassForeground">#FF7C3AED</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_TitleForeground">#FF334155</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemAccountInfo_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemAccountInfo_ActionGradientEnd -->
+    <Color x:Key="LvItemAccountInfo_ActionGradientEnd_Cl">#FFECFEFF</Color>
+    <!-- #endregion -->
+
+    <!-- #region LvItemAccountInfo_ActionGradientStart -->
+    <Color x:Key="LvItemAccountInfo_ActionGradientStart_Cl">#FFE0F2FE</Color>
+    <!-- #endregion -->
+
+    <!-- #region LvItemAccountInfo_Shadow -->
+    <Color x:Key="LvItemAccountInfo_Shadow_Cl">#5534D9F5</Color>
+    <!-- #endregion -->
+
+    <!-- #region LvItemArchives -->
+    <SolidColorBrush x:Key="LvItemArchives_AliveBackground">#12FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_Background">#FFD9EA</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_CreateDateForeground">DeepPink</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_CustomerForeground">ForestGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_DateLabelGreenForeground">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_DateLabelOrangeForeground">Orange</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_DeadReasonForeground">Red</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_DesignerForeground">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_FolderForeground">#BBBBBB</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemArchives_ItemsForeground">#555555</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_ProcessStatusForeground">SteelBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_OrderStateLabelForeground">#36494F</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_PanLabelForeground">MediumPurple</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_PanValueForeground">DeepPink</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_PatientLastForeground">Purple</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_WarningBackground">#B3AE9B</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_WatermarkForeground">Orange</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_YearLabelForeground">DeepPink</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemArchives_YearValueForeground">Firebrick</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemCasesPaidForWrongDesignerList -->
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemCasesPaidForWrongDesignerList_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemDebug -->
+    <SolidColorBrush x:Key="LvItemDebug_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemDebug_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDebug_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemDetailed -->
+    <SolidColorBrush x:Key="LvItemDetailed_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_EncodeBackground">#ffedff</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_EncodeForeground">Red</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_EncodeLabelForeground">Maroon</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_ExtOrderForeground">DarkGoldenrod</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemDetailed_LabelForeground">DarkGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_NoPanBackground">#ffffe9</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_NoShadeBackground">#fffccc</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_PreviouslyDesignedBackground">#dff2f7</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_ScanSourceForeground">SteelBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_TooltipBlueForeground">Blue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_TooltipGreenForeground">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_TooltipOrangeForeground">Orange</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_UnregisteredPanBackground">#edfff6</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailed_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemDetailedNew -->
+    <SolidColorBrush x:Key="LvItemDetailedNew_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_EncodeBackground">#ffedff</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_EncodeForeground">Red</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_EncodeLabelForeground">Maroon</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_ExtOrderForeground">DarkGoldenrod</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemDetailedNew_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_NoPanBackground">#ffffe9</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_NoShadeBackground">#fffccc</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_PreviouslyDesignedBackground">#dff2f7</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_ScanSourceForeground">SteelBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_TooltipBlueForeground">Blue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_TooltipGreenForeground">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_TooltipOrangeForeground">Orange</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_UnregisteredPanBackground">#edfff6</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNew_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemDetailedNewStyle -->
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_EncodeBackground">#ffedff</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_EncodeForeground">Red</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_EncodeLabelForeground">Maroon</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_ExtOrderForeground">DarkGoldenrod</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_NoPanBackground">#ffffe9</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_NoShadeBackground">#fffccc</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_PreviouslyDesignedBackground">#dff2f7</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_ScanSourceForeground">SteelBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_TooltipBlueForeground">Blue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_TooltipGreenForeground">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_TooltipOrangeForeground">Orange</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_UnregisteredPanBackground">#edfff6</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDetailedNewStyle_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemDuplicates -->
+    <SolidColorBrush x:Key="LvItemDuplicates_AccentBackground">#FFFBBF24</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_HoverBackground">#FFFFFBEB</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_HoverBorderBrush">#99FCD34D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemDuplicates_LabelForeground">#FF64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PanBadgeBackground">#FFFFF7ED</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PanBadgeBorderBrush">#FFFED7AA</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PanBadgeFill">#FFF97316</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PanBadgeStroke">#FFB45309</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_Row1Foreground">#FF059669</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_Row2Foreground">#FFDC2626</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemDuplicates_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemDuplicates_Shadow -->
+    <Color x:Key="LvItemDuplicates_Shadow_Cl">#55F59E0B</Color>
+    <!-- #endregion -->
+
+    <!-- #region LvItemExportHistory -->
+    <SolidColorBrush x:Key="LvItemExportHistory_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_Background">#99DDDDDD</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_EventForeground">#222222</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemExportHistory_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_NameForeground">DarkGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_OrderStroke">LightSteelBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_TimeStroke">LightBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemExportHistory_Shadow -->
+    <Color x:Key="LvItemExportHistory_Shadow_Cl">#444444</Color>
+    <!-- #endregion -->
+
+    <!-- #region LvItemFolderSubscription -->
+    <SolidColorBrush x:Key="LvItemFolderSubscription_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemFolderSubscription_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemFolderSubscription_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemForItemList -->
+    <SolidColorBrush x:Key="LvItemForItemList_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ChangedBackground">#ecf9ff</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ChangedLabelForeground">Maroon</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ChangedValueForeground">BlueViolet</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_CrimsonForeground">Crimson</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ErrorForeground">Red</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_FailedBackground">#ffffee</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_InfoForeground">Blue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_InvalidBackground">#feeff2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemForItemList_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_SuccessForeground">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ValidBackground">#f0fef7</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_ValidLabelForeground">DarkGreen</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemForItemList_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemGlobalSearch -->
+    <SolidColorBrush x:Key="LvItemGlobalSearch_AliveBackground">#12FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_ArchiveSourceBackground">#12fcff54</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_CreateDateForeground">#AAAAFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_CustomerForeground">#F55599</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_DatastoreForeground">SteelBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_DateForeground">#995555</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_DeadReasonForeground">Crimson</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_DesignerForeground">#A92BBC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_FolderForeground">#889988</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemGlobalSearch_ItemsForeground">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_OrderIdForeground">#555555</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_PanFill">#FFAA00</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_PatientFirstForeground">#555599</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_PatientLastForeground">#995555</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_UnitsWatermarkForeground">#0D117777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_WarningBackground">#B3AE9B</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemGlobalSearch_YearForeground">#559955</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemImages -->
+    <SolidColorBrush x:Key="LvItemImages_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemImages_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImages_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemImportHistory -->
+    <SolidColorBrush x:Key="LvItemImportHistory_AccentBackground">#FFBBF7D0</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_EventStroke">#FF64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_HoverBackground">#FFF0FDF4</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_HoverBorderBrush">#8810B981</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemImportHistory_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_NameFill">#FF86EFAC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_NameStroke">#FF059669</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_OrderIdFill">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_PrimaryForeground">#FF334155</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_SelectedBackground">#FFECFDF5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_SelectedBorderBrush">#AA10B981</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemImportHistory_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemImportHistory_Shadow -->
+    <Color x:Key="LvItemImportHistory_Shadow_Cl">#5510B981</Color>
+    <!-- #endregion -->
+
+    <!-- #region LvItemIssues -->
+    <SolidColorBrush x:Key="LvItemIssues_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_Foreground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_HoverBackground">#a3b502</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemIssues_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemIssues_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemMainMenu -->
+    <SolidColorBrush x:Key="LvItemMainMenu_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_HoverBackground">#330295cf</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_HoverBorderBrush">#99c5ff</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemMainMenu_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemPanColors -->
+    <SolidColorBrush x:Key="LvItemPanColors_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemPanColors_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPanColors_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemPendingDigitalCases -->
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPendingDigitalCases_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemPrescriptionInconsistencys -->
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_AlternateBackground">#22777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MissingOrderForeground">#4299AE</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MissingRxForeground">#FF7200</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemPrescriptionMakerEventsList -->
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_BracketForeground">#EEEEEE</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_TimeForeground">#222222</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemSentOutCases -->
+    <SolidColorBrush x:Key="LvItemSentOutCases_AlternateBackground">#f1fafa</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_CrimsonForeground">Crimson</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_DeepPinkForeground">DeepPink</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_GrayForeground">Gray</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_GreenForeground">Green</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_IndianRedForeground">IndianRed</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemSentOutCases_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_MediumOrchidForeground">MediumOrchid</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_PurpleForeground">Purple</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemSentOutCases_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemWrongfulPaymentsSummaryList -->
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsSummaryList_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemWrongfulPaymentsTotalLossList -->
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsTotalLossList_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvItemWrongfulPaymentsUnitsSummaryList -->
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_LabelForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemWrongfulPaymentsUnitsSummaryList_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region LvSentHealthReports -->
+    <SolidColorBrush x:Key="LvSentHealthReports_AlternateBackground">#f7fefe</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_BorderBrush">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_ButtonBackground">#55FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_CardBackground">#F8FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_CardBorderBrush">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_ComputerForeground">#300300</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_ContentBackground">#EFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_DesignerForeground">#AE0270</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_HoverBackground">#d4e9fb</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_HoverBorderBrush">#79bbf2</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
+    <SolidColorBrush x:Key="LvSentHealthReports_LabelForeground">#DDDDDD</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_LastTouchedForeground">#027575</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_ManufacturerForeground">#8d8d3d</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_MaterialForeground">#3f793f</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_ModDateForeground">#034400</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_MutedForeground">#44474D</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_PanHoverBorderBrush">#e0b000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_PanNumberStroke">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_PatientFirstForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_PatientLastForeground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_PrimaryForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_SecondaryForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_StatusForeground">LightYellow</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_TimestampForeground">#e1e3aa</SolidColorBrush>
+    <SolidColorBrush x:Key="LvSentHealthReports_WarningBackground">#B3AE9B</SolidColorBrush>
+    <!-- #endregion -->
+
+</ResourceDictionary>

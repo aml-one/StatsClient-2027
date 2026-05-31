@@ -10,17 +10,17 @@
         WindowStyle="None"
         AllowsTransparency="True"
         ResizeMode="CanResizeWithGrip"
-        Background="Transparent">
+        Background="{DynamicResource TransparentBrush}">
     <Border CornerRadius="8,8,6,8"
             BorderThickness="0.5"
-            BorderBrush="Black"
-            Background="#FF1E1E1E"
+            BorderBrush="{DynamicResource BlackColor}"
+            Background="{DynamicResource CodeEditorBackground}"
             ClipToBounds="True">
         <Border CornerRadius="8"
                 Margin="10"
                 BorderThickness="0.5"
-                BorderBrush="#FF3F3F46"
-                Background="#FF1E1E1E"
+                BorderBrush="{DynamicResource CodeEditorBorder}"
+                Background="{DynamicResource CodeEditorBackground}"
                 ClipToBounds="True">
             <Grid Margin="10">
                 <Grid.RowDefinitions>
@@ -32,7 +32,7 @@
                 <DockPanel Grid.Row="0"
                            PreviewMouseDown="TitleBar_PreviewMouseDown"
                            Cursor="Hand"
-                           Background="Transparent"
+                           Background="{DynamicResource TransparentBrush}"
                            Margin="0,0,0,8">
                     <Button x:Name="btnClose"
                             DockPanel.Dock="Right"
@@ -43,16 +43,16 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Cursor="Arrow"
-                            Background="Transparent"
-                            BorderBrush="Transparent"
-                            Foreground="#FFD4D4D4"
+                            Background="{DynamicResource TransparentBrush}"
+                            BorderBrush="{DynamicResource TransparentBrush}"
+                            Foreground="{DynamicResource CodeEditorForeground}"
                             FontSize="14"
                             FontWeight="SemiBold"
                             Content="╳"
                             Click="CloseWindow_Click" />
                     <TextBlock Text="XML Compare"
                                VerticalAlignment="Center"
-                               Foreground="#FFDCDCAA"
+                               Foreground="{DynamicResource CodeEditorTitleForeground}"
                                FontSize="13"
                                FontWeight="SemiBold" />
                 </DockPanel>
@@ -64,7 +64,7 @@
                               Content="scoll in syncron"
                               IsChecked="True"
                               VerticalAlignment="Center"
-                              Foreground="#FFD4D4D4"
+                              Foreground="{DynamicResource CodeEditorForeground}"
                               Margin="0,0,12,0" />
                     <CheckBox x:Name="checkIgnoreTrailingSpaces"
                               DockPanel.Dock="Left"
@@ -73,7 +73,7 @@
                               Checked="IgnoreTrailingSpaces_Changed"
                               Unchecked="IgnoreTrailingSpaces_Changed"
                               VerticalAlignment="Center"
-                              Foreground="#FFD4D4D4"
+                              Foreground="{DynamicResource CodeEditorForeground}"
                               Margin="0,0,12,0" />
 
                     <StackPanel DockPanel.Dock="Right"
@@ -81,7 +81,7 @@
                                 VerticalAlignment="Center"
                                 Margin="12,0,0,0">
                         <TextBlock x:Name="tbLoadState"
-                                   Foreground="#FF9CDCFE"
+                                   Foreground="{DynamicResource CodeEditorStatusForeground}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"
                                    Visibility="Collapsed" />
@@ -91,34 +91,34 @@
                                      Minimum="0"
                                      Maximum="100"
                                      Visibility="Collapsed"
-                                     Background="#FF2D2D30"
-                                     Foreground="#FF4EC9B0" />
+                                     Background="{DynamicResource CodeEditorHeaderBackground}"
+                                     Foreground="{DynamicResource CodeEditorProgressForeground}" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center">
                         <TextBlock x:Name="tbStatus"
                                    VerticalAlignment="Center"
-                                   Foreground="#FF9CDCFE"
+                                   Foreground="{DynamicResource CodeEditorStatusForeground}"
                                    FontWeight="SemiBold"
                                    Margin="0,0,8,0" />
                         <TextBlock x:Name="tbChangeCount"
                                    VerticalAlignment="Center"
-                                   Foreground="#FFFFFFFF"
+                                   Foreground="{DynamicResource CodeEditorCountForeground}"
                                    Margin="0,0,8,0" />
-                        <Border Background="#FF3D1111"
+                        <Border Background="{DynamicResource CodeDiffRemovedBackground}"
                                 CornerRadius="3"
                                 Padding="8,2"
                                 Margin="0,0,6,0">
                             <TextBlock x:Name="tbRemovedCount"
-                                       Foreground="#FFF48771"
+                                       Foreground="{DynamicResource CodeDiffRemovedForeground}"
                                        FontWeight="SemiBold" />
                         </Border>
-                        <Border Background="#FF1D4F3F"
+                        <Border Background="{DynamicResource CodeDiffAddedBackground}"
                                 CornerRadius="3"
                                 Padding="8,2">
                             <TextBlock x:Name="tbAddedCount"
-                                       Foreground="#FF89D185"
+                                       Foreground="{DynamicResource CodeDiffAddedForeground}"
                                        FontWeight="SemiBold" />
                         </Border>
                     </StackPanel>
@@ -132,23 +132,23 @@
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Column="0"
-                            BorderBrush="#FF3F3F46"
+                            BorderBrush="{DynamicResource CodeEditorBorder}"
                             BorderThickness="1"
                             CornerRadius="4"
-                            Background="#FF252526">
+                            Background="{DynamicResource CodeEditorPanelBackground}">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Border Background="#FF2D2D30"
-                                    BorderBrush="#FF3F3F46"
+                            <Border Background="{DynamicResource CodeEditorHeaderBackground}"
+                                    BorderBrush="{DynamicResource CodeEditorBorder}"
                                     BorderThickness="0,0,0,1"
                                     Padding="8,5">
                                 <TextBlock x:Name="tbXmlTitle"
                                            FontWeight="SemiBold"
-                                           Foreground="#FFDCDCAA"
+                                           Foreground="{DynamicResource CodeEditorTitleForeground}"
                                            TextTrimming="CharacterEllipsis" />
                             </Border>
 
@@ -162,30 +162,30 @@
                                          HorizontalScrollBarVisibility="Auto"
                                          FontFamily="Consolas"
                                          FontSize="13"
-                                         Foreground="#FFD4D4D4"
+                                         Foreground="{DynamicResource CodeEditorForeground}"
                                          PreviewMouseWheel="Editor_PreviewMouseWheel"
-                                         Background="#FF1E1E1E" />
+                                         Background="{DynamicResource CodeEditorBackground}" />
                         </Grid>
                     </Border>
 
                     <Border Grid.Column="2"
-                            BorderBrush="#FF3F3F46"
+                            BorderBrush="{DynamicResource CodeEditorBorder}"
                             BorderThickness="1"
                             CornerRadius="4"
-                            Background="#FF252526">
+                            Background="{DynamicResource CodeEditorPanelBackground}">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Border Background="#FF2D2D30"
-                                    BorderBrush="#FF3F3F46"
+                            <Border Background="{DynamicResource CodeEditorHeaderBackground}"
+                                    BorderBrush="{DynamicResource CodeEditorBorder}"
                                     BorderThickness="0,0,0,1"
                                     Padding="8,5">
                                 <TextBlock x:Name="tbStCopyTitle"
                                            FontWeight="SemiBold"
-                                           Foreground="#FFDCDCAA"
+                                           Foreground="{DynamicResource CodeEditorTitleForeground}"
                                            TextTrimming="CharacterEllipsis" />
                             </Border>
 
@@ -199,9 +199,9 @@
                                          HorizontalScrollBarVisibility="Auto"
                                          FontFamily="Consolas"
                                          FontSize="13"
-                                         Foreground="#FFD4D4D4"
+                                         Foreground="{DynamicResource CodeEditorForeground}"
                                          PreviewMouseWheel="Editor_PreviewMouseWheel"
-                                         Background="#FF1E1E1E" />
+                                         Background="{DynamicResource CodeEditorBackground}" />
                         </Grid>
                     </Border>
                 </Grid>
