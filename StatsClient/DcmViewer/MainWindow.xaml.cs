@@ -44,12 +44,19 @@ public partial class MainWindow : Window
     private const double DefaultPerspectiveFieldOfView = 45.0;
     private const double ZoomExtentsPadding = 1.08;
     private const double EmbeddedDefaultZoomPercent = 66.0;
-    private const double EmbeddedCoordinateSystemHorizontalPosition = -0.22;
+    private const double EmbeddedChromeLeftMargin = 420;
+    private const double EmbeddedCoordinateSystemHorizontalPosition = -0.88;
     private const double EmbeddedViewCubeHorizontalPosition = 0.48;
     private const double EmbeddedSectionPanelLeftInset = 10;
     private const double EmbeddedSectionPanelBottomInset = 8;
     private const double EmbeddedModelVerticalViewBias = 0.14;
     private readonly MainViewModel _viewModel;
+
+    private void BusyOverlayCancelButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        CancelEncodeIdentifyPicking();
+        _viewModel.CancelBusyWork();
+    }
     private readonly Brush _activeToolBrush = new SolidColorBrush(Color.FromRgb(214, 185, 92));
     private readonly Brush _toolbarButtonBackground = new SolidColorBrush(Color.FromRgb(237, 242, 248));
     private readonly Brush _activeToolForegroundBrush = new SolidColorBrush(Color.FromRgb(58, 49, 18));
@@ -74,11 +81,28 @@ public partial class MainWindow : Window
     private bool _isOrthographicView;
     private bool _pendingShowAllAfterModelUpdate;
     private bool _isNearClippingRelaxed = true;
+    private bool _alwaysRelaxNearClipping = true;
     private double _defaultNearPlaneDistance = 0.1;
     private double _defaultFarPlaneDistance = 100000;
     private bool _isSectionRefreshQueued;
     private bool _isCompositionRenderingHooked;
+    private bool _isSculptDragging;
+    private LoadedMeshItemViewModel? _sculptTarget;
+    private Point _sculptLastScreen;
+    private Vector3D _sculptLastNormal = new(0, 0, 1);
+    private Point? _sculptBrushPreviewScreen;
+    private Point _sculptBrushPreviewLastRenderedScreen;
+    private long _sculptBrushPreviewLastUpdateTicks;
+    private const double SculptBrushPreviewMinMovePx = 2.5;
+    private const long SculptBrushPreviewMinIntervalTicks = 25 * TimeSpan.TicksPerMillisecond;
+    private Point3D _lastRenderedCameraPosition;
+    private Vector3D _lastRenderedCameraLook;
+    private Vector3D _lastRenderedCameraUp;
+    private bool _hasLastRenderedCameraPose;
+    private int _renderingFrameCounter;
+    private string _lastZoomPercentLabel = string.Empty;
     private Brush? _defaultWatermarkBackground;
+    private bool _encodeSectionMeasureStyle;
 
     public void RestoreEmbeddedInteraction()
     {
@@ -97,7 +121,7 @@ public partial class MainWindow : Window
         }));
     }
 
-    public async Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files)
+    public async Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files, string? orderFolderPath = null)
     {
         var fileItems = files
             .Where(x => !string.IsNullOrWhiteSpace(x.FilePath) && File.Exists(x.FilePath))
@@ -105,6 +129,7 @@ public partial class MainWindow : Window
             .Select(x => x.First())
             .ToList();
 
+        _viewModel.SetSculptOrderFolder(orderFolderPath);
         _viewModel.TextureOverrides.Clear();
         _viewModel.CategoryOverrides.Clear();
         _viewModel.IsExternalFileDropEnabled = false;
@@ -114,7 +139,17 @@ public partial class MainWindow : Window
             ApplyFileOverrides(item);
         }
 
-        await _viewModel.LoadFilesAsync(fileItems.Select(x => x.FilePath), clearExisting: true);
+        try
+        {
+            await _viewModel.LoadFilesAsync(
+                fileItems.Select(x => x.FilePath),
+                clearExisting: true,
+                cancellationToken: _viewModel.BusyCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
 
         var hiddenFiles = fileItems
             .Where(x => x.StartHidden)
@@ -132,6 +167,7 @@ public partial class MainWindow : Window
         RestoreEmbeddedInteraction();
         ScheduleTopRightOverlayFade();
         EnsureEmbeddedHostAppearance();
+        _viewModel.ApplyPersistedSculptTree();
     }
 
     public async Task AddCaseFileAsync(DCMFileItem file)
@@ -235,6 +271,7 @@ public partial class MainWindow : Window
         PinViewerDataContext();
         UpdateProjectionToggleButtonState();
         UpdateClippingToggleButtonState();
+        UpdateHideLayerLabelsButtonState();
     }
 
     public async Task PrepareForHostUnloadAsync()
@@ -308,12 +345,10 @@ public partial class MainWindow : Window
             hostRoot.Background = Brushes.Transparent;
         }
 
-        EmbeddedBusyOverlay.Visibility = Visibility.Collapsed;
-
         // Leave room for Order Info left/right overlay panels on full-bleed canvas.
         TopRightChromeGrid.Margin = new Thickness(0, 10, 212, 0);
-        ZoomBadgeBorder.Margin = new Thickness(420, 10, 0, 0);
-        BottomStatusText.Margin = new Thickness(412, 0, 212, 8);
+        ZoomBadgeBorder.Margin = new Thickness(EmbeddedChromeLeftMargin, 10, 0, 0);
+        BottomStatusBorder.Margin = new Thickness(EmbeddedChromeLeftMargin, 0, 212, 8);
 
         ApplyEmbeddedViewportChromeLayout();
 
@@ -345,6 +380,8 @@ public partial class MainWindow : Window
             return;
         }
 
+        _viewModel.ApplyFacialCameraToVisibleMeshes();
+
         var center = GetEmbeddedLookAtCenter(bounds);
 
         var zoomScale = EmbeddedDefaultZoomPercent / 100.0;
@@ -353,7 +390,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var look = camera.LookDirection;
+        var look = _viewModel.CameraLookDirection;
         if (look.LengthSquared < 1e-9)
         {
             look = new Vector3D(0, 0, -1);
@@ -363,9 +400,15 @@ public partial class MainWindow : Window
             look.Normalize();
         }
 
+        var up = _viewModel.CameraUpDirection;
+        if (up.LengthSquared < 1e-9)
+        {
+            up = new Vector3D(0, 1, 0);
+        }
+
         if (camera is HelixOrthographicCamera orthographicCamera)
         {
-            var fitWidth = CalculateOrthographicFitWidth(bounds, look, camera.UpDirection);
+            var fitWidth = CalculateOrthographicFitWidth(bounds, look, up);
             orthographicCamera.Width = fitWidth / zoomScale;
             return;
         }
@@ -376,7 +419,7 @@ public partial class MainWindow : Window
         var fitDistance = CalculatePerspectiveFitDistance(
             bounds,
             look,
-            camera.UpDirection,
+            up,
             fieldOfView,
             Viewport.ActualWidth,
             Viewport.ActualHeight);
@@ -534,6 +577,7 @@ public partial class MainWindow : Window
         _viewModel.PropertyChanged += ViewModelOnPropertyChanged;
         _viewModel.LoadedFiles.CollectionChanged += LoadedFilesOnCollectionChanged;
         DataContext = _viewModel;
+        _viewModel.FuseInnerSidePickHandler = PickFuseInnerSideHintsAsync;
         PinViewerDataContext();
         SetDefaultProjectionMode();
 
@@ -547,6 +591,8 @@ public partial class MainWindow : Window
             UpdateProjectionToggleButtonState();
             UpdateClippingToggleButtonState();
         }
+
+        UpdateHideLayerLabelsButtonState();
 
         if (Viewport.Camera is HelixProjectionCamera initialCamera)
         {
@@ -570,6 +616,10 @@ public partial class MainWindow : Window
         SyncLightingToCamera();
         UpdateZoomPercentLabel();
         Viewport.MouseLeftButtonDown += Viewport_OnMouseLeftButtonDown;
+        Viewport.MouseMove += Viewport_OnMouseMove;
+        Viewport.MouseLeftButtonUp += Viewport_OnMouseLeftButtonUp;
+        Viewport.MouseLeave += Viewport_OnMouseLeave;
+        Viewport.LostMouseCapture += Viewport_OnLostMouseCapture;
         SectionProfileCanvas.SizeChanged += (_, _) =>
         {
             if (_viewModel.IsSectionMode)
@@ -730,6 +780,19 @@ public partial class MainWindow : Window
             ApplySectionModeFromViewModel();
         }
 
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.IsSculptMode), StringComparison.Ordinal))
+        {
+            ApplySculptModeFromViewModel();
+        }
+
+        if (_viewModel.IsSculptMode &&
+            (string.Equals(e.PropertyName, nameof(MainViewModel.SculptBrushRadiusMm), StringComparison.Ordinal) ||
+             string.Equals(e.PropertyName, nameof(MainViewModel.SculptToolName), StringComparison.Ordinal)) &&
+            _sculptBrushPreviewScreen is Point previewScreen)
+        {
+            UpdateSculptBrushPreview(previewScreen, force: true);
+        }
+
         if (string.Equals(e.PropertyName, nameof(MainViewModel.SectionOffset), StringComparison.Ordinal) && _viewModel.IsSectionMode)
         {
             UpdateSectionPlane();
@@ -746,6 +809,24 @@ public partial class MainWindow : Window
             !_viewModel.IsBusy)
         {
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, ApplyEmbeddedInitialView);
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.IsBusy), StringComparison.Ordinal))
+        {
+            if (_viewModel.IsBusy)
+            {
+                StopViewportCameraSpin();
+                Viewport.IsRotationEnabled = false;
+            }
+            else
+            {
+                Viewport.IsRotationEnabled = true;
+            }
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.HideLayerLabels), StringComparison.Ordinal))
+        {
+            UpdateHideLayerLabelsButtonState();
         }
     }
 
@@ -832,8 +913,21 @@ public partial class MainWindow : Window
         }, DispatcherPriority.Render);
     }
 
+    private void StopViewportCameraSpin()
+    {
+        try
+        {
+            Viewport?.StopSpin();
+        }
+        catch
+        {
+            // Helix may throw if the viewport is not fully initialized yet.
+        }
+    }
+
     private void ConfigureRotationBehavior()
     {
+        StopViewportCameraSpin();
         Viewport.PanCursor = Cursors.Arrow;
         Viewport.RotateCursor = Cursors.Arrow;
 
@@ -961,17 +1055,32 @@ public partial class MainWindow : Window
 
     private void ApplyClipMode(HelixProjectionCamera camera)
     {
-        if (_isNearClippingRelaxed)
+        var distance = Math.Max(camera.LookDirection.Length, 1e-3);
+        var boundsDiagonal = GetVisibleBoundsDiagonal();
+        var relaxedNear = Math.Max(distance * 1e-5, boundsDiagonal * 1e-4);
+        relaxedNear = Math.Clamp(relaxedNear, 1e-6, 0.05);
+        var relaxedFar = Math.Max(_defaultFarPlaneDistance, Math.Max(distance * 20000.0, boundsDiagonal * 200.0));
+
+        if (_alwaysRelaxNearClipping || _isNearClippingRelaxed)
         {
-            var distance = Math.Max(camera.LookDirection.Length, 1e-3);
-            var relaxedNear = Math.Max(distance * 0.00002, 0.00001);
             camera.NearPlaneDistance = relaxedNear;
-            camera.FarPlaneDistance = Math.Max(_defaultFarPlaneDistance, distance * 10000.0);
+            camera.FarPlaneDistance = relaxedFar;
             return;
         }
 
-        camera.NearPlaneDistance = _defaultNearPlaneDistance;
-        camera.FarPlaneDistance = _defaultFarPlaneDistance;
+        camera.NearPlaneDistance = Math.Max(_defaultNearPlaneDistance, relaxedNear * 2.0);
+        camera.FarPlaneDistance = relaxedFar;
+    }
+
+    private double GetVisibleBoundsDiagonal()
+    {
+        var bounds = GetVisibleBounds();
+        if (bounds.IsEmpty)
+        {
+            return 80.0;
+        }
+
+        return Math.Max(bounds.SizeX, Math.Max(bounds.SizeY, bounds.SizeZ));
     }
 
     private void UpdateProjectionToggleButtonState()
@@ -1058,13 +1167,36 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (Viewport.Camera is HelixProjectionCamera camera && _isNearClippingRelaxed)
+        if (Viewport.Camera is not HelixProjectionCamera camera)
         {
-            ApplyClipMode(camera);
+            return;
         }
 
-        SyncLightingToCamera();
-        UpdateZoomPercentLabel();
+        var poseChanged = !_hasLastRenderedCameraPose ||
+                          (camera.Position - _lastRenderedCameraPosition).LengthSquared > 1e-8 ||
+                          (camera.LookDirection - _lastRenderedCameraLook).LengthSquared > 1e-8 ||
+                          (camera.UpDirection - _lastRenderedCameraUp).LengthSquared > 1e-8;
+
+        if (!poseChanged && _viewModel.IsBusy)
+        {
+            return;
+        }
+
+        if (poseChanged)
+        {
+            ApplyClipMode(camera);
+            SyncLightingToCamera();
+            _lastRenderedCameraPosition = camera.Position;
+            _lastRenderedCameraLook = camera.LookDirection;
+            _lastRenderedCameraUp = camera.UpDirection;
+            _hasLastRenderedCameraPose = true;
+        }
+
+        _renderingFrameCounter++;
+        if (poseChanged || _renderingFrameCounter % 8 == 0)
+        {
+            UpdateZoomPercentLabelIfChanged();
+        }
     }
 
     private void SyncLightingToCamera()
@@ -1079,16 +1211,20 @@ public partial class MainWindow : Window
 
     private void UpdateZoomPercentLabel()
     {
+        UpdateZoomPercentLabelIfChanged(force: true);
+    }
+
+    private string BuildZoomPercentLabel()
+    {
         if (Viewport.Camera is not HelixProjectionCamera camera)
         {
-            return;
+            return "Zoom: 100%";
         }
 
         var bounds = GetVisibleBounds();
         if (bounds.IsEmpty)
         {
-            ZoomPercentText.Text = "Zoom: 100%";
-            return;
+            return "Zoom: 100%";
         }
 
         var center = new Point3D(
@@ -1120,7 +1256,19 @@ public partial class MainWindow : Window
         }
 
         var roundedPercent = Math.Clamp((int)Math.Round(zoomPercent), 1, 9999);
-        ZoomPercentText.Text = $"Zoom: {roundedPercent}%";
+        return $"Zoom: {roundedPercent}%";
+    }
+
+    private void UpdateZoomPercentLabelIfChanged(bool force = false)
+    {
+        var label = BuildZoomPercentLabel();
+        if (!force && string.Equals(label, _lastZoomPercentLabel, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _lastZoomPercentLabel = label;
+        ZoomPercentText.Text = label;
     }
 
     private static IEnumerable<Point3D> EnumerateBoundsCorners(Rect3D bounds)
@@ -1384,6 +1532,26 @@ public partial class MainWindow : Window
 
     private void Viewport_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        if (TryHandleEncodeIdentifyPick(e))
+        {
+            return;
+        }
+
+        if (TryHandleFuseInnerSidePick(e))
+        {
+            return;
+        }
+
+        if (_viewModel.IsSculptMode)
+        {
+            if (TryBeginSculptStroke(e))
+            {
+                e.Handled = true;
+            }
+
+            return;
+        }
+
         if (!_viewModel.IsSectionMode)
         {
             return;
@@ -1540,6 +1708,374 @@ public partial class MainWindow : Window
 
         MeasureToggleButton.Background = _viewModel.IsMeasureMode ? _activeToolBrush : _toolbarButtonBackground;
         MeasureToggleButton.Foreground = _viewModel.IsMeasureMode ? _activeToolForegroundBrush : Brushes.Black;
+
+        if (FindName("SculptToggleButton") is Button sculptToggleButton)
+        {
+            ApplyActiveToolbarButtonState(sculptToggleButton, _viewModel.IsSculptMode);
+        }
+
+        UpdateHideLayerLabelsButtonState();
+    }
+
+    private void ApplyActiveToolbarButtonState(Button button, bool isActive)
+    {
+        button.Background = isActive ? _activeToolBrush : _toolbarButtonBackground;
+        button.Foreground = isActive ? _activeToolForegroundBrush : Brushes.Black;
+        button.BorderBrush = isActive
+            ? new SolidColorBrush(Color.FromRgb(42, 106, 163))
+            : new SolidColorBrush(Color.FromRgb(189, 199, 210));
+        button.BorderThickness = isActive ? new Thickness(1.5) : new Thickness(1);
+    }
+
+    private void ApplySculptModeFromViewModel()
+    {
+        if (FindName("SculptToolPanel") is FrameworkElement sculptToolPanel)
+        {
+            sculptToolPanel.Visibility = _viewModel.IsSculptMode ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        Viewport.IsRotationEnabled = true;
+        Viewport.IsPanEnabled = true;
+        Viewport.IsZoomEnabled = true;
+        UpdateToolButtonStates();
+
+        if (!_viewModel.IsSculptMode)
+        {
+            EndSculptStroke();
+            ClearSculptBrushPreview();
+        }
+    }
+
+    private void HideSculptBrushVisual()
+    {
+        SculptBrushVisual.Geometry = null;
+        SculptBrushVisual.Visibility = Visibility.Collapsed;
+    }
+
+    private void ClearSculptBrushPreview()
+    {
+        _sculptBrushPreviewScreen = null;
+        HideSculptBrushVisual();
+    }
+
+    private void UpdateSculptBrushPreview(Point screenPoint, bool force = false)
+    {
+        if (!_viewModel.IsSculptMode || _isSculptDragging)
+        {
+            return;
+        }
+
+        _sculptBrushPreviewScreen = screenPoint;
+
+        if (!force)
+        {
+            var now = DateTime.UtcNow.Ticks;
+            var dx = screenPoint.X - _sculptBrushPreviewLastRenderedScreen.X;
+            var dy = screenPoint.Y - _sculptBrushPreviewLastRenderedScreen.Y;
+            if ((dx * dx) + (dy * dy) < SculptBrushPreviewMinMovePx * SculptBrushPreviewMinMovePx &&
+                now - _sculptBrushPreviewLastUpdateTicks < SculptBrushPreviewMinIntervalTicks)
+            {
+                return;
+            }
+        }
+
+        var hit = FindSculptHit(screenPoint);
+        if (hit is null)
+        {
+            HideSculptBrushVisual();
+            return;
+        }
+
+        SculptBrushVisual.Geometry = SharpDxMeshFactory.CreateClosedLineGeometry(
+            hit.Value.Target.BuildSculptBrushRingPoints(
+                hit.Value.Point,
+                hit.Value.Normal,
+                _viewModel.SculptBrushRadiusMm));
+        SculptBrushVisual.Visibility = Visibility.Visible;
+        _sculptBrushPreviewLastRenderedScreen = screenPoint;
+        _sculptBrushPreviewLastUpdateTicks = DateTime.UtcNow.Ticks;
+    }
+
+    private void Viewport_OnMouseLeave(object sender, MouseEventArgs e)
+    {
+        if (_viewModel.IsSculptMode && !_isSculptDragging)
+        {
+            ClearSculptBrushPreview();
+        }
+    }
+
+    private void Viewport_OnMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_viewModel.IsSculptMode)
+        {
+            if (_isSculptDragging && _sculptTarget is not null)
+            {
+                if (e.LeftButton != MouseButtonState.Pressed)
+                {
+                    EndSculptStroke();
+                    UpdateSculptBrushPreview(e.GetPosition(Viewport));
+                    return;
+                }
+
+                ApplySculptStrokeAt(e.GetPosition(Viewport), isDrag: true);
+                e.Handled = true;
+                return;
+            }
+
+            UpdateSculptBrushPreview(e.GetPosition(Viewport));
+            return;
+        }
+
+        if (!_isSculptDragging || _sculptTarget is null)
+        {
+            return;
+        }
+
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            EndSculptStroke();
+            return;
+        }
+
+        ApplySculptStrokeAt(e.GetPosition(Viewport), isDrag: true);
+        e.Handled = true;
+    }
+
+    private void Viewport_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (!_isSculptDragging)
+        {
+            return;
+        }
+
+        EndSculptStroke();
+        e.Handled = true;
+    }
+
+    private void Viewport_OnLostMouseCapture(object sender, MouseEventArgs e)
+    {
+        StopViewportCameraSpin();
+        EndSculptStroke();
+    }
+
+    private bool TryBeginSculptStroke(MouseButtonEventArgs e)
+    {
+        var hit = FindSculptHit(e.GetPosition(Viewport));
+        if (hit is null)
+        {
+            return false;
+        }
+
+        _isSculptDragging = true;
+        _sculptTarget = hit.Value.Target;
+        _sculptLastScreen = e.GetPosition(Viewport);
+        _sculptLastNormal = hit.Value.Normal;
+        StopViewportCameraSpin();
+        HideSculptBrushVisual();
+        _viewModel.BeginSculptStroke(_sculptTarget);
+        Viewport.CaptureMouse();
+        ApplySculptStrokeAt(_sculptLastScreen, isDrag: false);
+        return true;
+    }
+
+    private void ApplySculptStrokeAt(Point screenPoint, bool isDrag)
+    {
+        if (_sculptTarget is null)
+        {
+            return;
+        }
+
+        var hit = FindSculptHit(screenPoint, _sculptTarget.Model);
+        if (hit is null)
+        {
+            return;
+        }
+
+        Vector3D? grabDelta = null;
+        if (_viewModel.CurrentSculptTool == SculptBrushTool.Grab && isDrag)
+        {
+            grabDelta = ComputeScreenDragDelta(screenPoint, _sculptLastScreen);
+        }
+
+        _viewModel.TryApplySculptStroke(
+            hit.Value.Target,
+            hit.Value.Point,
+            hit.Value.Normal,
+            grabDelta);
+
+        _sculptLastScreen = screenPoint;
+        _sculptLastNormal = hit.Value.Normal;
+    }
+
+    private void EndSculptStroke()
+    {
+        if (_isSculptDragging)
+        {
+            _viewModel.CommitSculptStroke();
+        }
+
+        _isSculptDragging = false;
+        _sculptTarget = null;
+        StopViewportCameraSpin();
+        if (Viewport.IsMouseCaptured)
+        {
+            Viewport.ReleaseMouseCapture();
+        }
+
+        if (_viewModel.IsSculptMode && Viewport.IsMouseOver)
+        {
+            UpdateSculptBrushPreview(Mouse.GetPosition(Viewport));
+        }
+    }
+
+    private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape && TryCancelFuseInnerSidePickingFromKeyboard())
+        {
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            if (!_viewModel.IsSculptMode)
+            {
+                return;
+            }
+
+            if (TryUndoSculptFromKeyboard())
+            {
+                e.Handled = true;
+            }
+
+            return;
+        }
+
+        if ((e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control) ||
+            (e.Key == Key.Z && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift)))
+        {
+            if (!_viewModel.IsSculptMode)
+            {
+                return;
+            }
+
+            if (TryRedoSculptFromKeyboard())
+            {
+                e.Handled = true;
+            }
+        }
+    }
+
+    public bool TryRedoSculptFromKeyboard()
+    {
+        if (!_viewModel.IsSculptMode)
+        {
+            return false;
+        }
+
+        if (_isSculptDragging)
+        {
+            EndSculptStroke();
+        }
+
+        return _viewModel.TryRedoSculpt();
+    }
+
+    public bool TryUndoSculptFromKeyboard()
+    {
+        if (!_viewModel.IsSculptMode)
+        {
+            return false;
+        }
+
+        if (_isSculptDragging)
+        {
+            EndSculptStroke();
+        }
+
+        return _viewModel.TryUndoSculpt();
+    }
+
+    private (LoadedMeshItemViewModel Target, Point3D Point, Vector3D Normal)? FindSculptHit(
+        Point screenPoint,
+        MeshGeometryModel3D? requiredModel = null)
+    {
+        var hits = Viewport.FindHits(screenPoint);
+        foreach (var hit in hits)
+        {
+            if (hit.ModelHit is not MeshGeometryModel3D model)
+            {
+                continue;
+            }
+
+            if (requiredModel is not null && !ReferenceEquals(model, requiredModel))
+            {
+                continue;
+            }
+
+            var target = _viewModel.FindLoadedFileByModel(model);
+            if (target is null || target.IsLoadFailed || !target.IsVisible)
+            {
+                continue;
+            }
+
+            var point = new Point3D(hit.PointHit.X, hit.PointHit.Y, hit.PointHit.Z);
+            return (target, point, target.GetSurfaceNormalNear(point));
+        }
+
+        return null;
+    }
+
+    private Vector3D ComputeScreenDragDelta(Point currentScreen, Point lastScreen)
+    {
+        if (Viewport.Camera is not HelixProjectionCamera camera)
+        {
+            return new Vector3D();
+        }
+
+        var look = camera.LookDirection;
+        if (look.LengthSquared < 1e-12)
+        {
+            return new Vector3D();
+        }
+
+        look.Normalize();
+        var up = camera.UpDirection;
+        if (up.LengthSquared < 1e-12)
+        {
+            up = new Vector3D(0, 1, 0);
+        }
+
+        up.Normalize();
+        var right = Vector3D.CrossProduct(look, up);
+        if (right.LengthSquared < 1e-12)
+        {
+            right = new Vector3D(1, 0, 0);
+        }
+
+        right.Normalize();
+        var cameraUp = Vector3D.CrossProduct(right, look);
+        cameraUp.Normalize();
+
+        var distance = Math.Max(camera.LookDirection.Length, 1.0);
+        var scale = distance / Math.Max(Viewport.ActualHeight, 1.0);
+        var dx = (currentScreen.X - lastScreen.X) * scale;
+        var dy = (currentScreen.Y - lastScreen.Y) * scale;
+        return (right * dx) + (cameraUp * -dy);
+    }
+
+    private void UpdateHideLayerLabelsButtonState()
+    {
+        if (FindName("HideLayerLabelsButton") is not Button hideLayerLabelsButton)
+        {
+            return;
+        }
+
+        var labelsVisible = !_viewModel.HideLayerLabels;
+        ApplyActiveToolbarButtonState(hideLayerLabelsButton, labelsVisible);
+        hideLayerLabelsButton.ToolTip = _viewModel.HideLayerLabels
+            ? "Show layer file labels"
+            : "Hide layer file labels";
     }
 
     private void ResetCanvasTransform()
@@ -1703,30 +2239,15 @@ public partial class MainWindow : Window
 
         DrawSectionGrid(width, height);
 
-        var normal = planeNormal;
-        if (normal.LengthSquared < 1e-9)
-        {
-            normal = new Vector3D(0, 0, 1);
-        }
-        normal.Normalize();
-
-        var axisY = new Vector3D(0, 1, 0);
+        var profileUp = new Vector3D(0, 1, 0);
         if (Viewport.Camera is HelixProjectionCamera camera && camera.UpDirection.LengthSquared > 1e-9)
         {
-            axisY = camera.UpDirection;
+            profileUp = camera.UpDirection;
         }
-        axisY.Normalize();
 
-        var axisX = Vector3D.CrossProduct(normal, axisY);
-        if (axisX.LengthSquared < 1e-9)
-        {
-            axisX = Vector3D.CrossProduct(normal, new Vector3D(1, 0, 0));
-        }
-        axisX.Normalize();
-        axisY = Vector3D.CrossProduct(axisX, normal);
-        axisY.Normalize();
+        SectionGeometryService.GetSectionProfileAxes(planeNormal, profileUp, out var axisX, out var axisY);
 
-        var segments2D = SectionGeometryService.BuildSectionSegments2D(_viewModel.LoadedFiles, planePoint, normal, axisX, axisY);
+        var segments2D = SectionGeometryService.BuildSectionSegments2D(_viewModel.LoadedFiles, planePoint, planeNormal, axisX, axisY);
         _currentSectionSegments = segments2D;
         if (segments2D.Count == 0)
         {
@@ -1870,7 +2391,7 @@ public partial class MainWindow : Window
         }
 
         var startCanvas = SectionToCanvasPoint(_viewModel.MeasureStartSection.Value);
-        DrawMeasureMarker(startCanvas);
+        DrawMeasureMarker(startCanvas, isStart: true);
 
         if (_viewModel.MeasureEndSection is null)
         {
@@ -1878,7 +2399,7 @@ public partial class MainWindow : Window
         }
 
         var endCanvas = SectionToCanvasPoint(_viewModel.MeasureEndSection.Value);
-        DrawMeasureMarker(endCanvas);
+        DrawMeasureMarker(endCanvas, isStart: false);
 
         var line = new Line
         {
@@ -1913,16 +2434,39 @@ public partial class MainWindow : Window
         SectionProfileCanvas.Children.Add(label);
     }
 
-    private void DrawMeasureMarker(Point point)
+    private void DrawMeasureMarker(Point point, bool isStart)
     {
-        var markerSize = GetTransformedMarkerSize();
+        var markerSize = _encodeSectionMeasureStyle ? 6.0 : GetTransformedMarkerSize();
         var markerRadius = markerSize * 0.5;
+        Brush fill;
+        if (_encodeSectionMeasureStyle)
+        {
+            var core = isStart ? Color.FromRgb(235, 70, 70) : Color.FromRgb(55, 130, 235);
+            fill = new RadialGradientBrush(
+                Color.FromRgb(255, 255, 255),
+                core)
+            {
+                GradientOrigin = new Point(0.32, 0.28),
+                Center = new Point(0.32, 0.28),
+                RadiusX = 0.85,
+                RadiusY = 0.85
+            };
+            fill.Freeze();
+        }
+        else
+        {
+            fill = Brushes.Black;
+        }
+
         var marker = new Ellipse
         {
             Width = markerSize,
             Height = markerSize,
-            Fill = Brushes.Black,
-            Stroke = null
+            Fill = fill,
+            Stroke = _encodeSectionMeasureStyle
+                ? new SolidColorBrush(Color.FromArgb(180, 30, 45, 70))
+                : null,
+            StrokeThickness = _encodeSectionMeasureStyle ? 0.8 : 0
         };
 
         Canvas.SetLeft(marker, point.X - markerRadius);

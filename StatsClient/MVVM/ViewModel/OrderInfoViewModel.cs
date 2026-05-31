@@ -905,7 +905,7 @@ public class OrderInfoViewModel : ObservableObject
     {
         var bc = new BrushConverter();
         _InfoWindow!.panelLastTouchedBy.Children.Clear();
-        _InfoWindow.borderLastTouchedByPanel.Visibility = lastTouchedByList.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        _InfoWindow.UpdateLastTouchedByPanelVisibility();
 
         foreach (LastTouchedByModel item in lastTouchedByList)
         {

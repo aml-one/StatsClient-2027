@@ -86,6 +86,16 @@ public static class MaterialLibrary
                 Color.FromRgb(200, 170, 90),
                 Color.FromRgb(210, 190, 140)),
 
+            // Temporary preview while picking unified-shell working side (not listed in UI).
+            ["WorkingSide"] = new MaterialPalette(
+                FrontDiffuse: Color.FromRgb(168, 210, 152),
+                BackDiffuse: Color.FromRgb(118, 158, 104),
+                FrontSpecular: Color.FromRgb(205, 238, 188),
+                SpecularShininessOverride: 78,
+                SpecularIntensityScale: 1.05,
+                AmbientScale: 0.24,
+                EmissiveScale: 0.1),
+
             ["Gold"] = new MaterialPalette(
                 Color.FromRgb(230, 190, 58),
                 Color.FromRgb(168, 129, 32),

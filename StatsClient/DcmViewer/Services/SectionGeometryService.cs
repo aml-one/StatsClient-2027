@@ -104,6 +104,42 @@ public static class SectionGeometryService
 
         result.Add(point);
     }
+
+    /// <summary>
+    /// 2D profile axes used by the section graph (must match <see cref="BuildSectionSegments2D"/> callers).
+    /// </summary>
+    public static void GetSectionProfileAxes(
+        Vector3D planeNormal,
+        Vector3D preferredUp,
+        out Vector3D axisX,
+        out Vector3D axisY)
+    {
+        var normal = planeNormal;
+        if (normal.LengthSquared < 1e-9)
+        {
+            normal = new Vector3D(0, 0, 1);
+        }
+
+        normal.Normalize();
+
+        axisY = preferredUp;
+        if (axisY.LengthSquared < 1e-9)
+        {
+            axisY = new Vector3D(0, 1, 0);
+        }
+
+        axisY.Normalize();
+
+        axisX = Vector3D.CrossProduct(normal, axisY);
+        if (axisX.LengthSquared < 1e-9)
+        {
+            axisX = Vector3D.CrossProduct(normal, new Vector3D(1, 0, 0));
+        }
+
+        axisX.Normalize();
+        axisY = Vector3D.CrossProduct(axisX, normal);
+        axisY.Normalize();
+    }
 }
 
 public readonly record struct SectionSegment2D(Point A, Point B, MeshCategory Category);

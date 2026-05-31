@@ -10,6 +10,7 @@
         MinWidth="280"
         WindowStartupLocation="Manual"
         ResizeMode="CanResize"
+        ShowInTaskbar="False"
         WindowStyle="None"
         Background="#FFF7F9FC">
     <WindowChrome.WindowChrome>

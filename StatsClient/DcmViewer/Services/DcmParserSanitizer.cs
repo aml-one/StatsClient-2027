@@ -2,7 +2,7 @@ using System.Windows.Media.Media3D;
 
 namespace DCMViewer.Services;
 
-/// <summary>Repairs triangle soups produced by marginal facet decode errors (long bridge triangles).</summary>
+/// <summary>Removes unrealistic long-edge bridge triangles from marginal facet decode errors.</summary>
 internal static class DcmParserSanitizer
 {
     public static void TrySanitizeMeshConnectivity(List<Point3D> positions, List<int> triangleIndices)
@@ -14,23 +14,11 @@ internal static class DcmParserSanitizer
         }
 
         var longEdgeRatio = DcmParserDiagnostics.ComputeLongEdgeTriangleRatio(positions, triangleIndices);
-        var needleRatio = ComputeNeedleTriangleRatio(positions, triangleIndices);
 
-        if (triangleCount < 500 && longEdgeRatio < 0.01 && needleRatio < 0.15)
-        {
-            return;
-        }
-
-        // Bridge triangles only when the soup has obvious long-edge artifacts (bird-nest cases).
-        if (longEdgeRatio >= 0.02 || (triangleCount >= 10_000 && longEdgeRatio >= 0.008))
+        // Only prune when sampled edges show severe bridge artifacts from marginal facet decode (~15%+).
+        if (longEdgeRatio >= 0.15)
         {
             PruneBridgeTriangles(positions, triangleIndices);
-        }
-
-        // Needle cleanup only for severely corrupted facet decodes; mild ratios are valid crown tessellation.
-        if (needleRatio >= 0.15)
-        {
-            PruneNeedleTriangles(positions, triangleIndices);
         }
     }
 
@@ -58,43 +46,6 @@ internal static class DcmParserSanitizer
         }
 
         return considered == 0 ? 0.0 : (double)needles / considered;
-    }
-
-    public static void PruneNeedleTriangles(List<Point3D> positions, List<int> triangleIndices)
-    {
-        var triangleCount = triangleIndices.Count / 3;
-        if (triangleCount == 0)
-        {
-            return;
-        }
-
-        var rebuilt = new List<int>(triangleIndices.Count);
-        for (var triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
-        {
-            if (IsNeedleTriangle(positions, triangleIndices, triangleIndex))
-            {
-                continue;
-            }
-
-            rebuilt.Add(triangleIndices[(triangleIndex * 3) + 0]);
-            rebuilt.Add(triangleIndices[(triangleIndex * 3) + 1]);
-            rebuilt.Add(triangleIndices[(triangleIndex * 3) + 2]);
-        }
-
-        if (rebuilt.Count == 0 || rebuilt.Count == triangleIndices.Count)
-        {
-            return;
-        }
-
-        var removedTriangleCount = triangleCount - (rebuilt.Count / 3);
-        if (removedTriangleCount > triangleCount * 0.25)
-        {
-            return;
-        }
-
-        triangleIndices.Clear();
-        triangleIndices.AddRange(rebuilt);
-        CompactUnusedVertices(positions, triangleIndices);
     }
 
     private static bool IsNeedleTriangle(IReadOnlyList<Point3D> positions, IReadOnlyList<int> triangleIndices, int triangleIndex)
@@ -193,10 +144,10 @@ internal static class DcmParserSanitizer
             return;
         }
 
-        // Typical dental tessellation stays well below ~12% of model diagonal per edge; bridge artifacts span much farther.
+        // Match the long-edge detector (25% of diagonal) so we only drop true bridge artifacts.
         var threshold = Math.Min(
             Math.Min(percentile50 * 12.0, percentile90 * 3.5),
-            diagonal * 0.12);
+            diagonal * 0.25);
 
         if (!double.IsFinite(threshold) || threshold <= 0)
         {
@@ -227,203 +178,6 @@ internal static class DcmParserSanitizer
 
         triangleIndices.Clear();
         triangleIndices.AddRange(rebuilt);
-    }
-
-    public static void KeepDominantConnectedComponents(List<Point3D> positions, List<int> triangleIndices)
-    {
-        var triangleCount = triangleIndices.Count / 3;
-        if (triangleCount < 3)
-        {
-            return;
-        }
-
-        var labels = LabelTriangleComponents(triangleIndices, triangleCount);
-        var componentSizes = new Dictionary<int, int>();
-        for (var i = 0; i < labels.Length; i++)
-        {
-            var label = labels[i];
-            componentSizes.TryGetValue(label, out var count);
-            componentSizes[label] = count + 1;
-        }
-
-        if (componentSizes.Count <= 1)
-        {
-            return;
-        }
-
-        var ordered = componentSizes
-            .OrderByDescending(pair => pair.Value)
-            .ToList();
-
-        var largest = ordered[0].Value;
-        var keepLabels = new HashSet<int> { ordered[0].Key };
-        var keptTriangles = largest;
-
-        for (var i = 1; i < ordered.Count; i++)
-        {
-            var size = ordered[i].Value;
-            if (size < Math.Max(500, triangleCount / 200))
-            {
-                break;
-            }
-
-            if (size >= largest * 0.05)
-            {
-                keepLabels.Add(ordered[i].Key);
-                keptTriangles += size;
-            }
-        }
-
-        if (keptTriangles >= triangleCount * 0.98)
-        {
-            return;
-        }
-
-        var rebuilt = new List<int>(triangleIndices.Count);
-        for (var triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
-        {
-            if (!keepLabels.Contains(labels[triangleIndex]))
-            {
-                continue;
-            }
-
-            rebuilt.Add(triangleIndices[(triangleIndex * 3) + 0]);
-            rebuilt.Add(triangleIndices[(triangleIndex * 3) + 1]);
-            rebuilt.Add(triangleIndices[(triangleIndex * 3) + 2]);
-        }
-
-        if (rebuilt.Count == 0)
-        {
-            return;
-        }
-
-        triangleIndices.Clear();
-        triangleIndices.AddRange(rebuilt);
-        CompactUnusedVertices(positions, triangleIndices);
-    }
-
-    private static void CompactUnusedVertices(List<Point3D> positions, List<int> triangleIndices)
-    {
-        if (triangleIndices.Count == 0)
-        {
-            return;
-        }
-
-        var remap = new Dictionary<int, int>();
-        var compacted = new List<Point3D>(positions.Count);
-
-        foreach (var index in triangleIndices)
-        {
-            if (index < 0 || index >= positions.Count)
-            {
-                continue;
-            }
-
-            if (!remap.ContainsKey(index))
-            {
-                remap[index] = compacted.Count;
-                compacted.Add(positions[index]);
-            }
-        }
-
-        for (var i = 0; i < triangleIndices.Count; i++)
-        {
-            var oldIndex = triangleIndices[i];
-            triangleIndices[i] = remap.TryGetValue(oldIndex, out var newIndex) ? newIndex : 0;
-        }
-
-        positions.Clear();
-        positions.AddRange(compacted);
-    }
-
-    private static int[] LabelTriangleComponents(IReadOnlyList<int> triangleIndices, int triangleCount)
-    {
-        var edgeToTriangles = new Dictionary<(int A, int B), List<int>>();
-
-        static (int, int) EdgeKey(int a, int b) => a < b ? (a, b) : (b, a);
-
-        for (var triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
-        {
-            var i0 = triangleIndices[(triangleIndex * 3) + 0];
-            var i1 = triangleIndices[(triangleIndex * 3) + 1];
-            var i2 = triangleIndices[(triangleIndex * 3) + 2];
-
-            AddEdge(edgeToTriangles, EdgeKey(i0, i1), triangleIndex);
-            AddEdge(edgeToTriangles, EdgeKey(i1, i2), triangleIndex);
-            AddEdge(edgeToTriangles, EdgeKey(i2, i0), triangleIndex);
-        }
-
-        var labels = new int[triangleCount];
-        Array.Fill(labels, -1);
-        var currentLabel = 0;
-
-        for (var seed = 0; seed < triangleCount; seed++)
-        {
-            if (labels[seed] >= 0)
-            {
-                continue;
-            }
-
-            var queue = new Queue<int>();
-            queue.Enqueue(seed);
-            labels[seed] = currentLabel;
-
-            while (queue.Count > 0)
-            {
-                var triangleIndex = queue.Dequeue();
-                var i0 = triangleIndices[(triangleIndex * 3) + 0];
-                var i1 = triangleIndices[(triangleIndex * 3) + 1];
-                var i2 = triangleIndices[(triangleIndex * 3) + 2];
-
-                foreach (var neighbor in EnumerateEdgeNeighbors(edgeToTriangles, i0, i1, i2))
-                {
-                    if (labels[neighbor] >= 0)
-                    {
-                        continue;
-                    }
-
-                    labels[neighbor] = currentLabel;
-                    queue.Enqueue(neighbor);
-                }
-            }
-
-            currentLabel++;
-        }
-
-        return labels;
-    }
-
-    private static IEnumerable<int> EnumerateEdgeNeighbors(
-        Dictionary<(int A, int B), List<int>> edgeToTriangles,
-        int i0,
-        int i1,
-        int i2)
-    {
-        static (int, int) EdgeKey(int a, int b) => a < b ? (a, b) : (b, a);
-
-        foreach (var edge in new[] { EdgeKey(i0, i1), EdgeKey(i1, i2), EdgeKey(i2, i0) })
-        {
-            if (!edgeToTriangles.TryGetValue(edge, out var neighbors))
-            {
-                continue;
-            }
-
-            foreach (var neighbor in neighbors)
-            {
-                yield return neighbor;
-            }
-        }
-    }
-
-    private static void AddEdge(Dictionary<(int A, int B), List<int>> edgeToTriangles, (int A, int B) edge, int triangleIndex)
-    {
-        if (!edgeToTriangles.TryGetValue(edge, out var list))
-        {
-            list = [];
-            edgeToTriangles[edge] = list;
-        }
-
-        list.Add(triangleIndex);
     }
 
     private static double Percentile(double[] sortedAscending, double percentile)

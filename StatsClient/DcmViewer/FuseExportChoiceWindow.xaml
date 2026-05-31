@@ -1,0 +1,137 @@
+<Window x:Class="DCMViewer.FuseExportChoiceWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Merge visible scans"
+        Height="500"
+        Width="440"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI"
+        Background="#FFF6F7F9">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock x:Name="TitleTextBlock"
+                       Text="Merge visible scans"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Foreground="#FF2A3A52"
+                       TextWrapping="Wrap" />
+            <TextBlock Text="Choose how to combine the visible scans into one STL file."
+                       Margin="0,6,0,0"
+                       Foreground="#FF64748B"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+            <RadioButton x:Name="UnifiedShellRadio"
+                         GroupName="FuseMode"
+                         Margin="0,0,0,8"
+                         Checked="FuseModeRadio_OnChecked">
+                <StackPanel>
+                    <TextBlock Text="Unified shell"
+                               FontWeight="SemiBold"
+                               Foreground="#FF0F172A" />
+                    <TextBlock Text="Keeps scan triangles and removes duplicate faces where parts touch — one layer at contacts, full detail elsewhere. You will mark the working (inner) side on each layer next."
+                               Margin="0,4,0,0"
+                               Foreground="#FF64748B"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </RadioButton>
+
+            <StackPanel x:Name="UnifiedShellCleanupPanel"
+                        Margin="24,0,0,12"
+                        Visibility="Collapsed">
+                <CheckBox x:Name="CleanupArtifactsCheckBox"
+                          Content="Clean up saved STL artifacts"
+                          Foreground="#FF334155"
+                          Checked="CleanupControls_OnChanged"
+                          Unchecked="CleanupControls_OnChanged" />
+                <TextBlock Text="Removes tiny loner triangles from the exported file only. The viewer preview is unchanged."
+                           Margin="22,4,0,8"
+                           Foreground="#FF64748B"
+                           FontSize="11"
+                           TextWrapping="Wrap" />
+                <Grid Margin="22,0,0,0"
+                      IsEnabled="{Binding IsChecked, ElementName=CleanupArtifactsCheckBox}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="Strength"
+                               VerticalAlignment="Center"
+                               Foreground="#FF475569" />
+                    <Slider x:Name="CleanupStrengthSlider"
+                            Grid.Column="1"
+                            Margin="10,0,10,0"
+                            Minimum="0"
+                            Maximum="100"
+                            TickFrequency="10"
+                            IsSnapToTickEnabled="False"
+                            ValueChanged="CleanupControls_OnChanged" />
+                    <TextBlock x:Name="CleanupStrengthLabel"
+                               Grid.Column="2"
+                               MinWidth="28"
+                               VerticalAlignment="Center"
+                               Foreground="#FF475569"
+                               FontWeight="SemiBold" />
+                </Grid>
+            </StackPanel>
+
+            <RadioButton x:Name="SolidCombineRadio"
+                         GroupName="FuseMode"
+                         Margin="0,0,0,12"
+                         Checked="FuseModeRadio_OnChecked">
+                <StackPanel>
+                    <TextBlock Text="Solid combine (default)"
+                               FontWeight="SemiBold"
+                               Foreground="#FF0F172A" />
+                    <TextBlock Text="Keeps every scan triangle — opaque, but overlapping parts stay as separate layers."
+                               Margin="0,4,0,0"
+                               Foreground="#FF64748B"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </RadioButton>
+
+            <RadioButton x:Name="VoxelEnvelopeRadio"
+                         GroupName="FuseMode"
+                         Checked="FuseModeRadio_OnChecked">
+                <StackPanel>
+                    <TextBlock Text="Voxel envelope"
+                               FontWeight="SemiBold"
+                               Foreground="#FF0F172A" />
+                    <TextBlock Text="Remeshes into one outer shell — can look thin or see-through."
+                               Margin="0,4,0,0"
+                               Foreground="#FF64748B"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </RadioButton>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,12,0,0">
+            <Button Content="Cancel"
+                    Width="90"
+                    Height="30"
+                    Margin="0,0,8,0"
+                    IsCancel="True"
+                    Click="Cancel_OnClick" />
+            <Button Content="Continue"
+                    Width="90"
+                    Height="30"
+                    IsDefault="True"
+                    Click="Continue_OnClick" />
+        </StackPanel>
+    </Grid>
+</Window>

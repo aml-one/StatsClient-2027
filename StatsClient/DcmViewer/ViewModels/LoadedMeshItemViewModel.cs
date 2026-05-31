@@ -6,7 +6,6 @@ using System.Windows.Media.Media3D;
 using DCMViewer.Services;
 using HelixToolkit.SharpDX;
 using HelixToolkit.Wpf.SharpDX;
-
 namespace DCMViewer.ViewModels;
 
 public enum MeshCategory
@@ -28,6 +27,11 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
     private double _opacity = 1.0;
     private bool _isVisible = true;
 
+    private EditableMeshState _editableMesh;
+    private Point3D[]? _sculptBaselinePositions;
+    private MaterialPalette? _savedPalette;
+    private string? _savedTextureName;
+
     public LoadedMeshItemViewModel(
         string filePath,
         MeshGeometryModel3D model,
@@ -42,17 +46,19 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
         ScanLayerArch scanArch = ScanLayerArch.None,
         bool isLoadFailed = false,
         string? loadError = null,
-        string? appliedTextureName = null)
+        string? appliedTextureName = null,
+        DcmMeshWriteProfile? writeProfile = null)
     {
         FilePath = filePath;
         DisplayName = Path.GetFileName(filePath);
         ScanArch = scanArch;
         Model = model;
-        MeshSnapshot = meshSnapshot;
+        _editableMesh = new EditableMeshState(meshSnapshot);
+        WriteProfile = writeProfile;
         _palette = palette;
         Bounds = bounds;
-        VertexCount = vertexCount;
-        TriangleCount = triangleCount;
+        VertexCount = _editableMesh.VertexCount;
+        TriangleCount = _editableMesh.TriangleCount;
         IsEncrypted = isEncrypted;
         IsPackageLocked = isPackageLocked;
         Category = category;
@@ -60,6 +66,40 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
         LoadError = loadError;
         AppliedTextureName = appliedTextureName;
         ApplyMaterial();
+        CaptureSculptBaseline();
+    }
+
+    public DcmMeshWriteProfile? WriteProfile { get; }
+
+    internal bool CanSaveSculptedDcm =>
+        !IsLoadFailed &&
+        WriteProfile is not null &&
+        string.Equals(Path.GetExtension(FilePath), ".dcm", StringComparison.OrdinalIgnoreCase) &&
+        HasSculptChanges;
+
+    internal bool HasSculptChanges => !ArePositionsEqual(_sculptBaselinePositions, CaptureSculptPositions());
+
+    internal void CaptureSculptBaseline() => _sculptBaselinePositions = CaptureSculptPositions();
+
+    internal void MarkSculptSaved() => CaptureSculptBaseline();
+
+    private static bool ArePositionsEqual(Point3D[]? baseline, Point3D[] current)
+    {
+        if (baseline is null || baseline.Length != current.Length)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < baseline.Length; index++)
+        {
+            var delta = baseline[index] - current[index];
+            if (delta.LengthSquared > 1e-12)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -70,7 +110,89 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
 
     public MeshGeometryModel3D Model { get; }
 
-    public MeshSnapshot? MeshSnapshot { get; }
+    public MeshSnapshot? MeshSnapshot => IsLoadFailed ? null : _editableMesh.ToSnapshot();
+
+    internal Vector3D GetSurfaceNormalNear(Point3D point) => _editableMesh.GetNearestSurfaceNormal(point);
+
+    internal Point3D[] BuildSculptBrushRingPoints(Point3D center, Vector3D normal, double radius)
+    {
+        if (IsLoadFailed)
+        {
+            return [center];
+        }
+
+        return _editableMesh.BuildSurfaceBrushRing(center, normal, radius);
+    }
+
+    internal void PushTemporaryMaterial(MaterialPalette palette, string textureName)
+    {
+        _savedPalette ??= _palette;
+        _savedTextureName ??= AppliedTextureName;
+        SetMaterialPalette(palette, textureName);
+    }
+
+    internal void PopTemporaryMaterial()
+    {
+        if (_savedPalette is null)
+        {
+            return;
+        }
+
+        SetMaterialPalette(_savedPalette.Value, _savedTextureName);
+        _savedPalette = null;
+        _savedTextureName = null;
+    }
+
+    internal Point3D[] CaptureSculptPositions() => _editableMesh.CapturePositions();
+
+    internal void RestoreSculptPositions(Point3D[] positions)
+    {
+        if (IsLoadFailed)
+        {
+            return;
+        }
+
+        _editableMesh.RestorePositions(positions);
+        RefreshGeometryAfterSculpt();
+    }
+
+    internal void ReplaceMeshGeometry(MeshSnapshot snapshot)
+    {
+        if (IsLoadFailed)
+        {
+            return;
+        }
+
+        _editableMesh = new EditableMeshState(snapshot);
+        RefreshGeometryAfterSculpt();
+    }
+
+    internal bool TryApplySculptStroke(
+        SculptBrushTool tool,
+        Point3D center,
+        Vector3D surfaceNormal,
+        double radius,
+        double strength,
+        Vector3D? grabDelta)
+    {
+        if (IsLoadFailed)
+        {
+            return false;
+        }
+
+        return _editableMesh.ApplyStroke(tool, center, surfaceNormal, radius, strength, grabDelta);
+    }
+
+    internal void RefreshGeometryAfterSculpt()
+    {
+        if (IsLoadFailed)
+        {
+            return;
+        }
+
+        _editableMesh.PushToModel(Model);
+        ApplyMaterial();
+    }
 
     public Rect3D Bounds { get; }
 
@@ -96,9 +218,13 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
     };
 
     public bool UseCategoryGroupControl =>
-        Category is MeshCategory.Restoration or MeshCategory.Abutment
-        && !IsLoadFailed
-        && !IsPackageLocked;
+        Category is MeshCategory.Restoration or MeshCategory.Abutment;
+
+    /// <summary>Layer visibility toggle; independent of opacity slider (failed/encrypted rows still toggle).</summary>
+    public bool IsLayerCheckBoxEnabled => true;
+
+    /// <summary>Maroon row styling for failed decode or package-locked encrypted files.</summary>
+    public bool UsesFailedLayerStyle => IsLoadFailed || IsPackageLocked;
 
     public string? AppliedTextureName { get; private set; }
 
@@ -130,11 +256,6 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
         get => _isVisible;
         set
         {
-            if (IsLoadFailed)
-            {
-                return;
-            }
-
             if (_isVisible == value)
             {
                 return;
@@ -215,7 +336,8 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
             EmissiveColor = backDiffuse * (float)_palette.EmissiveScale
         };
 
-        Model.IsTransparent = _opacity < OpaqueOpacityThreshold;
+        // Phong alpha only — Helix transparent pass + embedded clear causes black background.
+        Model.IsTransparent = false;
         Model.CullMode = SharpDX.Direct3D11.CullMode.None;
     }
 

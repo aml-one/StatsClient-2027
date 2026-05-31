@@ -3376,21 +3376,46 @@ public partial class MainViewModel : ObservableObject
     }
 
     private List<DuplicatePanNumberOrdersModel> panNrDuplicatesList = [];
+    private readonly HashSet<string> _seenDuplicatePanKeys = new(StringComparer.OrdinalIgnoreCase);
+
     public List<DuplicatePanNumberOrdersModel> PanNrDuplicatesList
     {
         get => panNrDuplicatesList;
         set
         {
-            panNrDuplicatesList = value;
+            var incoming = value ?? [];
+            panNrDuplicatesList = incoming;
             RaisePropertyChanged(nameof(PanNrDuplicatesList));
 
-            if (PanNrDuplicatesList.Count > PanNrDuplicatesCount)
+            var newDuplicateCount = 0;
+            foreach (var duplicate in incoming)
             {
-                ShowWarningOfNewDuplicatedPanNumberUse();
+                var key = BuildDuplicatePanKey(duplicate);
+                if (string.IsNullOrEmpty(key) || !_seenDuplicatePanKeys.Add(key))
+                {
+                    continue;
+                }
+
+                newDuplicateCount++;
             }
 
-            PanNrDuplicatesCount = PanNrDuplicatesList.Count;
+            if (newDuplicateCount > 0)
+            {
+                ShowWarningOfNewDuplicatedPanNumberUse(newDuplicateCount);
+            }
+
+            PanNrDuplicatesCount = panNrDuplicatesList.Count;
         }
+    }
+
+    private static string BuildDuplicatePanKey(DuplicatePanNumberOrdersModel duplicate)
+    {
+        if (string.IsNullOrWhiteSpace(duplicate.PanNr))
+        {
+            return string.Empty;
+        }
+
+        return $"{duplicate.PanNr}|{duplicate.OrderID_1}|{duplicate.OrderID_2}";
     }
 
     private string panNrDuplicatesFontColor = "Red";
@@ -3949,6 +3974,8 @@ public partial class MainViewModel : ObservableObject
         CbSettingModuleDebugCommand = new RelayCommand(o => CbSettingModuleDebugMethod());
         CbSettingModulePrescriptionMakerCommand = new RelayCommand(o => CbSettingModulePrescriptionMakerMethod());
         CbSettingModulePendingDigitalsCommand = new RelayCommand(o => CbSettingModulePendingDigitalsMethod());
+        InitEncodeIdentifierCommands();
+        InitMeshFuseSettingsCommands();
 
 
         AddNewCustomerSuggestionCommand = new RelayCommand(o => AddNewCustomerSuggestionMethod());
@@ -8036,15 +8063,16 @@ public partial class MainViewModel : ObservableObject
 
 
 
-    private void ShowWarningOfNewDuplicatedPanNumberUse()
+    private void ShowWarningOfNewDuplicatedPanNumberUse(int newDuplicateCount)
     {
         Application.Current.Dispatcher.Invoke(new Action(async () =>
         {
             await BlinkWindow("red");
-            ShowNotificationMessage("Duplicated Pan Number found", $"Possible duplicate use of pan number found!", NotificationIcon.Warning);
-            ShowMessageBox("Duplicated Pan Number found", "Possible duplicate use of pan number found!", SMessageBoxButtons.Close, NotificationIcon.Warning, 250, _MainWindow);
-
-
+            var message = newDuplicateCount == 1
+                ? "Possible duplicate use of pan number found!"
+                : $"{newDuplicateCount} possible duplicate pan number uses found!";
+            ShowNotificationMessage("Duplicated Pan Number found", message, NotificationIcon.Warning);
+            ShowMessageBox("Duplicated Pan Number found", message, SMessageBoxButtons.Close, NotificationIcon.Warning, 250, _MainWindow);
         }));
     }
 
@@ -11679,6 +11707,7 @@ public partial class MainViewModel : ObservableObject
             _ = bool.TryParse(ReadLocalSetting("ModuleDebug"), out bool moduleDebug);
             _ = bool.TryParse(ReadLocalSetting("ModulePrescriptionMaker"), out bool modulePrescriptionMaker);
             _ = bool.TryParse(ReadLocalSetting("ModulePendingDigitals"), out bool modulePendingDigitals);
+            _ = bool.TryParse(ReadLocalSetting("ModuleEncodeIdentifier"), out bool moduleEncodeIdentifier);
 
             _ = bool.TryParse(ReadStatsSetting("dcas_EmailWatcherActive"), out bool isDCASIsActive);
 
@@ -11713,6 +11742,11 @@ public partial class MainViewModel : ObservableObject
             CbSettingModuleDebug = moduleDebug;
             CbSettingModulePrescriptionMaker = modulePrescriptionMaker;
             CbSettingModulePendingDigitals = modulePendingDigitals;
+            CbSettingModuleEncodeIdentifier = moduleEncodeIdentifier;
+            if (CbSettingModuleEncodeIdentifier)
+                LoadEncodeIdentifierSettings();
+
+            LoadDcmViewerFuseSettings();
 
             IsDCASIsActive = isDCASIsActive;
 

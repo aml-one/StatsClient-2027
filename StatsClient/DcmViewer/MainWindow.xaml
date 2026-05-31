@@ -7,6 +7,7 @@
         xmlns:local="clr-namespace:DCMViewer"
         xmlns:vm="clr-namespace:DCMViewer.ViewModels"
         xmlns:usercontrols="clr-namespace:StatsClient.UserControls"
+        xmlns:dcmcontrols="clr-namespace:DCMViewer.Controls"
         mc:Ignorable="d"
         Title="DCM Viewer"
         Height="920"
@@ -281,9 +282,84 @@
                     Value="0,0,0,6" />
             <Setter Property="Background"
                     Value="#FFEDF2F8" />
+            <Setter Property="BorderBrush"
+                    Value="#FFBDC7D2" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
         </Style>
 
-        <!-- Round eye/visibility checkbox -->
+        <Style x:Key="SculptKnobSlider"
+               TargetType="Slider"
+               BasedOn="{StaticResource NiceSlider}">
+            <Setter Property="Height"
+                    Value="28" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="28"
+                              VerticalAlignment="Center"
+                              Background="Transparent">
+                            <Track x:Name="PART_Track"
+                                   VerticalAlignment="Center">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                                  Background="#FF5A7090" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource SliderRepeatButton}"
+                                                  Background="#FF38475A" />
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource TopRightSliderThumb}"
+                                           Tag="{TemplateBinding Tag}" />
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SculptPanelIconButton"
+               TargetType="Button"
+               BasedOn="{StaticResource IconButton}">
+            <Setter Property="Width"
+                    Value="38" />
+            <Setter Property="Height"
+                    Value="38" />
+            <Setter Property="Margin"
+                    Value="0,0,4,0" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+            <Style.Triggers>
+                <Trigger Property="IsEnabled"
+                         Value="False">
+                    <Setter Property="Opacity"
+                            Value="0.38" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SculptToolSelectButton"
+               TargetType="Button"
+               BasedOn="{StaticResource SculptPanelIconButton}">
+            <Setter Property="Background"
+                    Value="#FFEDF2F8" />
+            <Setter Property="BorderBrush"
+                    Value="#FFBDC7D2" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="#FFE8EDF3" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="RoundCheckBox"
                TargetType="CheckBox">
             <Setter Property="OverridesDefaultStyle"
@@ -379,14 +455,29 @@
                                             BorderThickness="1.5"
                                             BorderBrush="#FF7A1F33"
                                             Background="#FFF5E6EA" />
-                                    <Path x:Name="CheckMark"
+                                    <Path x:Name="EncryptedMark"
                                           Data="M 5,5 L 11,11 M 11,5 L 5,11"
                                           Stroke="#FF7A1F33"
                                           StrokeThickness="2"
                                           StrokeStartLineCap="Round"
                                           StrokeEndLineCap="Round"
-                                          StrokeLineJoin="Round" />
+                                          StrokeLineJoin="Round"
+                                          Visibility="Collapsed" />
                                 </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsChecked"
+                                             Value="True">
+                                        <Setter TargetName="EncryptedMark"
+                                                Property="Visibility"
+                                                Value="Visible" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver"
+                                             Value="True">
+                                        <Setter TargetName="Ring"
+                                                Property="BorderBrush"
+                                                Value="#FF9E3A4A" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
@@ -408,14 +499,62 @@
                                           Stroke="#FF7A1F33"
                                           StrokeThickness="2"
                                           StrokeStartLineCap="Round"
-                                          StrokeEndLineCap="Round" />
+                                          StrokeEndLineCap="Round"
+                                          Visibility="Collapsed" />
                                 </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsChecked"
+                                             Value="True">
+                                        <Setter TargetName="FailedMark"
+                                                Property="Visibility"
+                                                Value="Visible" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver"
+                                             Value="True">
+                                        <Setter TargetName="Ring"
+                                                Property="BorderBrush"
+                                                Value="#FF9E3A4A" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <ControlTemplate x:Key="CategoryGroupFailedCheckBoxTemplate"
+                         TargetType="CheckBox">
+            <Grid Width="16"
+                  Height="16">
+                <Border x:Name="Ring"
+                        CornerRadius="8"
+                        BorderThickness="1.5"
+                        BorderBrush="#FF7A1F33"
+                        Background="#FFF5E6EA" />
+                <Path x:Name="FailedMark"
+                      Data="M 5,5 L 11,11 M 11,5 L 5,11"
+                      Stroke="#FF7A1F33"
+                      StrokeThickness="2"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Visibility="Collapsed" />
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsChecked"
+                         Value="True">
+                    <Setter TargetName="FailedMark"
+                            Property="Visibility"
+                            Value="Visible" />
+                </Trigger>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter TargetName="Ring"
+                            Property="BorderBrush"
+                            Value="#FF9E3A4A" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
 
         <ControlTemplate x:Key="FailedOpacitySliderTemplate"
                          TargetType="Slider">
@@ -505,6 +644,13 @@
                     Value="SemiBold" />
             <Setter Property="Margin"
                     Value="2,8,0,2" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HideLayerLabels}"
+                             Value="True">
+                    <Setter Property="Visibility"
+                            Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <DataTemplate x:Key="LoadedFileLayerRowTemplate">
@@ -550,13 +696,13 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="6" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="{Binding Data.LayerRowLabelColumnWidth, Source={StaticResource ViewerBindingProxy}}" />
                     <ColumnDefinition Width="18" />
-                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="{Binding Data.LayerRowSliderColumnWidth, Source={StaticResource ViewerBindingProxy}}" />
                 </Grid.ColumnDefinitions>
 
                 <CheckBox Grid.Column="0"
-                          IsEnabled="{Binding IsOpacityEnabled}"
+                          IsEnabled="{Binding IsLayerCheckBoxEnabled}"
                           IsChecked="{Binding IsVisible, Mode=TwoWay}">
                     <CheckBox.Style>
                         <Style TargetType="CheckBox"
@@ -625,6 +771,11 @@
                                     <Setter Property="BorderBrush"
                                             Value="#FFA33A3A" />
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding Data.HideLayerLabels, Source={StaticResource ViewerBindingProxy}}"
+                                             Value="True">
+                                    <Setter Property="Visibility"
+                                            Value="Collapsed" />
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
@@ -659,6 +810,15 @@
                                     <Setter Property="Template"
                                             Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding Data.HideLayerLabels, Source={StaticResource ViewerBindingProxy}}"
+                                             Value="True">
+                                    <Setter Property="Width"
+                                            Value="110" />
+                                    <Setter Property="HorizontalAlignment"
+                                            Value="Right" />
+                                    <Setter Property="Margin"
+                                            Value="-14,0,0,0" />
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Slider.Style>
@@ -667,7 +827,7 @@
         </DataTemplate>
     </Window.Resources>
 
-    <Grid>
+    <Grid PreviewKeyDown="MainWindow_OnPreviewKeyDown">
         
 
         <Grid x:Name="WatermarkCanvas">
@@ -721,8 +881,13 @@
 
             <hx:Viewport3DX ShowViewCube="True"
                             x:Name="Viewport"
-                            ShowCoordinateSystem="True"
+                            ShowCoordinateSystem="False"
+                            CoordinateSystemHorizontalPosition="-0.41"
+                            CoordinateSystemVerticalPosition="-0.78"
+                            ViewCubeHorizontalPosition="0.65"
+                            ViewCubeVerticalPosition="-0.94"
                             IsRotationEnabled="True"
+                            IsInertiaEnabled="False"
                             CameraRotationMode="Trackball"
                             IsPanEnabled="True"
                             IsZoomEnabled="True"
@@ -754,6 +919,13 @@
 
                 <hx:BillboardTextModel3D x:Name="MeasurementText"
                                          Visibility="Collapsed" />
+
+                <hx:LineGeometryModel3D x:Name="SculptBrushVisual"
+                                        Visibility="Collapsed"
+                                        Thickness="1.6"
+                                        Color="#FF3DDC78"
+                                        IsHitTestVisible="False"
+                                        RenderOrder="2600" />
             </hx:Viewport3DX>
 
 
@@ -774,7 +946,7 @@
                             VerticalAlignment="Top"
                             Margin="0,0,10,0"
                             Style="{StaticResource TopRightOverlayFadeStyle}"
-                            Width="330">
+                            Width="{Binding LayerPanelWidth}">
 
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                   MaxHeight="450">
@@ -790,17 +962,52 @@
                             </Grid.ColumnDefinitions>
 
                             <CheckBox Grid.Column="0"
-                                      Style="{StaticResource RoundCheckBox}"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding RestorationGroupVisible, Mode=TwoWay}" />
+                                      IsChecked="{Binding RestorationGroupVisible, Mode=TwoWay}">
+                                <CheckBox.Style>
+                                    <Style TargetType="CheckBox"
+                                           BasedOn="{StaticResource RoundCheckBox}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RestorationGroupUsesFailedStyle}"
+                                                         Value="True">
+                                                <Setter Property="Template"
+                                                        Value="{StaticResource CategoryGroupFailedCheckBoxTemplate}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </CheckBox.Style>
+                            </CheckBox>
 
                             <Border Grid.Column="2"
                                     VerticalAlignment="Center"
                                     CornerRadius="2"
                                     Padding="4,1,4,1"
-                                    Background="#FF2A323D"
                                     Cursor="Hand"
                                     ToolTip="Click to show or hide individual restorations">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background"
+                                                Value="#FF2A323D" />
+                                        <Setter Property="BorderBrush"
+                                                Value="Transparent" />
+                                        <Setter Property="BorderThickness"
+                                                Value="1" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RestorationGroupUsesFailedStyle}"
+                                                         Value="True">
+                                                <Setter Property="Background"
+                                                        Value="#FF800000" />
+                                                <Setter Property="BorderBrush"
+                                                        Value="#FFA33A3A" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HideLayerLabels}"
+                                                         Value="True">
+                                                <Setter Property="Visibility"
+                                                        Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Border.InputBindings>
                                     <MouseBinding MouseAction="LeftClick"
                                                   Command="{Binding ToggleRestorationGroupExpandedCommand}" />
@@ -859,9 +1066,30 @@
 
                             <Slider Grid.Column="4"
                                     Value="{Binding RestorationGroupOpacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{StaticResource TopRightOpacitySlider}"
                                     Tag="/DcmViewer/Images/restoration.png"
-                                    PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
+                                    PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown">
+                                <Slider.Style>
+                                    <Style TargetType="Slider"
+                                           BasedOn="{StaticResource TopRightOpacitySlider}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HideLayerLabels}"
+                                                         Value="True">
+                                                <Setter Property="Width"
+                                                        Value="110" />
+                                                <Setter Property="HorizontalAlignment"
+                                                        Value="Right" />
+                                                <Setter Property="Margin"
+                                                        Value="-14,0,0,0" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RestorationGroupUsesFailedStyle}"
+                                                         Value="True">
+                                                <Setter Property="Template"
+                                                        Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Slider.Style>
+                            </Slider>
                         </Grid>
 
                         <ItemsControl ItemsSource="{Binding RestorationGroupFiles}"
@@ -879,17 +1107,52 @@
                             </Grid.ColumnDefinitions>
 
                             <CheckBox Grid.Column="0"
-                                      Style="{StaticResource RoundCheckBox}"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding AbutmentGroupVisible, Mode=TwoWay}" />
+                                      IsChecked="{Binding AbutmentGroupVisible, Mode=TwoWay}">
+                                <CheckBox.Style>
+                                    <Style TargetType="CheckBox"
+                                           BasedOn="{StaticResource RoundCheckBox}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AbutmentGroupUsesFailedStyle}"
+                                                         Value="True">
+                                                <Setter Property="Template"
+                                                        Value="{StaticResource CategoryGroupFailedCheckBoxTemplate}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </CheckBox.Style>
+                            </CheckBox>
 
                             <Border Grid.Column="2"
                                     VerticalAlignment="Center"
                                     CornerRadius="2"
                                     Padding="4,1,4,1"
-                                    Background="#FF2A323D"
                                     Cursor="Hand"
                                     ToolTip="Click to show or hide individual abutments">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background"
+                                                Value="#FF2A323D" />
+                                        <Setter Property="BorderBrush"
+                                                Value="Transparent" />
+                                        <Setter Property="BorderThickness"
+                                                Value="1" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AbutmentGroupUsesFailedStyle}"
+                                                         Value="True">
+                                                <Setter Property="Background"
+                                                        Value="#FF800000" />
+                                                <Setter Property="BorderBrush"
+                                                        Value="#FFA33A3A" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HideLayerLabels}"
+                                                         Value="True">
+                                                <Setter Property="Visibility"
+                                                        Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Border.InputBindings>
                                     <MouseBinding MouseAction="LeftClick"
                                                   Command="{Binding ToggleAbutmentGroupExpandedCommand}" />
@@ -948,9 +1211,30 @@
 
                             <Slider Grid.Column="4"
                                     Value="{Binding AbutmentGroupOpacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{StaticResource TopRightOpacitySlider}"
                                     Tag="/DcmViewer/Images/abutment.png"
-                                    PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
+                                    PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown">
+                                <Slider.Style>
+                                    <Style TargetType="Slider"
+                                           BasedOn="{StaticResource TopRightOpacitySlider}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HideLayerLabels}"
+                                                         Value="True">
+                                                <Setter Property="Width"
+                                                        Value="110" />
+                                                <Setter Property="HorizontalAlignment"
+                                                        Value="Right" />
+                                                <Setter Property="Margin"
+                                                        Value="-14,0,0,0" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding AbutmentGroupUsesFailedStyle}"
+                                                         Value="True">
+                                                <Setter Property="Template"
+                                                        Value="{StaticResource TopRightFailedOpacitySliderTemplate}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Slider.Style>
+                            </Slider>
                         </Grid>
 
                         <ItemsControl ItemsSource="{Binding AbutmentGroupFiles}"
@@ -973,6 +1257,14 @@
                                       ItemTemplate="{StaticResource LoadedFileLayerRowTemplate}"
                                       Visibility="{Binding HasLowerScanSection, Converter={StaticResource BoolToVis}}" />
 
+                        <TextBlock Text="MISC"
+                                   Style="{StaticResource ScanArchSectionHeaderText}"
+                                   Visibility="{Binding HasMiscScanSection, Converter={StaticResource BoolToVis}}" />
+
+                        <ItemsControl ItemsSource="{Binding MiscScanFiles}"
+                                      ItemTemplate="{StaticResource LoadedFileLayerRowTemplate}"
+                                      Visibility="{Binding HasMiscScanSection, Converter={StaticResource BoolToVis}}" />
+
                         <ItemsControl ItemsSource="{Binding OtherLoadedFiles}"
                                       ItemTemplate="{StaticResource LoadedFileLayerRowTemplate}" />
                         </StackPanel>
@@ -991,7 +1283,7 @@
                                 Stretch="Uniform" />
                     </Button>
                     <Button Style="{StaticResource IconButton}"
-                            ToolTip="Export visible scans as one merged STL"
+                            ToolTip="Merge visible scans into one STL (solid combine by default)"
                             Command="{Binding ExportVisibleMeshesCommand}">
                            <Image Source="/DcmViewer/Images/merge.png"
                                 Width="24"
@@ -1041,10 +1333,30 @@
                                Height="24"
                                Stretch="Uniform" />
                     </Button>
+                    <Button x:Name="HideLayerLabelsButton"
+                            Style="{StaticResource IconButton}"
+                            Margin="0,15,0,6"
+                            ToolTip="Hide layer file labels"
+                            Command="{Binding ToggleHideLayerLabelsCommand}">
+                        <Image Source="/DcmViewer/Images/labels.png"
+                               Width="22"
+                               Height="22"
+                               Stretch="Uniform" />
+                    </Button>
+                    <Button x:Name="SculptToggleButton"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Sculpt mode — add, remove, smooth, or move surface"
+                            Margin="0,0,0,6"
+                            Command="{Binding ToggleSculptModeCommand}">
+                        <Image Source="/DcmViewer/Images/sculp_tool.png"
+                               Width="22"
+                               Height="22"
+                               Stretch="Uniform" />
+                    </Button>
                     <Button x:Name="SectionToggleButton"
                             Style="{StaticResource IconButton}"
                             ToolTip="Section mode"
-                            Margin="0,15,0,6"
+                            Margin="0,0,0,6"
                             Command="{Binding ToggleSectionModeCommand}">
                         <Image Source="/DcmViewer/Images/sectionmode.png"
                                Width="24"
@@ -1139,7 +1451,8 @@
                         </Grid>
                     </Border>
 
-                    <Grid Grid.Row="1"
+                    <Grid x:Name="SectionProfileGraphHost"
+                          Grid.Row="1"
                           Margin="8"
                           ClipToBounds="True">
                         <Canvas x:Name="SectionProfileGridCanvas"
@@ -1182,18 +1495,206 @@
 
 
 
+            <!-- Sculpt tool panel (top-right; replaces Order Info "Last touched by" while active) -->
+            <Border x:Name="SculptToolPanel"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,8,10,0"
+                    Width="190"
+                    Padding="10,8"
+                    Background="#A8E5E9ED"
+                    BorderBrush="#55A8B0B8"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Panel.ZIndex="26"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="Sculpt brush"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#FF1D2A38"
+                               Margin="0,0,0,6" />
+                    <UniformGrid Columns="4"
+                                 Margin="0,0,0,8">
+                        <Button Command="{Binding SelectSculptToolCommand}"
+                                CommandParameter="Add"
+                                ToolTip="Add material"
+                                Margin="0,0,4,0">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource SculptToolSelectButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SculptToolName}"
+                                                     Value="Add">
+                                            <Setter Property="Background"
+                                                    Value="#FFC5D8EE" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="#FF2A6AA3" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <Image Source="/DcmViewer/Images/add.png"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform" />
+                        </Button>
+                        <Button Command="{Binding SelectSculptToolCommand}"
+                                CommandParameter="Remove"
+                                ToolTip="Remove material"
+                                Margin="0,0,4,0">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource SculptToolSelectButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SculptToolName}"
+                                                     Value="Remove">
+                                            <Setter Property="Background"
+                                                    Value="#FFC5D8EE" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="#FF2A6AA3" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <Image Source="/DcmViewer/Images/remove.png"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform" />
+                        </Button>
+                        <Button Command="{Binding SelectSculptToolCommand}"
+                                CommandParameter="Smooth"
+                                ToolTip="Smooth surface"
+                                Margin="0,0,4,0">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource SculptToolSelectButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SculptToolName}"
+                                                     Value="Smooth">
+                                            <Setter Property="Background"
+                                                    Value="#FFC5D8EE" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="#FF2A6AA3" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <Image Source="/DcmViewer/Images/smooth.png"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform" />
+                        </Button>
+                        <Button Command="{Binding SelectSculptToolCommand}"
+                                CommandParameter="Grab"
+                                ToolTip="Grab / move"
+                                Margin="0">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource SculptToolSelectButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SculptToolName}"
+                                                     Value="Grab">
+                                            <Setter Property="Background"
+                                                    Value="#FFC5D8EE" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="#FF2A6AA3" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <Image Source="/DcmViewer/Images/grab_move.png"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform" />
+                        </Button>
+                    </UniformGrid>
+                    <Slider Style="{StaticResource SculptKnobSlider}"
+                            Tag="/DcmViewer/Images/radius_icon.png"
+                            Minimum="0.20"
+                            Maximum="3"
+                            Value="{Binding SculptBrushRadiusMm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            TickFrequency="0.05"
+                            IsSnapToTickEnabled="False"
+                            Margin="0,0,0,2" />
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="10"
+                               Foreground="#FF4A5C6C"
+                               Margin="0,0,0,8"
+                               Text="{Binding SculptBrushRadiusMm, StringFormat={}{0:0.00} mm}" />
+                    <Slider Style="{StaticResource SculptKnobSlider}"
+                            Tag="/DcmViewer/Images/amplitude_icon.png"
+                            Minimum="0.05"
+                            Maximum="1"
+                            Value="{Binding SculptBrushStrength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            TickFrequency="0.05"
+                            IsSnapToTickEnabled="False"
+                            Margin="0,0,0,2" />
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="10"
+                               Foreground="#FF4A5C6C"
+                               Margin="0,0,0,10"
+                               Text="{Binding SculptBrushStrength, StringFormat={}{0:0.00}}" />
+                    <UniformGrid Columns="4"
+                                 Margin="0,0,0,0">
+                        <Button Style="{StaticResource SculptPanelIconButton}"
+                                Command="{Binding UndoSculptCommand}"
+                                IsEnabled="{Binding CanUndoSculpt}"
+                                ToolTip="Undo last stroke (Ctrl+Z)"
+                                Margin="0,0,4,0">
+                            <Image Source="/DcmViewer/Images/undo.png"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform" />
+                        </Button>
+                        <Button Style="{StaticResource SculptPanelIconButton}"
+                                Command="{Binding UndoAllSculptCommand}"
+                                IsEnabled="{Binding CanUndoAllSculpt}"
+                                ToolTip="Undo all sculpt changes"
+                                Margin="0,0,4,0">
+                            <Image Source="/DcmViewer/Images/undo_all.png"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform" />
+                        </Button>
+                        <Button Style="{StaticResource SculptPanelIconButton}"
+                                Command="{Binding RedoSculptCommand}"
+                                IsEnabled="{Binding CanRedoSculpt}"
+                                ToolTip="Redo (Ctrl+Y)"
+                                Margin="0,0,4,0">
+                            <Image Source="/DcmViewer/Images/redo.png"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform" />
+                        </Button>
+                        <Button Style="{StaticResource SculptPanelIconButton}"
+                                Command="{Binding SaveSculptedDcmCommand}"
+                                IsEnabled="{Binding CanSaveSculptedDcm}"
+                                ToolTip="Save sculpted geometry to DCM (.dcm.bak backup)"
+                                Margin="0">
+                            <Image Source="/DcmViewer/Images/save.png"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform" />
+                        </Button>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
+
             <!-- Status text bottom-left (hidden while center loading overlay is shown) -->
-            <TextBlock x:Name="BottomStatusText"
-                       Text="{Binding StatusText}"
-                       HorizontalAlignment="Left"
-                       VerticalAlignment="Bottom"
-                       Margin="10,0,0,8"
-                       FontSize="11"
-                       Foreground="#BB364555"
-                       IsHitTestVisible="False"
-                       Panel.ZIndex="5">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
+            <Border x:Name="BottomStatusBorder"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="50,0,0,8"
+                    Padding="0,6"
+                    Background="#00F4F7FB"
+                    BorderBrush="#99B8C6D5"
+                    BorderThickness="0"
+                    CornerRadius="4"
+                    IsHitTestVisible="False"
+                    Panel.ZIndex="5">
+                <Border.Style>
+                    <Style TargetType="Border">
                         <Setter Property="Visibility" Value="Visible" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsBusy}"
@@ -1202,8 +1703,86 @@
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </TextBlock.Style>
-            </TextBlock>
+                </Border.Style>
+                <TextBlock x:Name="BottomStatusText"
+                           Text="{Binding StatusText}"
+                           FontSize="11"
+                           Foreground="#FF23313E"
+                           TextWrapping="Wrap"
+                           MaxWidth="360" />
+            </Border>
+
+            <Border x:Name="EncodeMeasureThumbnailsPanel"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,10,92"
+                    Padding="0"
+                    Panel.ZIndex="26"
+                    Visibility="Collapsed"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    IsHitTestVisible="False">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom">
+                    <Border Width="120"
+                            Margin="0,0,6,0"
+                            Padding="2"
+                            Background="#F0F8FCFD"
+                            BorderBrush="#FFB8C6D5"
+                            BorderThickness="1"
+                            CornerRadius="2">
+                        <StackPanel>
+                            <Image x:Name="EncodeCutImage0"
+                                   Height="88"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                            <TextBlock x:Name="EncodeCutLabel0"
+                                       Margin="0,3,0,2"
+                                       HorizontalAlignment="Center"
+                                       FontSize="10"
+                                       Foreground="#FF23313E" />
+                        </StackPanel>
+                    </Border>
+                    <Border Width="120"
+                            Margin="0,0,6,0"
+                            Padding="2"
+                            Background="#F0F8FCFD"
+                            BorderBrush="#FFB8C6D5"
+                            BorderThickness="1"
+                            CornerRadius="2">
+                        <StackPanel>
+                            <Image x:Name="EncodeCutImage1"
+                                   Height="88"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                            <TextBlock x:Name="EncodeCutLabel1"
+                                       Margin="0,3,0,2"
+                                       HorizontalAlignment="Center"
+                                       FontSize="10"
+                                       Foreground="#FF23313E" />
+                        </StackPanel>
+                    </Border>
+                    <Border Width="120"
+                            Padding="2"
+                            Background="#F0F8FCFD"
+                            BorderBrush="#FFB8C6D5"
+                            BorderThickness="1"
+                            CornerRadius="2">
+                        <StackPanel>
+                            <Image x:Name="EncodeCutImage2"
+                                   Height="88"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                            <TextBlock x:Name="EncodeCutLabel2"
+                                       Margin="0,3,0,2"
+                                       HorizontalAlignment="Center"
+                                       FontSize="10"
+                                       Foreground="#FF23313E" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
 
             <Border x:Name="ZoomBadgeBorder"
                     HorizontalAlignment="Left"
@@ -1222,36 +1801,29 @@
             </Border>
 
             <Grid x:Name="EmbeddedBusyOverlay"
-                  Panel.ZIndex="200"
-                  Background="#33E5E9ED"
+                  Panel.ZIndex="500"
                   Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
                   IsHitTestVisible="True">
-                <StackPanel HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                    <usercontrols:LoadingSpinner Width="80"
-                                                 Height="80" />
-                    <TextBlock Text="{Binding StatusText}"
-                               Margin="0,14,0,0"
-                               HorizontalAlignment="Center"
-                               TextAlignment="Center"
-                               Foreground="#FF364555"
-                               FontSize="14"
-                               FontWeight="SemiBold" />
-                    <ProgressBar Width="200"
-                                 Height="8"
-                                 Margin="0,12,0,0"
-                                 Minimum="0"
-                                 Maximum="1"
-                                 Value="{Binding LoadProgress, Mode=OneWay}"
-                                 IsIndeterminate="False"
-                                 Foreground="#FF46627A"
-                                 Background="#FFD0D8E0" />
-                    <TextBlock Text="{Binding LoadProgressPercentText}"
-                               Margin="0,6,0,0"
-                               HorizontalAlignment="Center"
-                               Foreground="#FF516171"
-                               FontSize="13" />
-                </StackPanel>
+                <Grid.Background>
+                    <RadialGradientBrush GradientOrigin="0.5,0.5"
+                                         Center="0.5,0.5"
+                                         RadiusX="0.85"
+                                         RadiusY="0.85">
+                        <GradientStop Color="#AA050810"
+                                      Offset="0" />
+                        <GradientStop Color="#CC020408"
+                                      Offset="0.55" />
+                        <GradientStop Color="#EE010204"
+                                      Offset="1" />
+                    </RadialGradientBrush>
+                </Grid.Background>
+
+                <dcmcontrols:DcmBusyOverlayPanel HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   StatusText="{Binding StatusText}"
+                                                   LoadProgress="{Binding LoadProgress, Mode=OneWay}"
+                                                   ProgressPercentText="{Binding LoadProgressPercentText}"
+                                                   CancelClick="BusyOverlayCancelButton_OnClick" />
             </Grid>
         </Grid>
     </Grid>

@@ -25,6 +25,7 @@ public partial class DcmViewerCanvasComponent : UserControl
     private MainWindow? _embeddedWindow;
     private UIElement? _hostedContent;
     private List<DCMFileItem>? _pendingCaseFiles;
+    private string? _pendingOrderFolderPath;
 
     private static ImageSource? TryCreateDefaultLogoSource()
     {
@@ -297,7 +298,24 @@ public partial class DcmViewerCanvasComponent : UserControl
     /// </summary>
     public BillboardTextModel3D MeasurementTextVisual => MeasurementText;
 
-    public Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files)
+    public Task EnsureEmbeddedHostReadyAsync()
+    {
+        if (!UseFullAppShell)
+        {
+            return Task.CompletedTask;
+        }
+
+        _pendingCaseFiles = null;
+        _pendingOrderFolderPath = null;
+        return EnsureEmbeddedWindowLoadedAsync();
+    }
+
+    public void CancelBusyWork()
+    {
+        _embeddedWindow?.ViewModel?.CancelBusyWork();
+    }
+
+    public Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files, string? orderFolderPath = null)
     {
         var fileList = files?.ToList() ?? [];
         if (!UseFullAppShell)
@@ -306,6 +324,7 @@ public partial class DcmViewerCanvasComponent : UserControl
         }
 
         _pendingCaseFiles = fileList;
+        _pendingOrderFolderPath = orderFolderPath;
         return EnsureEmbeddedWindowLoadedAsync();
     }
 
@@ -330,6 +349,9 @@ public partial class DcmViewerCanvasComponent : UserControl
             _embeddedWindow?.RestoreEmbeddedInteraction();
         }));
     }
+
+    public bool TryUndoSculptFromKeyboard() =>
+        _embeddedWindow?.TryUndoSculptFromKeyboard() == true;
 
     public void UnloadViewer()
     {
@@ -363,7 +385,7 @@ public partial class DcmViewerCanvasComponent : UserControl
         _embeddedWindow = null;
     }
 
-    public async Task ReloadCaseFilesAsync(IEnumerable<DCMFileItem> files)
+    public async Task ReloadCaseFilesAsync(IEnumerable<DCMFileItem> files, string? orderFolderPath = null)
     {
         if (!UseFullAppShell)
         {
@@ -371,6 +393,7 @@ public partial class DcmViewerCanvasComponent : UserControl
         }
 
         var fileList = files?.ToList() ?? [];
+        _pendingOrderFolderPath = orderFolderPath;
         await EnsureEmbeddedWindowLoadedAsync();
 
         if (_embeddedWindow is null)
@@ -384,7 +407,7 @@ public partial class DcmViewerCanvasComponent : UserControl
             return;
         }
 
-        await _embeddedWindow.LoadCaseFilesAsync(fileList);
+        await _embeddedWindow.LoadCaseFilesAsync(fileList, orderFolderPath);
     }
 
     public async Task AddCaseFileAsync(DCMFileItem file)
@@ -410,6 +433,37 @@ public partial class DcmViewerCanvasComponent : UserControl
 
         await EnsureEmbeddedWindowLoadedAsync();
         _embeddedWindow?.RemoveCaseFile(filePath);
+    }
+
+    /// <summary>
+    /// Starts encode healing-cap identify: user picks 3 points on the cap, then auto-align, measure, AI, and callback.
+    /// </summary>
+    public async Task StartEncodeIdentifyAsync(Action<EncodeCapIdentifyResult?> onCompleted)
+    {
+        await EnsureEmbeddedWindowLoadedAsync();
+        if (_embeddedWindow is null)
+        {
+            onCompleted?.Invoke(new EncodeCapIdentifyResult
+            {
+                Success = false,
+                ErrorMessage = "3D viewer is not ready."
+            });
+            return;
+        }
+
+        void Handler(EncodeCapIdentifyResult? result)
+        {
+            _embeddedWindow.EncodeCapIdentifyCompleted -= Handler;
+            Dispatcher.BeginInvoke(() => onCompleted?.Invoke(result));
+        }
+
+        _embeddedWindow.EncodeCapIdentifyCompleted += Handler;
+        _embeddedWindow.BeginEncodeIdentifyPicking();
+    }
+
+    public void CancelEncodeIdentify()
+    {
+        _embeddedWindow?.CancelEncodeIdentifyPicking();
     }
 
     private void OnViewerHostDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -498,7 +552,7 @@ public partial class DcmViewerCanvasComponent : UserControl
             {
                 var pendingCaseFiles = _pendingCaseFiles;
                 _pendingCaseFiles = null;
-                await _embeddedWindow.LoadCaseFilesAsync(pendingCaseFiles);
+                await _embeddedWindow.LoadCaseFilesAsync(pendingCaseFiles, _pendingOrderFolderPath);
             }
 
             return;
@@ -536,8 +590,10 @@ public partial class DcmViewerCanvasComponent : UserControl
         if (_pendingCaseFiles is { Count: > 0 })
         {
             var pendingCaseFiles = _pendingCaseFiles;
+            var pendingOrderFolder = _pendingOrderFolderPath;
             _pendingCaseFiles = null;
-            await _embeddedWindow.LoadCaseFilesAsync(pendingCaseFiles);
+            _pendingOrderFolderPath = null;
+            await _embeddedWindow.LoadCaseFilesAsync(pendingCaseFiles, pendingOrderFolder);
         }
     }
 

@@ -3,9 +3,12 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
@@ -14,11 +17,16 @@ using DCMViewer.Services;
 using HelixToolkit.SharpDX;
 using HelixToolkit.Wpf.SharpDX;
 using Microsoft.Win32;
+using static StatsClient.MVVM.Core.LocalSettingsDB;
 
 namespace DCMViewer.ViewModels;
 
-public sealed class MainViewModel : INotifyPropertyChanged
+public sealed partial class MainViewModel : INotifyPropertyChanged
 {
+    private const string HideLayerLabelsSettingKey = "DcmViewerHideLayerLabels";
+    private const double LayerPanelWidthWithLabels = 330;
+    private const double LayerPanelWidthWithoutLabels = 144;
+
     private const double SatinSpecularIntensity = 1.0;
     private const double MatteSpecularIntensity = 0.35;
 
@@ -43,11 +51,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly RelayCommand _toggleModelScanMaterialCommand;
     private readonly RelayCommand _toggleRestorationGroupExpandedCommand;
     private readonly RelayCommand _toggleAbutmentGroupExpandedCommand;
+    private readonly RelayCommand _toggleHideLayerLabelsCommand;
     private readonly ObservableCollection<LoadedMeshItemViewModel> _loadedFiles = new();
     private readonly ObservableCollection<LoadedMeshItemViewModel> _restorationGroupFiles = new();
     private readonly ObservableCollection<LoadedMeshItemViewModel> _abutmentGroupFiles = new();
     private readonly ObservableCollection<LoadedMeshItemViewModel> _upperScanFiles = new();
     private readonly ObservableCollection<LoadedMeshItemViewModel> _lowerScanFiles = new();
+    private readonly ObservableCollection<LoadedMeshItemViewModel> _miscScanFiles = new();
     private readonly ObservableCollection<LoadedMeshItemViewModel> _otherLoadedFiles = new();
     private readonly AmbientLight3D _ambientLight = new();
     private readonly DirectionalLight3D _keyLight = new();
@@ -60,8 +70,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private Point3D _cameraPosition = new(0, 0, 500);
     private Vector3D _cameraLookDirection = new(0, 0, -500);
     private Vector3D _cameraUpDirection = new(0, 1, 0);
-    private string _statusText = "Select a .dcm or .stl file to load a mesh.";
+    private const int StatusResetDelaySeconds = 15;
+
+    private string _statusText = "";
+    private DispatcherTimer? _statusResetTimer;
     private bool _isBusy;
+    private CancellationTokenSource? _busyCancellationSource;
     private double _loadProgress;
     private double _lightingStrength = 1.0;
     private bool _isMatteFinish;
@@ -81,9 +95,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _useStoneForModelScans;
     private int _bulkVisualUpdateNesting;
     private bool _isVisualRefreshPending;
+    private bool _hideLayerLabels;
 
     public MainViewModel(DcmParser parser)
     {
+        _ = bool.TryParse(ReadLocalSetting(HideLayerLabelsSettingKey), out _hideLayerLabels);
+
         _parser = parser;
         _openFileCommand = new RelayCommand(OpenFile, () => !IsBusy);
         _exportVisibleMeshesCommand = new RelayCommand(ExportVisibleMeshes, CanExportVisibleMeshes);
@@ -94,6 +111,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _toggleModelScanMaterialCommand = new RelayCommand(ToggleModelScanMaterial);
         _toggleRestorationGroupExpandedCommand = new RelayCommand(ToggleRestorationGroupExpanded);
         _toggleAbutmentGroupExpandedCommand = new RelayCommand(ToggleAbutmentGroupExpanded);
+        _toggleHideLayerLabelsCommand = new RelayCommand(ToggleHideLayerLabels);
+        InitSculptCommands();
         _loadedFiles.CollectionChanged += LoadedFilesOnCollectionChanged;
 
         EffectsManager = new DefaultEffectsManager();
@@ -116,6 +135,42 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand OpenFileCommand => _openFileCommand;
+
+    public ICommand ToggleHideLayerLabelsCommand => _toggleHideLayerLabelsCommand;
+
+    /// <summary>When true, layer list file/group labels are hidden and sliders use a fixed width.</summary>
+    public bool HideLayerLabels
+    {
+        get => _hideLayerLabels;
+        set
+        {
+            if (_hideLayerLabels == value)
+            {
+                return;
+            }
+
+            _hideLayerLabels = value;
+            WriteLocalSetting(HideLayerLabelsSettingKey, value.ToString());
+            if (value)
+            {
+                IsRestorationGroupExpanded = false;
+                IsAbutmentGroupExpanded = false;
+            }
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(LayerPanelWidth));
+            OnPropertyChanged(nameof(LayerRowLabelColumnWidth));
+            OnPropertyChanged(nameof(LayerRowSliderColumnWidth));
+        }
+    }
+
+    public double LayerPanelWidth => HideLayerLabels ? LayerPanelWidthWithoutLabels : LayerPanelWidthWithLabels;
+
+    public GridLength LayerRowLabelColumnWidth =>
+        HideLayerLabels ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
+
+    public GridLength LayerRowSliderColumnWidth =>
+        HideLayerLabels ? new GridLength(1, GridUnitType.Star) : new GridLength(110);
 
     /// <summary>
     /// Per-filename texture overrides.  Key = filename (e.g. "teeth.dcm"), Value = texture name
@@ -165,9 +220,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         set => _suppressAutomaticCameraFraming = value;
     }
 
-    public bool HasRestorationGroup => _loadedFiles.Any(item => !item.IsLoadFailed && item.Category == MeshCategory.Restoration);
+    public bool HasRestorationGroup => _loadedFiles.Any(item => item.Category == MeshCategory.Restoration);
 
-    public bool HasAbutmentGroup => _loadedFiles.Any(item => !item.IsLoadFailed && item.Category == MeshCategory.Abutment);
+    public bool HasAbutmentGroup => _loadedFiles.Any(item => item.Category == MeshCategory.Abutment);
 
     public bool HasRestorationSection => _loadedFiles.Any(item => item.Category == MeshCategory.Restoration);
 
@@ -181,9 +236,17 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public bool ShowAbutmentGroupExpander => AbutmentGroupCount > 1;
 
-    public int RestorationGroupCount => _loadedFiles.Count(item => !item.IsLoadFailed && item.Category == MeshCategory.Restoration);
+    public int RestorationGroupCount => _loadedFiles.Count(item => item.Category == MeshCategory.Restoration);
 
-    public int AbutmentGroupCount => _loadedFiles.Count(item => !item.IsLoadFailed && item.Category == MeshCategory.Abutment);
+    public int AbutmentGroupCount => _loadedFiles.Count(item => item.Category == MeshCategory.Abutment);
+
+    /// <summary>True when every file in the restoration group uses maroon failed/encrypted styling.</summary>
+    public bool RestorationGroupUsesFailedStyle =>
+        _restorationGroupFiles.Count > 0 && _restorationGroupFiles.All(item => item.UsesFailedLayerStyle);
+
+    /// <summary>True when every file in the abutment group uses maroon failed/encrypted styling.</summary>
+    public bool AbutmentGroupUsesFailedStyle =>
+        _abutmentGroupFiles.Count > 0 && _abutmentGroupFiles.All(item => item.UsesFailedLayerStyle);
 
     public ObservableCollection<LoadedMeshItemViewModel> RestorationGroupFiles => _restorationGroupFiles;
 
@@ -193,11 +256,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public ObservableCollection<LoadedMeshItemViewModel> LowerScanFiles => _lowerScanFiles;
 
+    public ObservableCollection<LoadedMeshItemViewModel> MiscScanFiles => _miscScanFiles;
+
     public ObservableCollection<LoadedMeshItemViewModel> OtherLoadedFiles => _otherLoadedFiles;
 
     public bool HasUpperScanSection => _upperScanFiles.Count > 0;
 
     public bool HasLowerScanSection => _lowerScanFiles.Count > 0;
+
+    public bool HasMiscScanSection => _miscScanFiles.Count > 0;
 
     public bool RestorationGroupVisible
     {
@@ -295,6 +362,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand ClearSectionMeasurementCommand => _clearSectionMeasurementCommand;
 
     public ICommand ToggleModelScanMaterialCommand => _toggleModelScanMaterialCommand;
+
+    public Func<IReadOnlyList<FuseInnerSidePickItem>, Task<IReadOnlyList<FuseInnerSideHint>?>>? FuseInnerSidePickHandler { get; set; }
 
     public ICommand ToggleRestorationGroupExpandedCommand => _toggleRestorationGroupExpandedCommand;
 
@@ -504,6 +573,67 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public string LoadProgressPercentText => $"{LoadProgress:P0}";
 
+    public CancellationToken BusyCancellationToken =>
+        _busyCancellationSource?.Token ?? CancellationToken.None;
+
+    public bool IsBusyCancellationRequested =>
+        _busyCancellationSource?.IsCancellationRequested == true;
+
+    public CancellationToken BeginCancellableBusy(string statusText, bool resetProgress = true)
+    {
+        EndBusy(suppressPropertyChange: false);
+        _busyCancellationSource = new CancellationTokenSource();
+        if (resetProgress)
+        {
+            LoadProgress = 0;
+        }
+
+        IsBusy = true;
+        StatusText = statusText;
+        return _busyCancellationSource.Token;
+    }
+
+    public void CancelBusyWork()
+    {
+        if (_busyCancellationSource is null && !IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            _busyCancellationSource?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        StatusText = "Canceled.";
+        EndBusy();
+    }
+
+    private void EndBusy(bool suppressPropertyChange = false)
+    {
+        if (_busyCancellationSource is not null)
+        {
+            _busyCancellationSource.Dispose();
+            _busyCancellationSource = null;
+        }
+
+        if (!IsBusy)
+        {
+            return;
+        }
+
+        if (suppressPropertyChange)
+        {
+            _isBusy = false;
+            return;
+        }
+
+        IsBusy = false;
+    }
+
     public Task LoadFileAsync(string filePath)
         => LoadFilesAsync(new[] { filePath }, clearExisting: false);
 
@@ -526,12 +656,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _backFillLight.Direction = NormalizeDirection(-look);
     }
 
-    public async Task LoadFilesAsync(IEnumerable<string> filePaths, bool clearExisting)
+    public async Task LoadFilesAsync(IEnumerable<string> filePaths, bool clearExisting, CancellationToken cancellationToken = default)
     {
         var normalizedPaths = filePaths
             .Where(path => !string.IsNullOrWhiteSpace(path))
             .Select(Path.GetFullPath)
             .Distinct(StringComparer.OrdinalIgnoreCase)
+            // Load scans first so we can determine scan transform direction before CAD.
+            .OrderByDescending(p => p.Contains(@"\Scans\", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         if (normalizedPaths.Count == 0)
@@ -540,10 +672,33 @@ public sealed class MainViewModel : INotifyPropertyChanged
             return;
         }
 
+        var managesBusyScope = false;
         try
         {
-            IsBusy = true;
-            LoadProgress = 0;
+            if (IsBusy)
+            {
+                cancellationToken = cancellationToken == default
+                    ? BusyCancellationToken
+                    : cancellationToken;
+                managesBusyScope = true;
+                StatusText = "Loading scans..";
+                LoadProgress = 0;
+            }
+            else if (cancellationToken == default)
+            {
+                cancellationToken = BeginCancellableBusy("Loading scans..");
+                managesBusyScope = true;
+            }
+            else
+            {
+                _busyCancellationSource?.Dispose();
+                _busyCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                IsBusy = true;
+                LoadProgress = 0;
+                cancellationToken = _busyCancellationSource.Token;
+                managesBusyScope = true;
+            }
+
             StatusText = "Loading scans..";
 
             if (clearExisting)
@@ -563,6 +718,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
             foreach (var filePath in normalizedPaths)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 processedNow++;
                 if (!File.Exists(filePath))
                 {
@@ -577,12 +733,21 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 }
 
                 var fallbackCategory = ResolveMeshCategory(filePath, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
-                var applySceneTransform = ShouldApplySceneTransform(fallbackCategory, filePath);
+                var sceneTransformKind = ResolveSceneTransformKind(filePath, fallbackCategory);
 
                 try
                 {
                     var decodeMode = ResolveCoordinateDecodingMode(filePath);
-                    var parsed = await Task.Run(() => _parser.ParseFile(filePath, decodeMode, applySceneTransform: applySceneTransform));
+
+                    var parsed = await Task.Run(
+                        () => _parser.ParseFile(
+                            filePath,
+                            decodeMode,
+                            applySceneTransform: sceneTransformKind != SceneTransformKind.None,
+                            sceneTransformKind: sceneTransformKind),
+                        cancellationToken);
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     var category = ResolveMeshCategory(filePath, parsed.Properties);
                     var (palette, textureName) = ResolveMaterialPalette(filePath, parsed.Properties, category);
@@ -606,7 +771,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                         parsed.Properties.ContainsKey("PackageLockList"),
                         category,
                         scanArch,
-                        appliedTextureName: textureName);
+                        appliedTextureName: textureName,
+                        writeProfile: parsed.WriteProfile);
 
                     if (loadedFile.Category == MeshCategory.Restoration)
                     {
@@ -624,6 +790,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     loadedFile.PropertyChanged += LoadedFileOnPropertyChanged;
                     _loadedFiles.Add(loadedFile);
                     loadedNow++;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -644,6 +814,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 LoadProgress = (double)processedNow / totalFiles;
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             LoadProgress = 1;
             RebuildSceneItems();
             FrameCameraToBounds(GetVisibleBounds());
@@ -660,13 +832,21 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 StatusText = $"Loaded {loadedNow:N0} file(s) | Failed: {failedNow:N0} | Visible files: {_loadedFiles.Count(item => item.IsVisible):N0} | Vertices: {visibleVertexCount:N0} | Triangles: {visibleTriangleCount:N0}";
             }
         }
+        catch (OperationCanceledException)
+        {
+            StatusText = "Canceled.";
+            throw;
+        }
         catch (Exception ex)
         {
             StatusText = $"Failed to load file: {ex.Message}";
         }
         finally
         {
-            IsBusy = false;
+            if (managesBusyScope)
+            {
+                EndBusy();
+            }
         }
     }
 
@@ -727,6 +907,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _abutmentGroupFiles.Clear();
         _upperScanFiles.Clear();
         _lowerScanFiles.Clear();
+        _miscScanFiles.Clear();
         _otherLoadedFiles.Clear();
 
         foreach (var item in _loadedFiles)
@@ -749,6 +930,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
                         case ScanLayerArch.Lower:
                             _lowerScanFiles.Add(item);
                             break;
+                        case ScanLayerArch.Misc:
+                            _miscScanFiles.Add(item);
+                            break;
                         default:
                             _otherLoadedFiles.Add(item);
                             break;
@@ -763,6 +947,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(nameof(HasUpperScanSection));
         OnPropertyChanged(nameof(HasLowerScanSection));
+        OnPropertyChanged(nameof(HasMiscScanSection));
     }
 
     private void NotifyCategoryGroupPropertiesChanged()
@@ -777,6 +962,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShowAbutmentGroupExpander));
         OnPropertyChanged(nameof(RestorationGroupCount));
         OnPropertyChanged(nameof(AbutmentGroupCount));
+        OnPropertyChanged(nameof(RestorationGroupUsesFailedStyle));
+        OnPropertyChanged(nameof(AbutmentGroupUsesFailedStyle));
     }
 
     private async void OpenFile()
@@ -799,26 +986,64 @@ public sealed class MainViewModel : INotifyPropertyChanged
         return !IsBusy && _loadedFiles.Any(item => item.IsVisible && item.MeshSnapshot is not null);
     }
 
+    private static Window? GetDialogOwner()
+    {
+        return Application.Current?.Windows
+            .OfType<Window>()
+            .FirstOrDefault(window => window.IsActive)
+            ?? Application.Current?.MainWindow;
+    }
+
     private async void ExportVisibleMeshes()
     {
-        var exportableItems = _loadedFiles
+        var exportableFiles = _loadedFiles
             .Where(item => item.IsVisible && item.MeshSnapshot is not null)
-            .Select(item => new
-            {
-                item.DisplayName,
-                Mesh = item.MeshSnapshot!
-            })
             .ToList();
 
-        if (exportableItems.Count == 0)
+        if (exportableFiles.Count == 0)
         {
             StatusText = "No visible mesh is available to export.";
             return;
         }
 
-        var suggestedFileName = exportableItems.Count == 1
-            ? Path.GetFileNameWithoutExtension(exportableItems[0].DisplayName)
-            : "merged-meshes";
+        FuseExportChoice? exportChoice = null;
+        if (exportableFiles.Count > 1)
+        {
+            exportChoice = FuseExportChoiceWindow.ShowDialog(GetDialogOwner(), exportableFiles.Count);
+            if (exportChoice is null)
+            {
+                return;
+            }
+        }
+
+        var fuseMode = exportChoice?.Mode ?? MeshFuseSettings.Load().Mode;
+        var cleanupSavedStl = exportChoice?.CleanupSavedStlArtifacts ?? false;
+        var cleanupStrength = exportChoice?.CleanupStrength ?? MeshFuseSettings.LoadCleanupStrength();
+
+        IReadOnlyList<FuseInnerSideHint>? innerSideHints = null;
+        if (fuseMode == MeshFuseMode.UnifiedShell && exportableFiles.Count > 1)
+        {
+            if (FuseInnerSidePickHandler is null)
+            {
+                StatusText = "Unified shell needs inner-side picks, but the viewer is not ready.";
+                return;
+            }
+
+            var pickItems = exportableFiles
+                .Select((item, index) => new FuseInnerSidePickItem(index, item.DisplayName, item))
+                .ToList();
+
+            innerSideHints = await FuseInnerSidePickHandler(pickItems);
+            if (innerSideHints is null)
+            {
+                SetTransientStatus("Unified shell export canceled.");
+                return;
+            }
+        }
+
+        var suggestedFileName = exportableFiles.Count == 1
+            ? Path.GetFileNameWithoutExtension(exportableFiles[0].DisplayName)
+            : "fused-meshes";
 
         var dialog = new SaveFileDialog
         {
@@ -834,27 +1059,113 @@ public sealed class MainViewModel : INotifyPropertyChanged
             return;
         }
 
+        var cancellationToken = BeginCancellableBusy(
+            BuildExportStatusText(exportableFiles.Count, fuseMode, stage: "starting"));
+
         try
         {
-            IsBusy = true;
-            StatusText = "Exporting merged STL...";
+            ReportBusyProgress(0, BuildExportStatusText(exportableFiles.Count, fuseMode, stage: "starting"));
 
-            var snapshots = exportableItems
-                .Select(item => item.Mesh)
+            var snapshots = exportableFiles
+                .Select(item => item.MeshSnapshot!)
                 .ToArray();
 
-            await Task.Run(() => MeshExportService.Export(dialog.FileName, snapshots));
+            var fuseProgress = new Progress<double>(fuseFraction =>
+            {
+                var mapped = fuseMode switch
+                {
+                    MeshFuseMode.UnifiedShell => 0.05 + (fuseFraction * 0.78),
+                    MeshFuseMode.VoxelEnvelope => 0.10 + (fuseFraction * 0.70),
+                    _ => 0.15 + (fuseFraction * 0.55)
+                };
+                ReportBusyProgress(mapped, BuildExportStatusText(exportableFiles.Count, fuseMode, stage: "merging"));
+            });
 
-            StatusText = $"Exported {snapshots.Length:N0} visible mesh(es) as one STL to {Path.GetFileName(dialog.FileName)}";
+            await Task.Run(() =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var fused = MeshFuseService.Fuse(snapshots, fuseMode, innerSideHints, fuseProgress);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (cleanupSavedStl && fuseMode == MeshFuseMode.UnifiedShell)
+                {
+                    ReportBusyProgress(0.87, BuildExportStatusText(exportableFiles.Count, fuseMode, stage: "cleanup"));
+                    var maxIslandTriangles = MeshFuseOptions.MapCleanupStrengthToMaxIslandTriangles(cleanupStrength);
+                    fused = MeshIslandCleanup.RemoveTinyIslands(fused, maxIslandTriangles);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                ReportBusyProgress(0.93, BuildExportStatusText(exportableFiles.Count, fuseMode, stage: "writing"));
+                MeshExportService.Export(dialog.FileName, new[] { fused });
+            }, cancellationToken);
+
+            ReportBusyProgress(1.0);
+            SetTransientStatus(exportableFiles.Count == 1
+                ? $"Exported {Path.GetFileName(dialog.FileName)}"
+                : $"Fused and exported {exportableFiles.Count:N0} visible mesh(es) to {Path.GetFileName(dialog.FileName)}");
+        }
+        catch (OperationCanceledException)
+        {
+            SetTransientStatus("Canceled.");
         }
         catch (Exception ex)
         {
-            StatusText = $"Failed to export mesh: {ex.Message}";
+            SetTransientStatus($"Failed to export mesh: {ex.Message}");
         }
         finally
         {
-            IsBusy = false;
+            CompleteBusyWork();
         }
+    }
+
+    private static string BuildExportStatusText(int fileCount, MeshFuseMode fuseMode, string stage)
+    {
+        if (fileCount <= 1)
+        {
+            return stage switch
+            {
+                "writing" => "Writing STL file...",
+                _ => "Exporting STL..."
+            };
+        }
+
+        var modeLabel = fuseMode switch
+        {
+            MeshFuseMode.SolidCombine => "solid combine",
+            MeshFuseMode.UnifiedShell => "unified shell",
+            _ => "voxel envelope"
+        };
+
+        return stage switch
+        {
+            "starting" => $"Preparing {fileCount:N0} visible scans ({modeLabel})...",
+            "merging" => $"Merging {fileCount:N0} visible scans ({modeLabel})...",
+            "cleanup" => "Cleaning saved STL artifacts...",
+            "writing" => "Writing STL file...",
+            _ => $"Exporting {fileCount:N0} visible scans ({modeLabel})..."
+        };
+    }
+
+    private void ReportBusyProgress(double progress, string? statusText = null)
+    {
+        var clamped = Math.Clamp(progress, 0, progress >= 1.0 ? 1.0 : 0.99);
+        void Apply()
+        {
+            LoadProgress = clamped;
+            if (!string.IsNullOrWhiteSpace(statusText))
+            {
+                StatusText = statusText;
+            }
+        }
+
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            Apply();
+            return;
+        }
+
+        dispatcher.Invoke(Apply);
     }
 
     private async void ExportSeparatedMeshes()
@@ -895,11 +1206,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
             await Task.Run(() => MeshExportService.ExportSeparateStl(dialog.FileName, exportableItems));
 
-            StatusText = $"Exported {exportableItems.Count:N0} visible mesh(es) as separate STL files.";
+            SetTransientStatus($"Exported {exportableItems.Count:N0} visible mesh(es) as separate STL files.");
         }
         catch (Exception ex)
         {
-            StatusText = $"Failed to export mesh: {ex.Message}";
+            SetTransientStatus($"Failed to export mesh: {ex.Message}");
         }
         finally
         {
@@ -917,6 +1228,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private void ToggleSectionMode()
     {
         IsSectionMode = !IsSectionMode;
+        if (IsSectionMode)
+        {
+            IsSculptMode = false;
+        }
+
         if (!IsSectionMode)
         {
             ClearSectionMeasurement();
@@ -950,6 +1266,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
         IsAbutmentGroupExpanded = !IsAbutmentGroupExpanded;
     }
 
+    private void ToggleHideLayerLabels()
+    {
+        HideLayerLabels = !HideLayerLabels;
+    }
+
     public void RegisterSectionMeasurementPoint(Point point)
     {
         if (MeasureStartSection is null || MeasureEndSection is not null)
@@ -960,6 +1281,38 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         MeasureEndSection = point;
+    }
+
+    public void SetSectionMeasurementPoints(Point start, Point end)
+    {
+        MeasureStartSection = start;
+        MeasureEndSection = end;
+        OnPropertyChanged(nameof(MeasureStartSection));
+        OnPropertyChanged(nameof(MeasureEndSection));
+        OnPropertyChanged(nameof(HasSectionMeasurementPoint));
+    }
+
+    public void UpdateEncodeWorkflowStatus(string text) => StatusText = text;
+
+    public void SetEncodeWorkflowBusy(bool busy)
+    {
+        if (busy)
+        {
+            BeginCancellableBusy(StatusText, resetProgress: false);
+            return;
+        }
+
+        CompleteBusyWork();
+    }
+
+    public void CompleteBusyWork() => EndBusy();
+
+    public void EnsureSectionModeForEncode()
+    {
+        if (!IsSectionMode)
+        {
+            IsSectionMode = true;
+        }
     }
 
     private void ClearSectionMeasurement()
@@ -1213,7 +1566,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             foreach (var item in _loadedFiles)
             {
-                if (!item.IsLoadFailed && item.Category == category)
+                if (item.Category == category && item.IsOpacityEnabled)
                 {
                     item.Opacity = opacity;
                 }
@@ -1232,7 +1585,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             foreach (var item in _loadedFiles)
             {
-                if (!item.IsLoadFailed && item.Category == category)
+                if (item.Category == category)
                 {
                     item.IsVisible = isVisible;
                 }
@@ -1284,14 +1637,62 @@ public sealed class MainViewModel : INotifyPropertyChanged
             item.ApplyRenderState();
         }
 
-        var visibleFilesCount = _loadedFiles.Count(item => item.IsVisible);
-        var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
-        var visibleTriangleCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.TriangleCount);
-        StatusText = $"Visible files: {visibleFilesCount:N0} | Vertices: {visibleVertexCount:N0} | Triangles: {visibleTriangleCount:N0}";
+        CancelStatusResetTimer();
+        UpdateDefaultStatusText();
 
         _exportVisibleMeshesCommand.RaiseCanExecuteChanged();
         _exportSeparatedMeshesCommand.RaiseCanExecuteChanged();
         NotifyCategoryGroupPropertiesChanged();
+    }
+
+    internal void SetTransientStatus(string message)
+    {
+        CancelStatusResetTimer();
+        StatusText = message;
+
+        _statusResetTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(StatusResetDelaySeconds)
+        };
+        _statusResetTimer.Tick += StatusResetTimerOnTick;
+        _statusResetTimer.Start();
+    }
+
+    private void StatusResetTimerOnTick(object? sender, EventArgs e)
+    {
+        CancelStatusResetTimer();
+        UpdateDefaultStatusText();
+    }
+
+    private void CancelStatusResetTimer()
+    {
+        if (_statusResetTimer is null)
+        {
+            return;
+        }
+
+        _statusResetTimer.Tick -= StatusResetTimerOnTick;
+        _statusResetTimer.Stop();
+        _statusResetTimer = null;
+    }
+
+    internal void UpdateDefaultStatusText()
+    {
+        if (_loadedFiles.Count == 0)
+        {
+            StatusText = "";
+            return;
+        }
+
+        var visibleFilesCount = _loadedFiles.Count(item => item.IsVisible);
+        var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
+        var visibleTriangleCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.TriangleCount);
+        UpdateDefaultStatusText(visibleFilesCount, visibleVertexCount, visibleTriangleCount);
+    }
+
+    private void UpdateDefaultStatusText(int visibleFilesCount, int visibleVertexCount, int visibleTriangleCount)
+    {
+        StatusText = $"Visible files: {visibleFilesCount:N0} | Vertices: {visibleVertexCount:N0} | Triangles: {visibleTriangleCount:N0}";
     }
 
     private static bool LooksLikeToothFile(string filePath, IReadOnlyDictionary<string, string> properties)
@@ -1373,11 +1774,35 @@ public sealed class MainViewModel : INotifyPropertyChanged
         return CoordinateDecodingMode.Auto;
     }
 
-    /// <summary>
-    /// Designed restorations/abutments are already in the case frame; other scans use DCM annotation transforms.
-    /// </summary>
-    private static bool ShouldApplySceneTransform(MeshCategory category, string filePath)
-        => category is not MeshCategory.Restoration and not MeshCategory.Abutment;
+    private static SceneTransformKind ResolveSceneTransformKind(string filePath, MeshCategory category)
+    {
+        _ = category;
+
+        // Legacy DCMViewer applied TryApplyBestCoordinateTransform to every DCM (scans, CAD, preop).
+        // Gating on \Scans\ or skipping CAD caused 364/436-style misalignment vs the old viewer.
+        return SceneTransformKind.Scan;
+    }
+
+    private static bool LooksLikeDesignedPartPath(string filePath)
+    {
+        var name = Path.GetFileNameWithoutExtension(filePath);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return false;
+        }
+
+        return name.Contains("Crown", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("Abutment", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("Bridge", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("Inlay", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("Onlay", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("Veneer", StringComparison.OrdinalIgnoreCase) ||
+               name.StartsWith("UNN", StringComparison.OrdinalIgnoreCase) ||
+               name.StartsWith("LL", StringComparison.OrdinalIgnoreCase) ||
+               name.StartsWith("LR", StringComparison.OrdinalIgnoreCase) ||
+               name.StartsWith("UL", StringComparison.OrdinalIgnoreCase) ||
+               name.StartsWith("UR", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static Brush? CreateTextureBrush(byte[]? textureImageBytes, IReadOnlyDictionary<string, string> properties)
     {
@@ -1443,9 +1868,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         return bounds ?? Rect3D.Empty;
     }
 
-    private void FrameCameraToBounds(Rect3D bounds)
+    /// <summary>
+    /// Frames the camera so the facial (buccal) side faces the viewer when +Z front is not already adequate.
+    /// Upper/Lower folder scans are oriented so upper arch is on top of the view.
+    /// </summary>
+    public void ApplyFacialCameraToVisibleMeshes()
     {
-        if (_suppressAutomaticCameraFraming || bounds.IsEmpty)
+        var bounds = GetVisibleBounds();
+        if (bounds.IsEmpty)
         {
             return;
         }
@@ -1462,9 +1892,116 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         var distance = maxSize * 2.5;
-        CameraPosition = new Point3D(center.X, center.Y, center.Z + distance);
-        CameraLookDirection = new Vector3D(center.X - CameraPosition.X, center.Y - CameraPosition.Y, center.Z - CameraPosition.Z);
-        CameraUpDirection = new Vector3D(0, 1, 0);
+        var orientationMeshes = CollectOrientationMeshes();
+        var frontFacial = DentalCameraOrientationHelper.DefaultFrontFacialDirection;
+        var useFrontView = orientationMeshes.Count == 0 ||
+                           DentalCameraOrientationHelper.IsFrontViewBuccalAdequate(orientationMeshes, bounds, frontFacial);
+
+        Vector3D facial;
+        Vector3D up;
+        if (useFrontView)
+        {
+            facial = frontFacial;
+            up = TryGetArchUpDirection(out var archUp) ? archUp : new Vector3D(0, 1, 0);
+        }
+        else if (orientationMeshes.Count > 0 &&
+                 DentalCameraOrientationHelper.TryEstimateFacialView(orientationMeshes, bounds, out facial, out up))
+        {
+            facial.Normalize();
+            up.Normalize();
+            if (TryGetArchUpDirection(out var archUp))
+            {
+                up = archUp;
+            }
+        }
+        else
+        {
+            facial = frontFacial;
+            up = TryGetArchUpDirection(out var archUp) ? archUp : new Vector3D(0, 1, 0);
+        }
+
+        facial.Normalize();
+        up.Normalize();
+        CameraPosition = center + (facial * distance);
+        CameraLookDirection = center - CameraPosition;
+        CameraUpDirection = DentalCameraOrientationHelper.OrthogonalizeUp(up, CameraLookDirection);
+    }
+
+    private bool TryGetArchUpDirection(out Vector3D archUp)
+    {
+        archUp = default;
+        var upperCenter = GetArchBoundsCenter(ScanLayerArch.Upper);
+        var lowerCenter = GetArchBoundsCenter(ScanLayerArch.Lower);
+        if (!upperCenter.HasValue || !lowerCenter.HasValue)
+        {
+            return false;
+        }
+
+        archUp = upperCenter.Value - lowerCenter.Value;
+        if (archUp.LengthSquared < 1e-9)
+        {
+            archUp = default;
+            return false;
+        }
+
+        archUp.Normalize();
+        return true;
+    }
+
+    private Point3D? GetArchBoundsCenter(ScanLayerArch arch)
+    {
+        Rect3D? combined = null;
+        foreach (var item in _loadedFiles)
+        {
+            if (!item.IsVisible || item.IsLoadFailed || item.ScanArch != arch || item.Bounds.IsEmpty)
+            {
+                continue;
+            }
+
+            combined = combined.HasValue ? Rect3D.Union(combined.Value, item.Bounds) : item.Bounds;
+        }
+
+        if (!combined.HasValue || combined.Value.IsEmpty)
+        {
+            return null;
+        }
+
+        var bounds = combined.Value;
+        return new Point3D(
+            bounds.X + bounds.SizeX * 0.5,
+            bounds.Y + bounds.SizeY * 0.5,
+            bounds.Z + bounds.SizeZ * 0.5);
+    }
+
+    private List<MeshSnapshot> CollectOrientationMeshes()
+    {
+        var scanMeshes = _loadedFiles
+            .Where(item => item.IsVisible &&
+                           !item.IsLoadFailed &&
+                           item.MeshSnapshot is not null &&
+                           (item.Category == MeshCategory.Scan || item.Category == MeshCategory.Model))
+            .Select(item => item.MeshSnapshot!)
+            .ToList();
+
+        if (scanMeshes.Count > 0)
+        {
+            return scanMeshes;
+        }
+
+        return _loadedFiles
+            .Where(item => item.IsVisible && !item.IsLoadFailed && item.MeshSnapshot is not null)
+            .Select(item => item.MeshSnapshot!)
+            .ToList();
+    }
+
+    private void FrameCameraToBounds(Rect3D bounds)
+    {
+        if (_suppressAutomaticCameraFraming || bounds.IsEmpty)
+        {
+            return;
+        }
+
+        ApplyFacialCameraToVisibleMeshes();
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

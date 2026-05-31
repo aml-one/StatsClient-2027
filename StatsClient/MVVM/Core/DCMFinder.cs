@@ -118,6 +118,15 @@ public static class DCMFinder
                 continue;
             }
 
+            // StatsClient usage: we only load designed elements from the CAD folder.
+            // Anatomy elements / External models are library/template content and must not be loaded.
+            var relative = NormalizeRelativePath(modelFilename);
+            if (!relative.StartsWith("CAD\\", StringComparison.OrdinalIgnoreCase) &&
+                !relative.StartsWith("CAD/", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             result.DesignedElements.Add(new DCMFileItem
             {
                 FilePath = filePath,
@@ -232,6 +241,7 @@ public static class DCMFinder
             string fileName = Path.GetFileNameWithoutExtension(file);
             string normalizedName = NormalizeName(fileName);
             bool isBiteScan = normalizedName.Contains("bite", StringComparison.Ordinal);
+            bool isPreviousDesign = normalizedName.Contains("previousdesign", StringComparison.Ordinal);
 
             string groupName = isBiteScan
                 ? hasMultipleBiteFiles ? "Bite" : "Misc"
@@ -246,7 +256,8 @@ public static class DCMFinder
                 GroupName = groupName,
                 SourceKind = DCMFileSourceKind.ModelScan,
                 IsDesigned = false,
-                StartHidden = isBiteScan
+                // Previous design meshes share case space with the current prep; keep off until toggled on.
+                StartHidden = isBiteScan || isPreviousDesign
             });
         }
     }

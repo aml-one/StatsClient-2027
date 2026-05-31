@@ -1,12 +1,17 @@
 ﻿using DCMViewer.Services;
 using DcmViewerViewModel = DCMViewer.ViewModels.MainViewModel;
+using StatsClient.MVVM.View;
 using StatsClient.MVVM.Core;
+using static StatsClient.MVVM.Core.DatabaseConnection;
+using static StatsClient.MVVM.Core.Enums;
+using static StatsClient.MVVM.ViewModel.MainViewModel;
 using StatsClient.MVVM.Model;
 using StatsClient.MVVM.ViewModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
@@ -30,6 +35,11 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
     private OrderInfoWindow? instance;
     private List<DCMFileItem>? _currentCaseFiles;
     private DcmViewerViewModel? _hookedViewerViewModel;
+    private OrderScanPickerWindow? _scanPickerWindow;
+
+    private const double ScanPickerOffsetLeft = 70;
+    private const double ScanPickerOffsetBottomAnchor = 520;
+    private const double ScanPickerOffsetTopAdjustment = 43;
     public OrderInfoWindow Instance
     {
         get => instance!;
@@ -64,6 +74,10 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         this.PreviewKeyDown += new KeyEventHandler(HandleEsc);
         OrderInfoViewModel.Instance.PropertyChanged += OrderInfoViewModelOnPropertyChanged;
         dcmViewer.Loaded += (_, _) => EnsureViewerLoadingHook();
+
+        LocationChanged += (_, _) => PositionScanPickerWindow();
+        SizeChanged += (_, _) => PositionScanPickerWindow();
+        Activated += (_, _) => KeepScanPickerAboveOwner();
     }
 
     private async void OrderInfoWindow_Loaded(object sender, RoutedEventArgs e)
@@ -86,18 +100,31 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         }
 
         OrderInfoViewModel.Instance.IsLoading = true;
-        UpdateOverviewLoadingOverlay();
 
         try
         {
+            await dcmViewer.EnsureEmbeddedHostReadyAsync();
+            dcmViewer.ViewerViewModel?.BeginCancellableBusy("Loading order...");
+
             await Dispatcher.Yield(DispatcherPriority.Background);
+            dcmViewer.ViewerViewModel?.BusyCancellationToken.ThrowIfCancellationRequested();
+
             await OrderInfoViewModel.Instance.UpdateForm();
+            dcmViewer.ViewerViewModel?.BusyCancellationToken.ThrowIfCancellationRequested();
+
             await ReloadCaseFilesForCurrentOrderAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // CancelBusyWork already updated status and cleared the overlay.
         }
         finally
         {
             OrderInfoViewModel.Instance.IsLoading = false;
-            UpdateOverviewLoadingOverlay();
+            if (dcmViewer.ViewerViewModel?.IsBusy == true)
+            {
+                dcmViewer.ViewerViewModel.CompleteBusyWork();
+            }
         }
     }
 
@@ -126,6 +153,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         viewModel.PropertyChanged += ViewerViewModelOnPropertyChanged;
         UpdateOverviewLoadingOverlay();
         UpdateOrderInfoLeftPanelVisibility();
+        UpdateLastTouchedByPanelVisibility();
     }
 
     private void ViewerViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -139,6 +167,28 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         {
             Dispatcher.BeginInvoke(UpdateOrderInfoLeftPanelVisibility, DispatcherPriority.DataBind);
         }
+
+        if (string.Equals(e.PropertyName, "IsSculptMode", StringComparison.Ordinal))
+        {
+            Dispatcher.BeginInvoke(UpdateLastTouchedByPanelVisibility, DispatcherPriority.DataBind);
+        }
+    }
+
+    internal void UpdateLastTouchedByPanelVisibility()
+    {
+        if (borderLastTouchedByPanel is null)
+        {
+            return;
+        }
+
+        if (dcmViewer.ViewerViewModel?.IsSculptMode == true)
+        {
+            borderLastTouchedByPanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        var hasItems = OrderInfoViewModel.Instance.LastTouchedByList?.Count > 0;
+        borderLastTouchedByPanel.Visibility = hasItems ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void UpdateOrderInfoLeftPanelVisibility()
@@ -154,42 +204,24 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
 
     private void UpdateOverviewLoadingOverlay()
     {
-        if (OverviewLoadingOverlay is null)
+        if (OverviewLoadingOverlay is not null)
         {
-            return;
-        }
-
-        EnsureViewerLoadingHook();
-
-        var orderLoading = OrderInfoViewModel.Instance.IsLoading;
-        var viewer = dcmViewer.ViewerViewModel;
-        var scanLoading = viewer?.IsBusy == true;
-        var show = orderLoading || scanLoading;
-
-        OverviewLoadingOverlay.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-
-        if (scanLoading && viewer is not null)
-        {
-            OverviewLoadingStatusText.Text = string.IsNullOrWhiteSpace(viewer.StatusText)
-                ? "Loading scans..."
-                : viewer.StatusText;
-
-            var showProgress = viewer.LoadProgress > 0 && viewer.LoadProgress < 1;
-            OverviewLoadingProgress.Visibility = showProgress ? Visibility.Visible : Visibility.Collapsed;
-            if (showProgress)
-            {
-                OverviewLoadingProgress.Value = viewer.LoadProgress;
-            }
-        }
-        else
-        {
-            OverviewLoadingStatusText.Text = "Loading order...";
-            OverviewLoadingProgress.Visibility = Visibility.Collapsed;
+            OverviewLoadingOverlay.Visibility = Visibility.Collapsed;
         }
     }
 
     private void HandleEsc(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            if (dcmViewer.TryUndoSculptFromKeyboard())
+            {
+                e.Handled = true;
+            }
+
+            return;
+        }
+
         if (e.Key == Key.Escape)
             Close();
     }
@@ -220,7 +252,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             {
                 if (_currentCaseFiles is { Count: > 0 })
                 {
-                    await dcmViewer.ReloadCaseFilesAsync(_currentCaseFiles);
+                    await dcmViewer.ReloadCaseFilesAsync(_currentCaseFiles, GetCurrentOrderFolder());
                 }
             }
             else
@@ -233,6 +265,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
 
     private void Window_Closing(object sender, CancelEventArgs e)
     {
+        CloseScanPickerWindow();
         OrderInfoViewModel.Instance.WindowClosing();
     }
 
@@ -256,7 +289,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             catch { }
     }
 
-    private async void AddScanButton_Click(object sender, RoutedEventArgs e)
+    private void AddScanButton_Click(object sender, RoutedEventArgs e)
     {
         if (OrderInfoViewModel.Instance.ThreeShapeObject?.IntOrderID is not string orderId || string.IsNullOrWhiteSpace(orderId))
         {
@@ -270,19 +303,71 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             return;
         }
 
-        var picker = new OrderScanPickerWindow(candidates, ToggleScanPickerItemAsync)
+        if (_scanPickerWindow is { IsVisible: true })
         {
-            Owner = this
+            _scanPickerWindow.RefreshItems(candidates);
+            PositionScanPickerWindow();
+            _scanPickerWindow.Activate();
+            return;
+        }
+
+        CloseScanPickerWindow();
+
+        _scanPickerWindow = new OrderScanPickerWindow(candidates, ToggleScanPickerItemAsync)
+        {
+            Owner = this,
+            ShowInTaskbar = false,
+            ShowActivated = false
         };
+        _scanPickerWindow.Closed += ScanPickerWindow_Closed;
 
-        const double pickerOffsetLeft = 70;
-        const double pickerOffsetBottomAnchor = 520;
-        const double pickerOffsetTopAdjustment = 43;
+        PositionScanPickerWindow();
+        _scanPickerWindow.Show();
+        KeepScanPickerAboveOwner();
+    }
 
-        picker.Left = this.Left + pickerOffsetLeft;
-        picker.Top = this.Top + (this.ActualHeight - pickerOffsetBottomAnchor) + pickerOffsetTopAdjustment;
+    private void ScanPickerWindow_Closed(object? sender, EventArgs e)
+    {
+        if (ReferenceEquals(sender, _scanPickerWindow))
+        {
+            _scanPickerWindow.Closed -= ScanPickerWindow_Closed;
+            _scanPickerWindow = null;
+        }
+    }
 
-        picker.ShowDialog();
+    private void PositionScanPickerWindow()
+    {
+        if (_scanPickerWindow is not { IsVisible: true })
+        {
+            return;
+        }
+
+        _scanPickerWindow.Left = Left + ScanPickerOffsetLeft;
+        _scanPickerWindow.Top = Top + (ActualHeight - ScanPickerOffsetBottomAnchor) + ScanPickerOffsetTopAdjustment;
+    }
+
+    private void KeepScanPickerAboveOwner()
+    {
+        if (_scanPickerWindow is not { IsVisible: true })
+        {
+            return;
+        }
+
+        // Re-assert owned-window z-order so the picker stays above Order Info like a docked panel.
+        _scanPickerWindow.Topmost = true;
+        _scanPickerWindow.Topmost = false;
+    }
+
+    private void CloseScanPickerWindow()
+    {
+        if (_scanPickerWindow is null)
+        {
+            return;
+        }
+
+        _scanPickerWindow.Closed -= ScanPickerWindow_Closed;
+        _scanPickerWindow.Close();
+        _scanPickerWindow = null;
     }
 
     private async Task<bool> ToggleScanPickerItemAsync(OrderScanPickerItem item)
@@ -318,7 +403,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             return;
         }
 
-        await dcmViewer.ReloadCaseFilesAsync(_currentCaseFiles);
+        await dcmViewer.ReloadCaseFilesAsync(_currentCaseFiles, GetCurrentOrderFolder());
     }
 
     /// <summary>
@@ -326,6 +411,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
     /// </summary>
     public async Task ReleaseOrderFileLocksForRenameAsync()
     {
+        CloseScanPickerWindow();
         _currentCaseFiles = null;
         dcmViewer.UnloadViewer();
         await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ApplicationIdle);
@@ -349,7 +435,14 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         if (OrderInfoViewModel.Instance.ThreeShapeObject is null)
             return;
 
-        DCMFinderResult result = await System.Threading.Tasks.Task.Run(() => DCMFinder.FindForCase(OrderInfoViewModel.Instance.ThreeShapeObject));
+        dcmViewer.ViewerViewModel?.BusyCancellationToken.ThrowIfCancellationRequested();
+
+        DCMFinderResult result = await Task.Run(
+            () => DCMFinder.FindForCase(OrderInfoViewModel.Instance.ThreeShapeObject),
+            dcmViewer.ViewerViewModel?.BusyCancellationToken ?? CancellationToken.None);
+
+        dcmViewer.ViewerViewModel?.BusyCancellationToken.ThrowIfCancellationRequested();
+
         if (result.AllFiles.Count == 0)
         {
             _currentCaseFiles = [];
@@ -363,9 +456,8 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             .ToList();
 
         AddDefaultPreparationScans(_currentCaseFiles);
-        await dcmViewer.LoadCaseFilesAsync(_currentCaseFiles);
+        await dcmViewer.LoadCaseFilesAsync(_currentCaseFiles, GetCurrentOrderFolder());
         EnsureViewerLoadingHook();
-        UpdateOverviewLoadingOverlay();
     }
 
     private static DCMFileItem CreateCaseFileItem(OrderScanPickerItem item)
@@ -458,6 +550,12 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         }
     }
 
+    private string? GetCurrentOrderFolder()
+    {
+        var orderId = OrderInfoViewModel.Instance.ThreeShapeObject?.IntOrderID;
+        return string.IsNullOrWhiteSpace(orderId) ? null : ResolveOrderFolder(orderId);
+    }
+
     private static string ResolveOrderFolder(string orderId)
     {
         var obj = OrderInfoViewModel.Instance.ThreeShapeObject;
@@ -531,5 +629,113 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
                 IsLoaded = loadedPaths.Contains(fullPath)
             });
         }
+    }
+
+    private async void IdentifyEncodeCap_Click(object sender, RoutedEventArgs e)
+    {
+        if (!MainViewModel.Instance.CbSettingModuleEncodeIdentifier)
+        {
+            MainViewModel.Instance.ShowMessageBox(
+                "Encode Identifier",
+                "Enable the Encode Identifier module under Settings → Modules.",
+                SMessageBoxButtons.Close,
+                NotificationIcon.Warning,
+                120,
+                this);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ReadStatsSetting("Nvidia_API_KEY")))
+        {
+            MainViewModel.Instance.ShowMessageBox(
+                "Encode Identifier",
+                "Set Nvidia_API_KEY in the Stats database Settings table, then configure the vision endpoint under Settings → Encode Identifier.",
+                SMessageBoxButtons.Close,
+                NotificationIcon.Warning,
+                160,
+                this);
+            return;
+        }
+
+        btnIdentifyEncodeCap.IsEnabled = false;
+        try
+        {
+            await dcmViewer.StartEncodeIdentifyAsync(ShowEncodeIdentifyResult);
+        }
+        finally
+        {
+            btnIdentifyEncodeCap.IsEnabled = true;
+        }
+    }
+
+    private void ShowEncodeIdentifyResult(EncodeCapIdentifyResult? result)
+    {
+        if (result is null)
+        {
+            return;
+        }
+
+        if (!result.Success)
+        {
+            string errorBody = result.ErrorMessage;
+            if (!string.IsNullOrWhiteSpace(result.MeasurementSummary))
+            {
+                errorBody += $"\n\nMeasurement: {result.MeasurementSummary}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(result.VisionDebugLogFilePath))
+            {
+                errorBody += $"\n\nVision debug log:\n{result.VisionDebugLogFilePath}\n\n{TruncateForDialog(result.VisionDebugLog, 1200)}";
+            }
+            else if (!string.IsNullOrWhiteSpace(result.VisionDebugLog))
+            {
+                errorBody += $"\n\nVision debug:\n{TruncateForDialog(result.VisionDebugLog, 1500)}";
+            }
+
+            var report = $"Encode Identifier failed\n\n{errorBody}";
+            var wnd = new EncodeIdentifyReportWindow(report)
+            {
+                Owner = this
+            };
+            wnd.Show();
+            return;
+        }
+
+        string body =
+            $"Suggested 3Shape library entry:\n\n{result.ThreeShapeSuggestion}\n\n" +
+            $"Profile: {result.Profile}\n" +
+            $"Family: {result.Family}\n" +
+            $"Center grooves: {result.CenterGrooves}\n" +
+            $"Measured Ø: {result.MeasuredDiameterMm:F2} mm\n" +
+            $"Platform (resolved): {result.PlatformMm:F2} mm\n" +
+            $"Confidence: {result.Confidence:P0}";
+
+        if (!string.IsNullOrWhiteSpace(result.MeasurementSummary))
+        {
+            body += $"\n\nMeasurement: {result.MeasurementSummary}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.Notes))
+        {
+            body += $"\n\nNotes: {result.Notes}";
+        }
+
+        MainViewModel.Instance.ShowMessageBox(
+            "Encode Identifier",
+            body,
+            SMessageBoxButtons.Close,
+            NotificationIcon.Info,
+            220,
+            this);
+    }
+
+    private static string TruncateForDialog(string text, int maxChars)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxChars)
+        {
+            return text;
+        }
+
+        return text[..maxChars] + "…";
     }
 }

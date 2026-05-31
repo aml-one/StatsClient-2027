@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
@@ -19,6 +20,34 @@ public enum CoordinateDecodingMode
     Auto
 }
 
+/// <summary>How 3Shape scene transforms are applied when loading a mesh.</summary>
+public enum SceneTransformKind
+{
+    /// <summary>Do not apply annotation transforms.</summary>
+    None = 0,
+
+    /// <summary>Scan/model: Focus2FinalTrans or TransformationFromScanCoordinates only.</summary>
+    Scan = 1,
+
+    /// <summary>Scan/model: apply scan transform chain inversely (some orders require inverse).</summary>
+    ScanInverse = 2,
+
+    /// <summary>Scan/model: apply scan transforms using transposed (column-major) convention.</summary>
+    ScanColumnMajor = 3,
+
+    /// <summary>Scan/model: apply scan transforms inverse using transposed (column-major) convention.</summary>
+    ScanColumnMajorInverse = 4,
+
+    /// <summary>Crown/abutment: tooth placement, then library if still needed (CAD/anatomy exports).</summary>
+    Designed = 2,
+
+    /// <summary>Crown/abutment: library coordinates plus tooth placement (full 3Shape chain).</summary>
+    DesignedFull = 3,
+
+    /// <summary>CAD special: choose best transform/inverse by fitting comment origins.</summary>
+    CadBestFit = 4
+}
+
 public sealed record ParsedMeshData(
     MeshSnapshot Mesh,
     Rect3D Bounds,
@@ -27,7 +56,8 @@ public sealed record ParsedMeshData(
     IReadOnlyDictionary<string, string> Properties,
     bool IsEncrypted,
     PointCollection? TextureCoordinates = null,
-    byte[]? TextureImageBytes = null);
+    byte[]? TextureImageBytes = null,
+    DcmMeshWriteProfile? WriteProfile = null);
 
 public sealed class DcmParser
 {
@@ -37,18 +67,29 @@ public sealed class DcmParser
     private const int PointStrideBytes = 12;
     private const uint AdlerMod = 65521;
 
+    private bool _captureUseDeltaEncoding;
+    private bool _captureVerticesStoredAsBase64 = true;
+    private CeEncryptionProfile? _captureCeProfile;
+    private SceneTransformProfile? _captureSceneTransform;
+
     public ParsedMeshData ParseFile(
         string filePath,
         CoordinateDecodingMode mode = CoordinateDecodingMode.Auto,
         bool allowThreeShapeFallback = true,
-        bool applySceneTransform = true)
+        bool applySceneTransform = true,
+        SceneTransformKind sceneTransformKind = SceneTransformKind.Scan)
     {
+        var transformKind = applySceneTransform ? sceneTransformKind : SceneTransformKind.None;
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException("The selected file does not exist.", filePath);
         }
 
-        // Handle STL files separately
+        ResetWriteProfileCapture();
+        _activeCaptureParser = this;
+
+        try
+        {
         var extension = Path.GetExtension(filePath).ToLowerInvariant();
         if (extension == ".stl")
         {
@@ -59,11 +100,20 @@ public sealed class DcmParser
         var positions = new List<Point3D>();
         var triangleIndices = new List<int>();
         var foundGeometry = false;
+
+        // XDocument preserves full base64 payloads; XmlReader stream parse can truncate large facet blobs.
+        if (TryPopulateGeometryFromDocument(filePath, metadata, mode, positions, triangleIndices))
+        {
+            foundGeometry = positions.Count > 0 && triangleIndices.Count > 0;
+        }
+
+        if (!foundGeometry)
+        {
         List<Point3D>? pendingVertices = null;
         PendingFacets? pendingFacets = null;
         var insideCeDepth = 0;
         var hasCeVertices = false;
-        var isEncrypted = hasCeVertices || metadata.Properties.ContainsKey("PackageLockList");
+        var streamIndicatesEncrypted = hasCeVertices || metadata.Properties.ContainsKey("PackageLockList");
 
         using var stream = File.OpenRead(filePath);
         using var reader = XmlReader.Create(stream, new XmlReaderSettings
@@ -84,7 +134,7 @@ public sealed class DcmParser
                 
                 if (reader.Name.Equals("CE", StringComparison.OrdinalIgnoreCase))
                 {
-                    isEncrypted = true;
+                    streamIndicatesEncrypted = true;
                     insideCeDepth++;
                     if (!reader.IsEmptyElement)
                     {
@@ -166,20 +216,48 @@ public sealed class DcmParser
             }
         }
 
-        if ((positions.Count == 0 || triangleIndices.Count == 0) &&
-            TryPopulateGeometryFromDocument(filePath, metadata, mode, positions, triangleIndices))
+        var (_, declaredFacetCount) = ReadDeclaredGeometryCounts(filePath);
+        var parsedTriangleCount = triangleIndices.Count / 3;
+        var facetTolerance = Math.Max(50, (int)(declaredFacetCount * 0.001));
+        if (declaredFacetCount > 0 &&
+            parsedTriangleCount > 0 &&
+            parsedTriangleCount + facetTolerance < declaredFacetCount)
         {
-            foundGeometry = positions.Count > 0 && triangleIndices.Count > 0;
+            Console.Error.WriteLine(
+                $"[DcmParser] Stream parse under-read facets ({parsedTriangleCount:N0} vs declared {declaredFacetCount:N0}); reloading geometry from document.");
+            positions.Clear();
+            triangleIndices.Clear();
+            if (TryPopulateGeometryFromDocument(filePath, metadata, mode, positions, triangleIndices))
+            {
+                foundGeometry = positions.Count > 0 && triangleIndices.Count > 0;
+            }
         }
+
+        } // !foundGeometry stream fallback
+
+        var isEncrypted = metadata.Properties.ContainsKey("PackageLockList")
+            || metadata.Properties.ContainsKey("IntegrityCheck")
+            || metadata.Properties.ContainsKey("EKID");
 
         var embeddedPositions = new List<Point3D>();
         var embeddedTriangleIndices = new List<int>();
-        if (TryPopulateGeometryFromEmbeddedHps(filePath, mode, embeddedPositions, embeddedTriangleIndices, metadata.Properties))
+        var skipEmbeddedForScan = IsLikelyScanMeshPath(filePath) &&
+                                  positions.Count > 0 &&
+                                  triangleIndices.Count > 0;
+        if (!skipEmbeddedForScan &&
+            TryPopulateGeometryFromEmbeddedHps(filePath, mode, embeddedPositions, embeddedTriangleIndices, metadata.Properties))
         {
             var currentScore = ScoreMeshGeometry(positions.Count, triangleIndices.Count / 3, ComputeBounds(positions));
-            var embeddedScore = ScoreMeshGeometry(embeddedPositions.Count, embeddedTriangleIndices.Count / 3, ComputeBounds(embeddedPositions));
+            var embeddedScore = ScoreMeshGeometry(
+                embeddedPositions.Count,
+                embeddedTriangleIndices.Count / 3,
+                ComputeBounds(embeddedPositions));
+            var currentHealthy = DcmParserDiagnostics.IsMeshTopologyHealthy(positions, triangleIndices);
+            var embeddedHealthy = DcmParserDiagnostics.IsMeshTopologyHealthy(embeddedPositions, embeddedTriangleIndices);
 
-            if (embeddedScore > currentScore)
+            if (embeddedHealthy &&
+                embeddedTriangleIndices.Count > 0 &&
+                (!currentHealthy || embeddedScore > currentScore))
             {
                 positions.Clear();
                 triangleIndices.Clear();
@@ -288,7 +366,12 @@ public sealed class DcmParser
                     try
                     {
                         File.WriteAllBytes(tempPath, decrypted);
-                        var decryptedResult = ParseFile(tempPath, mode, allowThreeShapeFallback: false);
+                        var decryptedResult = ParseFile(
+                            tempPath,
+                            mode,
+                            allowThreeShapeFallback: false,
+                            applySceneTransform: transformKind != SceneTransformKind.None,
+                            sceneTransformKind: transformKind);
                         var currentTriangleCount = triangleIndices.Count / 3;
 
                         var currentGeometryScore = ScoreMeshGeometry(positions.Count, currentTriangleCount, ComputeBounds(positions));
@@ -296,8 +379,13 @@ public sealed class DcmParser
                             decryptedResult.VertexCount,
                             decryptedResult.TriangleCount,
                             decryptedResult.Bounds);
+                        var currentHealthy = DcmParserDiagnostics.IsMeshTopologyHealthy(positions, triangleIndices);
+                        var decryptedHealthy = DcmParserDiagnostics.IsMeshTopologyHealthy(
+                            decryptedResult.Mesh.Positions,
+                            decryptedResult.Mesh.TriangleIndices);
 
-                        if (decryptedGeometryScore > currentGeometryScore)
+                        if (decryptedHealthy &&
+                            (decryptedGeometryScore > currentGeometryScore || !currentHealthy))
                         {
                             System.Console.Error.WriteLine(
                                 $"[DcmParser] 3Shape decrypted parse selected: score {currentGeometryScore:F2} -> {decryptedGeometryScore:F2}");
@@ -334,18 +422,32 @@ public sealed class DcmParser
             throw new InvalidDataException("No supported mesh payload was found. Expected 3Shape geometry nodes with decryptable <Vertices> data and decodable <Facets> data.");
         }
 
-        if (applySceneTransform)
+        if (transformKind != SceneTransformKind.None)
         {
-            ApplyThreeShapeSceneTransforms(filePath, positions);
+            _captureSceneTransform = ApplyThreeShapeSceneTransformsWithProfile(filePath, positions, transformKind);
         }
 
-        DcmParserSanitizer.TrySanitizeMeshConnectivity(positions, triangleIndices);
+        var (_, declaredFacetCountForSanitize) = ReadDeclaredGeometryCounts(filePath);
+        var parsedTriangleCountForSanitize = triangleIndices.Count / 3;
+        var facetMatchTolerance = Math.Max(50, (int)(declaredFacetCountForSanitize * 0.005));
+        var decodeMatchesDeclared = declaredFacetCountForSanitize <= 0 ||
+            (parsedTriangleCountForSanitize + facetMatchTolerance >= declaredFacetCountForSanitize &&
+             parsedTriangleCountForSanitize <= declaredFacetCountForSanitize + facetMatchTolerance);
+
+        // Only prune bridge triangles when facet decode under-read the file (marginal decode errors).
+        // A complete decode can still sample ~7% edges above the long-edge threshold on real scans;
+        // removing them destroys shape the way 3Shape keeps all declared facets.
+        if (!decodeMatchesDeclared)
+        {
+            DcmParserSanitizer.TrySanitizeMeshConnectivity(positions, triangleIndices);
+        }
 
         PointCollection? textureCoordinates = null;
         byte[]? textureImageBytes = null;
 
         var meshSnapshot = MeshSnapshot.FromLists(positions, triangleIndices);
         var triangleCount = triangleIndices.Count / 3;
+        var writeProfile = BuildWriteProfile(metadata, meshSnapshot.VertexCount, isEncrypted);
         return new ParsedMeshData(
             meshSnapshot,
             meshSnapshot.Bounds,
@@ -354,8 +456,52 @@ public sealed class DcmParser
             new Dictionary<string, string>(metadata.Properties, StringComparer.OrdinalIgnoreCase),
             isEncrypted,
             textureCoordinates,
-            textureImageBytes);
+            textureImageBytes,
+            writeProfile);
+        }
+        finally
+        {
+            if (ReferenceEquals(_activeCaptureParser, this))
+            {
+                _activeCaptureParser = null;
+            }
+        }
     }
+
+    private void ResetWriteProfileCapture()
+    {
+        _captureUseDeltaEncoding = false;
+        _captureVerticesStoredAsBase64 = true;
+        _captureCeProfile = null;
+        _captureSceneTransform = null;
+    }
+
+    private DcmMeshWriteProfile? BuildWriteProfile(DcmMetadata metadata, int vertexCount, bool isEncrypted)
+    {
+        if (vertexCount <= 0)
+        {
+            return null;
+        }
+
+        return new DcmMeshWriteProfile(
+            vertexCount,
+            metadata.Schema,
+            _captureUseDeltaEncoding,
+            isEncrypted,
+            _captureCeProfile,
+            _captureSceneTransform,
+            _captureVerticesStoredAsBase64);
+    }
+
+    private void NoteCaptureUseDeltaEncoding(bool useDeltaEncoding) => _captureUseDeltaEncoding = useDeltaEncoding;
+
+    private void NoteCaptureVerticesStoredAsBase64(bool storedAsBase64) => _captureVerticesStoredAsBase64 = storedAsBase64;
+
+    private void NoteCaptureCeProfile(byte[] key, bool preSwap, bool postSwap)
+        => _captureCeProfile = new CeEncryptionProfile(key, preSwap, postSwap);
+
+    [ThreadStatic]
+    private static DcmParser? _activeCaptureParser;
 
     private ParsedMeshData ParseStlFile(string filePath)
     {
@@ -941,6 +1087,24 @@ public sealed class DcmParser
         return new DcmMetadata(schema ?? string.Empty, properties);
     }
 
+    private static (int VertexCount, int FacetCount) ReadDeclaredGeometryCounts(string filePath)
+    {
+        var document = XDocument.Load(filePath, LoadOptions.None);
+        var verticesElement = document.Descendants()
+            .FirstOrDefault(element => element.Name.LocalName.Equals("Vertices", StringComparison.OrdinalIgnoreCase));
+        var facetsElement = document.Descendants()
+            .FirstOrDefault(element => element.Name.LocalName.Equals("Facets", StringComparison.OrdinalIgnoreCase));
+
+        var vertexCount = verticesElement is null
+            ? 0
+            : ReadOptionalIntAttribute(verticesElement, "vertex_count") ?? ReadOptionalIntAttribute(verticesElement, "Count") ?? 0;
+        var facetCount = facetsElement is null
+            ? 0
+            : ReadOptionalIntAttribute(facetsElement, "facet_count") ?? ReadOptionalIntAttribute(facetsElement, "Count") ?? 0;
+
+        return (vertexCount, facetCount);
+    }
+
     private static byte[] ReadBase64ElementBytes(XmlReader reader)
     {
         if (reader.IsEmptyElement)
@@ -1364,6 +1528,7 @@ public sealed class DcmParser
             var bytes = Convert.FromBase64String(content.Trim());
             if (bytes.Length > 0)
             {
+                _activeCaptureParser?.NoteCaptureVerticesStoredAsBase64(true);
                 // Base64 might be encrypted, so allow CE decryption
                 return (bytes, false);
             }
@@ -1375,6 +1540,10 @@ public sealed class DcmParser
 
         // Try to parse as plain text floats (3 per vertex)
         var plainTextBytes = TryParseVerticesAsPlainFloats(content, vertexCount);
+        if (plainTextBytes.Length > 0)
+        {
+            _activeCaptureParser?.NoteCaptureVerticesStoredAsBase64(false);
+        }
         // If we successfully parsed as plain text, skip CE decryption (they're already decoded)
         return (plainTextBytes, plainTextBytes.Length > 0);
     }
@@ -1603,10 +1772,21 @@ public sealed class DcmParser
         {
             CoordinateDecodingMode.Absolute => BuildTrianglePoints(rawBytes, useDeltaDecoding: false),
             CoordinateDecodingMode.Delta => BuildTrianglePoints(rawBytes, useDeltaDecoding: true),
+            _ when isEncryptedFile && rawBytes.Length == expectedSize =>
+                BuildTrianglePoints(rawBytes, useDeltaDecoding: false),
             _ => SelectBestPointSet(
                 BuildTrianglePoints(rawBytes, useDeltaDecoding: false),
                 BuildTrianglePoints(rawBytes, useDeltaDecoding: true))
         };
+
+        _activeCaptureParser?.NoteCaptureUseDeltaEncoding(mode switch
+        {
+            CoordinateDecodingMode.Absolute => false,
+            CoordinateDecodingMode.Delta => true,
+            _ when isEncryptedFile && rawBytes.Length == expectedSize => false,
+            _ => ScorePointSet(BuildTrianglePoints(rawBytes, useDeltaDecoding: true), vertexCount) >
+                 ScorePointSet(BuildTrianglePoints(rawBytes, useDeltaDecoding: false), vertexCount)
+        });
 
         var enableInt32Fallback = string.Equals(
             Environment.GetEnvironmentVariable("DCMVIEWER_ENABLE_INT32_VERTEX_FALLBACK"),
@@ -1783,6 +1963,7 @@ public sealed class DcmParser
 
                 if (!checkValue.HasValue || MatchesCheckValue(decrypted, checkValue.Value))
                 {
+                    CaptureSuccessfulCeProfile(keyCandidate, swapMode.PreSwap, swapMode.PostSwap);
                     return decrypted;
                 }
             }
@@ -1790,6 +1971,9 @@ public sealed class DcmParser
 
         return bestFallback ?? Array.Empty<byte>();
     }
+
+    private static void CaptureSuccessfulCeProfile(byte[] key, bool preSwap, bool postSwap)
+        => _activeCaptureParser?.NoteCaptureCeProfile((byte[])key.Clone(), preSwap, postSwap);
 
     private static bool ArePointsPlausible(List<Point3D> points)
     {
@@ -2103,29 +2287,40 @@ public sealed class DcmParser
         int vertexCount,
         IReadOnlyList<Point3D> vertices)
     {
-        var paramSets = new (bool use32, int ivp, bool highNib)[]
-        {
-            (false, 0, false), (false, 1, false), (true, 0, false), (true, 1, false),
-            (false, 0, true), (false, 1, true), (true, 0, true), (true, 1, true)
-        };
-
         var lines = new List<string>();
-        foreach (var p in paramSets)
+        foreach (var use32 in new[] { false, true })
         {
-            var normalized = NormalizeFacetIndices(
-                InterpretFacetsBuffer(rawData, expectedFaceCount, p.use32, p.ivp, p.highNib),
-                vertexCount);
-            var score = ScoreFacetDecode(normalized, expectedFaceCount, vertexCount);
-            var penalty = ScoreFacetGeometryPenalty(normalized, vertices);
-            var needleRatio = DcmParserSanitizer.ComputeNeedleTriangleRatio(
-                vertices,
-                BuildIndicesFromTriangles(normalized));
-
-            lines.Add(
-                $"  use32={p.use32}, ivp={p.ivp}, highNib={p.highNib} -> tris={normalized.Count:N0}, delta={score.ExpectedDelta}, penalty={penalty:F1}, needles={needleRatio:P1}");
+            try
+            {
+                var triangles = InterpretFacetsBuffer(rawData, use32, vertexCount);
+                var indices = BuildIndicesFromTriangles(triangles);
+                var longTriFraction = DcmParserDiagnostics.ComputeLongEdgeTriangleFraction(vertices, indices);
+                var needleRatio = DcmParserSanitizer.ComputeNeedleTriangleRatio(vertices, indices);
+                lines.Add(
+                    $"  use32={use32} -> tris={triangles.Count:N0}, delta={Math.Abs(triangles.Count - expectedFaceCount)}, longTri={longTriFraction:P1}, needles={needleRatio:P1}");
+            }
+            catch (InvalidDataException ex)
+            {
+                lines.Add($"  use32={use32} -> failed ({ex.Message})");
+            }
         }
 
         return lines;
+    }
+
+    private static int CountAppendableTriangles(List<Triangle> faces, int vertexCount)
+    {
+        var count = 0;
+        foreach (var face in faces)
+        {
+            if (face.V0 >= 0 && face.V1 >= 0 && face.V2 >= 0 &&
+                face.V0 < vertexCount && face.V1 < vertexCount && face.V2 < vertexCount)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private static List<int> BuildIndicesFromTriangles(List<Triangle> triangles)
@@ -2147,50 +2342,53 @@ public sealed class DcmParser
         int vertexCount,
         IReadOnlyList<Point3D>? vertices = null)
     {
-        var paramSets = new (bool use32, int ivp, bool highNib)[]
-        {
-            (false, 0, false), (false, 1, false), (true, 0, false), (true, 1, false),
-            (false, 0, true),  (false, 1, true),  (true, 0, true),  (true, 1, true)
-        };
-        var candidates = System.Array.ConvertAll(paramSets, p =>
-            InterpretFacetsBuffer(rawData, expectedFaceCount, p.use32, p.ivp, p.highNib));
-
-        var allowedExpectedDelta = Math.Max(50, (int)(expectedFaceCount * 0.001));
-        var bestScore = FacetDecodeScore.Worst;
-        var bestGeometryPenalty = double.PositiveInfinity;
+        // Match hpsdecode CC/CE: try 16-bit then 32-bit index width; vertex-list pointer starts at 0.
         List<Triangle>? best = null;
-        List<Triangle>? bestScoreOnly = null;
-        var bestScoreOnlyValue = FacetDecodeScore.Worst;
+        var bestLongTriangleFraction = double.PositiveInfinity;
+        var bestExpectedDelta = int.MaxValue;
 
-        for (var ci = 0; ci < candidates.Length; ci++)
+        foreach (var use32 in new[] { false, true })
         {
-            var normalized = NormalizeFacetIndices(candidates[ci], vertexCount);
-            var score = ScoreFacetDecode(normalized, expectedFaceCount, vertexCount);
-            var geometryPenalty = vertices is { Count: > 0 }
-                ? ScoreFacetGeometryPenalty(normalized, vertices)
-                : double.PositiveInfinity;
-
-            if (score.CompareTo(bestScoreOnlyValue) < 0)
+            List<Triangle> triangles;
+            try
             {
-                bestScoreOnlyValue = score;
-                bestScoreOnly = normalized;
+                triangles = InterpretFacetsBuffer(rawData, use32, vertexCount);
             }
-
-            if (score.ExpectedDelta > allowedExpectedDelta)
+            catch (InvalidDataException)
             {
                 continue;
             }
 
-            if (geometryPenalty < bestGeometryPenalty - 0.001 ||
-                (Math.Abs(geometryPenalty - bestGeometryPenalty) <= 0.001 && score.CompareTo(bestScore) <= 0))
+            if (triangles.Count == 0)
             {
-                bestScore = score;
-                bestGeometryPenalty = geometryPenalty;
-                best = normalized;
+                continue;
+            }
+
+            var expectedDelta = expectedFaceCount > 0 ? Math.Abs(triangles.Count - expectedFaceCount) : 0;
+            if (expectedFaceCount > 0 && triangles.Count != expectedFaceCount)
+            {
+                continue;
+            }
+
+            var longTriangleFraction = vertices is { Count: > 0 }
+                ? DcmParserDiagnostics.ComputeLongEdgeTriangleFraction(
+                    vertices,
+                    BuildIndicesFromTriangles(triangles))
+                : double.PositiveInfinity;
+
+            var isImproved = best is null ||
+                expectedDelta < bestExpectedDelta ||
+                (expectedDelta == bestExpectedDelta && longTriangleFraction < bestLongTriangleFraction);
+
+            if (isImproved)
+            {
+                best = triangles;
+                bestExpectedDelta = expectedDelta;
+                bestLongTriangleFraction = longTriangleFraction;
             }
         }
 
-        return best ?? bestScoreOnly ?? new List<Triangle>();
+        return best ?? new List<Triangle>();
     }
 
     private static double ScoreFacetGeometryPenalty(List<Triangle> triangles, IReadOnlyList<Point3D> vertices)
@@ -2290,31 +2488,27 @@ public sealed class DcmParser
         return (longEdgeRatio * 1000.0) + (tinyAreaRatio * 100.0) + (needleRatio * 2500.0);
     }
 
-    private static List<Triangle> InterpretFacetsBuffer(byte[] rawData, int expectedFaceCount, bool use32BitPayload, int initialVertexPointer, bool useHighNibbleOpcodes)
+    private static List<Triangle> InterpretFacetsBuffer(byte[] rawData, bool use32BitIndices, int vertexCount)
     {
-        var triangles = new List<Triangle>(Math.Max(expectedFaceCount, 0));
+        var triangles = new List<Triangle>();
         var edgeList = new List<Edge>();
         var currentEdgeIndex = 0;
-        var globalVertexPointer = initialVertexPointer;
+        var globalVertexPointer = 0;
         var offset = 0;
 
         while (offset < rawData.Length)
         {
-            if (expectedFaceCount > 0 &&
-                triangles.Count > expectedFaceCount + (expectedFaceCount / 10))
+            var commandByte = rawData[offset++];
+            if ((commandByte >> 4) != 0)
             {
-                break;
+                throw new InvalidDataException("Facet command byte has non-zero upper nibble.");
             }
 
-            var opcode = useHighNibbleOpcodes
-                ? ((rawData[offset] >> 4) & 0x0F)
-                : (rawData[offset] & 0x0F);
-            offset++;
-
+            var opcode = commandByte & 0x0F;
             switch (opcode)
             {
                 case 0:
-                    ExtendCurrentEdge(ref currentEdgeIndex, edgeList, triangles, globalVertexPointer++);
+                    ExtendCurrentEdge(ref currentEdgeIndex, edgeList, triangles, NextGlobalVertex(ref globalVertexPointer));
                     AdvanceEdgePointer(ref currentEdgeIndex, edgeList, 2);
                     break;
                 case 1:
@@ -2327,20 +2521,26 @@ public sealed class DcmParser
                     AdvanceEdgePointer(ref currentEdgeIndex, edgeList, 1);
                     break;
                 case 4:
-                    CreateRestartFace(ref currentEdgeIndex, edgeList, triangles, globalVertexPointer++, globalVertexPointer++, globalVertexPointer++);
+                {
+                    var v0 = NextGlobalVertex(ref globalVertexPointer);
+                    var v1 = NextGlobalVertex(ref globalVertexPointer);
+                    var v2 = NextGlobalVertex(ref globalVertexPointer);
+                    ValidateFacetIndices(vertexCount, v0, v1, v2);
+                    CreateRestartFace(ref currentEdgeIndex, edgeList, triangles, v0, v1, v2);
                     break;
+                }
                 case 5:
                 {
-                    var width = use32BitPayload ? 4 : 2;
-                    if (!RequireBytes(rawData, offset, width * 3))
+                    var indexWidth = use32BitIndices ? 4 : 2;
+                    if (!RequireBytes(rawData, offset, indexWidth * 3))
                     {
-                        offset = rawData.Length;
-                        break;
+                        throw new InvalidDataException("Unexpected end of facet buffer during RESTART_16.");
                     }
 
-                    var v0 = ReadIndex(rawData, ref offset, use32BitPayload);
-                    var v1 = ReadIndex(rawData, ref offset, use32BitPayload);
-                    var v2 = ReadIndex(rawData, ref offset, use32BitPayload);
+                    var v0 = ReadIndex(rawData, ref offset, use32BitIndices);
+                    var v1 = ReadIndex(rawData, ref offset, use32BitIndices);
+                    var v2 = ReadIndex(rawData, ref offset, use32BitIndices);
+                    ValidateFacetIndices(vertexCount, v0, v1, v2);
                     CreateRestartFace(ref currentEdgeIndex, edgeList, triangles, v0, v1, v2);
                     break;
                 }
@@ -2348,26 +2548,27 @@ public sealed class DcmParser
                 {
                     if (!RequireBytes(rawData, offset, 12))
                     {
-                        offset = rawData.Length;
-                        break;
+                        throw new InvalidDataException("Unexpected end of facet buffer during RESTART_32.");
                     }
 
                     var v0 = ReadUInt32(rawData, ref offset);
                     var v1 = ReadUInt32(rawData, ref offset);
                     var v2 = ReadUInt32(rawData, ref offset);
+                    ValidateFacetIndices(vertexCount, v0, v1, v2);
                     CreateRestartFace(ref currentEdgeIndex, edgeList, triangles, v0, v1, v2);
                     break;
                 }
                 case 7:
                 {
-                    var width = use32BitPayload ? 4 : 2;
-                    if (!RequireBytes(rawData, offset, width))
+                    var indexWidth = use32BitIndices ? 4 : 2;
+                    if (!RequireBytes(rawData, offset, indexWidth))
                     {
-                        offset = rawData.Length;
-                        break;
+                        throw new InvalidDataException("Unexpected end of facet buffer during ABSOLUTE_16.");
                     }
 
-                    ExtendCurrentEdge(ref currentEdgeIndex, edgeList, triangles, ReadIndex(rawData, ref offset, use32BitPayload));
+                    var vertex = ReadIndex(rawData, ref offset, use32BitIndices);
+                    ValidateFacetIndices(vertexCount, vertex);
+                    ExtendCurrentEdge(ref currentEdgeIndex, edgeList, triangles, vertex);
                     AdvanceEdgePointer(ref currentEdgeIndex, edgeList, 2);
                     break;
                 }
@@ -2375,11 +2576,12 @@ public sealed class DcmParser
                 {
                     if (!RequireBytes(rawData, offset, 4))
                     {
-                        offset = rawData.Length;
-                        break;
+                        throw new InvalidDataException("Unexpected end of facet buffer during ABSOLUTE_32.");
                     }
 
-                    ExtendCurrentEdge(ref currentEdgeIndex, edgeList, triangles, ReadUInt32(rawData, ref offset));
+                    var vertex = ReadUInt32(rawData, ref offset);
+                    ValidateFacetIndices(vertexCount, vertex);
+                    ExtendCurrentEdge(ref currentEdgeIndex, edgeList, triangles, vertex);
                     AdvanceEdgePointer(ref currentEdgeIndex, edgeList, 2);
                     break;
                 }
@@ -2387,12 +2589,32 @@ public sealed class DcmParser
                     RemoveCurrentEdge(ref currentEdgeIndex, edgeList);
                     break;
                 case 10:
-                    globalVertexPointer++;
+                    NextGlobalVertex(ref globalVertexPointer);
                     break;
+                default:
+                    throw new InvalidDataException($"Unknown facet opcode {opcode}.");
             }
         }
 
         return triangles;
+    }
+
+    private static int NextGlobalVertex(ref int globalVertexPointer) => globalVertexPointer++;
+
+    private static void ValidateFacetIndices(int vertexCount, params int[] indices)
+    {
+        if (vertexCount <= 0)
+        {
+            return;
+        }
+
+        foreach (var index in indices)
+        {
+            if (index < 0 || index >= vertexCount)
+            {
+                throw new InvalidDataException($"Facet vertex index {index} is out of range (0..{vertexCount - 1}).");
+            }
+        }
     }
 
     private static List<Triangle> NormalizeFacetIndices(List<Triangle> triangles, int vertexCount)
@@ -2527,8 +2749,7 @@ public sealed class DcmParser
     {
         if (edgeList.Count == 0)
         {
-            currentEdgeIndex = 0;
-            return;
+            throw new InvalidDataException("Cannot advance edge pointer on an empty edge list.");
         }
 
         currentEdgeIndex = (currentEdgeIndex + step) % edgeList.Count;
@@ -2548,7 +2769,7 @@ public sealed class DcmParser
     {
         if (edgeList.Count == 0)
         {
-            return;
+            throw new InvalidDataException("Cannot extend an empty edge list.");
         }
 
         var current = edgeList[currentEdgeIndex];
@@ -2562,7 +2783,7 @@ public sealed class DcmParser
     {
         if (edgeList.Count < 2)
         {
-            return;
+            throw new InvalidDataException("Cannot perform Previous with fewer than 2 edges.");
         }
 
         var previousIndex = (currentEdgeIndex + edgeList.Count - 1) % edgeList.Count;
@@ -2583,7 +2804,7 @@ public sealed class DcmParser
     {
         if (edgeList.Count < 2)
         {
-            return;
+            throw new InvalidDataException("Cannot perform Next with fewer than 2 edges.");
         }
 
         var nextIndex = (currentEdgeIndex + 1) % edgeList.Count;
@@ -2604,7 +2825,7 @@ public sealed class DcmParser
     {
         if (edgeList.Count == 0)
         {
-            return;
+            throw new InvalidDataException("Cannot remove edge from an empty edge list.");
         }
 
         var previousIndex = (currentEdgeIndex + edgeList.Count - 1) % edgeList.Count;
@@ -2638,6 +2859,11 @@ public sealed class DcmParser
 
     private static void AppendIndexedMesh(List<Point3D> positions, List<int> triangleIndices, List<Point3D> partVertices, List<Triangle> faces)
     {
+        if (partVertices.Count == 0 || faces.Count == 0)
+        {
+            return;
+        }
+
         var baseIndex = positions.Count;
         positions.AddRange(partVertices);
 
@@ -2727,6 +2953,19 @@ public sealed class DcmParser
         }
 
         return score;
+    }
+
+    private static double ScoreMeshGeometryWithQuality(IReadOnlyList<Point3D> positions, IReadOnlyList<int> triangleIndices)
+    {
+        var triangleCount = triangleIndices.Count / 3;
+        var baseScore = ScoreMeshGeometry(positions.Count, triangleCount, ComputeBounds(positions));
+        if (baseScore == double.NegativeInfinity || triangleCount == 0)
+        {
+            return baseScore;
+        }
+
+        var topologyPenalty = DcmParserDiagnostics.ScoreMeshTopologyHealth(positions, triangleIndices);
+        return baseScore - (topologyPenalty * 250_000.0);
     }
 
     private static byte[] DecryptCeBuffer(
@@ -3145,11 +3384,20 @@ public sealed class DcmParser
            ((value & 0x0000FF00U) << 8) |
            ((value & 0x000000FFU) << 24);
 
-    private static void ApplyThreeShapeSceneTransforms(string filePath, List<Point3D> positions)
+    private const string ScanCoordinatesTransformId = "TransformationFromScanCoordinates";
+    private const string FocusToFinalTransformId = "Focus2FinalTrans";
+    private const string LibraryCoordinatesTransformId = "TransformationFromLibraryCoordinates";
+    private const string AlignToBiteTransformId = "AlignToBiteTransformation";
+    private const string OcclusalPlaneTransformId = "OcclusalPlaneTransformation";
+
+    private static SceneTransformProfile? ApplyThreeShapeSceneTransformsWithProfile(
+        string filePath,
+        List<Point3D> positions,
+        SceneTransformKind kind)
     {
         if (positions.Count == 0)
         {
-            return;
+            return null;
         }
 
         List<XDocument> documents;
@@ -3159,44 +3407,236 @@ public sealed class DcmParser
         }
         catch
         {
-            return;
+            return null;
         }
 
-        var transforms = new List<CoordinateTransform>();
-        foreach (var document in documents)
+        if (kind is SceneTransformKind.Scan or SceneTransformKind.ScanInverse or SceneTransformKind.ScanColumnMajor or SceneTransformKind.ScanColumnMajorInverse or SceneTransformKind.Designed or SceneTransformKind.DesignedFull or SceneTransformKind.CadBestFit)
+        {
+            if (IsPreviousDesignScanPath(filePath))
+            {
+                return TryApplyPreopCoordinateTransformWithProfile(positions, documents);
+            }
+
+            return TryApplyBestCoordinateTransformWithProfile(filePath, positions, documents);
+        }
+
+        return null;
+    }
+
+    private static void ApplyThreeShapeSceneTransforms(string filePath, List<Point3D> positions, SceneTransformKind kind)
+        => _ = ApplyThreeShapeSceneTransformsWithProfile(filePath, positions, kind);
+
+    private static bool TryApplyScanSceneTransform(
+        IReadOnlyList<AnnotationCoordinateTransform> transforms,
+        List<Point3D> positions,
+        bool inverse,
+        bool columnMajor)
+    {
+        // Apply scan transforms in the order they appear in the file (closest to 3Shape behavior).
+        // Known scan-related IDs:
+        // - Focus2FinalTrans
+        // - TransformationFromScanCoordinates
+        // - AlignToBiteTransformation
+        // - OcclusalPlaneTransformation
+        var applied = false;
+        for (var i = 0; i < transforms.Count; i++)
+        {
+            var id = transforms[i].TransformId ?? string.Empty;
+            if (IsTransformId(transforms[i], FocusToFinalTransformId) ||
+                IsTransformId(transforms[i], ScanCoordinatesTransformId) ||
+                string.Equals(id, AlignToBiteTransformId, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(id, OcclusalPlaneTransformId, StringComparison.OrdinalIgnoreCase))
+            {
+                ApplyCoordinateTransform(positions, transforms[i].Transform, inverse, columnMajor);
+                applied = true;
+            }
+        }
+
+        // If we found none of the standard scan transforms, fall back to a numeric placement id.
+        if (!applied)
+        {
+            for (var i = 0; i < transforms.Count; i++)
+            {
+                if (IsToothPlacementTransformId(transforms[i].TransformId))
+                {
+                    ApplyCoordinateTransform(positions, transforms[i].Transform, inverse, columnMajor);
+                    applied = true;
+                    break;
+                }
+            }
+        }
+
+        return applied;
+    }
+
+    private static bool ApplyFirstMatching(
+        IReadOnlyList<AnnotationCoordinateTransform> transforms,
+        List<Point3D> positions,
+        params string[] transformIds)
+    {
+        for (var i = 0; i < transforms.Count; i++)
+        {
+            for (var j = 0; j < transformIds.Length; j++)
+            {
+                if (IsTransformId(transforms[i], transformIds[j]))
+                {
+                    ApplyCoordinateTransform(positions, transforms[i].Transform, inverse: false, columnMajor: false);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryApplyDesignedPartTransforms(
+        string filePath,
+        IReadOnlyList<AnnotationCoordinateTransform> transforms,
+        List<Point3D> positions,
+        bool applyLibrary)
+    {
+        if (transforms.Count == 0)
+        {
+            return false;
+        }
+
+        var applied = false;
+
+        if (applyLibrary)
+        {
+            for (var i = 0; i < transforms.Count; i++)
+            {
+                if (IsTransformId(transforms[i], LibraryCoordinatesTransformId))
+                {
+                    ApplyCoordinateTransform(positions, transforms[i].Transform, inverse: false, columnMajor: false);
+                    applied = true;
+                    break;
+                }
+            }
+        }
+
+        var toothNumber = TryParseToothNumberFromPath(filePath);
+        if (toothNumber is not null)
+        {
+            for (var i = 0; i < transforms.Count; i++)
+            {
+                if (string.Equals(
+                        transforms[i].TransformId,
+                        toothNumber.Value.ToString(CultureInfo.InvariantCulture),
+                        StringComparison.Ordinal))
+                {
+                    ApplyCoordinateTransform(positions, transforms[i].Transform, inverse: false, columnMajor: false);
+                    return true;
+                }
+            }
+        }
+
+        for (var i = 0; i < transforms.Count; i++)
+        {
+            if (IsToothPlacementTransformId(transforms[i].TransformId))
+            {
+                ApplyCoordinateTransform(positions, transforms[i].Transform, inverse: false, columnMajor: false);
+                return true;
+            }
+        }
+
+        return applied;
+    }
+
+    private static bool IsLikelyScanMeshPath(string filePath)
+    {
+        var name = Path.GetFileName(filePath);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return false;
+        }
+
+        return name.Contains("scan", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("Preparation", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("Antagonist", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("Bite", StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("PrePreparation", StringComparison.OrdinalIgnoreCase) ||
+               filePath.Contains(@"\Scans\", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static List<AnnotationCoordinateTransform> CollectAnnotationCoordinateTransforms(IReadOnlyList<XDocument> documents)
+    {
+        if (documents.Count == 0)
+        {
+            return [];
+        }
+
+        // Root document holds the scene transform for this mesh. Embedded payloads often list other teeth.
+        var transforms = ExtractCoordinateTransforms(documents[0]).ToList();
+        if (transforms.Count > 0)
+        {
+            return transforms;
+        }
+
+        foreach (var document in documents.Skip(1))
         {
             transforms.AddRange(ExtractCoordinateTransforms(document));
         }
 
-        // Preop scans: prefer scored forward/inverse fit; fall back to root transform when no annotation hints exist.
-        if (PrepScanMaterialRules.IsPreopScan(filePath))
-        {
-            if (!TryApplyPreopCoordinateTransform(positions, documents) && transforms.Count > 0)
-            {
-                var transform = transforms[0];
-                for (var i = 0; i < positions.Count; i++)
-                {
-                    positions[i] = transform.Apply(positions[i]);
-                }
-            }
-
-            return;
-        }
-
-        if (transforms.Count > 0)
-        {
-            // Match 3Shape: apply the annotation transform from the primary (root) document.
-            var transform = transforms[0];
-            for (var i = 0; i < positions.Count; i++)
-            {
-                positions[i] = transform.Apply(positions[i]);
-            }
-
-            return;
-        }
-
-        TryApplyBestCoordinateTransform(filePath, positions, documents);
+        return transforms;
     }
+
+    private static void ApplyCoordinateTransform(List<Point3D> positions, CoordinateTransform transform, bool inverse, bool columnMajor)
+    {
+        for (var i = 0; i < positions.Count; i++)
+        {
+            positions[i] = inverse
+                ? (columnMajor ? transform.ApplyInverseColumnMajor(positions[i]) : transform.ApplyInverse(positions[i]))
+                : (columnMajor ? transform.ApplyColumnMajor(positions[i]) : transform.Apply(positions[i]));
+        }
+    }
+
+    private static bool IsTransformId(AnnotationCoordinateTransform transform, string transformId)
+        => string.Equals(transform.TransformId, transformId, StringComparison.OrdinalIgnoreCase);
+
+    private static int? TryParseToothNumberFromPath(string filePath)
+    {
+        var name = Path.GetFileNameWithoutExtension(filePath);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return null;
+        }
+
+        foreach (var token in name.Split([' ', '_', '-', '#'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (int.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out var tooth)
+                && tooth is >= 1 and <= 32)
+            {
+                return tooth;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsToothPlacementTransformId(string? transformId)
+    {
+        if (string.IsNullOrWhiteSpace(transformId))
+        {
+            return false;
+        }
+
+        if (IsAttachmentTransformId(transformId))
+        {
+            return false;
+        }
+
+        if (transformId.StartsWith("Transformation", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return transformId.All(char.IsDigit);
+    }
+
+    private static bool IsAttachmentTransformId(string? transformId)
+        => !string.IsNullOrWhiteSpace(transformId) &&
+           transformId.StartsWith("Attachment", StringComparison.OrdinalIgnoreCase);
 
     private static void TryApplyBestCoordinateTransform(string filePath, List<Point3D> positions)
     {
@@ -3219,19 +3659,18 @@ public sealed class DcmParser
     }
 
     /// <summary>
-    /// PrePreparationScan / GenericDoublePrepScan: always apply the best forward/inverse transform when
-    /// annotation hints exist (no score-improvement gate). Returns false when caller should use root transform.
+    /// PrePreparationScan / GenericDoublePrepScan: pick forward or inverse transform that best aligns
+    /// mesh bounds with Comment marker origins (3Shape case-space preop placement).
     /// </summary>
     private static bool TryApplyPreopCoordinateTransform(List<Point3D> positions, List<XDocument> documents)
     {
-        var commentOrigins = new List<Point3D>();
-        var transforms = new List<CoordinateTransform>();
-
-        foreach (var document in documents)
+        if (documents.Count == 0)
         {
-            commentOrigins.AddRange(ExtractCommentOrigins(document));
-            transforms.AddRange(ExtractCoordinateTransforms(document));
+            return false;
         }
+
+        var commentOrigins = ExtractCommentOrigins(documents[0]).ToList();
+        var transforms = CollectAnnotationCoordinateTransforms(documents);
 
         if (transforms.Count == 0 || commentOrigins.Count == 0)
         {
@@ -3241,12 +3680,13 @@ public sealed class DcmParser
         var baselineBounds = ComputeBounds(positions);
         var baselineScore = ScoreBoundsAgainstPoints(baselineBounds, commentOrigins);
 
-        var bestTransform = transforms[0];
+        var bestTransform = transforms[0].Transform;
         var bestInverse = false;
         var bestScore = baselineScore;
 
-        foreach (var transform in transforms)
+        foreach (var named in transforms)
         {
+            var transform = named.Transform;
             var forwardBounds = ComputeBounds(positions, transform, inverse: false);
             var forwardScore = ScoreBoundsAgainstPoints(forwardBounds, commentOrigins);
             if (forwardScore < bestScore)
@@ -3266,6 +3706,11 @@ public sealed class DcmParser
             }
         }
 
+        if (!(bestScore < baselineScore * 0.6 || baselineScore - bestScore > 2.0))
+        {
+            return false;
+        }
+
         for (var i = 0; i < positions.Count; i++)
         {
             positions[i] = bestInverse
@@ -3276,16 +3721,18 @@ public sealed class DcmParser
         return true;
     }
 
+    private static bool IsPreviousDesignScanPath(string filePath)
+        => Path.GetFileName(filePath).Contains("PreviousDesign", StringComparison.OrdinalIgnoreCase);
+
     private static void TryApplyBestCoordinateTransform(string filePath, List<Point3D> positions, List<XDocument> documents)
     {
-        var commentOrigins = new List<Point3D>();
-        var transforms = new List<CoordinateTransform>();
-
-        foreach (var document in documents)
+        if (documents.Count == 0)
         {
-            commentOrigins.AddRange(ExtractCommentOrigins(document));
-            transforms.AddRange(ExtractCoordinateTransforms(document));
+            return;
         }
+
+        var commentOrigins = ExtractCommentOrigins(documents[0]).ToList();
+        var transforms = CollectAnnotationCoordinateTransforms(documents);
 
         if (commentOrigins.Count == 0 || transforms.Count == 0)
         {
@@ -3299,8 +3746,9 @@ public sealed class DcmParser
         var bestInverse = false;
         var bestScore = baselineScore;
 
-        foreach (var transform in transforms)
+        foreach (var named in transforms)
         {
+            var transform = named.Transform;
             var forwardBounds = ComputeBounds(positions, transform, inverse: false);
             var forwardScore = ScoreBoundsAgainstPoints(forwardBounds, commentOrigins);
             if (forwardScore < bestScore)
@@ -3320,19 +3768,145 @@ public sealed class DcmParser
             }
         }
 
+        ApplyBestCoordinateTransformIfImprovedLegacy(positions, baselineScore, bestScore, bestTransform, bestInverse);
+    }
+
+    private static SceneTransformProfile? ApplyBestCoordinateTransformIfImproved(
+        List<Point3D> positions,
+        double baselineScore,
+        double bestScore,
+        CoordinateTransform bestTransform,
+        bool bestInverse,
+        bool useColumnMajor = false)
+    {
         // Only apply when we have a meaningful fit improvement.
         if (!(bestScore < baselineScore * 0.6 || baselineScore - bestScore > 2.0))
         {
-            return;
+            return null;
         }
 
         for (var i = 0; i < positions.Count; i++)
         {
             positions[i] = bestInverse
-                ? bestTransform.ApplyInverse(positions[i])
-                : bestTransform.Apply(positions[i]);
+                ? (useColumnMajor ? bestTransform.ApplyInverseColumnMajor(positions[i]) : bestTransform.ApplyInverse(positions[i]))
+                : (useColumnMajor ? bestTransform.ApplyColumnMajor(positions[i]) : bestTransform.Apply(positions[i]));
         }
+
+        return CreateSceneTransformProfile(bestTransform, bestInverse, useColumnMajor);
     }
+
+    private static void ApplyBestCoordinateTransformIfImprovedLegacy(
+        List<Point3D> positions,
+        double baselineScore,
+        double bestScore,
+        CoordinateTransform bestTransform,
+        bool bestInverse)
+        => _ = ApplyBestCoordinateTransformIfImproved(positions, baselineScore, bestScore, bestTransform, bestInverse);
+
+    private static SceneTransformProfile? TryApplyBestCoordinateTransformWithProfile(
+        string filePath,
+        List<Point3D> positions,
+        List<XDocument> documents)
+    {
+        if (documents.Count == 0)
+        {
+            return null;
+        }
+
+        var commentOrigins = ExtractCommentOrigins(documents[0]).ToList();
+        var transforms = CollectAnnotationCoordinateTransforms(documents);
+
+        if (commentOrigins.Count == 0 || transforms.Count == 0)
+        {
+            return null;
+        }
+
+        var baselineBounds = ComputeBounds(positions);
+        var baselineScore = ScoreBoundsAgainstPoints(baselineBounds, commentOrigins);
+
+        var bestTransform = default(CoordinateTransform);
+        var bestInverse = false;
+        var bestScore = baselineScore;
+
+        foreach (var named in transforms)
+        {
+            var transform = named.Transform;
+            var forwardBounds = ComputeBounds(positions, transform, inverse: false);
+            var forwardScore = ScoreBoundsAgainstPoints(forwardBounds, commentOrigins);
+            if (forwardScore < bestScore)
+            {
+                bestScore = forwardScore;
+                bestTransform = transform;
+                bestInverse = false;
+            }
+
+            var inverseBounds = ComputeBounds(positions, transform, inverse: true);
+            var inverseScore = ScoreBoundsAgainstPoints(inverseBounds, commentOrigins);
+            if (inverseScore < bestScore)
+            {
+                bestScore = inverseScore;
+                bestTransform = transform;
+                bestInverse = true;
+            }
+        }
+
+        return ApplyBestCoordinateTransformIfImproved(positions, baselineScore, bestScore, bestTransform, bestInverse);
+    }
+
+    private static SceneTransformProfile? TryApplyPreopCoordinateTransformWithProfile(
+        List<Point3D> positions,
+        List<XDocument> documents)
+    {
+        if (documents.Count == 0)
+        {
+            return null;
+        }
+
+        var commentOrigins = ExtractCommentOrigins(documents[0]).ToList();
+        var transforms = CollectAnnotationCoordinateTransforms(documents);
+
+        if (transforms.Count == 0 || commentOrigins.Count == 0)
+        {
+            return null;
+        }
+
+        var baselineBounds = ComputeBounds(positions);
+        var baselineScore = ScoreBoundsAgainstPoints(baselineBounds, commentOrigins);
+
+        var bestTransform = transforms[0].Transform;
+        var bestInverse = false;
+        var bestScore = baselineScore;
+
+        foreach (var named in transforms)
+        {
+            var transform = named.Transform;
+            var forwardBounds = ComputeBounds(positions, transform, inverse: false);
+            var forwardScore = ScoreBoundsAgainstPoints(forwardBounds, commentOrigins);
+            if (forwardScore < bestScore)
+            {
+                bestScore = forwardScore;
+                bestTransform = transform;
+                bestInverse = false;
+            }
+
+            var inverseBounds = ComputeBounds(positions, transform, inverse: true);
+            var inverseScore = ScoreBoundsAgainstPoints(inverseBounds, commentOrigins);
+            if (inverseScore < bestScore)
+            {
+                bestScore = inverseScore;
+                bestTransform = transform;
+                bestInverse = true;
+            }
+        }
+
+        return ApplyBestCoordinateTransformIfImproved(positions, baselineScore, bestScore, bestTransform, bestInverse);
+    }
+
+    private static SceneTransformProfile CreateSceneTransformProfile(
+        CoordinateTransform transform,
+        bool appliedInverse,
+        bool useColumnMajor)
+        => transform.ToProfile(appliedInverse, useColumnMajor);
 
     private static List<XDocument> LoadDocumentHierarchy(string filePath)
     {
@@ -3390,7 +3964,7 @@ public sealed class DcmParser
         }
     }
 
-    private static IEnumerable<CoordinateTransform> ExtractCoordinateTransforms(XDocument document)
+    private static IEnumerable<AnnotationCoordinateTransform> ExtractCoordinateTransforms(XDocument document)
     {
         foreach (var annotation in document.Descendants().Where(element => element.Name.LocalName.Equals("Annotation", StringComparison.OrdinalIgnoreCase)))
         {
@@ -3426,11 +4000,33 @@ public sealed class DcmParser
                 continue;
             }
 
-            yield return new CoordinateTransform(
-                m00.Value, m01.Value, m02.Value, m03.Value,
-                m10.Value, m11.Value, m12.Value, m13.Value,
-                m20.Value, m21.Value, m22.Value, m23.Value);
+            yield return new AnnotationCoordinateTransform(
+                ReadTransformId(annotation),
+                new CoordinateTransform(
+                    m00.Value, m01.Value, m02.Value, m03.Value,
+                    m10.Value, m11.Value, m12.Value, m13.Value,
+                    m20.Value, m21.Value, m22.Value, m23.Value));
         }
+    }
+
+    private static string? ReadTransformId(XElement annotation)
+    {
+        foreach (var child in annotation.Elements())
+        {
+            if (!child.Name.LocalName.Equals("String", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!"TransformID".Equals(child.Attribute("name")?.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            return child.Attribute("value")?.Value;
+        }
+
+        return null;
     }
 
     private static Rect3D ComputeBounds(IReadOnlyList<Point3D> points)
@@ -3552,6 +4148,8 @@ public sealed class DcmParser
             : null;
     }
 
+    private readonly record struct AnnotationCoordinateTransform(string? TransformId, CoordinateTransform Transform);
+
     private readonly struct CoordinateTransform
     {
         private readonly double _m00;
@@ -3586,11 +4184,30 @@ public sealed class DcmParser
             _m23 = m23;
         }
 
+        public SceneTransformProfile ToProfile(bool appliedInverse, bool useColumnMajor)
+            => new(
+                _m00, _m01, _m02, _m03,
+                _m10, _m11, _m12, _m13,
+                _m20, _m21, _m22, _m23,
+                appliedInverse,
+                useColumnMajor);
+
         public Point3D Apply(Point3D point)
         {
             var x = _m00 * point.X + _m01 * point.Y + _m02 * point.Z + _m03;
             var y = _m10 * point.X + _m11 * point.Y + _m12 * point.Z + _m13;
             var z = _m20 * point.X + _m21 * point.Y + _m22 * point.Z + _m23;
+            return new Point3D(x, y, z);
+        }
+
+        /// <summary>
+        /// Apply using transposed (column-major) convention. Some 3Shape exports appear to behave this way.
+        /// </summary>
+        public Point3D ApplyColumnMajor(Point3D point)
+        {
+            var x = _m00 * point.X + _m10 * point.Y + _m20 * point.Z + _m03;
+            var y = _m01 * point.X + _m11 * point.Y + _m21 * point.Z + _m13;
+            var z = _m02 * point.X + _m12 * point.Y + _m22 * point.Z + _m23;
             return new Point3D(x, y, z);
         }
 
@@ -3604,6 +4221,19 @@ public sealed class DcmParser
             var x = _m00 * px + _m10 * py + _m20 * pz;
             var y = _m01 * px + _m11 * py + _m21 * pz;
             var z = _m02 * px + _m12 * py + _m22 * pz;
+            return new Point3D(x, y, z);
+        }
+
+        public Point3D ApplyInverseColumnMajor(Point3D point)
+        {
+            var px = point.X - _m03;
+            var py = point.Y - _m13;
+            var pz = point.Z - _m23;
+
+            // Inverse for column-major convention: use the non-transposed rows as the transpose.
+            var x = _m00 * px + _m01 * py + _m02 * pz;
+            var y = _m10 * px + _m11 * py + _m12 * pz;
+            var z = _m20 * px + _m21 * py + _m22 * pz;
             return new Point3D(x, y, z);
         }
     }

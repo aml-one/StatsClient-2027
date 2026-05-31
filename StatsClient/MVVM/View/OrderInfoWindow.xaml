@@ -84,18 +84,29 @@
                     <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="╳"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Top"
-                           Cursor="Hand"
-                           Panel.ZIndex="50"
-                           FontSize="16">
+                <Border Background="IndianRed"
+                        Width="65"
+                        Height="40"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Cursor="Hand"
+                        Panel.ZIndex="50"
+                        Margin="0,-10,-7,0"
+                        CornerRadius="0,9,0,0">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">
                             <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
-                </TextBlock>
+
+                    <TextBlock Text="╳"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="0,0,0,0"
+                               Panel.ZIndex="50"
+                               FontSize="16" />
+
+                </Border>
 
                 <Border BorderBrush="#CCC"
                         BorderThickness="0,0,0,1"
@@ -123,7 +134,19 @@
                                  d:Text="OrderID" />
 
 
-
+                        <Button Width="25"
+                                Height="25"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Margin="20,0,10,4"
+                                ToolTip="Rename order"
+                                Command="{Binding RenameOrderCommand}">
+                            <Button.Content>
+                                <Image Source="/Images/ToolBar/rename.png" />
+                            </Button.Content>
+                        </Button>
 
                         <Grid PreviewMouseDown="TitleBar_PreviewMouseDown"
                               Cursor="Hand">
@@ -391,147 +414,155 @@
                                     CornerRadius="4"
                                     BorderBrush="#55A8B0B8"
                                     BorderThickness="1">
-                            <ScrollViewer Margin="12,10,12,10"
-                                          VerticalScrollBarVisibility="Auto"
-                                          Background="Transparent">
-                                <Grid Background="Transparent">
-                                    <StackPanel>
-                                        <StackPanel Margin="0,1,15,8">
-                                            <TextBlock Text="DIGITAL CASE"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding DigitalCase}"
-                                                       d:Text="DIGITAL CASE"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="Black"
-                                                       Margin="0,0,15,0"
-                                                       x:Name="tbDigitalCase" />
-                                            <TextBlock Text="TRAY SYSTEM"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold"
-                                                       Margin="0,3,0,0"
-                                                       Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
-                                            <TextBlock Text="{Binding TraySystem}"
-                                                       d:Text="TRAY SYSTEM"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="Black"
-                                                       x:Name="tbTraySystem"
-                                                       Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
+                                <ScrollViewer Margin="12,10,12,10"
+                                              VerticalScrollBarVisibility="Auto"
+                                              Background="Transparent">
+                                    <Grid Background="Transparent">
+                                        <StackPanel>
+                                            <StackPanel Margin="0,1,15,8">
+                                                <TextBlock Text="DIGITAL CASE"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding DigitalCase}"
+                                                           d:Text="DIGITAL CASE"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="Black"
+                                                           Margin="0,0,15,0"
+                                                           x:Name="tbDigitalCase" />
+                                                <TextBlock Text="TRAY SYSTEM"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold"
+                                                           Margin="0,3,0,0"
+                                                           Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
+                                                <TextBlock Text="{Binding TraySystem}"
+                                                           d:Text="TRAY SYSTEM"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="Black"
+                                                           x:Name="tbTraySystem"
+                                                           Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,1,15,12">
+                                                <TextBlock Text="SCANNER"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Scanner}"
+                                                           d:Text="SCANNER"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="Black"
+                                                           Margin="0,0,15,0"
+                                                           x:Name="tbScanner" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,1,15,12">
+                                                <TextBlock Text="STATUS"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Status}"
+                                                           d:Text="STATUS"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="Black"
+                                                           Margin="0,0,15,0"
+                                                           x:Name="tbStatus" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,1,15,12">
+                                                <TextBlock Text="CREATED"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Created}"
+                                                           d:Text="CREATED"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="Black"
+                                                           Margin="0,0,15,0"
+                                                           x:Name="tbCreated" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,1,15,12"
+                                                        Visibility="{Binding Scanned, Converter={StaticResource EmptyToHiddenConverter}}">
+                                                <TextBlock Text="SCANNED"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Scanned}"
+                                                           d:Text="SCANNED"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="Black"
+                                                           Margin="0,0,15,0"
+                                                           x:Name="tbScanned" />
+                                            </StackPanel>
+
+
+
+                                            <StackPanel Margin="0,6,15,10">
+                                                <TextBlock Text="MATERIAL"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold"
+                                                           x:Name="tbMaterialTitle" />
+                                                <TextBlock Text="{Binding Material}"
+                                                           d:Text="MATERIAL"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="Black"
+                                                           Margin="0,0,15,0"
+                                                           TextWrapping="Wrap"
+                                                           x:Name="tbMaterial" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,1,15,12">
+                                                <TextBlock Text="MANUFACTURER"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Manufacturer}"
+                                                           d:Text="MANUFACURER"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="Black"
+                                                           Margin="0,0,15,0"
+                                                           TextWrapping="Wrap"
+                                                           x:Name="tbManufacturer" />
+                                            </StackPanel>
+
+                                            <Button x:Name="btnIdentifyEncodeCap"
+                                                    Content="Identify Encode healing cap"
+                                                    Margin="0,8,15,12"
+                                                    Padding="10,6"
+                                                    HorizontalAlignment="Left"
+                                                    Click="IdentifyEncodeCap_Click"
+                                                    ToolTip="Pick 3 points on the healing cap top; the viewer will align, measure diameter, and suggest a 3Shape library entry." />
+
+                                            <StackPanel Margin="0,0,15,0"
+                                                        Visibility="{Binding Comments, Converter={StaticResource EmptyToHiddenConverter}}">
+                                                <TextBlock Text="COMMENTS"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Top"
+                                                           Foreground="#888"
+                                                           FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Comments}"
+                                                           d:Text="COMMENTS"
+                                                           VerticalAlignment="Top"
+                                                           Margin="0,0,5,0"
+                                                           FontSize="11"
+                                                           Foreground="#006800"
+                                                           TextWrapping="Wrap"
+                                                           x:Name="tbComments" />
+                                            </StackPanel>
                                         </StackPanel>
-
-                                        <StackPanel Margin="0,1,15,12">
-                                            <TextBlock Text="SCANNER"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Scanner}"
-                                                       d:Text="SCANNER"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="Black"
-                                                       Margin="0,0,15,0"
-                                                       x:Name="tbScanner" />
-                                        </StackPanel>
-
-                                        <StackPanel Margin="0,1,15,12">
-                                            <TextBlock Text="STATUS"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Status}"
-                                                       d:Text="STATUS"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="Black"
-                                                       Margin="0,0,15,0"
-                                                       x:Name="tbStatus" />
-                                        </StackPanel>
-
-                                        <StackPanel Margin="0,1,15,12">
-                                            <TextBlock Text="CREATED"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Created}"
-                                                       d:Text="CREATED"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="Black"
-                                                       Margin="0,0,15,0"
-                                                       x:Name="tbCreated" />
-                                        </StackPanel>
-
-                                        <StackPanel Margin="0,1,15,12"
-                                                    Visibility="{Binding Scanned, Converter={StaticResource EmptyToHiddenConverter}}">
-                                            <TextBlock Text="SCANNED"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Scanned}"
-                                                       d:Text="SCANNED"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="Black"
-                                                       Margin="0,0,15,0"
-                                                       x:Name="tbScanned" />
-                                        </StackPanel>
-
-
-
-                                        <StackPanel Margin="0,6,15,10">
-                                            <TextBlock Text="MATERIAL"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold"
-                                                       x:Name="tbMaterialTitle" />
-                                            <TextBlock Text="{Binding Material}"
-                                                       d:Text="MATERIAL"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="Black"
-                                                       Margin="0,0,15,0"
-                                                       TextWrapping="Wrap"
-                                                       x:Name="tbMaterial" />
-                                        </StackPanel>
-
-                                        <StackPanel Margin="0,1,15,12">
-                                            <TextBlock Text="MANUFACTURER"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Manufacturer}"
-                                                       d:Text="MANUFACURER"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="Black"
-                                                       Margin="0,0,15,0"
-                                                       TextWrapping="Wrap"
-                                                       x:Name="tbManufacturer" />
-                                        </StackPanel>
-
-                                        <StackPanel Margin="0,0,15,0"
-                                                    Visibility="{Binding Comments, Converter={StaticResource EmptyToHiddenConverter}}">
-                                            <TextBlock Text="COMMENTS"
-                                                       FontSize="10"
-                                                       VerticalAlignment="Top"
-                                                       Foreground="#888"
-                                                       FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Comments}"
-                                                       d:Text="COMMENTS"
-                                                       VerticalAlignment="Top"
-                                                       Margin="0,0,5,0"
-                                                       FontSize="11"
-                                                       Foreground="#006800"
-                                                       TextWrapping="Wrap"
-                                                       x:Name="tbComments" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Grid>
-                            </ScrollViewer>
+                                    </Grid>
+                                </ScrollViewer>
                             </Border>
 
                             <Grid HorizontalAlignment="Right"
@@ -547,8 +578,11 @@
                                 </Grid.RowDefinitions>
 
                                 <Border Grid.Row="0"
-                                        BorderBrush="#CCC"
-                                        BorderThickness="0"
+                                        Background="#A8E5E9ED"
+                                        CornerRadius="4"
+                                        BorderBrush="#55A8B0B8"
+                                        BorderThickness="1"
+                                        Margin="0,0,0,6"
                                         x:Name="borderLastTouchedByPanel">
                                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                                         <StackPanel Background="Transparent">
@@ -594,8 +628,10 @@
                                         <ContextMenu x:Name="designerContextMenu" />
                                     </Grid.ContextMenu>
 
-                                    <Border BorderBrush="#CCC"
-                                            BorderThickness="0"
+                                    <Border Background="#A8E5E9ED"
+                                            CornerRadius="4"
+                                            BorderBrush="#55A8B0B8"
+                                            BorderThickness="1"
                                             x:Name="borderLastDesignedByPanel">
                                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                                             <StackPanel Background="Transparent">
@@ -627,29 +663,55 @@
 
                             <Border x:Name="OverviewLoadingOverlay"
                                     Panel.ZIndex="600"
-                                    Background="#50E5E9ED"
-                                    Visibility="Collapsed">
-                                <StackPanel HorizontalAlignment="Center"
-                                            VerticalAlignment="Center">
-                                    <usercontrols:LoadingSpinner Width="56"
-                                                                 Height="56" />
-                                    <TextBlock x:Name="OverviewLoadingStatusText"
-                                               Text="Loading..."
-                                               Margin="0,10,0,0"
-                                               HorizontalAlignment="Center"
-                                               FontSize="13"
-                                               Foreground="#FF455565" />
-                                    <ProgressBar x:Name="OverviewLoadingProgress"
-                                                 Width="140"
-                                                 Height="3"
-                                                 Margin="0,10,0,0"
-                                                 Minimum="0"
-                                                 Maximum="1"
-                                                 Visibility="Collapsed"
-                                                 Foreground="#FF5A7A94"
-                                                 Background="#FFD0D8E0"
-                                                 BorderThickness="0" />
-                                </StackPanel>
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Background="#55000000"
+                                    Visibility="Collapsed"
+                                    IsHitTestVisible="False">
+                                <Border HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Padding="24,20"
+                                        MaxWidth="420"
+                                        Background="#E6F8FAFD"
+                                        BorderBrush="#AAB8C6D5"
+                                        BorderThickness="1"
+                                        CornerRadius="10">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <Border HorizontalAlignment="Center"
+                                                Padding="12"
+                                                Background="#CCFFFFFF"
+                                                CornerRadius="36">
+                                            <usercontrols:LoadingSpinner Width="56"
+                                                                         Height="56" />
+                                        </Border>
+                                        <Border Margin="0,14,0,0"
+                                                Padding="12,8"
+                                                Background="#DFFFFFFF"
+                                                CornerRadius="6"
+                                                BorderBrush="#88B8C6D5"
+                                                BorderThickness="1">
+                                            <TextBlock x:Name="OverviewLoadingStatusText"
+                                                       Text="Loading..."
+                                                       HorizontalAlignment="Center"
+                                                       TextAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="340"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#FF1A2836" />
+                                        </Border>
+                                        <ProgressBar x:Name="OverviewLoadingProgress"
+                                                     Width="160"
+                                                     Height="6"
+                                                     Margin="0,12,0,0"
+                                                     Minimum="0"
+                                                     Maximum="1"
+                                                     Visibility="Collapsed"
+                                                     Foreground="#FF46627A"
+                                                     Background="#FFD0D8E0"
+                                                     BorderThickness="0" />
+                                    </StackPanel>
+                                </Border>
                             </Border>
                         </Grid>
 
@@ -890,19 +952,7 @@
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center" />
                         </Button>
-                        <Button Width="44"
-                                Height="44"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Left"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Margin="0,0,10,0"
-                                ToolTip="Rename order"
-                                Command="{Binding RenameOrderCommand}">
-                            <Button.Content>
-                                <Image Source="/Images/ToolBar/rename.png" />
-                            </Button.Content>
-                        </Button>
+
                         <Button Width="44"
                                 Height="44"
                                 VerticalAlignment="Center"
@@ -916,7 +966,7 @@
                                 <Image Source="/Images/ToolBar/xml.png" />
                             </Button.Content>
                         </Button>
-                        <Button Width="44"
+                        <!--<Button Width="44"
                                 Height="44"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Left"
@@ -928,7 +978,7 @@
                             <Button.Content>
                                 <Image Source="/Images/ToolBar/dcm.png" />
                             </Button.Content>
-                        </Button>
+                        </Button>-->
                         <StackPanel Margin="20,5,15,0">
                             <TextBlock Text="ITEMS"
                                        FontSize="10"
@@ -982,8 +1032,8 @@
                             </Button.Content>
                         </Button>
                     </Grid>
-                                </Grid>
-                            </Grid>
-                        </Border>
-                    </Border>
-                </Window>
+                </Grid>
+            </Grid>
+        </Border>
+    </Border>
+</Window>

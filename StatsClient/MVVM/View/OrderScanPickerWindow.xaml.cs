@@ -33,6 +33,15 @@ public partial class OrderScanPickerWindow : Window
         }
     }
 
+    public void RefreshItems(IEnumerable<OrderScanPickerItem> items)
+    {
+        Items.Clear();
+        foreach (var item in items.OrderBy(i => i.Group).ThenBy(i => i.DisplayName, StringComparer.OrdinalIgnoreCase))
+        {
+            Items.Add(item);
+        }
+    }
+
     private async void ActionButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { DataContext: OrderScanPickerItem item })

@@ -1,0 +1,226 @@
+<Window x:Class="StatsClient.MVVM.View.PanStackVisionReviewWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Pan stack — reading labels"
+
+        Height="860"
+
+        Width="1100"
+
+        MinHeight="640"
+
+        MinWidth="800"
+
+        WindowStartupLocation="CenterOwner"
+
+        FontFamily="Segoe UI"
+
+        Background="#FFF4F5F7">
+
+    <Grid Margin="12">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="*" />
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="280" />
+
+            <RowDefinition Height="Auto" />
+
+        </Grid.RowDefinitions>
+
+
+
+        <StackPanel>
+            <TextBlock x:Name="StatusTextBlock"
+                       Text="Analyzing image…"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Foreground="#FF1E293B"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,6" />
+            <Border x:Name="LoadingPanel"
+                    Background="#FFE8EEF5"
+                    BorderBrush="#FFCBD5E1"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="10,8"
+                    Margin="0,0,0,8"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock x:Name="ElapsedTimeTextBlock"
+                               HorizontalAlignment="Right"
+                               FontSize="15"
+                               FontWeight="Bold"
+                               Foreground="#FF1D4ED8"
+                               Text="Elapsed 0s" />
+                    <ProgressBar x:Name="LoadingProgressBar"
+                                 Height="16"
+                                 Margin="0,8,0,4"
+                                 Minimum="0"
+                                 Maximum="100"
+                                 IsIndeterminate="True"
+                                 Foreground="#FF2563EB"
+                                 Background="#FFCBD5E1" />
+                    <TextBlock x:Name="LoadingDetailTextBlock"
+                               FontSize="12"
+                               Foreground="#FF475569"
+                               Text="" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+
+
+        <Border x:Name="ImageViewport"
+                Grid.Row="1"
+                Background="#FF1E1E1E"
+                BorderBrush="#FFCBD5E1"
+                BorderThickness="1"
+                CornerRadius="4"
+                ClipToBounds="True">
+            <ScrollViewer x:Name="ImageScrollViewer"
+                          HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Hidden"
+                          Cursor="Hand"
+                          PreviewMouseWheel="ImageScrollViewer_OnPreviewMouseWheel"
+                          PreviewMouseDown="ImageScrollViewer_OnPreviewMouseDown"
+                          PreviewMouseMove="ImageScrollViewer_OnPreviewMouseMove"
+                          PreviewMouseUp="ImageScrollViewer_OnPreviewMouseUp">
+                <Grid x:Name="ImageTransformGrid" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <Image x:Name="SourceImage"
+                           Stretch="Fill"
+                           RenderOptions.BitmapScalingMode="HighQuality" />
+                    <Canvas x:Name="LabelOverlayCanvas" IsHitTestVisible="False" />
+                </Grid>
+            </ScrollViewer>
+        </Border>
+
+
+
+        <TextBlock Grid.Row="2"
+
+                   Text="Green tags on the photo show recognized labels. Review matrix (columns left → right, rows top → bottom). Each pan number must be unique. Scroll wheel zooms image; middle-drag pans."
+
+                   FontSize="12"
+
+                   Foreground="#FF475569"
+
+                   Margin="0,10,0,6"
+
+                   TextWrapping="Wrap" />
+
+
+
+        <Border Grid.Row="3"
+
+                Background="White"
+
+                BorderBrush="#FFCBD5E1"
+
+                BorderThickness="1"
+
+                CornerRadius="4"
+
+                Padding="8">
+
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+
+                          VerticalScrollBarVisibility="Disabled">
+
+                <Grid x:Name="MatrixGrid"
+
+                      HorizontalAlignment="Left" />
+
+            </ScrollViewer>
+
+        </Border>
+
+
+
+        <Grid Grid.Row="4"
+
+              Margin="0,12,0,0">
+
+            <StackPanel Orientation="Horizontal"
+
+                        HorizontalAlignment="Left">
+
+                <Button x:Name="AddRowButton"
+
+                        Content="+ Row"
+
+                        Width="72"
+
+                        Height="30"
+
+                        Margin="0,0,8,0"
+
+                        IsEnabled="False"
+
+                        Click="AddRowButton_OnClick" />
+
+                <Button x:Name="AddColumnButton"
+
+                        Content="+ Column"
+
+                        Width="88"
+
+                        Height="30"
+
+                        IsEnabled="False"
+
+                        Click="AddColumnButton_OnClick" />
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+
+                        HorizontalAlignment="Right">
+
+                <Button x:Name="CancelButton"
+
+                        Content="Cancel"
+
+                        Width="100"
+
+                        Height="32"
+
+                        Margin="0,0,8,0"
+
+                        IsCancel="True"
+
+                        Click="CancelButton_OnClick" />
+
+                <Button x:Name="AcceptButton"
+
+                        Content="Accept &amp; add to list"
+
+                        Width="160"
+
+                        Height="32"
+
+                        FontWeight="SemiBold"
+
+                        IsEnabled="False"
+
+                        IsDefault="True"
+
+                        Click="AcceptButton_OnClick" />
+
+            </StackPanel>
+
+        </Grid>
+
+    </Grid>
+
+</Window>
+
+

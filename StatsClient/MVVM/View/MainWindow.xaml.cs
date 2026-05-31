@@ -3,6 +3,7 @@ using StatsClient.MVVM.Core;
 using StatsClient.MVVM.ViewModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -92,6 +93,88 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         //tbFlyingSearch.PreviewKeyDown += new KeyEventHandler(HandleEscFs);
 
         zipArchiveIcon.Width = 0;
+
+        InitializePrescriptionMakerImageInput();
+    }
+
+    private void InitializePrescriptionMakerImageInput()
+    {
+        prescriptionMakerTabGrid.AllowDrop = true;
+        prescriptionMakerTabGrid.DragOver += PrescriptionMakerTabGrid_DragOver;
+        prescriptionMakerTabGrid.Drop += PrescriptionMakerTabGrid_Drop;
+        PreviewKeyDown += PrescriptionMakerImagePaste_PreviewKeyDown;
+    }
+
+    private bool IsPrescriptionMakerTabSelected()
+        => mainTabControl.SelectedItem == prescriptionMakerTab;
+
+    private void PrescriptionMakerTabGrid_DragOver(object sender, DragEventArgs e)
+    {
+        if (!IsPrescriptionMakerTabSelected())
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+            return;
+        }
+
+        e.Effects = PrescriptionMakerImageHelper.GetFirstImagePathFromDrop(e.Data) is not null
+            ? DragDropEffects.Copy
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private void PrescriptionMakerTabGrid_Drop(object sender, DragEventArgs e)
+    {
+        if (!IsPrescriptionMakerTabSelected())
+        {
+            return;
+        }
+
+        string? imagePath = PrescriptionMakerImageHelper.GetFirstImagePathFromDrop(e.Data);
+        if (imagePath is null)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        if (!PrescriptionMakerImageHelper.TryLoadPngBytesFromFile(imagePath, out byte[] pngBytes))
+        {
+            MainViewModel.Instance.ShowMessageBox(
+                "Image",
+                "Could not load the dropped image file.",
+                SMessageBoxButtons.Close,
+                MainViewModel.NotificationIcon.Warning,
+                12,
+                this);
+            return;
+        }
+
+        MainViewModel.Instance.HandlePrescriptionMakerImageReceived(pngBytes);
+    }
+
+    private void PrescriptionMakerImagePaste_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (!IsPrescriptionMakerTabSelected())
+        {
+            return;
+        }
+
+        bool isPaste =
+            (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control) ||
+            (e.Key == Key.Insert && Keyboard.Modifiers == ModifierKeys.Shift);
+
+        if (!isPaste)
+        {
+            return;
+        }
+
+        if (!PrescriptionMakerImageHelper.TryGetClipboardImagePng(out byte[] pngBytes))
+        {
+            return;
+        }
+
+        e.Handled = true;
+        MainViewModel.Instance.HandlePrescriptionMakerImageReceived(pngBytes);
     }
 
 

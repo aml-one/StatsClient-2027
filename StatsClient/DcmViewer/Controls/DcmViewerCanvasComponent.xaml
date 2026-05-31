@@ -43,6 +43,7 @@
                       ShowViewCube="True"
                       ShowCoordinateSystem="True"
                       IsRotationEnabled="True"
+                      IsInertiaEnabled="False"
                       CameraRotationMode="Trackball"
                       IsPanEnabled="True"
                       IsZoomEnabled="True"
