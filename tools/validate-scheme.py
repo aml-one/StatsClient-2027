@@ -206,6 +206,11 @@ def main() -> int:
                     errors.append(
                         f"{rel}:{i} Color resource '{key}' on {prop} — use SolidColorBrush key instead"
                     )
+            if "DefaultBackgroundColor=" in line:
+                for kind, key in RES_RE.findall(line):
+                    errors.append(
+                        f"{rel}:{i} WebView2 DefaultBackgroundColor cannot use {{{kind} {key}}} — set System.Drawing.Color in code-behind"
+                    )
 
     # 7) ColorSchemeResourceCatalog keys in C#
     cs_re = re.compile(

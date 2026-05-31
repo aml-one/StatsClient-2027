@@ -362,8 +362,7 @@
                                           Source="{Binding ServerLogUrl}"
                                           Cursor="Arrow"
                                           MouseWheel="Webview_MouseWheel"
-                                          CoreWebView2InitializationCompleted="Webview_CoreWebView2InitializationCompleted"
-                                          DefaultBackgroundColor="{DynamicResource WhiteBackground_Cl}" />
+                                          CoreWebView2InitializationCompleted="Webview_CoreWebView2InitializationCompleted" />
                         </Grid>
                     </Border>
 
