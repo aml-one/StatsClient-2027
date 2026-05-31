@@ -97,6 +97,11 @@ internal static partial class XamlResourceValidator
             "ImmersiveGlassBorder",
             "SemanticLinkColor",
             "BlackColor",
+            "TransparentColor_Cl",
+            "SplashBackground",
+            "BusyOverlayCancelBackground",
+            "PopupShadowColor_Cl",
+            "ViewerMeasurementColor_Cl",
         ];
 
         var errors = new List<string>();

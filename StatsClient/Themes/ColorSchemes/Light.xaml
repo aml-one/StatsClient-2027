@@ -392,6 +392,7 @@
     <!-- #region Popup / menu -->
     <SolidColorBrush x:Key="PopupSurfaceBackground">#FFFFFF</SolidColorBrush>
     <Color x:Key="PopupShadowColor">#40000000</Color>
+    <Color x:Key="PopupShadowColor_Cl">#40000000</Color>
     <!-- #endregion -->
 
     <!-- #region Splash screen (light — matches app gray palette) -->
@@ -499,6 +500,9 @@
     <Color x:Key="ViewerWatermarkGradientEnd">#C8CCD0</Color>
     <Color x:Key="ViewerSectionPlaneColor">#7A98C4</Color>
     <Color x:Key="ViewerMeasurementColor">#1F6FEB</Color>
+    <Color x:Key="ViewerMeasurementColorDark">#174EA6</Color>
+    <Color x:Key="ViewerMeasurementColor_Cl">#1F6FEB</Color>
+    <Color x:Key="ViewerMeasurementColorDark_Cl">#174EA6</Color>
     <Color x:Key="ViewerHighlightColor">#3DDC78</Color>
     <SolidColorBrush x:Key="ViewerInfoPanelBackground">#EAF2F7FD</SolidColorBrush>
     <SolidColorBrush x:Key="ViewerInfoPanelHeaderBackground">#DDE8F2</SolidColorBrush>
@@ -513,8 +517,14 @@
     <SolidColorBrush x:Key="ViewerPanelSubBackground">#F0F8FCFD</SolidColorBrush>
     <SolidColorBrush x:Key="ViewerTransparentBackground">#00000000</SolidColorBrush>
     <Color x:Key="ViewerShadowColor">#FF000000</Color>
+    <Color x:Key="ViewerShadowColor_Cl">#FF000000</Color>
     <SolidColorBrush x:Key="ViewerChromeBorder">#B8C6D5</SolidColorBrush>
     <SolidColorBrush x:Key="ImageViewportBackground">#1E1E1E</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region AccountInfo -->
+    <Color x:Key="AccountInfoDefaultColor">#46596F</Color>
+    <Color x:Key="AccountInfoDefaultColor_Cl">#46596F</Color>
     <!-- #endregion -->
 
     <!-- #region OrderInfo / misc window accents -->
