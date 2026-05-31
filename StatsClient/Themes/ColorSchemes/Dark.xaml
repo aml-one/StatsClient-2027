@@ -3,6 +3,10 @@
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
     <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
+            <Color x:Key="TransparentColor_Cl">#00000000</Color>
+            <Color x:Key="WindowBackgroundColor">#EEEEEE</Color>
+        </ResourceDictionary>
         <ResourceDictionary Source="/Themes/ColorSchemes/ColorSchemeFoundation.xaml" />
         <ResourceDictionary Source="/Themes/ColorSchemes/ListViewItemColors.Dark.xaml" />
     </ResourceDictionary.MergedDictionaries>
@@ -405,9 +409,11 @@
     <SolidColorBrush x:Key="SplashBodyForeground">#475569</SolidColorBrush>
     <SolidColorBrush x:Key="SplashHintForeground">#64748B</SolidColorBrush>
     <SolidColorBrush x:Key="SplashMutedForeground">#94A3B8</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashCardBackground">#FFFFFF</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashCardBorder">#CBD5E1</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashOverlayBackground">#AAEEEEEE</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashCardBackground">#D4DCE6</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashCardBorder">#A8B4C4</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashOverlayBackground">#55283445</SolidColorBrush>
+    <Color x:Key="SplashCardGradientTop_Cl">#E2E9F2</Color>
+    <Color x:Key="SplashCardGradientBottom_Cl">#C8D4E0</Color>
     <Color x:Key="SplashRingGradientStart_Cl">#6634D9F5</Color>
     <Color x:Key="SplashRingGradientMid_Cl">#3334D9F5</Color>
     <Color x:Key="SplashRingGradientEnd_Cl">#5534D9F5</Color>
@@ -1364,11 +1370,11 @@
     <Color x:Key="SplashAccentBlue_Cl">#0369A1</Color>
     <Color x:Key="SplashBackground_Cl">#EEEEEE</Color>
     <Color x:Key="SplashBodyForeground_Cl">#475569</Color>
-    <Color x:Key="SplashCardBackground_Cl">#FFFFFF</Color>
-    <Color x:Key="SplashCardBorder_Cl">#CBD5E1</Color>
+    <Color x:Key="SplashCardBackground_Cl">#D4DCE6</Color>
+    <Color x:Key="SplashCardBorder_Cl">#A8B4C4</Color>
     <Color x:Key="SplashHintForeground_Cl">#64748B</Color>
     <Color x:Key="SplashMutedForeground_Cl">#94A3B8</Color>
-    <Color x:Key="SplashOverlayBackground_Cl">#AAEEEEEE</Color>
+    <Color x:Key="SplashOverlayBackground_Cl">#55283445</Color>
     <Color x:Key="SplashTitleForeground_Cl">#334155</Color>
     <Color x:Key="SplashWarningOrangeDark_Cl">#F59E0B</Color>
     <Color x:Key="SplashWarningOrange_Cl">#FB923C</Color>

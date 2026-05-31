@@ -960,11 +960,19 @@
                                 Margin="16,0,16,-100"
                                 Height="112"
                                 VerticalAlignment="Bottom"
-                                Background="{DynamicResource SplashCardBackground}"
                                 CornerRadius="10"
                                 Opacity="0"
                                 Panel.ZIndex="20"
                                 RenderTransformOrigin="0.5,1">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0"
+                                                     EndPoint="0,1">
+                                    <GradientStop Color="{DynamicResource SplashCardGradientTop_Cl}"
+                                                  Offset="0" />
+                                    <GradientStop Color="{DynamicResource SplashCardGradientBottom_Cl}"
+                                                  Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
                             <Border.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform />

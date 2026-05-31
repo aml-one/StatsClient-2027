@@ -4,6 +4,10 @@
     <!-- Per-ListView and per-ListViewItem colors (Light). No shared tokens. -->
     <!-- XAML rules: DynamicResource on element/Style.Setter props; StaticResource in Trigger/DataTrigger setters; *_Cl for Color-only props. -->
 
+    <!-- Base colors required by StaticResource in this dictionary (merged child cannot see parent keys at parse time). -->
+    <Color x:Key="TransparentColor_Cl">#00000000</Color>
+    <Color x:Key="WindowBackgroundColor">#EEEEEE</Color>
+
     <!-- #region ListView containers -->
     <SolidColorBrush x:Key="LvListViewAccountInfo_Background" Color="{StaticResource TransparentColor_Cl}" />
     <SolidColorBrush x:Key="LvListViewExportHistory_Background" Color="{StaticResource TransparentColor_Cl}" />
