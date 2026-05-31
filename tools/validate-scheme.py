@@ -188,15 +188,24 @@ def main() -> int:
         errors.append(f"MISSING _Cl companion: {key}")
 
     # 6) SolidColorBrush used where Color expected (GradientStop Color=DynamicResource without _Cl)
+    brush_prop_re = re.compile(
+        r'(Background|BorderBrush|Foreground|Fill|Stroke)="\{(StaticResource|DynamicResource)\s+([^}]+)\}"'
+    )
     for path in ROOT.rglob("*.xaml"):
         if any(p in path.parts for p in ("obj", "bin")):
             continue
         rel = path.relative_to(ROOT).as_posix()
-        for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        for i, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
             if "GradientStop" in line or "DropShadowEffect" in line or 'SolidColorBrush Color=' in line:
                 for kind, key in RES_RE.findall(line):
                     if all_types.get(key) == "brush" and ("Color=" in line or ".Color" in line):
                         errors.append(f"{rel}:{i} brush '{key}' used on Color property")
+            for prop, kind, key in brush_prop_re.findall(line):
+                key = key.strip()
+                if key.endswith("_Cl") or all_types.get(key) == "color":
+                    errors.append(
+                        f"{rel}:{i} Color resource '{key}' on {prop} — use SolidColorBrush key instead"
+                    )
 
     # 7) ColorSchemeResourceCatalog keys in C#
     cs_re = re.compile(

@@ -885,7 +885,7 @@
                                       Style="{StaticResource LvListViewImages}" x:Name="Thumbnails"
                                   AllowDrop="True"
                                   Drop="Thumbnails_Drop"
-                                  Background="{DynamicResource WindowBackgroundColor}"
+                                  Background="{DynamicResource WindowBackgroundBrush}"
                                   BorderThickness="0"
                                   ItemsSource="{Binding ImageList}"
                                   ItemContainerStyle="{StaticResource LvItemImages}">

@@ -884,7 +884,7 @@
                             Margin="-2,3,0,-1.5"
                             BorderThickness="0"
                             BorderBrush="{DynamicResource TransparentBrush}"
-                            Background="{DynamicResource ClassicWindowBackgroundColor}">
+                            Background="{DynamicResource ClassicWindowBackgroundBrush}">
 
                         <Grid Margin="2,0,0,0">
                             <ProgressBar x:Name="pbArchivesProgressBar"
@@ -1042,7 +1042,7 @@
                                             Width="50"
                                             Command="{Binding Next50ResultOnArchivesSearchOnArchivePageCommand}" />
                                 </Grid>
-                                <Border Background="{DynamicResource ClassicWindowBackgroundColor}"
+                                <Border Background="{DynamicResource ClassicWindowBackgroundBrush}"
                                         CornerRadius="{Binding ArchivesCountText, Converter={StaticResource ArchivesCountTextToCornerRadiusConverter}}"
                                         d:CornerRadius="23,3,0,0"
                                         BorderBrush="{DynamicResource SettingsInputBackground}"
@@ -4303,7 +4303,7 @@
                         <!--#region PAYMENTS Order lists -->
                         <TabItem Header="Order lists"
                                  Style="{StaticResource paymentsTabItem}">
-                            <Border Background="{DynamicResource WindowBackgroundColor}">
+                            <Border Background="{DynamicResource WindowBackgroundBrush}">
                                 <Grid Margin="10">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="auto" />
