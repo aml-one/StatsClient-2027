@@ -11,7 +11,7 @@
         <Style x:Key="FuturisticProgressBar"
                TargetType="ProgressBar">
             <Setter Property="Height" Value="6" />
-            <Setter Property="Background" Value="{DynamicResource SchemeColor_332A3544}" />
+            <Setter Property="Background" Value="{DynamicResource BusyOverlayTrackBackground}" />
             <Setter Property="Foreground" Value="{DynamicResource AccentColor}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Template">
@@ -96,30 +96,30 @@
         <Border.Background>
             <LinearGradientBrush StartPoint="0,0"
                                  EndPoint="1,1">
-                <GradientStop Color="{DynamicResource SchemeColor_E610141C_Cl}"
+                <GradientStop Color="{DynamicResource BusyOverlayGradientStart_Cl}"
                               Offset="0" />
-                <GradientStop Color="{DynamicResource SchemeColor_D80C1018_Cl}"
+                <GradientStop Color="{DynamicResource BusyOverlayGradientMid_Cl}"
                               Offset="0.55" />
-                <GradientStop Color="{DynamicResource SchemeColor_CC121826_Cl}"
+                <GradientStop Color="{DynamicResource BusyOverlayGradientEnd_Cl}"
                               Offset="1" />
             </LinearGradientBrush>
         </Border.Background>
         <Border.BorderBrush>
             <LinearGradientBrush StartPoint="0,0"
                                  EndPoint="1,1">
-                <GradientStop Color="{DynamicResource ImmersiveFocusRing_Cl}"
+                <GradientStop Color="{DynamicResource BusyOverlayBorderStart_Cl}"
                               Offset="0" />
-                <GradientStop Color="{DynamicResource ImmersiveFilterButtonGlow_Cl}"
+                <GradientStop Color="{DynamicResource BusyOverlayBorderMid_Cl}"
                               Offset="0.5" />
-                <GradientStop Color="{DynamicResource SchemeColor_886B8CFF_Cl}"
+                <GradientStop Color="{DynamicResource BusyOverlayBorderEnd_Cl}"
                               Offset="1" />
             </LinearGradientBrush>
         </Border.BorderBrush>
         <Border.Effect>
             <DropShadowEffect ShadowDepth="0"
                               BlurRadius="36"
-                              Color="{DynamicResource ImmersiveCardShadow_Cl}"
-                              Opacity="0.55" />
+                              Color="{DynamicResource LightGrayBorderAndShadowColor_Cl}"
+                              Opacity="0.22" />
         </Border.Effect>
 
         <Grid ClipToBounds="True">
@@ -134,11 +134,11 @@
                 <Rectangle.Fill>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="0,1">
-                        <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
+                        <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                       Offset="0" />
-                        <GradientStop Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                        <GradientStop Color="{DynamicResource BusyOverlayBorderMid_Cl}"
                                       Offset="0.5" />
-                        <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
+                        <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                       Offset="1" />
                     </LinearGradientBrush>
                 </Rectangle.Fill>
@@ -153,9 +153,9 @@
                              Opacity="0.18">
                         <Ellipse.Fill>
                             <RadialGradientBrush>
-                                <GradientStop Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                <GradientStop Color="{DynamicResource BusyOverlayBorderMid_Cl}"
                                               Offset="0" />
-                                <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
+                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                               Offset="1" />
                             </RadialGradientBrush>
                         </Ellipse.Fill>
@@ -164,7 +164,7 @@
                     <Ellipse x:Name="OrbitRingOuter"
                              Width="98"
                              Height="98"
-                             Stroke="{DynamicResource SchemeColor_6634D9F5}"
+                             Stroke="{DynamicResource BusyOverlayOrbitOuter}"
                              StrokeThickness="1.2"
                              StrokeDashArray="3 9"
                              RenderTransformOrigin="0.5,0.5">
@@ -176,7 +176,7 @@
                     <Ellipse x:Name="OrbitRingMid"
                              Width="74"
                              Height="74"
-                             Stroke="{DynamicResource SchemeColor_886B8CFF}"
+                             Stroke="{DynamicResource BusyOverlayOrbitMid}"
                              StrokeThickness="1.4"
                              StrokeDashArray="2 6"
                              RenderTransformOrigin="0.5,0.5">
@@ -188,7 +188,7 @@
                     <Ellipse x:Name="OrbitRingInner"
                              Width="50"
                              Height="50"
-                             Stroke="{DynamicResource SchemeColor_AA34D9F5}"
+                             Stroke="{DynamicResource BusyOverlayOrbitInner}"
                              StrokeThickness="1.6"
                              StrokeDashArray="1.5 4"
                              RenderTransformOrigin="0.5,0.5">
@@ -207,11 +207,11 @@
                         </Ellipse.RenderTransform>
                         <Ellipse.Fill>
                             <RadialGradientBrush>
-                                <GradientStop Color="{DynamicResource SchemeColor_FF9AF4FF_Cl}"
+                                <GradientStop Color="{DynamicResource BusyOverlayCoreHighlight_Cl}"
                                               Offset="0" />
                                 <GradientStop Color="{DynamicResource AccentColor_Cl}"
                                               Offset="0.55" />
-                                <GradientStop Color="{DynamicResource SchemeColor_0034D9F5_Cl}"
+                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                               Offset="1" />
                             </RadialGradientBrush>
                         </Ellipse.Fill>
@@ -228,7 +228,7 @@
                            HorizontalAlignment="Center"
                            FontSize="10"
                            FontWeight="SemiBold"
-                           Foreground="{DynamicResource SchemeColor_6634D9F5}" />
+                           Foreground="{DynamicResource BusyOverlayLabelForeground}" />
 
                 <TextBlock Text="{Binding StatusText, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            Margin="0,8,0,0"
@@ -238,13 +238,13 @@
                            MaxWidth="320"
                            FontSize="15"
                            FontWeight="SemiBold"
-                           Foreground="{DynamicResource ImmersiveFilterButtonHoverGradientEnd}"
+                           Foreground="{DynamicResource BusyOverlayStatusForeground}"
                            LineHeight="22">
                     <TextBlock.Effect>
                         <DropShadowEffect ShadowDepth="0"
                                           BlurRadius="8"
-                                          Color="{DynamicResource ImmersiveCardShadow_Cl}"
-                                          Opacity="0.35" />
+                                          Color="{DynamicResource LightGrayBorderAndShadowColor_Cl}"
+                                          Opacity="0.2" />
                     </TextBlock.Effect>
                 </TextBlock>
 
@@ -268,7 +268,7 @@
                                VerticalAlignment="Bottom"
                                Margin="0,0,0,3"
                                FontSize="11"
-                               Foreground="{DynamicResource SchemeColor_668898A8}"
+                               Foreground="{DynamicResource BusyOverlayPercentMuted}"
                                FontWeight="SemiBold" />
                 </Grid>
 
@@ -283,8 +283,8 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="Root"
                                     CornerRadius="8"
-                                    Background="{DynamicResource SchemeColor_22101820}"
-                                    BorderBrush="{DynamicResource ImmersiveCardShadow_Cl}"
+                                    Background="{DynamicResource BusyOverlayCancelBackground}"
+                                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
                                     BorderThickness="1"
                                     Padding="12,6">
                                 <ContentPresenter HorizontalAlignment="Center"
@@ -294,15 +294,15 @@
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="Root"
                                             Property="Background"
-                                            Value="{StaticResource SchemeColor_3334D9F5}" />
+                                            Value="{StaticResource BusyOverlayCancelHoverBackground}" />
                                     <Setter TargetName="Root"
                                             Property="BorderBrush"
-                                            Value="{StaticResource SchemeColor_AA34D9F5}" />
+                                            Value="{StaticResource BusyOverlayCancelHoverBorder}" />
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
                                     <Setter TargetName="Root"
                                             Property="Background"
-                                            Value="{StaticResource ImmersiveCardShadow_Cl}" />
+                                            Value="{StaticResource BusyOverlayCancelPressedBackground}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -310,9 +310,9 @@
                     <Button.Foreground>
                         <LinearGradientBrush StartPoint="0,0"
                                              EndPoint="1,0">
-                            <GradientStop Color="{DynamicResource ImmersiveFilterButtonHoverGradientEnd_Cl}"
+                            <GradientStop Color="{DynamicResource BusyOverlayButtonTextStart_Cl}"
                                           Offset="0" />
-                            <GradientStop Color="{DynamicResource SchemeColor_FF9AF4FF_Cl}"
+                            <GradientStop Color="{DynamicResource BusyOverlayButtonTextEnd_Cl}"
                                           Offset="1" />
                         </LinearGradientBrush>
                     </Button.Foreground>

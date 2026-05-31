@@ -433,11 +433,11 @@
                 Margin="4"
                 Background="{DynamicResource TransparentBrush}">
             <Border.Effect>
-                <DropShadowEffect Color="{DynamicResource BlackColor_Cl}"
+                <DropShadowEffect Color="{DynamicResource LightGrayBorderAndShadowColor_Cl}"
                                   Direction="270"
                                   ShadowDepth="5"
                                   BlurRadius="30"
-                                  Opacity="0.55" />
+                                  Opacity="0.28" />
             </Border.Effect>
         </Border>
 
@@ -448,11 +448,11 @@
             <Border.Background>
                 <LinearGradientBrush StartPoint="0.15,0"
                                      EndPoint="0.85,1">
-                    <GradientStop Color="{DynamicResource SchemeColor_8860A5FA_Cl}"
+                    <GradientStop Color="{DynamicResource SplashRingGradientStart_Cl}"
                                   Offset="0" />
-                    <GradientStop Color="{DynamicResource SchemeColor_2238BDF8_Cl}"
+                    <GradientStop Color="{DynamicResource SplashRingGradientMid_Cl}"
                                   Offset="0.5" />
-                    <GradientStop Color="{DynamicResource SchemeColor_5560A5FA_Cl}"
+                    <GradientStop Color="{DynamicResource SplashRingGradientEnd_Cl}"
                                   Offset="1" />
                 </LinearGradientBrush>
             </Border.Background>
@@ -470,13 +470,13 @@
                         <Rectangle.Fill>
                             <LinearGradientBrush StartPoint="0,0"
                                                  EndPoint="1,0">
-                                <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                               Offset="0" />
-                                <GradientStop Color="{DynamicResource SchemeColor_33FFFFFF_Cl}"
+                                <GradientStop Color="{DynamicResource SplashHighlightSoft_Cl}"
                                               Offset="0.25" />
-                                <GradientStop Color="{DynamicResource SchemeColor_14FFFFFF_Cl}"
+                                <GradientStop Color="{DynamicResource SplashHighlightFaint_Cl}"
                                               Offset="0.75" />
-                                <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                               Offset="1" />
                             </LinearGradientBrush>
                         </Rectangle.Fill>
@@ -489,11 +489,11 @@
                         <Rectangle.Fill>
                             <LinearGradientBrush StartPoint="0,0"
                                                  EndPoint="1,0">
-                                <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                               Offset="0" />
-                                <GradientStop Color="{DynamicResource SchemeColor_2238BDF8_Cl}"
+                                <GradientStop Color="{DynamicResource SplashRingGradientMid_Cl}"
                                               Offset="0.5" />
-                                <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                               Offset="1" />
                             </LinearGradientBrush>
                         </Rectangle.Fill>
@@ -510,9 +510,9 @@
                                                      Center="0.5,0.3"
                                                      RadiusX="0.55"
                                                      RadiusY="0.55">
-                                    <GradientStop Color="{DynamicResource SchemeColor_1E38BDF8_Cl}"
+                                    <GradientStop Color="{DynamicResource SplashGlowAccent_Cl}"
                                                   Offset="0" />
-                                    <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                                   Offset="1" />
                                 </RadialGradientBrush>
                             </Rectangle.Fill>
@@ -526,12 +526,12 @@
                                 <LinearGradientBrush StartPoint="0,0"
                                                      EndPoint="1,1">
                                     <GradientStop x:Name="gradientStop1"
-                                                  Color="{DynamicResource SchemeColor_16111827_Cl}"
+                                                  Color="{DynamicResource SplashWashStart_Cl}"
                                                   Offset="0" />
                                     <GradientStop x:Name="gradientStop2"
-                                                  Color="{DynamicResource SchemeColor_1638BDF8_Cl}"
+                                                  Color="{DynamicResource SplashWashMid_Cl}"
                                                   Offset="0.5" />
-                                    <GradientStop Color="{DynamicResource SchemeColor_16111827_Cl}"
+                                    <GradientStop Color="{DynamicResource SplashWashEnd_Cl}"
                                                   Offset="1" />
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
@@ -544,11 +544,11 @@
                             <Rectangle.Fill>
                                 <LinearGradientBrush StartPoint="0,0"
                                                      EndPoint="1,0">
-                                    <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                                   Offset="0" />
-                                    <GradientStop Color="{DynamicResource SchemeColor_CC60A5FA_Cl}"
+                                    <GradientStop Color="{DynamicResource SplashAccentBar_Cl}"
                                                   Offset="0.5" />
-                                    <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                                   Offset="1" />
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
@@ -564,9 +564,9 @@
                                  IsHitTestVisible="False">
                             <Ellipse.Fill>
                                 <RadialGradientBrush>
-                                    <GradientStop Color="{DynamicResource SchemeColor_6038BDF8_Cl}"
+                                    <GradientStop Color="{DynamicResource SplashGlowStrong_Cl}"
                                                   Offset="0" />
-                                    <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                                   Offset="1" />
                                 </RadialGradientBrush>
                             </Ellipse.Fill>
@@ -584,11 +584,11 @@
                             <Rectangle.Fill>
                                 <LinearGradientBrush StartPoint="0,0"
                                                      EndPoint="1,0">
-                                    <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                                   Offset="0" />
-                                    <GradientStop Color="{DynamicResource SchemeColor_5060A5FA_Cl}"
+                                    <GradientStop Color="{DynamicResource SplashGlowMedium_Cl}"
                                                   Offset="0.5" />
-                                    <GradientStop Color="{DynamicResource BlackColor_Cl}"
+                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
                                                   Offset="1" />
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
@@ -602,32 +602,32 @@
                                 Opacity="0.45">
                             <Ellipse Width="2.3"
                                      Height="2.3"
-                                     Fill="{DynamicResource SchemeColor_2260A5FA}"
+                                     Fill="{DynamicResource SplashParticleStrong}"
                                      Canvas.Left="0"
                                      Canvas.Top="0" />
                             <Ellipse Width="2.3"
                                      Height="2.3"
-                                     Fill="{DynamicResource SchemeColor_2260A5FA}"
+                                     Fill="{DynamicResource SplashParticleStrong}"
                                      Canvas.Left="14"
                                      Canvas.Top="0" />
                             <Ellipse Width="2.3"
                                      Height="2.3"
-                                     Fill="{DynamicResource SchemeColor_1860A5FA}"
+                                     Fill="{DynamicResource SplashParticleMid}"
                                      Canvas.Left="28"
                                      Canvas.Top="0" />
                             <Ellipse Width="2.3"
                                      Height="2.3"
-                                     Fill="{DynamicResource SchemeColor_1860A5FA}"
+                                     Fill="{DynamicResource SplashParticleMid}"
                                      Canvas.Left="0"
                                      Canvas.Top="14" />
                             <Ellipse Width="2.3"
                                      Height="2.3"
-                                     Fill="{DynamicResource SchemeColor_1860A5FA}"
+                                     Fill="{DynamicResource SplashParticleMid}"
                                      Canvas.Left="14"
                                      Canvas.Top="14" />
                             <Ellipse Width="2.3"
                                      Height="2.3"
-                                     Fill="{DynamicResource SchemeColor_1260A5FA}"
+                                     Fill="{DynamicResource SplashParticleFaint}"
                                      Canvas.Left="28"
                                      Canvas.Top="14" />
                         </Canvas>
@@ -643,14 +643,14 @@
                                       Y1="12"
                                       X2="0"
                                       Y2="0"
-                                      Stroke="{DynamicResource SchemeColor_7060A5FA}"
+                                      Stroke="{DynamicResource SplashOrbitStroke}"
                                       StrokeThickness="1.5"
                                       SnapsToDevicePixels="True" />
                                 <Line X1="0"
                                       Y1="0"
                                       X2="12"
                                       Y2="0"
-                                      Stroke="{DynamicResource SchemeColor_7060A5FA}"
+                                      Stroke="{DynamicResource SplashOrbitStroke}"
                                       StrokeThickness="1.5"
                                       SnapsToDevicePixels="True" />
                             </Canvas>
@@ -664,14 +664,14 @@
                                       Y1="0"
                                       X2="12"
                                       Y2="0"
-                                      Stroke="{DynamicResource SchemeColor_7060A5FA}"
+                                      Stroke="{DynamicResource SplashOrbitStroke}"
                                       StrokeThickness="1.5"
                                       SnapsToDevicePixels="True" />
                                 <Line X1="12"
                                       Y1="0"
                                       X2="12"
                                       Y2="12"
-                                      Stroke="{DynamicResource SchemeColor_7060A5FA}"
+                                      Stroke="{DynamicResource SplashOrbitStroke}"
                                       StrokeThickness="1.5"
                                       SnapsToDevicePixels="True" />
                             </Canvas>
@@ -685,14 +685,14 @@
                                       Y1="0"
                                       X2="0"
                                       Y2="12"
-                                      Stroke="{DynamicResource SchemeColor_7060A5FA}"
+                                      Stroke="{DynamicResource SplashOrbitStroke}"
                                       StrokeThickness="1.5"
                                       SnapsToDevicePixels="True" />
                                 <Line X1="0"
                                       Y1="12"
                                       X2="12"
                                       Y2="12"
-                                      Stroke="{DynamicResource SchemeColor_7060A5FA}"
+                                      Stroke="{DynamicResource SplashOrbitStroke}"
                                       StrokeThickness="1.5"
                                       SnapsToDevicePixels="True" />
                             </Canvas>
@@ -706,14 +706,14 @@
                                       Y1="12"
                                       X2="12"
                                       Y2="12"
-                                      Stroke="{DynamicResource SchemeColor_7060A5FA}"
+                                      Stroke="{DynamicResource SplashOrbitStroke}"
                                       StrokeThickness="1.5"
                                       SnapsToDevicePixels="True" />
                                 <Line X1="12"
                                       Y1="0"
                                       X2="12"
                                       Y2="12"
-                                      Stroke="{DynamicResource SchemeColor_7060A5FA}"
+                                      Stroke="{DynamicResource SplashOrbitStroke}"
                                       StrokeThickness="1.5"
                                       SnapsToDevicePixels="True" />
                             </Canvas>
@@ -725,77 +725,77 @@
                                          Canvas.Top="18"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_22FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleStrong}" />
                                 <Ellipse Canvas.Left="408"
                                          Canvas.Top="18"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_22FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleStrong}" />
                                 <Ellipse Canvas.Left="422"
                                          Canvas.Top="18"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_22FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleStrong}" />
                                 <Ellipse Canvas.Left="436"
                                          Canvas.Top="18"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_22FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleStrong}" />
                                 <Ellipse Canvas.Left="450"
                                          Canvas.Top="18"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_22FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleStrong}" />
                                 <Ellipse Canvas.Left="464"
                                          Canvas.Top="18"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_22FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleStrong}" />
                                 <Ellipse Canvas.Left="394"
                                          Canvas.Top="32"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_14FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleMid}" />
                                 <Ellipse Canvas.Left="408"
                                          Canvas.Top="32"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_14FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleMid}" />
                                 <Ellipse Canvas.Left="422"
                                          Canvas.Top="32"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_14FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleMid}" />
                                 <Ellipse Canvas.Left="436"
                                          Canvas.Top="32"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_14FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleMid}" />
                                 <Ellipse Canvas.Left="450"
                                          Canvas.Top="32"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_14FFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleMid}" />
                                 <Ellipse Canvas.Left="394"
                                          Canvas.Top="46"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_0DFFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleWhisper}" />
                                 <Ellipse Canvas.Left="408"
                                          Canvas.Top="46"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_0DFFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleWhisper}" />
                                 <Ellipse Canvas.Left="422"
                                          Canvas.Top="46"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_0DFFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleWhisper}" />
                                 <Ellipse Canvas.Left="436"
                                          Canvas.Top="46"
                                          Width="2.5"
                                          Height="2.5"
-                                         Fill="{DynamicResource SchemeColor_0DFFFFFF}" />
+                                         Fill="{DynamicResource SplashSparkleWhisper}" />
                             </Canvas>
                         </Grid>
 
@@ -807,21 +807,21 @@
                                      Canvas.Top="310"
                                      Width="3"
                                      Height="3"
-                                     Fill="{DynamicResource SchemeColor_AA60A5FA}"
+                                     Fill="{DynamicResource SplashLogoGlowPrimary}"
                                      Opacity="0" />
                             <Ellipse x:Name="particle2"
                                      Canvas.Left="248"
                                      Canvas.Top="310"
                                      Width="2.5"
                                      Height="2.5"
-                                     Fill="{DynamicResource SchemeColor_9938BDF8}"
+                                     Fill="{DynamicResource SplashLogoGlowSecondary}"
                                      Opacity="0" />
                             <Ellipse x:Name="particle3"
                                      Canvas.Left="416"
                                      Canvas.Top="310"
                                      Width="4"
                                      Height="4"
-                                     Fill="{DynamicResource SchemeColor_AA60A5FA}"
+                                     Fill="{DynamicResource SplashLogoGlowPrimary}"
                                      Opacity="0" />
                         </Canvas>
 
@@ -915,7 +915,7 @@
                                        Text="{Binding SoftwareVersion, StringFormat='v\{0}'}"
                                        FontSize="110"
                                        FontWeight="SemiBold"
-                                       Foreground="{DynamicResource SchemeColor_33FB923C}"
+                                       Foreground="{DynamicResource SplashWarningTextSoft}"
                                        HorizontalAlignment="Center"
                                        Opacity="0"
                                        Margin="0,0,0,0">
@@ -927,7 +927,7 @@
                                        Text="{Binding SoftwareVersion, StringFormat='v\{0}'}"
                                        FontSize="1"
                                        FontWeight="SemiBold"
-                                       Foreground="{DynamicResource SchemeColor_22FDBA74}"
+                                       Foreground="{DynamicResource SplashWarningTextFaint}"
                                        HorizontalAlignment="Center"
                                        Opacity="0"
                                        Cursor="Hand">
@@ -981,11 +981,11 @@
                                         <LinearGradientBrush.Transform>
                                             <TranslateTransform X="-1" />
                                         </LinearGradientBrush.Transform>
-                                        <GradientStop Color="{DynamicResource SchemeColor_003A4558_Cl}"
+                                        <GradientStop Color="{DynamicResource SplashCardShimmerStart_Cl}"
                                                       Offset="0" />
-                                        <GradientStop Color="{DynamicResource SchemeColor_70879462_Cl}"
+                                        <GradientStop Color="{DynamicResource SplashCardShimmerMid_Cl}"
                                                       Offset="0.5" />
-                                        <GradientStop Color="{DynamicResource SchemeColor_003A4558_Cl}"
+                                        <GradientStop Color="{DynamicResource SplashCardShimmerStart_Cl}"
                                                       Offset="1" />
                                     </LinearGradientBrush>
                                 </Border.BorderBrush>
@@ -1032,7 +1032,7 @@
                                                Text="{Binding LoadingText}"
                                                d:Text="Checking server connection.."
                                                FontSize="9.5"
-                                               Foreground="{DynamicResource SchemeColor_C8D2E1}"
+                                               Foreground="{DynamicResource SplashCardSubtitle}"
                                                Margin="0,5,0,0" />
                                     <Grid Grid.Row="2"
                                           Grid.ColumnSpan="2"
@@ -1048,9 +1048,9 @@
                                             <Rectangle.Fill>
                                                 <LinearGradientBrush StartPoint="0,0"
                                                                      EndPoint="1,0">
-                                                    <GradientStop Color="{DynamicResource SchemeColor_FFFB923C_Cl}"
+                                                    <GradientStop Color="{DynamicResource SplashWarningGradientStart_Cl}"
                                                                   Offset="0" />
-                                                    <GradientStop Color="{DynamicResource SchemeColor_FFF59E0B_Cl}"
+                                                    <GradientStop Color="{DynamicResource SplashWarningGradientEnd_Cl}"
                                                                   Offset="1" />
                                                 </LinearGradientBrush>
                                             </Rectangle.Fill>

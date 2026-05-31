@@ -393,19 +393,76 @@
     <Color x:Key="PopupShadowColor">#40000000</Color>
     <!-- #endregion -->
 
-    <!-- #region Splash screen -->
-    <SolidColorBrush x:Key="SplashBackground">#111827</SolidColorBrush>
-    <Color x:Key="SplashAccentBlue">#60A5FA</Color>
+    <!-- #region Splash screen (light — matches app gray palette) -->
+    <SolidColorBrush x:Key="SplashBackground">#EEEEEE</SolidColorBrush>
+    <Color x:Key="SplashAccentBlue">#0369A1</Color>
     <Color x:Key="SplashAccentBlueLight">#38BDF8</Color>
     <SolidColorBrush x:Key="SplashWarningOrange">#FB923C</SolidColorBrush>
     <SolidColorBrush x:Key="SplashWarningOrangeDark">#F59E0B</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashTitleForeground">#E8F4FD</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashBodyForeground">#F8FAFC</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashHintForeground">#88AACCEE</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashMutedForeground">#33AABBCC</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashCardBackground">#2B313D</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashCardBorder">#3D4654</SolidColorBrush>
-    <SolidColorBrush x:Key="SplashOverlayBackground">#CC000000</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashTitleForeground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashBodyForeground">#475569</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashHintForeground">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashMutedForeground">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashCardBackground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashCardBorder">#CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashOverlayBackground">#AAEEEEEE</SolidColorBrush>
+    <Color x:Key="SplashRingGradientStart_Cl">#6634D9F5</Color>
+    <Color x:Key="SplashRingGradientMid_Cl">#3334D9F5</Color>
+    <Color x:Key="SplashRingGradientEnd_Cl">#5534D9F5</Color>
+    <Color x:Key="SplashHighlightSoft_Cl">#EEFFFFFF</Color>
+    <Color x:Key="SplashHighlightFaint_Cl">#44FFFFFF</Color>
+    <Color x:Key="SplashWashStart_Cl">#FFF5F8FC</Color>
+    <Color x:Key="SplashWashMid_Cl">#FFEEF6F3</Color>
+    <Color x:Key="SplashWashEnd_Cl">#FFF0EFF8</Color>
+    <Color x:Key="SplashGlowAccent_Cl">#4434D9F5</Color>
+    <Color x:Key="SplashGlowStrong_Cl">#6034D9F5</Color>
+    <Color x:Key="SplashGlowMedium_Cl">#5034D9F5</Color>
+    <Color x:Key="SplashAccentBar_Cl">#CC0369A1</Color>
+    <SolidColorBrush x:Key="SplashParticleStrong">#333475569</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashParticleMid">#283475569</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashParticleLight">#223475569</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashParticleFaint">#183475569</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashOrbitStroke">#5534D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashSparkleStrong">#44CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashSparkleMid">#33CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashSparkleFaint">#22CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashSparkleWhisper">#11CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashLogoGlowPrimary">#AA34D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashLogoGlowSecondary">#9938BDF8</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashWarningTextSoft">#33FB923C</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashWarningTextFaint">#22FDBA74</SolidColorBrush>
+    <SolidColorBrush x:Key="SplashCardSubtitle">#64748B</SolidColorBrush>
+    <Color x:Key="SplashCardShimmerStart_Cl">#00CBD5E1</Color>
+    <Color x:Key="SplashCardShimmerMid_Cl">#55CBD5E1</Color>
+    <Color x:Key="SplashCardShimmerEnd_Cl">#00CBD5E1</Color>
+    <Color x:Key="SplashWarningGradientStart_Cl">#FFFB923C</Color>
+    <Color x:Key="SplashWarningGradientEnd_Cl">#FFF59E0B</Color>
+    <!-- #endregion -->
+
+    <!-- #region Busy overlay (light — matches app gray palette) -->
+    <Color x:Key="BusyOverlayGradientStart_Cl">#FAFFFFFF</Color>
+    <Color x:Key="BusyOverlayGradientMid_Cl">#F5F8FC</Color>
+    <Color x:Key="BusyOverlayGradientEnd_Cl">#E8EEF5</Color>
+    <Color x:Key="BusyOverlayBorderStart_Cl">#8834D9F5</Color>
+    <Color x:Key="BusyOverlayBorderMid_Cl">#4434D9F5</Color>
+    <Color x:Key="BusyOverlayBorderEnd_Cl">#88CBD5E1</Color>
+    <SolidColorBrush x:Key="BusyOverlayTrackBackground">#E8E8E8</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayLabelForeground">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayStatusForeground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayPercentMuted">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayOrbitOuter">#5534D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayOrbitMid">#7734D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayOrbitInner">#9934D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayCoreHighlight">#FFBAE6FD</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayCancelBackground">#F0F4F8</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayCancelHoverBackground">#E0F2FE</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayCancelHoverBorder">#5534D9F5</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayCancelPressedBackground">#CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayButtonTextStart">#0369A1</SolidColorBrush>
+    <SolidColorBrush x:Key="BusyOverlayButtonTextEnd">#38BDF8</SolidColorBrush>
+    <Color x:Key="BusyOverlayCoreHighlight_Cl">#FFBAE6FD</Color>
+    <Color x:Key="BusyOverlayButtonTextStart_Cl">#0369A1</Color>
+    <Color x:Key="BusyOverlayButtonTextEnd_Cl">#38BDF8</Color>
     <!-- #endregion -->
 
     <!-- #region DcmViewer -->
@@ -1293,15 +1350,15 @@
     <Color x:Key="SettingsTabHeaderBackground_Cl">#66696F</Color>
     <Color x:Key="ShowRxButtonColor_Cl">#C6BE13</Color>
     <Color x:Key="SplashAccentBlueLight_Cl">#38BDF8</Color>
-    <Color x:Key="SplashAccentBlue_Cl">#60A5FA</Color>
-    <Color x:Key="SplashBackground_Cl">#111827</Color>
-    <Color x:Key="SplashBodyForeground_Cl">#F8FAFC</Color>
-    <Color x:Key="SplashCardBackground_Cl">#2B313D</Color>
-    <Color x:Key="SplashCardBorder_Cl">#3D4654</Color>
-    <Color x:Key="SplashHintForeground_Cl">#88AACCEE</Color>
-    <Color x:Key="SplashMutedForeground_Cl">#33AABBCC</Color>
-    <Color x:Key="SplashOverlayBackground_Cl">#CC000000</Color>
-    <Color x:Key="SplashTitleForeground_Cl">#E8F4FD</Color>
+    <Color x:Key="SplashAccentBlue_Cl">#0369A1</Color>
+    <Color x:Key="SplashBackground_Cl">#EEEEEE</Color>
+    <Color x:Key="SplashBodyForeground_Cl">#475569</Color>
+    <Color x:Key="SplashCardBackground_Cl">#FFFFFF</Color>
+    <Color x:Key="SplashCardBorder_Cl">#CBD5E1</Color>
+    <Color x:Key="SplashHintForeground_Cl">#64748B</Color>
+    <Color x:Key="SplashMutedForeground_Cl">#94A3B8</Color>
+    <Color x:Key="SplashOverlayBackground_Cl">#AAEEEEEE</Color>
+    <Color x:Key="SplashTitleForeground_Cl">#334155</Color>
     <Color x:Key="SplashWarningOrangeDark_Cl">#F59E0B</Color>
     <Color x:Key="SplashWarningOrange_Cl">#FB923C</Color>
     <Color x:Key="TabItem.Selected.Background_Cl">#FFFFFF</Color>
