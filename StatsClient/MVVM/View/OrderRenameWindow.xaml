@@ -42,6 +42,136 @@
             <converter:EmptyToHiddenConverter x:Key="EmptyToHiddenConverter" />
             <converter:BoolToInverseVisibilityConverter x:Key="BoolToInverseVisibilityConverter" />
             <converter:BoolToFGColorConverter x:Key="BoolToFGColorConverter" />
+
+            <Style x:Key="OrderRenameCloseButton"
+                   TargetType="Button">
+                <Setter Property="Background"
+                        Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness"
+                        Value="0" />
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Border"
+                                    Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter Property="Background"
+                                            Value="{StaticResource SchemeColor_DE766B}"
+                                            TargetName="Border" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="OrderRenameButtonBase"
+                   TargetType="Button">
+                <Setter Property="BorderThickness"
+                        Value="1" />
+                <Setter Property="Padding"
+                        Value="10,5" />
+                <Setter Property="FontSize"
+                        Value="13" />
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6"
+                                    Padding="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter TargetName="border"
+                                            Property="Opacity"
+                                            Value="0.9" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled"
+                                         Value="False">
+                                    <Setter TargetName="border"
+                                            Property="Opacity"
+                                            Value="0.45" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="OrderRenameToolButton"
+                   TargetType="Button"
+                   BasedOn="{StaticResource OrderRenameButtonBase}">
+                <Setter Property="Background"
+                        Value="{DynamicResource OrderRenameToolButtonBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource OrderRenameToolButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource OrderRenameToolButtonBorder}" />
+            </Style>
+
+            <Style x:Key="OrderRenameResetButton"
+                   TargetType="Button"
+                   BasedOn="{StaticResource OrderRenameButtonBase}">
+                <Setter Property="Background"
+                        Value="{DynamicResource OrderRenameResetButtonBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource OrderRenameResetButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource OrderRenameResetButtonBorder}" />
+            </Style>
+
+            <Style x:Key="OrderRenameCopyButton"
+                   TargetType="Button"
+                   BasedOn="{StaticResource OrderRenameButtonBase}">
+                <Setter Property="Background"
+                        Value="{DynamicResource OrderRenameCopyButtonBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource OrderRenameCopyButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource OrderRenameCopyButtonBorder}" />
+            </Style>
+
+            <Style x:Key="OrderRenameCancelButton"
+                   TargetType="Button"
+                   BasedOn="{StaticResource OrderRenameButtonBase}">
+                <Setter Property="Background"
+                        Value="{DynamicResource OrderRenameCancelButtonBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource OrderRenameCancelButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource OrderRenameCancelButtonBorder}" />
+            </Style>
+
+            <Style x:Key="OrderRenameConfirmButton"
+                   TargetType="Button"
+                   BasedOn="{StaticResource OrderRenameButtonBase}">
+                <Setter Property="Background"
+                        Value="{DynamicResource OrderRenameConfirmButtonBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource OrderRenameConfirmButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource OrderRenameConfirmButtonBorder}" />
+                <Setter Property="FontWeight"
+                        Value="SemiBold" />
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -79,19 +209,17 @@
                        Panel.ZIndex="-1" />
 
 
-                <TextBlock Text="?"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Top"
-                           Cursor="Hand"
-                           Foreground="{DynamicResource BlackColor}"
-                           Panel.ZIndex="50"
-                           FontSize="16">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="MouseDown">
-                            <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </TextBlock>
+                <Button Content="╳"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Width="36"
+                        Height="30"
+                        FontSize="12"
+                        Panel.ZIndex="50"
+                        Margin="0,-2,0,0"
+                        Foreground="{DynamicResource OrderRenameTitleForeground}"
+                        Command="{Binding CloseWindowCommand}"
+                        Style="{StaticResource OrderRenameCloseButton}" />
 
                 <Border BorderBrush="{DynamicResource OrderRenameDivider}"
                         BorderThickness="0,0,0,1"
@@ -113,7 +241,7 @@
                                  Margin="0,0,0,0"
                                  BorderThickness="0"
                                  Background="{DynamicResource TransparentBrush}"
-                                 Foreground="{DynamicResource BlackColor}"
+                                 Foreground="{DynamicResource OrderRenameTitleForeground}"
                                  Cursor="Arrow"
                                  IsReadOnly="True"
                                  FontWeight="Light" />
@@ -154,7 +282,7 @@
 
                     <TextBlock Text="Order ID:"
                                FontSize="16"
-                               Foreground="{DynamicResource BlackColor}"
+                               Foreground="{DynamicResource OrderRenameLabelForeground}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Right"
                                Margin="0,0,10,0" />
@@ -177,7 +305,7 @@
                                   IsChecked="{Binding MakeCommentAboutRename, Mode=TwoWay}"
                                   IsEnabled="{Binding ControlsEnabled}"
                                   Style="{StaticResource CircleCheckBox}"
-                                  Foreground="{DynamicResource NamedBrown}" />
+                                  Foreground="{DynamicResource OrderRenameNoteForeground}" />
                     </WrapPanel>
 
                     <StackPanel Orientation="Horizontal"
@@ -185,20 +313,20 @@
                                 Grid.Column="1"
                                 HorizontalAlignment="Right">
                         <Button Width="120"
-                                Height="25"
+                                Height="28"
                                 Content="Smart Naming"
-                                Background="{DynamicResource NamedLightYellow}"
                                 Panel.ZIndex="10"
+                                Style="{StaticResource OrderRenameToolButton}"
                                 IsEnabled="{Binding ControlsEnabled}"
                                 d:Visibility="Visible"
                                 Command="{Binding GenerateNameCommand}" />
 
                         <Button Width="120"
-                                Height="25"
+                                Height="28"
                                 Content="Reset changes"
-                                Background="{DynamicResource NamedPink}"
                                 Panel.ZIndex="10"
                                 Margin="5,0,0,0"
+                                Style="{StaticResource OrderRenameResetButton}"
                                 IsEnabled="{Binding ControlsEnabled}"
                                 Visibility="{Binding ShowResetButton}"
                                 d:Visibility="Visible"
@@ -224,7 +352,7 @@
                             <TextBlock Text="Patient Name"
                                        Margin="0,4,0,0"
                                        FontSize="11"
-                                       Foreground="{DynamicResource BlackColor}"
+                                       Foreground="{DynamicResource OrderRenameLabelForeground}"
                                        FontWeight="SemiBold" />
                             <TextBlock Text="{Binding PatientName}"
                                        d:Text="JANE DOE"
@@ -235,7 +363,7 @@
                             <TextBlock Text="Customer"
                                        FontSize="11"
                                        FontWeight="SemiBold"
-                                       Foreground="{DynamicResource BlackColor}"
+                                       Foreground="{DynamicResource OrderRenameLabelForeground}"
                                        Margin="0,10,0,0" />
                             <TextBlock Text="{Binding ThreeShapeObject.Customer}"
                                        d:Text="DENTAL OFFICE"
@@ -246,7 +374,7 @@
                             <TextBlock Text="Order Items"
                                        FontSize="11"
                                        FontWeight="SemiBold"
-                                       Foreground="{DynamicResource BlackColor}"
+                                       Foreground="{DynamicResource OrderRenameLabelForeground}"
                                        Margin="0,10,0,0" />
                             <TextBlock Text="{Binding ThreeShapeObject.Items}"
                                        d:Text="ITEMS ITEMS"
@@ -266,7 +394,7 @@
                             <TextBlock Text="Order comment"
                                        Margin="0,4,0,0"
                                        FontSize="11"
-                                       Foreground="{DynamicResource BlackColor}"
+                                       Foreground="{DynamicResource OrderRenameLabelForeground}"
                                        FontWeight="SemiBold" />
                             <ScrollViewer VerticalScrollBarVisibility="Visible"
                                           HorizontalScrollBarVisibility="Disabled"
@@ -297,7 +425,7 @@
                         <TextBlock Text="This order is a copy of the following order below:"
                                    FontSize="11"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource BlackColor}"
+                                   Foreground="{DynamicResource OrderRenameLabelForeground}"
                                    Margin="0,0,0,0" />
                         <TextBlock Text="{Binding ThreeShapeObject.OriginalOrderID}"
                                    d:Text="ORIGINAL ORDER ID"
@@ -309,10 +437,9 @@
 
                     <Button Content="Copy original name"
                             HorizontalAlignment="Right"
-                            Padding="8,0"
                             Height="30"
+                            Style="{StaticResource OrderRenameCopyButton}"
                             IsEnabled="{Binding ControlsEnabled}"
-                            Background="{DynamicResource NamedLightSteelBlue}"
                             Command="{Binding CopyOriginalOrderIdCommand}" />
                 </DockPanel>
 
@@ -351,16 +478,19 @@
                     <Button Content="Cancel"
                             Margin="0,10,20,0"
                             Width="200"
+                            Height="32"
                             HorizontalAlignment="Left"
+                            Style="{StaticResource OrderRenameCancelButton}"
                             Command="{Binding CloseWindowCommand}" />
 
                     <Button Content="Rename"
                             Grid.Column="1"
-                            Background="{DynamicResource NamedLightGreen}"
                             Width="200"
+                            Height="32"
                             IsEnabled="{Binding OrderIDIsValid}"
                             HorizontalAlignment="Right"
                             Margin="20,10,0,0"
+                            Style="{StaticResource OrderRenameConfirmButton}"
                             Command="{Binding RenameCommand}" />
                 </Grid>
             </Grid>

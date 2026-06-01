@@ -28,8 +28,9 @@
         <viewmodel:MainMenuViewModel />
     </UserControl.DataContext>
 
-    <Border BorderThickness="0"
+    <Border BorderThickness="1"
             Background="{DynamicResource PopupSurfaceBackground}"
+            BorderBrush="{DynamicResource ImmersiveGlassBorder}"
             CornerRadius="8"
             Padding="8,6">
         <Border.Effect>
@@ -46,7 +47,7 @@
                       ItemContainerStyle="{StaticResource LvItemMainMenu}"
                       AlternationCount="2"
                       Background="{DynamicResource TransparentBrush}"
-                      Foreground="{DynamicResource BlackColor}"
+                      Foreground="{DynamicResource LvItemMainMenu_PrimaryForeground}"
                       x:Name="mainMenuListView"
                       BorderThickness="0">
                 <ListView.View>

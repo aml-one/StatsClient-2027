@@ -51,4 +51,105 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="FooterSearchBox"
+           TargetType="TextBox">
+        <Setter Property="Background"
+                Value="{DynamicResource FooterSearchBackground}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource FooterSearchForeground}" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="FontSize"
+                Value="26" />
+        <Setter Property="Padding"
+                Value="22,6,18,0" />
+        <Setter Property="Margin"
+                Value="-2,0,0,0" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBoxBase">
+                    <Border x:Name="border"
+                            CornerRadius="16"
+                            Background="{TemplateBinding Background}"
+                            SnapsToDevicePixels="True"
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource FooterSearchBorder}">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Hidden"
+                                      Padding="22,4,18,0"
+                                      Margin="15,3,0,0" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter Property="BorderBrush"
+                                    Value="{StaticResource FooterSearchBorderHover}"
+                                    TargetName="border" />
+                        </Trigger>
+                        <Trigger Property="IsFocused"
+                                 Value="True">
+                            <Setter Property="BorderBrush"
+                                    Value="{StaticResource FooterSearchBorderHover}"
+                                    TargetName="border" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="GlobalSearchCustomerSearchBox"
+           TargetType="TextBox">
+        <Setter Property="Background"
+                Value="{DynamicResource GlobalSearchCustomerFieldBackground}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource GlobalSearchCustomerFieldForeground}" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="FontSize"
+                Value="13" />
+        <Setter Property="Padding"
+                Value="10,4,8,2" />
+        <Setter Property="Margin"
+                Value="4,0" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBoxBase">
+                    <Border x:Name="border"
+                            CornerRadius="8"
+                            Background="{TemplateBinding Background}"
+                            SnapsToDevicePixels="True"
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource GlobalSearchCustomerFieldBorder}">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Hidden"
+                                      Margin="2,4" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter Property="BorderBrush"
+                                    Value="{StaticResource GlobalSearchCustomerFieldBorderHover}"
+                                    TargetName="border" />
+                        </Trigger>
+                        <Trigger Property="IsFocused"
+                                 Value="True">
+                            <Setter Property="BorderBrush"
+                                    Value="{StaticResource GlobalSearchCustomerFieldBorderHover}"
+                                    TargetName="border" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

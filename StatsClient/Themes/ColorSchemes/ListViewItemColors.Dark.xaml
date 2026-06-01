@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Per-ListView and per-ListViewItem colors (Light). No shared tokens. -->
+    <!-- Per-ListView and per-ListViewItem colors (Dark). No shared tokens. -->
     <!-- XAML rules: DynamicResource on element/Style.Setter props; StaticResource in Trigger/DataTrigger setters; *_Cl for Color-only props. -->
 
     <!-- Base colors required by StaticResource in this dictionary (merged child cannot see parent keys at parse time). -->
@@ -588,7 +588,7 @@
     <SolidColorBrush x:Key="LvItemForItemList_WarningBackground">#B3AE9B</SolidColorBrush>
     <!-- #endregion -->
 
-    <!-- #region LvItemGlobalSearch -->
+    <!-- #region LvItemGlobalSearch (same as light mode — light cards on dark chrome) -->
     <SolidColorBrush x:Key="LvItemGlobalSearch_AliveBackground">#12FFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemGlobalSearch_AlternateBackground">#f7fefe</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemGlobalSearch_AlternateRowBackground">#55777777</SolidColorBrush>
@@ -734,33 +734,33 @@
     <!-- #endregion -->
 
     <!-- #region LvItemMainMenu -->
-    <SolidColorBrush x:Key="LvItemMainMenu_AlternateBackground">#f7fefe</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_AlternateRowBackground">#55777777</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_BorderBrush">#CCCCCC</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_ButtonBackground">#55FFFFFF</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_CardBackground">#F8FFFFFF</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_CardBorderBrush">#44CBD5E1</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_ComputerForeground">#300300</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_ContentBackground">#EFFFFFFF</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_DesignerForeground">#AE0270</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_HoverBackground">#330295cf</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_HoverBorderBrush">#99c5ff</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_AlternateBackground">#4D5D70</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_AlternateRowBackground">#33445566</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_BorderBrush">#576B82</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ButtonBackground">#5538BDF8</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_CardBackground">#D8394B5E</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_CardBorderBrush">#6638BDF8</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ComputerForeground">#FCA5A5</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ContentBackground">#415366</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_DesignerForeground">#F9A8D4</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_HoverBackground">#5538BDF8</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_HoverBackgroundAlt">#4D5D70</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_HoverBorderBrush">#8838BDF8</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemMainMenu_ItemBackground" Color="{StaticResource TransparentColor_Cl}" />
-    <SolidColorBrush x:Key="LvItemMainMenu_LabelForeground">#111111</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_LastTouchedForeground">#027575</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_ManufacturerForeground">#8d8d3d</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_MaterialForeground">#3f793f</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_ModDateForeground">#034400</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_MutedForeground">#44474D</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_PanHoverBorderBrush">#e0b000</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_PanNumberStroke">#888888</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_PatientFirstForeground">#666666</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_PatientLastForeground">#777777</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_PrimaryForeground">#000000</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_SecondaryForeground">#666666</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemMainMenu_WarningBackground">#B3AE9B</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_LabelForeground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_LastTouchedForeground">#5EEAD4</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ManufacturerForeground">#FDE68A</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_MaterialForeground">#86EFAC</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_ModDateForeground">#6EE7B7</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_MutedForeground">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PanHoverBorderBrush">#FBBF24</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PanNumberStroke">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PanSwatchBorderBrush">#576B82</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PatientFirstForeground">#CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PatientLastForeground">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_PrimaryForeground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_SecondaryForeground">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemMainMenu_WarningBackground">#5C4A28</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region LvItemPanColors -->

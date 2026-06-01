@@ -34,7 +34,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource ImmersiveFocusRing_Cl}" />
+                                <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource ImmersiveFocusRing}" />
                                 <Setter TargetName="Shell" Property="Background" Value="{StaticResource WhiteBackground}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -240,13 +240,13 @@
                                      Value="True">
                                 <Setter TargetName="ComboShell"
                                         Property="BorderBrush"
-                                        Value="{StaticResource ImmersiveFocusRing_Cl}" />
+                                        Value="{StaticResource ImmersiveFocusRing}" />
                             </Trigger>
                             <Trigger Property="IsDropDownOpen"
                                      Value="True">
                                 <Setter TargetName="ComboShell"
                                         Property="BorderBrush"
-                                        Value="{StaticResource ImmersiveFocusRing_Cl}" />
+                                        Value="{StaticResource ImmersiveFocusRing}" />
                                 <Setter TargetName="ComboShell"
                                         Property="Background"
                                         Value="{StaticResource WhiteBackground}" />

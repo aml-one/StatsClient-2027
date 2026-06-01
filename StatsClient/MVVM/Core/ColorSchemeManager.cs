@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Media;
+using static StatsClient.MVVM.Core.LocalSettingsDB;
 
 namespace StatsClient.MVVM.Core;
 
@@ -16,6 +17,19 @@ public static class ColorSchemeManager
     public static string CurrentScheme => _currentScheme;
 
     public static IReadOnlyList<string> AvailableSchemes { get; } = [LightScheme, DarkScheme];
+
+    public static void ApplySavedFromLocalSettings()
+    {
+        InitializeFromApplicationResources();
+
+        var savedScheme = ReadLocalSetting(LocalSettingKey);
+        var scheme = string.IsNullOrWhiteSpace(savedScheme)
+            ? CurrentScheme
+            : NormalizeScheme(savedScheme);
+
+        Apply(scheme);
+        RemoveLegacySchemeOverrides();
+    }
 
     public static void Apply(string? schemeName)
     {

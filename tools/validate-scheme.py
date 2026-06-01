@@ -107,11 +107,20 @@ def main() -> int:
             errors.append(f"Light.xaml merge target missing: {rel}")
             continue
         visible = keys_visible_at_merge(light, idx)
-        for line_no, key, _ in static_refs_in_file(mp):
-            if key not in visible:
-                errors.append(
-                    f"MERGE ORDER {mp.name}:{line_no} StaticResource '{key}' not visible at load time"
-                )
+        defined_in_file: set[str] = set()
+        for line_no, line in enumerate(mp.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            for pattern, _ in TYPE_RE:
+                defined_in_file.update(pattern.findall(line))
+            for kind, key in RES_RE.findall(line):
+                if kind != "StaticResource":
+                    continue
+                key = key.strip()
+                if key.startswith(SYSTEM_PREFIXES):
+                    continue
+                if key not in visible and key not in defined_in_file:
+                    errors.append(
+                        f"MERGE ORDER {mp.name}:{line_no} StaticResource '{key}' not visible at load time"
+                    )
 
     # 3) StaticResource in Light.xaml body referencing keys only in later parent entries (same-file order)
     parent_types, _ = parse_dict(light)
@@ -187,9 +196,12 @@ def main() -> int:
     for key in sorted(set(missing_cl)):
         errors.append(f"MISSING _Cl companion: {key}")
 
-    # 6) SolidColorBrush used where Color expected (GradientStop Color=DynamicResource without _Cl)
+    # 6) Color vs Brush type mismatches on dependency properties
     brush_prop_re = re.compile(
-        r'(Background|BorderBrush|Foreground|Fill|Stroke)="\{(StaticResource|DynamicResource)\s+([^}]+)\}"'
+        r'(Background|BorderBrush|Foreground|Fill|Stroke|SelectionBrush|CaretBrush)="\{(StaticResource|DynamicResource)\s+([^}]+)\}"'
+    )
+    setter_brush_re = re.compile(
+        r'Property="(Background|BorderBrush|Foreground|Fill|Stroke|SelectionBrush|CaretBrush)"\s+Value="\{(StaticResource|DynamicResource)\s+([^}]+)\}"'
     )
     for path in ROOT.rglob("*.xaml"):
         if any(p in path.parts for p in ("obj", "bin")):
@@ -203,8 +215,18 @@ def main() -> int:
             for prop, kind, key in brush_prop_re.findall(line):
                 key = key.strip()
                 if key.endswith("_Cl") or all_types.get(key) == "color":
+                    base = key[:-3] if key.endswith("_Cl") else key
+                    hint = f" use '{base}' brush key" if base in all_types else ""
                     errors.append(
-                        f"{rel}:{i} Color resource '{key}' on {prop} — use SolidColorBrush key instead"
+                        f"{rel}:{i} Color resource '{key}' on {prop} — use SolidColorBrush key instead{hint}"
+                    )
+            for prop, kind, key in setter_brush_re.findall(line):
+                key = key.strip()
+                if key.endswith("_Cl") or all_types.get(key) == "color":
+                    base = key[:-3] if key.endswith("_Cl") else key
+                    hint = f" use '{base}' brush key" if base in all_types else ""
+                    errors.append(
+                        f"{rel}:{i} Color resource '{key}' on Setter {prop} — use SolidColorBrush key instead{hint}"
                     )
             if "DefaultBackgroundColor=" in line:
                 for kind, key in RES_RE.findall(line):
@@ -212,18 +234,113 @@ def main() -> int:
                         f"{rel}:{i} WebView2 DefaultBackgroundColor cannot use {{{kind} {key}}} — set System.Drawing.Color in code-behind"
                     )
 
-    # 7) ColorSchemeResourceCatalog keys in C#
-    cs_re = re.compile(
-        r'ColorSchemeResourceCatalog\.(?:GetBrush|GetColor|GetHex|GetNamedColorString)\("([^"]+)"'
+    # 6b) Every *_Cl color key used on brush properties must have a non-_Cl SolidColorBrush companion
+    brush_only_usages: dict[str, list[str]] = {}
+    for path in ROOT.rglob("*.xaml"):
+        if any(p in path.parts for p in ("obj", "bin", "ColorSchemes")):
+            continue
+        rel = path.relative_to(ROOT).as_posix()
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for i, line in enumerate(text.splitlines(), 1):
+            for prop, _, key in brush_prop_re.findall(line):
+                if key.endswith("_Cl"):
+                    brush_only_usages.setdefault(key, []).append(f"{rel}:{i}:{prop}")
+            for prop, _, key in setter_brush_re.findall(line):
+                if key.endswith("_Cl"):
+                    brush_only_usages.setdefault(key, []).append(f"{rel}:{i}:Setter.{prop}")
+    for cl_key, usages in sorted(brush_only_usages.items()):
+        base = cl_key[:-3]
+        if base not in all_types:
+            errors.append(
+                f"MISSING brush companion '{base}' for Color '{cl_key}' (used on brush props: {usages[0]})"
+            )
+
+    # 7) ColorSchemeResourceCatalog usage in C#
+    cs_catalog_key = re.compile(
+        r'ColorSchemeResourceCatalog\.(?:GetBrush(?:OrDefault)?|GetColor|GetHex|GetNamedColorString(?:OrHex)?|TryGetBrush|TryGetColor)\("([^"]+)"'
+    )
+    cs_get_brush = re.compile(r'ColorSchemeResourceCatalog\.GetBrush(?:OrDefault)?\("([^"]+)"\)')
+    cs_get_color = re.compile(
+        r'ColorSchemeResourceCatalog\.(?:GetColor|GetHex)\("([^"]+)"\)'
+    )
+    cs_brush_prop_assign = re.compile(
+        r'\.(Background|BorderBrush|Foreground|Fill|Stroke|SelectionBrush|CaretBrush)\s*=\s*'
+        r'ColorSchemeResourceCatalog\.GetBrush(?:OrDefault)?\("([^"]+)"\)'
     )
     for path in ROOT.rglob("*.cs"):
         if any(p in path.parts for p in ("obj", "bin")):
             continue
         rel = path.relative_to(ROOT).as_posix()
-        for i, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-            for key in cs_re.findall(line):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for i, line in enumerate(text.splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith("//"):
+                continue
+            for key in cs_catalog_key.findall(line):
                 if key not in all_keys:
                     errors.append(f"{rel}:{i} C# catalog key '{key}' missing from scheme")
+
+            for key in cs_get_brush.findall(line):
+                if key.endswith("_Cl"):
+                    base = key[:-3]
+                    hint = f" use GetBrush('{base}')" if base in all_types else f" use GetColor('{key}')"
+                    errors.append(
+                        f"{rel}:{i} GetBrush('{key}') — *_Cl keys are Color; use brush key without _Cl{hint}"
+                    )
+                elif all_types.get(key) == "color":
+                    brush_alt = f"{key.replace('Color', 'Brush')}" if key.endswith("Color") else f"{key}Brush"
+                    hints: list[str] = []
+                    if brush_alt in all_types:
+                        hints.append(f"GetBrush('{brush_alt}')")
+                    if f"{key.replace('Color', '')}Brush" in all_types:
+                        pass
+                    if "WindowBackgroundBrush" in all_types and key == "WindowBackgroundColor":
+                        hints.append("GetBrush('WindowBackgroundBrush')")
+                    if "ClassicWindowBackgroundBrush" in all_types and key == "ClassicWindowBackgroundColor":
+                        hints.append("GetBrush('ClassicWindowBackgroundBrush')")
+                    hint = f" ({', '.join(hints)})" if hints else ""
+                    errors.append(
+                        f"{rel}:{i} GetBrush('{key}') — scheme type is Color; use GetColor or a *Brush key{hint}"
+                    )
+
+            # GetColor/GetHex on SolidColorBrush keys is OK — GetColor reads brush.Color at runtime.
+
+            for _prop, key in cs_brush_prop_assign.findall(line):
+                if key.endswith("_Cl") or all_types.get(key) == "color":
+                    base = key[:-3] if key.endswith("_Cl") else key
+                    hint = f" use '{base}'" if base in all_types and all_types.get(base) == "brush" else ""
+                    errors.append(
+                        f"{rel}:{i} brush property assigned GetBrush('{key}') — Color resource{hint}"
+                    )
+
+    # 8) Light/Dark scheme parity (same keys and resource types)
+    dark = SCHEME / "Dark.xaml"
+    lv_dark = SCHEME / "ListViewItemColors.Dark.xaml"
+    scheme_pairs = [
+        (light, dark, "Dark.xaml"),
+        (SCHEME / "ListViewItemColors.Light.xaml", lv_dark, "ListViewItemColors.Dark.xaml"),
+    ]
+    for light_path, dark_path, dark_label in scheme_pairs:
+        light_keys = set(KEY_RE.findall(light_path.read_text(encoding="utf-8", errors="replace")))
+        dark_keys = set(KEY_RE.findall(dark_path.read_text(encoding="utf-8", errors="replace")))
+        for key in sorted(light_keys - dark_keys):
+            errors.append(f"Light/Dark key missing in {dark_label}: '{key}'")
+        for key in sorted(dark_keys - light_keys):
+            errors.append(f"Light/Dark extra key in {dark_label}: '{key}'")
+        light_types, _ = parse_dict(light_path)
+        dark_types, _ = parse_dict(dark_path)
+        for key in sorted(light_keys & dark_keys):
+            lt, dt = light_types.get(key), dark_types.get(key)
+            if lt and dt and lt != dt:
+                errors.append(f"Light/Dark type mismatch for '{key}': Light={lt}, Dark={dt}")
+
+    dark_text = dark.read_text(encoding="utf-8", errors="replace")
+    if 'ColorSchemeName">Dark<' not in dark_text:
+        errors.append("Dark.xaml ColorSchemeName must be 'Dark'")
+    if "ListViewItemColors.Dark.xaml" not in dark_text:
+        errors.append("Dark.xaml must merge ListViewItemColors.Dark.xaml")
+    if "ListViewItemColors.Light.xaml" in dark_text:
+        errors.append("Dark.xaml must not reference ListViewItemColors.Light.xaml")
 
     print(f"Scheme keys loaded: {len(all_keys)}")
     print(f"Errors: {len(errors)}")

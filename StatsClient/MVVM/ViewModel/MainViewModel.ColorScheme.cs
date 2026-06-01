@@ -30,16 +30,8 @@ public partial class MainViewModel
 
     private void LoadAndApplyColorSchemeSetting()
     {
-        Core.ColorSchemeManager.InitializeFromApplicationResources();
-
-        var savedScheme = ReadLocalSetting(Core.ColorSchemeManager.LocalSettingKey);
-        var scheme = string.IsNullOrWhiteSpace(savedScheme)
-            ? Core.ColorSchemeManager.CurrentScheme
-            : Core.ColorSchemeManager.NormalizeScheme(savedScheme);
-
-        Core.ColorSchemeManager.Apply(scheme);
-        Core.ColorSchemeManager.RemoveLegacySchemeOverrides();
-        CbSettingColorScheme = scheme;
+        Core.ColorSchemeManager.ApplySavedFromLocalSettings();
+        CbSettingColorScheme = Core.ColorSchemeManager.CurrentScheme;
         ApplyActiveColorSchemeToWindowBackground();
     }
 

@@ -4443,6 +4443,7 @@
                                        HorizontalAlignment="Left"
                                        FontWeight="Normal"
                                        FontSize="12"
+                                       Foreground="{DynamicResource LvItemMainMenu_PrimaryForeground}"
                                        TextTrimming="CharacterEllipsis"
                                        Margin="0,0,0,0"
                                        Padding="5,2,0,0"

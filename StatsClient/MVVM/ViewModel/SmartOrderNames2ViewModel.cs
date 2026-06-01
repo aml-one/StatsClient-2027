@@ -311,7 +311,39 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
         {
             previouslySelectedOrder = value;
             RaisePropertyChanged(nameof(PreviouslySelectedOrder));
+            UpdateSkipCharacteristicsTab();
         }
+    }
+
+    private bool skipCharacteristicsTab;
+    public bool SkipCharacteristicsTab
+    {
+        get => skipCharacteristicsTab;
+        private set
+        {
+            if (skipCharacteristicsTab == value)
+                return;
+
+            skipCharacteristicsTab = value;
+            RaisePropertyChanged(nameof(SkipCharacteristicsTab));
+        }
+    }
+
+    private static bool OrderItemsSkipCharacteristics(string? items)
+    {
+        if (string.IsNullOrWhiteSpace(items))
+            return true;
+
+        var needsCharacteristics = items.Contains("abutment", StringComparison.OrdinalIgnoreCase)
+            || items.Contains("screw", StringComparison.OrdinalIgnoreCase);
+
+        return !needsCharacteristics;
+    }
+
+    private void UpdateSkipCharacteristicsTab()
+    {
+        var items = PreviouslySelectedOrder?.Items ?? SelectedOrder?.Items;
+        SkipCharacteristicsTab = OrderItemsSkipCharacteristics(items);
     }
 
     private bool firstOrderSelected = false;
@@ -643,7 +675,7 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
             if (SelectedDigitalSystem.Equals("Dexis", StringComparison.CurrentCultureIgnoreCase) || SelectedDigitalSystem.Equals("Carestream", StringComparison.CurrentCultureIgnoreCase) || SelectedDigitalSystem.Equals("ASConnect", StringComparison.CurrentCultureIgnoreCase))
                 tabName = "ExtraInfo";
             else
-                tabName = "Characteristics";
+                tabName = SkipCharacteristicsTab ? "Shade" : "Characteristics";
         }
 
         if (tabName == "BeforeCharacteristics")
@@ -653,6 +685,9 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
             else
                 tabName = "System";
         }
+
+        if (SkipCharacteristicsTab && tabName.Equals("Characteristics", StringComparison.OrdinalIgnoreCase))
+            tabName = "Shade";
 
         SmartOrderNames2Page.StaticInstance?.JumpToTab(tabName);
         BuildName();

@@ -289,25 +289,31 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     //    }
     //}
 
-    private void GridViewColumnHeader_SizeChanged(object sender, SizeChangedEventArgs e)
+    private void FlatGridViewColumnHeader_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        // preventing icon column from resize
+        if (sender is not GridViewColumnHeader header || header.Column is null)
+            return;
+
+        var width = header.Column switch
+        {
+            var c when ReferenceEquals(c, headerIcon) => 117d,
+            var c when ReferenceEquals(c, headerButtons) => 170d,
+            var c when ReferenceEquals(c, headerShade) => 44d,
+            var c when ReferenceEquals(c, archeaderIcon) => 30d,
+            var c when ReferenceEquals(c, archeaderCaseID) => 460d,
+            var c when ReferenceEquals(c, archeaderButtons) => 100d,
+            var c when ReferenceEquals(c, archeaderDesigner) => 140d,
+            var c when ReferenceEquals(c, archeaderYear) => 80d,
+            var c when ReferenceEquals(c, archeaderCustomer) => 272d,
+            var c when ReferenceEquals(c, archeaderDates) => 260d,
+            _ => (double?)null
+        };
+
+        if (width is null)
+            return;
+
         e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 117;
-    }
-    
-    private void GridViewForButtonsColumnHeader_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing button column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 170;
-    }
-    
-    private void GridViewForShadeColumnHeader_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing shade column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 44;
+        header.Column.Width = width.Value;
     }
 
     private void Window_LocationChanged(object sender, EventArgs e)
@@ -386,55 +392,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         catch
         {
         }
-    }
-
-    private void ArcGridViewColumnHeaderIcon_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 30;
-    }
-
-    private void ArcGridViewColumnHeaderCaseId_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 460;
-    }
-
-    private void ArcGridViewColumnHeaderAction_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 100;
-    }
-
-    private void ArcGridViewColumnHeaderDesigner_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 140;
-    }
-
-    private void ArcGridViewColumnHeaderFromYear_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 80;
-    }
-
-    private void ArcGridViewColumnHeaderCustomer_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 272;
-    }
-
-    private void ArcGridViewColumnHeaderDates_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        // preventing column from resize
-        e.Handled = true;
-        ((GridViewColumnHeader)sender).Column.Width = 260;
     }
 
     private void ListViewFolderSubscription_Loaded(object sender, RoutedEventArgs e)

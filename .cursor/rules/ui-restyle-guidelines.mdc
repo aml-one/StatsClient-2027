@@ -1,0 +1,32 @@
+---
+description: UI restyle guidelines — keep StatsClient professional, not toy-like
+globs: StatsClient/**/*.xaml
+alwaysApply: false
+---
+
+# UI Restyle Guidelines
+
+When redesigning tabs, panels, list items, or controls in StatsClient:
+
+## Corner radius — restrained, not bubbly
+
+Avoid making everything heavily rounded. Too much roundness reads as playful / “kids app”, not a professional dental lab tool.
+
+| Element | Prefer | Avoid |
+|---------|--------|-------|
+| Cards / panels | `CornerRadius="8"`–`10` | `14`–`18` on every surface |
+| Buttons / inputs | `CornerRadius="6"`–`8` | Pill-shaped everything |
+| Small chips / tags | `CornerRadius="4"`–`6` | Large pill badges |
+| Dropdown popups | `CornerRadius="8"`–`10` | Oversized soft bubbles |
+
+Use **one** rounded layer per visual group (e.g. outer card rounded; inner fields slightly less or square).
+
+## Tone
+
+- Pastel / glass is fine — keep it **clean and calm**, not cute.
+- Prefer subtle borders and light shadows over thick glows and bouncy hover.
+- Preserve existing color semantics (converters, age/status strokes, category accents).
+
+## When touching existing redesigned screens
+
+If restyling something that already uses high radius (e.g. `14`–`16`), **tone it down** as part of the change unless the user says otherwise.

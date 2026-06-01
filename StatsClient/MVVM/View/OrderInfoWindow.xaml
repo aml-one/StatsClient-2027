@@ -314,7 +314,7 @@
                                                d:Text="8008"
                                                VerticalAlignment="Center"
                                                HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource BlackColor}"
+                                               Foreground="{DynamicResource OrderInfoPanNumberForeground}"
                                                Padding="0,0"
                                                Margin="-2,-3,-2,-1"
                                                FontSize="20"
@@ -423,25 +423,25 @@
                                                 <TextBlock Text="DIGITAL CASE"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding DigitalCase}"
                                                            d:Text="DIGITAL CASE"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbDigitalCase" />
                                                 <TextBlock Text="TRAY SYSTEM"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold"
                                                            Margin="0,3,0,0"
                                                            Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
                                                 <TextBlock Text="{Binding TraySystem}"
                                                            d:Text="TRAY SYSTEM"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            x:Name="tbTraySystem"
                                                            Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
                                             </StackPanel>
@@ -450,12 +450,12 @@
                                                 <TextBlock Text="SCANNER"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Scanner}"
                                                            d:Text="SCANNER"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbScanner" />
                                             </StackPanel>
@@ -464,12 +464,12 @@
                                                 <TextBlock Text="STATUS"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Status}"
                                                            d:Text="STATUS"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbStatus" />
                                             </StackPanel>
@@ -478,12 +478,12 @@
                                                 <TextBlock Text="CREATED"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Created}"
                                                            d:Text="CREATED"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbCreated" />
                                             </StackPanel>
@@ -493,12 +493,12 @@
                                                 <TextBlock Text="SCANNED"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Scanned}"
                                                            d:Text="SCANNED"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            Margin="0,0,15,0"
                                                            x:Name="tbScanned" />
                                             </StackPanel>
@@ -509,13 +509,13 @@
                                                 <TextBlock Text="MATERIAL"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold"
                                                            x:Name="tbMaterialTitle" />
                                                 <TextBlock Text="{Binding Material}"
                                                            d:Text="MATERIAL"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            Margin="0,0,15,0"
                                                            TextWrapping="Wrap"
                                                            x:Name="tbMaterial" />
@@ -525,12 +525,12 @@
                                                 <TextBlock Text="MANUFACTURER"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Manufacturer}"
                                                            d:Text="MANUFACURER"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            Margin="0,0,15,0"
                                                            TextWrapping="Wrap"
                                                            x:Name="tbManufacturer" />
@@ -549,7 +549,7 @@
                                                 <TextBlock Text="COMMENTS"
                                                            FontSize="10"
                                                            VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
                                                            FontWeight="SemiBold" />
                                                 <TextBlock Text="{Binding Comments}"
                                                            d:Text="COMMENTS"
@@ -588,7 +588,7 @@
                                         <StackPanel Background="{DynamicResource TransparentBrush}">
                                             <TextBlock Text="LAST TOUCHED BY"
                                                        FontSize="11"
-                                                       Foreground="{DynamicResource SettingsInputBackground}"
+                                                       Foreground="{DynamicResource GlassPanelSectionTitleForeground}"
                                                        HorizontalAlignment="Left"
                                                        Margin="14,8,0,0"
                                                        FontWeight="SemiBold" />
@@ -599,7 +599,7 @@
                                                 <StackPanel Margin="0,0,0,8">
                                                     <TextBlock Text="Stats Server"
                                                                FontSize="12"
-                                                               Foreground="{DynamicResource BlackColor}"
+                                                               Foreground="{DynamicResource GlassPanelValueForeground}"
                                                                FontWeight="SemiBold" />
                                                     <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
                                                                FontSize="9"
@@ -607,7 +607,7 @@
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,0,8">
                                                     <TextBlock Text="Stats Server"
-                                                               Foreground="{DynamicResource BlackColor}"
+                                                               Foreground="{DynamicResource GlassPanelValueForeground}"
                                                                FontWeight="SemiBold" />
                                                     <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
                                                                FontSize="9"
@@ -637,7 +637,7 @@
                                             <StackPanel Background="{DynamicResource TransparentBrush}">
                                                 <TextBlock Text="DESIGNED BY"
                                                            FontSize="12"
-                                                           Foreground="{DynamicResource SettingsInputBackground}"
+                                                           Foreground="{DynamicResource GlassPanelSectionTitleForeground}"
                                                            HorizontalAlignment="Left"
                                                            FontWeight="SemiBold"
                                                            Margin="14,0,0,0" />
@@ -647,7 +647,7 @@
                                                             Margin="15,5,15,15">
                                                     <StackPanel Margin="0,0,0,8">
                                                         <TextBlock Text="Designer Name"
-                                                                   Foreground="{DynamicResource BlackColor}"
+                                                                   Foreground="{DynamicResource GlassPanelValueForeground}"
                                                                    FontWeight="SemiBold" />
                                                         <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
                                                                    FontSize="9"
@@ -745,7 +745,7 @@
                                 <TextBlock Text="Dental System Version:"
                                            FontSize="10"
                                            FontWeight="SemiBold"
-                                           Foreground="{DynamicResource BlackColor}"
+                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                            Margin="6,0,0,0"
                                            VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding DentalSystemVersion}"
@@ -767,7 +767,7 @@
                                 <TextBlock Text="Design Module Now:"
                                            FontSize="10"
                                            FontWeight="SemiBold"
-                                           Foreground="{DynamicResource BlackColor}"
+                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                            VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding DesignModuleActual}"
                                            d:Text="DD2018"
@@ -790,7 +790,7 @@
                                 <TextBlock Text="Original Design Module:"
                                            FontSize="10"
                                            FontWeight="SemiBold"
-                                           Foreground="{DynamicResource BlackColor}"
+                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                            VerticalAlignment="Center"
                                            Visibility="{Binding DesignModuleOriginal, Converter={StaticResource EmptyToHiddenConverter}}"
                                            d:Visibility="Visible" />
@@ -820,7 +820,7 @@
                                            FontSize="10"
                                            FontWeight="SemiBold"
                                            VerticalAlignment="Center"
-                                           Foreground="{DynamicResource BlackColor}"
+                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                            Visibility="{Binding OriginalOrderID, Converter={StaticResource EmptyToHiddenConverter}}"
                                            d:Visibility="Visible" />
                                 <TextBlock Text="{Binding OriginalOrderID}"
@@ -935,7 +935,7 @@
                             <TextBlock Text="+"
                                        FontSize="28"
                                        FontWeight="Bold"
-                                       Foreground="{DynamicResource SemanticSuccessColor}"
+                                       Foreground="{DynamicResource OrderInfoToolbarAddScanForeground}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center" />
                         </Button>
@@ -951,7 +951,7 @@
                             <TextBlock Text="&#x21BB;"
                                        FontSize="24"
                                        FontWeight="SemiBold"
-                                       Foreground="{DynamicResource SemanticLinkColor}"
+                                       Foreground="{DynamicResource OrderInfoToolbarRefreshForeground}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center" />
                         </Button>
@@ -986,12 +986,12 @@
                             <TextBlock Text="ITEMS"
                                        FontSize="10"
                                        VerticalAlignment="Top"
-                                       Foreground="{DynamicResource LightGrayBorderAndShadowColor}"
+                                       Foreground="{DynamicResource OrderInfoToolbarLabelForeground}"
                                        FontWeight="SemiBold" />
                             <TextBlock Text="{Binding Items}"
                                        d:Text="ITEMS"
                                        x:Name="tbItems"
-                                       Foreground="{DynamicResource BlackColor}"
+                                       Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,0" />
                         </StackPanel>

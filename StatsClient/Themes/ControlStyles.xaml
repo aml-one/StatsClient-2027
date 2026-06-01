@@ -39,7 +39,7 @@
 
     <Style x:Key="ImmersiveFilterButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource TransparentBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource ImmersiveFilterButtonForeground}" />
+        <Setter Property="Foreground" Value="{DynamicResource ImmersiveFilterButtonForeground}" />
         <Setter Property="BorderBrush" Value="{StaticResource TransparentBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="8,5" />
@@ -87,7 +87,7 @@
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ImmersiveCardShadow_Cl}" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ImmersiveCardShadow}" />
                             <Setter TargetName="Glow" Property="Opacity" Value="1" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
@@ -131,7 +131,7 @@
     <Style x:Key="FilterSectionHeaderText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="10" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource ImmersiveTextMuted}" />
+        <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextMuted}" />
         <Setter Property="Margin" Value="0,0,0,6" />
     </Style>
 
@@ -139,8 +139,8 @@
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="8,8,8,6" />
         <Setter Property="Margin" Value="0,0,0,6" />
-        <Setter Property="Background" Value="{StaticResource FilterSectionCardBackground}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ImmersiveFilterButtonBorder}" />
+        <Setter Property="Background" Value="{DynamicResource FilterSectionCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ImmersiveGlassBorder}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Opacity" Value="0" />
         <Setter Property="RenderTransformOrigin" Value="0.5,0" />
@@ -229,18 +229,18 @@
             <Border x:Name="Border"
                     Grid.ColumnSpan="2"
                     CornerRadius="0"
-                    Background="{StaticResource ComboBoxToggleBackground}"
-                    BorderBrush="{StaticResource ComboBoxToggleBorder}"
+                    Background="{DynamicResource ComboBoxToggleBackground}"
+                    BorderBrush="{DynamicResource ComboBoxToggleBorder}"
                     BorderThickness="1" />
             <Border Grid.Column="0"
                     CornerRadius="0"
                     Margin="1"
-                    Background="{StaticResource CreamYellowFieldColor}"
-                    BorderBrush="{StaticResource ComboBoxToggleBorder}"
+                    Background="{DynamicResource ComboBoxDropdownBackground}"
+                    BorderBrush="{DynamicResource ComboBoxToggleBorder}"
                     BorderThickness="0,0,1,0" />
             <Path x:Name="Arrow"
                   Grid.Column="1"
-                  Fill="{StaticResource BlackColor}"
+                  Fill="{DynamicResource ImmersiveTextPrimary}"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z" />
@@ -272,7 +272,7 @@
         <Setter Property="MinHeight"
                 Value="18" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{DynamicResource ImmersiveTextPrimary}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBox}">
@@ -291,7 +291,8 @@
                                           ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                           Margin="3,3,3,3"
                                           VerticalAlignment="Center"
-                                          HorizontalAlignment="Left" />
+                                          HorizontalAlignment="Left"
+                                          TextElement.Foreground="{TemplateBinding Foreground}" />
                         <TextBox x:Name="PART_EditableTextBox"
                                  Style="{x:Null}"
                                  Template="{StaticResource ComboBoxTextBox}"
@@ -315,9 +316,9 @@
                                   MinWidth="{TemplateBinding ActualWidth}"
                                   MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border x:Name="DropDownBorder"
-                                        Background="{StaticResource CreamYellowFieldColor}"
+                                        Background="{DynamicResource ComboBoxDropdownBackground}"
                                         BorderThickness="1"
-                                        BorderBrush="{StaticResource LightGrayBorderAndShadowColor}" />
+                                        BorderBrush="{DynamicResource ComboBoxToggleBorder}" />
                                 <ScrollViewer Margin="4,6,4,6"
                                               SnapsToDevicePixels="True">
                                     <StackPanel IsItemsHost="True"
@@ -378,7 +379,7 @@
         <Setter Property="SnapsToDevicePixels"
                 Value="true" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{DynamicResource ImmersiveTextPrimary}" />
         <Setter Property="OverridesDefaultStyle"
                 Value="true" />
         <Setter Property="Template">
@@ -394,7 +395,7 @@
                                  Value="true">
                             <Setter TargetName="Border"
                                     Property="Background"
-                                    Value="{StaticResource ComboBoxArrowBackground}" />
+                                    Value="{StaticResource ComboBoxItemHighlightBackground}" />
                         </Trigger>
                         <Trigger Property="IsEnabled"
                                  Value="false">
@@ -414,7 +415,7 @@
         <Setter Property="Background"
                 Value="{DynamicResource CreamYellowFieldColor}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{DynamicResource ImmersiveTextPrimary}" />
         <Setter Property="BorderBrush"
                 Value="{DynamicResource PrimaryColor}" />
         <Setter Property="BorderThickness"
@@ -567,11 +568,11 @@
         <Setter Property="OverridesDefaultStyle"
                 Value="True" />
         <Setter Property="Background"
-                Value="{StaticResource ComboBoxToggleBackground}" />
+                Value="{DynamicResource SmartOrderNamesNavButtonBackground}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{DynamicResource SmartOrderNamesNavButtonForeground}" />
         <Setter Property="BorderBrush"
-                Value="{StaticResource ComboBoxToggleBorder}" />
+                Value="{DynamicResource SmartOrderNamesNavButtonBorder}" />
         <Setter Property="BorderThickness"
                 Value="1" />
         
@@ -618,11 +619,11 @@
             <Trigger Property="IsMouseOver"
                      Value="True">
                 <Setter Property="Background"
-                        Value="{StaticResource VitaButtonAccentGold}" />
+                        Value="{StaticResource SmartOrderNamesNavButtonHoverBackground}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}"    />
+                        Value="{StaticResource SmartOrderNamesNavButtonHoverForeground}" />
                 <Setter Property="BorderBrush"
-                        Value="{StaticResource LightTextColor}" />
+                        Value="{StaticResource SmartOrderNamesNavButtonHoverBorder}" />
                 
                 <Setter Property="Button.Effect">
                     <Setter.Value>
@@ -638,11 +639,11 @@
             <Trigger Property="IsFocused"
                      Value="True">
                 <Setter Property="Background"
-                        Value="{StaticResource VitaButtonHoverGrayAlt}" />
+                        Value="{StaticResource SmartOrderNamesNavButtonHoverBackground}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource SmartOrderNamesNavButtonHoverForeground}" />
                 <Setter Property="BorderBrush"
-                        Value="{StaticResource LightTextColor}" />
+                        Value="{StaticResource SmartOrderNamesNavButtonHoverBorder}" />
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -655,7 +656,7 @@
         <Setter Property="Background"
                 Value="{StaticResource TransparentBrush}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{DynamicResource ImmersiveTextPrimary}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource TransparentBrush}" />
         <Setter Property="BorderThickness"
@@ -736,13 +737,72 @@
     
     
     <Style TargetType="Button"
+           x:Key="GlobalSearchPagerButton">
+        <Setter Property="OverridesDefaultStyle"
+                Value="True" />
+        <Setter Property="MinWidth"
+                Value="30" />
+        <Setter Property="Padding"
+                Value="8,2" />
+        <Setter Property="FontSize"
+                Value="14" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="Background"
+                Value="{DynamicResource GlobalSearchPagerButtonBackground}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource GlobalSearchPagerButtonForeground}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource GlobalSearchPagerButtonBorder}" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="{StaticResource GlobalSearchPagerButtonHoverBackground}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="border"
+                                    Property="Opacity"
+                                    Value="0.88" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button"
            x:Key="BlankButtonNew">
         <Setter Property="OverridesDefaultStyle"
                 Value="True" />
         <Setter Property="Background"
                 Value="{StaticResource TransparentBrush}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{DynamicResource ImmersiveTextPrimary}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource TransparentBrush}" />
         <Setter Property="BorderThickness"
@@ -804,7 +864,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellow}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -823,7 +883,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -835,8 +895,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -855,7 +914,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -874,8 +933,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -892,7 +950,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellowAlt}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -911,7 +969,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -923,8 +981,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -943,7 +1000,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -962,8 +1019,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -977,7 +1033,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellowBright}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -996,7 +1052,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1008,8 +1064,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1028,7 +1083,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1047,8 +1102,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1062,7 +1116,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellowLight}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1081,7 +1135,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1093,8 +1147,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1113,7 +1166,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1132,8 +1185,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1147,7 +1199,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundMint}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1166,7 +1218,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1178,8 +1230,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1198,7 +1249,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1217,8 +1268,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1232,7 +1282,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundMintAlt}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1251,7 +1301,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1263,8 +1313,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1283,7 +1332,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1302,8 +1351,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1317,7 +1365,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundMintLight}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1336,7 +1384,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1348,8 +1396,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1368,7 +1415,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1387,8 +1434,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1402,7 +1448,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellow}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1421,7 +1467,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1433,8 +1479,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1453,7 +1498,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1472,8 +1517,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1487,7 +1531,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellowGreen}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1506,7 +1550,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1518,8 +1562,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1538,7 +1581,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1557,8 +1600,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1572,7 +1614,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellowPale}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1591,7 +1633,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1603,8 +1645,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1623,7 +1664,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1642,8 +1683,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1657,7 +1697,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellowDull}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1676,7 +1716,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1688,8 +1728,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1708,7 +1747,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1727,8 +1766,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1742,7 +1780,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellowSoft}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1761,7 +1799,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1773,8 +1811,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1793,7 +1830,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1812,8 +1849,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1827,7 +1863,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundYellowFade}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1846,7 +1882,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1858,8 +1894,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1878,7 +1913,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1897,8 +1932,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1914,7 +1948,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundPink}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -1933,7 +1967,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -1945,8 +1979,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -1965,7 +1998,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -1984,8 +2017,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -1999,7 +2031,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundGrayGreen}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -2018,7 +2050,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -2030,8 +2062,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -2050,7 +2081,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -2069,8 +2100,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -2085,7 +2115,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundGrayGreenAlt}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -2104,7 +2134,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -2116,8 +2146,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -2136,7 +2165,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -2155,8 +2184,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -2170,7 +2198,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundGrayGreenDark}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -2189,7 +2217,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -2201,8 +2229,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -2221,7 +2248,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -2240,8 +2267,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -2255,7 +2281,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundGrayGreenDeep}" />
         <Setter Property="Foreground"
-                Value="{StaticResource BlackColor}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -2274,7 +2300,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -2286,8 +2312,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -2306,7 +2331,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -2325,8 +2350,7 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonHoverGray}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
             </Trigger>
@@ -2343,7 +2367,7 @@
         <Setter Property="Background"
                 Value="{StaticResource VitaButtonBackgroundOrange}" />
         <Setter Property="Foreground"
-                Value="{StaticResource NamedBeige}" />
+                Value="{StaticResource ShadeButtonForeground}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource VitaButtonBorderGold}" />
         <Setter Property="BorderThickness"
@@ -2362,7 +2386,7 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -2374,8 +2398,7 @@
                      Value="False">
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonBackgroundDark}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource VitaButtonBorderLight}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource VitaButtonForegroundMid}" />
                 <Setter Property="Button.Effect">
@@ -2394,7 +2417,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
 
@@ -2413,10 +2436,70 @@
                      Value="True">
                 <Setter Property="Background"
                         Value="{StaticResource SchemeColor_A6898F}" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource LightTextColor}" />
+                <Setter Property="Foreground" Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource LightTextColor}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Button"
+           x:Key="ShadeGold">
+        <Setter Property="OverridesDefaultStyle"
+                Value="True" />
+        <Setter Property="Background"
+                Value="{StaticResource VitaButtonBackgroundYellowBright}" />
+        <Setter Property="Foreground"
+                Value="{StaticResource ShadeButtonForeground}" />
+        <Setter Property="BorderBrush"
+                Value="{StaticResource VitaButtonBorderGold}" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <ContentPresenter x:Name="MyContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled"
+                     Value="False">
+                <Setter Property="Background"
+                        Value="{StaticResource VitaButtonBackgroundDark}" />
+                <Setter Property="Foreground"
+                        Value="{StaticResource ShadeButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{StaticResource VitaButtonForegroundMid}" />
+            </Trigger>
+            <Trigger Property="IsMouseOver"
+                     Value="True">
+                <Setter Property="Background"
+                        Value="{StaticResource VitaButtonAccentGold}" />
+                <Setter Property="Foreground"
+                        Value="{StaticResource ShadeButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{StaticResource NamedYellow}" />
+            </Trigger>
+            <Trigger Property="IsFocused"
+                     Value="True">
+                <Setter Property="Background"
+                        Value="{StaticResource VitaButtonBackgroundYellow}" />
+                <Setter Property="Foreground"
+                        Value="{StaticResource ShadeButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{StaticResource VitaButtonBorderGold}" />
             </Trigger>
         </Style.Triggers>
     </Style>

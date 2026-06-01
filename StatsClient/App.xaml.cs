@@ -3,7 +3,9 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using Microsoft.Win32;
+using StatsClient.MVVM.Core;
 using Application = System.Windows.Application;
+using static StatsClient.MVVM.Core.LocalSettingsDB;
 
 namespace StatsClient
 {
@@ -22,6 +24,17 @@ namespace StatsClient
             RenderOptions.ProcessRenderMode = RenderMode.Default;
 
             WriteRenderInfoLog();
+
+            if (XamlSmokeRunner.IsRequested)
+            {
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                var exitCode = XamlSmokeRunner.Run();
+                Shutdown(exitCode);
+                return;
+            }
+
+            // Apply saved Light/Dark scheme before StartupUri creates SplashWindow.
+            ColorSchemeManager.ApplySavedFromLocalSettings();
 
             base.OnStartup(e);
         }
@@ -78,7 +91,7 @@ namespace StatsClient
                 bool hwForcedOff = hwDisabledUser == 1 || hwDisabledMachine == 1;
 
                 string hwDiagnosis = hwForcedOff
-                    ? $"*** DisableHWAcceleration FOUND ó HKCU:{hwDisabledUser} HKLM:{hwDisabledMachine} ***"
+                    ? $"*** DisableHWAcceleration FOUND ù HKCU:{hwDisabledUser} HKLM:{hwDisabledMachine} ***"
                     : "DisableHWAcceleration: not set (OK)";
 
                 var lines = new[]
@@ -87,7 +100,7 @@ namespace StatsClient
                     $"Machine       : {Environment.MachineName}",
                     $"User          : {Environment.UserName}",
                     $"Remote session: {isRemote}",
-                    $"Render tier   : {tier} ó {tierLabel}",
+                    $"Render tier   : {tier} ù {tierLabel}",
                     $"PS 2.0        : {ps2}",
                     $"PS 3.0        : {ps3}",
                     $"OS            : {Environment.OSVersion}",

@@ -137,27 +137,50 @@
             </Style>
 
 
-            <ControlTemplate x:Key="CustomHeader"
-                             TargetType="GridViewColumnHeader">
-                <Border BorderBrush="{DynamicResource LightGrayBorderAndShadowColor}"
-                        Background="{DynamicResource ThreeShapeHeaderBackgroundColor}"
-                        BorderThickness="0,0,0,1">
-
-                    <Grid Background="{DynamicResource PrimaryDarkColor}"
-                          Height="20"
-                          Margin="-2,0,0,0">
-                        <TextBlock Background="{DynamicResource ThreeShapeHeaderBackgroundColor}"
-                                   Foreground="{DynamicResource BlackColor}"
-                                   FontWeight="SemiBold"
-                                   Text="{TemplateBinding Tag}"
-                                   VerticalAlignment="Center" />
-                        <Thumb x:Name="PART_HeaderGripper"
-                               HorizontalAlignment="Right"
-                               Margin="0"
-                               Width="1" />
-                    </Grid>
-                </Border>
-            </ControlTemplate>
+            <Style x:Key="GridViewFlatColumnHeaderStyle"
+                   TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="Height"
+                        Value="20" />
+                <Setter Property="Padding"
+                        Value="4,0,-6,0" />
+                <Setter Property="HorizontalContentAlignment"
+                        Value="Left" />
+                <Setter Property="VerticalContentAlignment"
+                        Value="Center" />
+                <Setter Property="Background"
+                        Value="{DynamicResource ThreeShapeHeaderBackgroundColor}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource ImmersiveTextPrimary}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource LightGrayBorderAndShadowColor}" />
+                <Setter Property="BorderThickness"
+                        Value="0,0,0,1" />
+                <Setter Property="FontWeight"
+                        Value="SemiBold" />
+                <EventSetter Event="SizeChanged"
+                             Handler="FlatGridViewColumnHeader_SizeChanged" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="GridViewColumnHeader">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}">
+                                <Grid>
+                                    <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      RecognizesAccessKey="True"
+                                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                    <Thumb x:Name="PART_HeaderGripper"
+                                           HorizontalAlignment="Right"
+                                           Width="1"
+                                           Background="Transparent" />
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
             <Style TargetType="{x:Type GridViewColumnHeader}">
                 <Setter Property="Foreground"
@@ -249,11 +272,11 @@
                     d:Visibility="Visible">
                 <Grid>
 
-                    <Rectangle Width="40"
+                    <Rectangle Width="38"
                                Height="54" />
                     <Button x:Name="btnHome3"
                             Content="🗘"
-                            Width="39"
+                            Width="38"
                             Height="54"
                             Margin="0,-8,0,0"
                             FontSize="26"
@@ -303,6 +326,7 @@
                                VerticalAlignment="Bottom"
                                FontSize="8"
                                FontWeight="Bold"
+                               Foreground="{DynamicResource WhiteBackground}"
                                Margin="0,3,0,3" />
                 </Grid>
                 <Border.BitmapEffect>
@@ -330,11 +354,11 @@
                     d:Visibility="Visible">
                 <Grid>
 
-                    <Rectangle Width="40"
+                    <Rectangle Width="38"
                                Height="54" />
                     <Button x:Name="btnHome2"
                             Content="↩"
-                            Width="39"
+                            Width="38"
                             Height="54"
                             Margin="0,-8,0,0"
                             FontSize="26"
@@ -384,6 +408,7 @@
                                VerticalAlignment="Bottom"
                                FontSize="8"
                                FontWeight="Bold"
+                               Foreground="{DynamicResource WhiteBackground}"
                                Margin="0,3,0,3" />
                 </Grid>
                 <Border.BitmapEffect>
@@ -614,7 +639,7 @@
                             </Style>
                         </Button.Style>
                         <Button.Content>
-                            <Image Source="/Images/HomeButtons/settings.png"
+                            <Image Source="{DynamicResource HomeSettingsButtonImage}"
                                    Width="16"
                                    Height="16"
                                    HorizontalAlignment="Center"
@@ -683,7 +708,7 @@
 
                             <StackPanel>
 
-                                <Image Source="/Images/Other/changes.png"
+                                <Image Source="{DynamicResource UpdateAvailableButtonImage}"
                                        Width="16"
                                        Height="16"
                                        HorizontalAlignment="Center"
@@ -761,7 +786,7 @@
                                        d:Text="9"
                                        FontSize="12"
                                        FontWeight="Bold"
-                                       Foreground="{DynamicResource SchemeColor_440000}"
+                                       Foreground="{DynamicResource InfobarPanCountFill}"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Top"
                                        Margin="0,-2,2,0" />
@@ -807,11 +832,11 @@
 
 
                             <DockPanel LastChildFill="False">
-                                <core:OutlinedTextBlock Stroke="{DynamicResource NamedWhiteSmoke}"
+                                <core:OutlinedTextBlock Stroke="{DynamicResource TitleBarVerticalBrandStroke}"
                                                         StrokePosition="Outside"
                                                         FontSize="24"
                                                         FontWeight="SemiBold"
-                                                        Fill="{DynamicResource MessageBoxSubtitleForeground}"
+                                                        Fill="{DynamicResource TitleBarVerticalBrandFill}"
                                                         StrokeThickness="1"
                                                         Text="Stats 2027"
                                                         VerticalAlignment="Bottom"
@@ -1162,81 +1187,38 @@
                                 </i:Interaction.Triggers>
                                 <ListView.View>
 
-                                    <GridView AllowsColumnReorder="False">
+                                    <GridView AllowsColumnReorder="False"
+                                              ColumnHeaderContainerStyle="{StaticResource GridViewFlatColumnHeaderStyle}">
                                         <GridViewColumn x:Name="archeaderIcon"
                                                         Width="30"
-                                                        DisplayMemberBinding="{Binding PanNumber}">
-                                            <GridViewColumn.Header>
-                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                      SizeChanged="ArcGridViewColumnHeaderIcon_SizeChanged" />
-                                            </GridViewColumn.Header>
-                                        </GridViewColumn>
+                                                        Header=""
+                                                        DisplayMemberBinding="{Binding PanNumber}" />
                                         <GridViewColumn x:Name="archeaderCaseID"
                                                         Width="460"
-                                                        DisplayMemberBinding="{Binding IntOrderID}">
-                                            <GridViewColumn.Header>
-                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                      Tag="  CaseID"
-                                                                      SizeChanged="ArcGridViewColumnHeaderCaseId_SizeChanged" />
-                                            </GridViewColumn.Header>
-                                        </GridViewColumn>
-
-
+                                                        Header="  CaseID"
+                                                        DisplayMemberBinding="{Binding IntOrderID}" />
                                         <GridViewColumn x:Name="archeaderButtons"
-                                                        Width="100">
-                                            <GridViewColumn.Header>
-                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                      Tag="          Action"
-                                                                      SizeChanged="ArcGridViewColumnHeaderAction_SizeChanged" />
-                                            </GridViewColumn.Header>
-                                        </GridViewColumn>
-
-
+                                                        Width="100"
+                                                        Header="          Action" />
                                         <GridViewColumn x:Name="archeaderDesigner"
                                                         Width="140"
-                                                        DisplayMemberBinding="{Binding Designer}">
-                                            <GridViewColumn.Header>
-                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                      Tag="  Designer"
-                                                                      SizeChanged="ArcGridViewColumnHeaderDesigner_SizeChanged" />
-                                            </GridViewColumn.Header>
-                                        </GridViewColumn>
-
+                                                        Header="  Designer"
+                                                        DisplayMemberBinding="{Binding Designer}" />
                                         <GridViewColumn x:Name="archeaderYear"
                                                         Width="80"
-                                                        DisplayMemberBinding="{Binding CreateYear}">
-                                            <GridViewColumn.Header>
-                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                      Tag="        From"
-                                                                      SizeChanged="ArcGridViewColumnHeaderFromYear_SizeChanged" />
-                                            </GridViewColumn.Header>
-                                        </GridViewColumn>
+                                                        Header="        From"
+                                                        DisplayMemberBinding="{Binding CreateYear}" />
                                         <GridViewColumn x:Name="archeaderCustomer"
                                                         Width="272"
-                                                        DisplayMemberBinding="{Binding Customer}">
-                                            <GridViewColumn.Header>
-                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                      Tag="  Customer + Patient + Creation Date"
-                                                                      SizeChanged="ArcGridViewColumnHeaderCustomer_SizeChanged" />
-                                            </GridViewColumn.Header>
-                                        </GridViewColumn>
-
+                                                        Header="  Customer + Patient + Creation Date"
+                                                        DisplayMemberBinding="{Binding Customer}" />
                                         <GridViewColumn x:Name="archeaderDates"
                                                         Width="260"
-                                                        DisplayMemberBinding="{Binding Patient_LastName}">
-                                            <GridViewColumn.Header>
-                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                      Tag="  Other Infos"
-                                                                      SizeChanged="ArcGridViewColumnHeaderDates_SizeChanged" />
-                                            </GridViewColumn.Header>
-                                        </GridViewColumn>
+                                                        Header="  Other Infos"
+                                                        DisplayMemberBinding="{Binding Patient_LastName}" />
                                         <GridViewColumn x:Name="archeaderExtraSpace"
-                                                        Width="2600">
-                                            <GridViewColumn.Header>
-                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}" />
-                                            </GridViewColumn.Header>
-                                        </GridViewColumn>
-
+                                                        Width="2600"
+                                                        Header="" />
                                     </GridView>
 
                                 </ListView.View>
@@ -1292,7 +1274,7 @@
                                        Width="110"
                                        Panel.ZIndex="1"
                                        Margin="-127,0,0,0"
-                                       Opacity="1" />
+                                       Opacity="0.1" />
                                 <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
                                                         StrokePosition="Outside"
                                                         FontSize="70"
@@ -1302,7 +1284,7 @@
                                                         Margin="0,-42,0,0"
                                                         VerticalAlignment="Center"
                                                         Text="Stats Systems"
-                                                        Opacity="0.80"
+                                                        Opacity="0.10"
                                                         Panel.ZIndex="2" />
 
                                 <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
@@ -1314,7 +1296,7 @@
                                                         Margin="156,-17,0,0"
                                                         VerticalAlignment="Center"
                                                         Text="by AmL"
-                                                        Opacity="0.80"
+                                                        Opacity="0.10"
                                                         Panel.ZIndex="2" />
                             </StackPanel>
 
@@ -1344,8 +1326,8 @@
                                     Opacity="0.93"
                                     Grid.ColumnSpan="4">
                                 <Grid>
-                                    <Border Background="{DynamicResource OrderInfoDividerDark}"
-                                            Opacity="0.78"
+                                    <Border Background="{DynamicResource ThreeShapeListScrimBackground}"
+                                            Opacity="1"
                                             Visibility="{Binding ThreeShapeServerIsDown, Converter={StaticResource BoolToVisibilityConverter}}"
                                             d:Visibility="Hidden"
                                             Panel.ZIndex="10">
@@ -1556,7 +1538,8 @@
                                                 Background="{DynamicResource ThreeShapeHeaderBackgroundColor}">
 
                                         <Label Content="Group By:"
-                                               Padding="2,2,3,0" />
+                                               Padding="2,2,3,0"
+                                               Foreground="{DynamicResource ImmersiveTextPrimary}" />
                                         <ComboBox x:Name="GroupBy"
                                                   ItemsSource="{Binding GroupBy}"
                                                   SelectedItem="{Binding SelectedGroupByItem}"
@@ -1592,81 +1575,42 @@
                                         </i:Interaction.Triggers>
                                         <ListView.View>
 
-                                            <GridView AllowsColumnReorder="False">
+                                            <GridView AllowsColumnReorder="False"
+                                                      ColumnHeaderContainerStyle="{StaticResource GridViewFlatColumnHeaderStyle}">
                                                 <GridViewColumn x:Name="headerIcon"
                                                                 Width="117"
-                                                                DisplayMemberBinding="{Binding PanNumber}">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                              SizeChanged="GridViewColumnHeader_SizeChanged" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
+                                                                Header=""
+                                                                DisplayMemberBinding="{Binding PanNumber}" />
                                                 <GridViewColumn x:Name="headerCaseID"
                                                                 Width="400"
-                                                                DisplayMemberBinding="{Binding IntOrderID}">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                              Tag="" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
-
-
+                                                                Header=""
+                                                                DisplayMemberBinding="{Binding IntOrderID}" />
                                                 <GridViewColumn x:Name="headerButtons"
-                                                                Width="170">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                              Tag="                                    Actions"
-                                                                              SizeChanged="GridViewForButtonsColumnHeader_SizeChanged" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
+                                                                Width="170"
+                                                                Header="                                    Actions" />
                                                 <GridViewColumn x:Name="headerShade"
-                                                                Width="44">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                              Tag="  Shade"
-                                                                              SizeChanged="GridViewForShadeColumnHeader_SizeChanged" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
+                                                                Width="44"
+                                                                Header="  Shade" />
                                                 <GridViewColumn x:Name="headerScanInfo"
                                                                 Width="140"
-                                                                DisplayMemberBinding="{Binding ScanSource}">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                              Tag="  Last Touched By" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
+                                                                Header="  Last Touched By"
+                                                                DisplayMemberBinding="{Binding ScanSource}" />
                                                 <GridViewColumn x:Name="headerDesigner"
                                                                 Width="140"
-                                                                DisplayMemberBinding="{Binding Designer}">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                              Tag="  Designer" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
+                                                                Header="  Designer"
+                                                                DisplayMemberBinding="{Binding Designer}" />
                                                 <GridViewColumn x:Name="headerCustomer"
                                                                 Width="242"
-                                                                DisplayMemberBinding="{Binding Customer}">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                              Tag="  Customer + Patient" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
+                                                                Header="  Customer + Patient"
+                                                                DisplayMemberBinding="{Binding Customer}" />
                                                 <GridViewColumn x:Name="headerItems"
                                                                 Width="400"
-                                                                DisplayMemberBinding="{Binding Items}">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                              Tag="  Items" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
+                                                                Header="  Items"
+                                                                DisplayMemberBinding="{Binding Items}" />
                                                 <GridViewColumn x:Name="headerDates"
                                                                 Width="1560"
-                                                                DisplayMemberBinding="{Binding Patient_LastName}">
-                                                    <GridViewColumn.Header>
-                                                        <GridViewColumnHeader Template="{StaticResource CustomHeader}" />
-                                                    </GridViewColumn.Header>
-                                                </GridViewColumn>
-
+                                                                Header=""
+                                                                DisplayMemberBinding="{Binding Patient_LastName}" />
                                             </GridView>
 
                                         </ListView.View>
@@ -1794,7 +1738,8 @@
                                                Foreground="{DynamicResource MessageBoxSubtitleForeground}"
                                                HorizontalAlignment="Right"
                                                VerticalAlignment="Center"
-                                               Margin="0,-4,6,0" />
+                                               Margin="0,-4,6,0"
+                                               Visibility="{Binding ShowingFiltersPanel, Converter={StaticResource InverseVisibilityConverter}}" />
 
 
 
@@ -1810,7 +1755,8 @@
                                           Height="550"
                                           Panel.ZIndex="5"
                                           VerticalAlignment="Bottom"
-                                          Margin="-127,-630,0,32"
+                                          Margin="-172,-630,0,0"
+                                          ClipToBounds="True"
                                           d:Visibility="Visible"
                                           RenderTransformOrigin="0.5,1"
                                           Opacity="0">
@@ -1918,31 +1864,33 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Grid.Style>
-                                        <Border BorderThickness="1"
+                                        <Border BorderThickness="1,1,1,0"
                                                 CornerRadius="16,16,0,0"
-                                                Margin="4,0,4,4"
-                                                Padding="10,10,10,8">
+                                                Margin="4,0,4,0"
+                                                Padding="10,10,10,8"
+                                                ClipToBounds="True">
                                             <Border.Background>
-                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                    <GradientStop Color="{DynamicResource SchemeColor_F2F6FA_Cl}" Offset="0" />
-                                                    <GradientStop Color="{DynamicResource DialogInfoPanelBackground_Cl}" Offset="0.55" />
-                                                    <GradientStop Color="{DynamicResource SchemeColor_EEF3F8_Cl}" Offset="1" />
+                                                <LinearGradientBrush StartPoint="0,0"
+                                                                     EndPoint="0,1">
+                                                    <GradientStop Color="{DynamicResource SchemeColor_F2F6FA_Cl}"
+                                                                  Offset="0" />
+                                                    <GradientStop Color="{DynamicResource DialogInfoPanelBackground_Cl}"
+                                                                  Offset="0.55" />
+                                                    <GradientStop Color="{DynamicResource WindowBackgroundColor}"
+                                                                  Offset="1" />
                                                 </LinearGradientBrush>
                                             </Border.Background>
                                             <Border.BorderBrush>
-                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                    <GradientStop Color="{DynamicResource SchemeColor_6634D9F5_Cl}" Offset="0" />
-                                                    <GradientStop Color="{DynamicResource SchemeColor_33D6B97A_Cl}" Offset="0.5" />
-                                                    <GradientStop Color="{DynamicResource ImmersiveFilterButtonGlow_Cl}" Offset="1" />
+                                                <LinearGradientBrush StartPoint="0,0"
+                                                                     EndPoint="0,1">
+                                                    <GradientStop Color="{DynamicResource SchemeColor_6634D9F5_Cl}"
+                                                                  Offset="0" />
+                                                    <GradientStop Color="{DynamicResource SchemeColor_33D6B97A_Cl}"
+                                                                  Offset="0.5" />
+                                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
+                                                                  Offset="1" />
                                                 </LinearGradientBrush>
                                             </Border.BorderBrush>
-                                            <Border.Effect>
-                                                <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
-                                                                  BlurRadius="28"
-                                                                  ShadowDepth="0"
-                                                                  Opacity="0.35"
-                                                                  Direction="270" />
-                                            </Border.Effect>
                                             <localView:ThreeShapeFilterPanel />
                                         </Border>
 
@@ -1952,15 +1900,32 @@
 
                                     <Border Grid.Column="2"
                                             d:Background="{DynamicResource PrimaryColor}"
-                                            Background="{Binding WindowBackground}"
-                                            BorderBrush="{DynamicResource DarkGrayBorderAndShadowColor}"
-                                            BorderThickness="1,1,1,0"
                                             CornerRadius="60,60,0,0"
                                             Width="130"
                                             Height="50"
                                             Panel.ZIndex="6"
                                             Margin="-50,-68,0,0">
-
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background"
+                                                        Value="{Binding WindowBackground}" />
+                                                <Setter Property="BorderBrush"
+                                                        Value="{DynamicResource DarkGrayBorderAndShadowColor}" />
+                                                <Setter Property="BorderThickness"
+                                                        Value="1,1,1,0" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ShowingFiltersPanel}"
+                                                                 Value="Visible">
+                                                        <Setter Property="Background"
+                                                                Value="{StaticResource TransparentBrush}" />
+                                                        <Setter Property="BorderBrush"
+                                                                Value="{StaticResource TransparentBrush}" />
+                                                        <Setter Property="BorderThickness"
+                                                                Value="0" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
                                     </Border>
 
                                     <StackPanel Grid.Column="2"
@@ -2744,7 +2709,7 @@
                                                      Value="True">
                                                 <Setter TargetName="Shell"
                                                         Property="BorderBrush"
-                                                        Value="{StaticResource ImmersiveFocusRing_Cl}" />
+                                                        Value="{StaticResource ImmersiveFocusRing}" />
                                                 <Setter TargetName="Shell"
                                                         Property="Background"
                                                         Value="{StaticResource WhiteBackground}" />
@@ -2930,38 +2895,24 @@
                                                       ItemContainerStyle="{StaticResource LvItemFolderSubscription}"
                                                       AlternationCount="2">
                                                 <ListView.View>
-                                                    <GridView AllowsColumnReorder="False">
+                                                    <GridView AllowsColumnReorder="False"
+                                                              ColumnHeaderContainerStyle="{StaticResource GridViewFlatColumnHeaderStyle}">
                                                         <GridViewColumn x:Name="fsIcon"
                                                                         Width="25"
-                                                                        DisplayMemberBinding="{Binding Icon}">
-                                                            <GridViewColumn.Header>
-                                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}" />
-                                                            </GridViewColumn.Header>
-                                                        </GridViewColumn>
+                                                                        Header=""
+                                                                        DisplayMemberBinding="{Binding Icon}" />
                                                         <GridViewColumn x:Name="fsName"
                                                                         Width="275"
-                                                                        DisplayMemberBinding="{Binding FolderName}">
-                                                            <GridViewColumn.Header>
-                                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                                      Tag="  Name" />
-                                                            </GridViewColumn.Header>
-                                                        </GridViewColumn>
+                                                                        Header="  Name"
+                                                                        DisplayMemberBinding="{Binding FolderName}" />
                                                         <GridViewColumn x:Name="fsLastModified"
                                                                         Width="132"
-                                                                        DisplayMemberBinding="{Binding LastModified}">
-                                                            <GridViewColumn.Header>
-                                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                                      Tag="  Last modified" />
-                                                            </GridViewColumn.Header>
-                                                        </GridViewColumn>
+                                                                        Header="  Last modified"
+                                                                        DisplayMemberBinding="{Binding LastModified}" />
                                                         <GridViewColumn x:Name="fsAge"
                                                                         Width="64"
-                                                                        DisplayMemberBinding="{Binding Age}">
-                                                            <GridViewColumn.Header>
-                                                                <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                                      Tag="  Age" />
-                                                            </GridViewColumn.Header>
-                                                        </GridViewColumn>
+                                                                        Header="  Age"
+                                                                        DisplayMemberBinding="{Binding Age}" />
                                                     </GridView>
                                                 </ListView.View>
                                             </ListView>
@@ -4238,59 +4189,31 @@
 
 
                                                     <GridViewColumn x:Name="pmtisheaderPanNumber"
-                                                                    Width="70">
-                                                        <GridViewColumn.Header>
-                                                            <GridViewColumnHeader Template="{StaticResource CustomHeader}" />
-                                                        </GridViewColumn.Header>
-                                                    </GridViewColumn>
-
+                                                                    Width="70"
+                                                                    Header="" />
                                                     <GridViewColumn x:Name="pmtisheaderCustomer"
                                                                     Width="180"
-                                                                    DisplayMemberBinding="{Binding Customer}">
-                                                        <GridViewColumn.Header>
-                                                            <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                                  Tag="  Customer + Patient" />
-                                                        </GridViewColumn.Header>
-                                                    </GridViewColumn>
-
+                                                                    Header="  Customer + Patient"
+                                                                    DisplayMemberBinding="{Binding Customer}" />
                                                     <GridViewColumn x:Name="pmtisheaderButtons"
-                                                                    Width="35">
-                                                        <GridViewColumn.Header>
-                                                            <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                                  Tag="Actions" />
-                                                        </GridViewColumn.Header>
-                                                    </GridViewColumn>
+                                                                    Width="35"
+                                                                    Header="Actions" />
                                                     <GridViewColumn x:Name="pmtisheaderDesigner"
                                                                     Width="80"
-                                                                    DisplayMemberBinding="{Binding Designer}">
-                                                        <GridViewColumn.Header>
-                                                            <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                                  Tag="  Designer" />
-                                                        </GridViewColumn.Header>
-                                                    </GridViewColumn>
+                                                                    Header="  Designer"
+                                                                    DisplayMemberBinding="{Binding Designer}" />
                                                     <GridViewColumn x:Name="pmtisheaderItems"
                                                                     Width="auto"
-                                                                    DisplayMemberBinding="{Binding Items}">
-                                                        <GridViewColumn.Header>
-                                                            <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                                  Tag="  Items" />
-                                                        </GridViewColumn.Header>
-                                                    </GridViewColumn>
+                                                                    Header="  Items"
+                                                                    DisplayMemberBinding="{Binding Items}" />
                                                     <GridViewColumn x:Name="pmtisheaderIcon"
                                                                     Width="40"
-                                                                    DisplayMemberBinding="{Binding PanNumber}">
-                                                        <GridViewColumn.Header>
-                                                            <GridViewColumnHeader Template="{StaticResource CustomHeader}" />
-                                                        </GridViewColumn.Header>
-                                                    </GridViewColumn>
+                                                                    Header=""
+                                                                    DisplayMemberBinding="{Binding PanNumber}" />
                                                     <GridViewColumn x:Name="pmtisheaderCaseID"
                                                                     Width="auto"
-                                                                    DisplayMemberBinding="{Binding IntOrderID}">
-                                                        <GridViewColumn.Header>
-                                                            <GridViewColumnHeader Template="{StaticResource CustomHeader}"
-                                                                                  Tag="" />
-                                                        </GridViewColumn.Header>
-                                                    </GridViewColumn>
+                                                                    Header=""
+                                                                    DisplayMemberBinding="{Binding IntOrderID}" />
                                                 </GridView>
 
                                             </ListView.View>
@@ -6750,7 +6673,7 @@
                     Grid.Column="1"
                     Panel.ZIndex="511"
                     Margin="0,1,0,0"
-                    Background="{DynamicResource WhiteBackground}"
+                    Background="{DynamicResource GlobalSearchListBackground}"
                     d:Visibility="Collapsed"
                     Visibility="{Binding SearchString, Converter={StaticResource EmptyTextToCollapsedConverter}}">
 
@@ -6773,13 +6696,13 @@
                         <TextBlock Text="In "
                                    FontSize="30"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource SettingsInputBackground}" />
+                                   Foreground="{DynamicResource GlobalSearchHeaderForeground}" />
                         <Image Source="/Images/Other/threeshape.png"
                                Height="60" />
                         <TextBlock Text=" 3Shape"
                                    FontSize="30"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource SettingsInputBackground}" />
+                                   Foreground="{DynamicResource GlobalSearchHeaderForeground}" />
                     </StackPanel>
                     <StackPanel Grid.Column="2"
                                 Height="60"
@@ -6789,13 +6712,13 @@
                         <TextBlock Text="In "
                                    FontSize="30"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource SettingsInputBackground}" />
+                                   Foreground="{DynamicResource GlobalSearchHeaderForeground}" />
                         <Image Source="/Images/Other/archives.png"
                                Height="54" />
                         <TextBlock Text=" Archives"
                                    FontSize="30"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource SettingsInputBackground}" />
+                                   Foreground="{DynamicResource GlobalSearchHeaderForeground}" />
                     </StackPanel>
 
 
@@ -6847,7 +6770,7 @@
                               ItemContainerStyle="{StaticResource LvItemGlobalSearch}"
                               SelectedItem="{Binding SelectedGlobalSearchResult3Shape}"
                               ScrollViewer.CanContentScroll="False"
-                              Background="AliceBlue"
+                              Background="{DynamicResource GlobalSearchListBackground}"
                               Padding="0"
                               BorderThickness="0.5,0.5,0,0.5"
                               BorderBrush="{DynamicResource MessageBoxSubtitleForeground}"
@@ -6859,7 +6782,7 @@
                               ItemContainerStyle="{StaticResource LvItemGlobalSearch}"
                               SelectedItem="{Binding SelectedGlobalSearchResultArchives}"
                               ScrollViewer.CanContentScroll="False"
-                              Background="AliceBlue"
+                              Background="{DynamicResource GlobalSearchListBackground}"
                               BorderThickness="0,0.5,0.5,0.5"
                               BorderBrush="{DynamicResource MessageBoxSubtitleForeground}"
                               Padding="0"
@@ -6871,10 +6794,19 @@
                     <StackPanel Orientation="Horizontal"
                                 Grid.Row="2"
                                 Grid.ColumnSpan="3">
+                        <StackPanel.Resources>
+                            <SolidColorBrush x:Key="ComboBoxToggleBackground"
+                                             Color="{DynamicResource GlobalSearchComboToggleBackground_Cl}" />
+                            <SolidColorBrush x:Key="ComboBoxDropdownBackground"
+                                             Color="{DynamicResource GlobalSearchComboDropdownBackground_Cl}" />
+                            <SolidColorBrush x:Key="ComboBoxToggleBorder"
+                                             Color="{DynamicResource GlobalSearchComboToggleBorder_Cl}" />
+                        </StackPanel.Resources>
 
                         <TextBlock Text="Search for customer:"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource OrderInfoDividerDark}" />
+                                   Margin="7,0,0,0"
+                                   Foreground="{DynamicResource GlobalSearchFooterForeground}" />
 
                         <TextBox Grid.Row="2"
                                  Width="160"
@@ -6882,9 +6814,9 @@
                                  Margin="4,0"
                                  FontSize="13"
                                  x:Name="tbDoctor"
-                                 Foreground="Crimson"
+                                 Foreground="{DynamicResource GlobalSearchCustomerFieldForeground}"
                                  Text="{Binding CustomerSearchString, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource SearchBox}">
+                                 Style="{StaticResource GlobalSearchCustomerSearchBox}">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="KeyUp">
                                     <i:InvokeCommandAction Command="{Binding SearchForCustomerFieldKeyUpOnTabsCommand}" />
@@ -6901,11 +6833,12 @@
                         <TextBlock Text="Search at: "
                                    Margin="6,0,0,0"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource OrderInfoDividerDark}" />
+                                   Foreground="{DynamicResource GlobalSearchFooterForeground}" />
                         <ComboBox ItemsSource="{Binding FilterYearItems}"
                                   Height="30"
                                   x:Name="cbYear"
                                   Margin="0,0,5,0"
+                                  Foreground="{DynamicResource GlobalSearchFooterEmphasisForeground}"
                                   SelectedItem="{Binding FilterYearItemSelected}">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectionChanged">
@@ -6925,6 +6858,7 @@
                                   Height="30"
                                   Width="85"
                                   x:Name="cbMonth"
+                                  Foreground="{DynamicResource GlobalSearchFooterEmphasisForeground}"
                                   SelectedItem="{Binding FilterMonthItemSelected}">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectionChanged">
@@ -7001,11 +6935,11 @@
                                    d:Text="0"
                                    Margin="0,2,0,0"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource VitaButtonForegroundMid}" />
+                                   Foreground="{DynamicResource GlobalSearchFooterEmphasisForeground}" />
                         <TextBlock Text=" orders listed"
                                    Margin="0,2,0,0"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource VitaButtonForegroundMid}" />
+                                   Foreground="{DynamicResource GlobalSearchFooterForeground}" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal"
@@ -7015,23 +6949,25 @@
                         <Button Content="  &lt;  "
                                 Height="30"
                                 d:Visibility="Visible"
+                                Style="{StaticResource GlobalSearchPagerButton}"
                                 Visibility="{Binding ArchiveResultOffset, Converter={StaticResource ZeroToHiddenConverter}}"
                                 Command="{Binding Previous50ResultOnArchivesSearchCommand}" />
                         <Button Content="  &gt;  "
                                 d:Visibility="Visible"
                                 Height="30"
+                                Style="{StaticResource GlobalSearchPagerButton}"
                                 Visibility="{Binding ResultInArchives, Converter={StaticResource LessThan50ToHiddenConverter}}"
                                 Command="{Binding Next50ResultOnArchivesSearchCommand}" />
                         <TextBlock Text="Archives page:"
                                    Margin="10,2,0,0"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource VitaButtonForegroundMid}" />
+                                   Foreground="{DynamicResource GlobalSearchFooterForeground}" />
                         <TextBlock Text="{Binding ArchiveResultOffset, Converter={StaticResource AddPlus1toNumberConverter}}"
                                    d:Text="3"
                                    Margin="0,2,0,0"
                                    VerticalAlignment="Center"
                                    Padding="5,0"
-                                   Foreground="{DynamicResource BlackColor}" />
+                                   Foreground="{DynamicResource GlobalSearchFooterEmphasisForeground}" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -7059,7 +6995,7 @@
                                 Visibility="{Binding ActiveSearchString, Converter={StaticResource EmptyToCollapsedConverter}}">
                         <TextBlock Text="Searched for"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource BlackColor}"
+                                   Foreground="{DynamicResource GlobalSearchFooterForeground}"
                                    FontSize="9"
                                    Margin="0,0,5,-2" />
                         <TextBlock Text="{Binding ActiveSearchString}"
@@ -7078,7 +7014,7 @@
                                 d:Visibility="Hidden">
                         <TextBlock Text="Result of"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource BlackColor}"
+                                   Foreground="{DynamicResource GlobalSearchFooterForeground}"
                                    FontSize="11"
                                    Margin="0,0,5,0" />
                         <TextBlock Text="{Binding ActiveFilterInUse}"
@@ -7361,7 +7297,8 @@
             <Grid Grid.Row="2"
                   Grid.Column="1"
                   Margin="0,0,0,1"
-                  Height="56">
+                  Height="56"
+                  Background="{Binding WindowBackground}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="MouseEnter">
                         <i:InvokeCommandAction Command="{Binding HideFilterPanelCommand}" />
@@ -7553,10 +7490,9 @@
                                  FontSize="20"
                                  Margin="5,0,0,0"
                                  Padding="17,4,2,0"
-                                 Background="{DynamicResource WhiteBackground}"
                                  Text="{Binding SearchString, UpdateSourceTrigger=PropertyChanged}"
                                  Width="276"
-                                 Style="{StaticResource SearchBox}">
+                                 Style="{StaticResource FooterSearchBox}">
                             <!--TextBox.InputBindings>
                                 <KeyBinding Command="{Binding SearchFieldKeyDownCommand}"
                                             Key="Enter" />
@@ -7580,7 +7516,7 @@
                                    Grid.Column="2"
                                    Panel.ZIndex="5"
                                    FontSize="19"
-                                   Foreground="{DynamicResource TabLegacyForegroundDisabled}"
+                                   Foreground="{DynamicResource FooterSearchWatermarkForeground}"
                                    Padding="18,0,2,0"
                                    VerticalAlignment="Center"
                                    Visibility="{Binding Text, ElementName=tbSearch, Converter={StaticResource EmptyToVisibleConverter}}">
@@ -7623,11 +7559,11 @@
                         <StackPanel Visibility="{Binding CbSettingShowEmptyPanCount, Converter={StaticResource BoolToVisibilityConverter}}"
                                     d:Visibility="Visible">
 
-                            <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                            <core:OutlinedTextBlock Stroke="{DynamicResource InfobarCountStroke}"
                                                     StrokePosition="Outside"
                                                     FontSize="32"
                                                     FontWeight="SemiBold"
-                                                    Fill="{DynamicResource SchemeColor_F66D06}"
+                                                    Fill="{DynamicResource InfobarPanCountFill}"
                                                     StrokeThickness="0.85"
                                                     Text="{Binding PmPanNumberList.Count, UpdateSourceTrigger=PropertyChanged}"
                                                     d:Text="13"
@@ -7641,7 +7577,7 @@
                                 </i:Interaction.Triggers>
                             </core:OutlinedTextBlock>
                             <TextBlock Text="Empty pan left"
-                                       Foreground="{DynamicResource BlackColor}"
+                                       Foreground="{DynamicResource InfobarCountLabelForeground}"
                                        FontSize="9"
                                        Margin="0,0,0,5" />
                         </StackPanel>
@@ -7652,11 +7588,11 @@
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Left">
 
-                        <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                        <core:OutlinedTextBlock Stroke="{DynamicResource InfobarCountStroke}"
                                                 StrokePosition="Outside"
                                                 FontSize="32"
                                                 FontWeight="SemiBold"
-                                                Fill="{DynamicResource SchemeColor_FFAA00}"
+                                                Fill="{DynamicResource InfobarDigiPrescriptionsCountFill}"
                                                 StrokeThickness="0.85"
                                                 Text="{Binding DigiPrescriptionsTodayCount}"
                                                 d:Text="13"
@@ -7675,7 +7611,7 @@
 
 
                         <TextBlock Text="Digi Prescriptions"
-                                   Foreground="{DynamicResource BlackColor}"
+                                   Foreground="{DynamicResource InfobarCountLabelForeground}"
                                    Visibility="{Binding DigiPrescriptionsTodayCount, Converter={StaticResource ZeroToCollapsedConverter}}"
                                    d:Visibility="Visible"
                                    FontSize="9"
@@ -7687,11 +7623,11 @@
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Left">
 
-                        <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                        <core:OutlinedTextBlock Stroke="{DynamicResource InfobarCountStroke}"
                                                 StrokePosition="Outside"
                                                 FontSize="32"
                                                 FontWeight="SemiBold"
-                                                Fill="{DynamicResource SchemeColor_FBFF00}"
+                                                Fill="{DynamicResource InfobarDigiCasesCountFill}"
                                                 StrokeThickness="0.85"
                                                 d:Text="13"
                                                 Text="{Binding DigiCasesIn3ShapeTodayCount}"
@@ -7707,7 +7643,7 @@
                         </core:OutlinedTextBlock>
 
                         <TextBlock Text="Digi cases Today"
-                                   Foreground="{DynamicResource BlackColor}"
+                                   Foreground="{DynamicResource InfobarCountLabelForeground}"
                                    FontSize="9"
                                    Visibility="{Binding DigiCasesIn3ShapeTodayCount, Converter={StaticResource ZeroToCollapsedConverter}}"
                                    d:Visibility="Visible"
@@ -7928,7 +7864,7 @@
                                     Visibility="{Binding PanNrDuplicatesList.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
                                     d:Visibility="Visible">
 
-                            <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                            <core:OutlinedTextBlock Stroke="{DynamicResource InfobarCountStroke}"
                                                     StrokePosition="Outside"
                                                     FontSize="32"
                                                     FontWeight="SemiBold"
@@ -7960,7 +7896,7 @@
 
 
 
-                            <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                            <core:OutlinedTextBlock Stroke="{DynamicResource InfobarCountStroke}"
                                                     StrokePosition="Outside"
                                                     FontSize="32"
                                                     FontWeight="SemiBold"
@@ -7989,7 +7925,7 @@
                                     Grid.Column="2"
                                     HorizontalAlignment="Left">
 
-                            <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                            <core:OutlinedTextBlock Stroke="{DynamicResource InfobarCountStroke}"
                                                     StrokePosition="Outside"
                                                     FontSize="32"
                                                     FontWeight="SemiBold"
@@ -8016,7 +7952,7 @@
                             <StackPanel Visibility="{Binding CbSettingShowPendingDigiCases, Converter={StaticResource BoolToVisibilityConverter}}"
                                         d:Visibility="Visible">
 
-                                <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                                <core:OutlinedTextBlock Stroke="{DynamicResource InfobarCountStroke}"
                                                         StrokePosition="Outside"
                                                         FontSize="32"
                                                         FontWeight="SemiBold"
@@ -8052,7 +7988,7 @@
                                         d:Visibility="Visible"
                                         Grid.Column="4">
 
-                                <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+                                <core:OutlinedTextBlock Stroke="{DynamicResource InfobarCountStroke}"
                                                         StrokePosition="Outside"
                                                         FontSize="32"
                                                         FontWeight="SemiBold"

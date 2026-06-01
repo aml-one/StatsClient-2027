@@ -38,6 +38,8 @@ internal static class ColorSchemeResourceCatalog
         "PopupShadowColor",
         "SplashAccentBlue",
         "SplashAccentBlueLight",
+        "ImmersiveCardShadow_Cl",
+        "ImmersiveFocusRing_Cl",
         "ViewerWatermarkGradientStart",
         "ViewerWatermarkGradientMid1",
         "ViewerWatermarkGradientMid2",
@@ -56,6 +58,8 @@ internal static class ColorSchemeResourceCatalog
     [
         "WindowBackgroundBrush",
         "ClassicWindowBackgroundBrush",
+        "ImmersiveCardShadow",
+        "ImmersiveFocusRing",
     ];
 
     public static bool TryGetColor(string key, out Color color)

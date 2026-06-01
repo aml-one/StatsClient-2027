@@ -7,8 +7,7 @@
             <Color x:Key="TransparentColor_Cl">#00000000</Color>
             <Color x:Key="WindowBackgroundColor">#EEEEEE</Color>
         </ResourceDictionary>
-        <ResourceDictionary Source="/Themes/ColorSchemes/ColorSchemeFoundation.xaml" />
-        <ResourceDictionary Source="/Themes/ColorSchemes/ListViewItemColors.Light.xaml" />
+        <ResourceDictionary Source="ListViewItemColors.Light.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <!-- ================================================================== -->
@@ -80,6 +79,18 @@
     <SolidColorBrush x:Key="TitleBarButtonOverBackground">#B2BFD9</SolidColorBrush>
     <SolidColorBrush x:Key="RefreshButtonColor">#35e6c6</SolidColorBrush>
     <SolidColorBrush x:Key="HomeButtonColor">#e6c235</SolidColorBrush>
+    <SolidColorBrush x:Key="TitleBarVerticalBrandStroke">WhiteSmoke</SolidColorBrush>
+    <Color x:Key="TitleBarVerticalBrandStroke_Cl">WhiteSmoke</Color>
+    <SolidColorBrush x:Key="TitleBarVerticalBrandFill">#333333</SolidColorBrush>
+    <Color x:Key="TitleBarVerticalBrandFill_Cl">#333333</Color>
+    <SolidColorBrush x:Key="SidebarChromeLabelForeground">#1E293B</SolidColorBrush>
+    <Color x:Key="SidebarChromeLabelForeground_Cl">#1E293B</Color>
+    <SolidColorBrush x:Key="ThreeShapeListScrimBackground">#C6222222</SolidColorBrush>
+    <Color x:Key="ThreeShapeListScrimBackground_Cl">#C6222222</Color>
+    <SolidColorBrush x:Key="ComboBoxDropdownBackground">#EFE7C9</SolidColorBrush>
+    <Color x:Key="ComboBoxDropdownBackground_Cl">#EFE7C9</Color>
+    <SolidColorBrush x:Key="ComboBoxItemHighlightBackground">#DCC15B</SolidColorBrush>
+    <Color x:Key="ComboBoxItemHighlightBackground_Cl">#DCC15B</Color>
     <!-- #endregion -->
 
     <!-- #region Semantic colors -->
@@ -243,6 +254,11 @@
     <!-- #region SearchBoxTitleBar -->
     <SolidColorBrush x:Key="SearchBoxBorder">#444444</SolidColorBrush>
     <SolidColorBrush x:Key="SearchBoxForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterSearchBackground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterSearchForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterSearchBorder">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterSearchBorderHover">#FF3C77DD</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterSearchWatermarkForeground">#666666</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region Converters -->
@@ -356,6 +372,13 @@
     <!-- #region Glass / modal panels (OrderInfo, DcmViewer overlays) -->
     <SolidColorBrush x:Key="GlassPanelBackground">#A8E5E9ED</SolidColorBrush>
     <SolidColorBrush x:Key="GlassPanelBorder">#55A8B0B8</SolidColorBrush>
+    <!-- Fixed light-panel text (same in Light and Dark — canvas / glass stay light gray) -->
+    <SolidColorBrush x:Key="GlassPanelLabelForeground">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="GlassPanelValueForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="GlassPanelSectionTitleForeground">#555555</SolidColorBrush>
+    <Color x:Key="GlassPanelLabelForeground_Cl">#888888</Color>
+    <Color x:Key="GlassPanelValueForeground_Cl">#000000</Color>
+    <Color x:Key="GlassPanelSectionTitleForeground_Cl">#555555</Color>
     <SolidColorBrush x:Key="ModalCardBackground">#E6F8FAFD</SolidColorBrush>
     <SolidColorBrush x:Key="ModalCardBorder">#AAB8C6D5</SolidColorBrush>
     <SolidColorBrush x:Key="ModalCardBorderLight">#88B8C6D5</SolidColorBrush>
@@ -536,12 +559,95 @@
     <!-- #region OrderInfo / misc window accents -->
     <SolidColorBrush x:Key="OrderInfoDivider">#CCCCCC</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoDividerDark">#222222</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoPanNumberForeground">#000000</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoHintForeground">#888888</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoFooterBackground">#666666</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoFooterForeground">#EEEEEE</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoToolbarLabelForeground">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoToolbarValueForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoToolbarAddScanForeground">#1F9D49</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoToolbarRefreshForeground">#2A6AA3</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameAccent">#65a7b5</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameCommentAccent">#32a89e</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameDivider">#CCCCCC</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameTitleForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameLabelForeground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameNoteForeground">#B45309</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameLogForeground">#A16207</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameToolButtonBackground">#F7DD74</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameToolButtonForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameToolButtonBorder">#E3BD22</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameResetButtonBackground">#FECDD3</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameResetButtonForeground">#9F1239</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameResetButtonBorder">#FDA4AF</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameCopyButtonBackground">#B0C4DE</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameCopyButtonForeground">#1E3A5F</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameCopyButtonBorder">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameCancelButtonBackground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameCancelButtonForeground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameCancelButtonBorder">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameConfirmButtonBackground">#BBF7D0</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameConfirmButtonForeground">#166534</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderRenameConfirmButtonBorder">#86EFAC</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesTitleForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesSectionLabelForeground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesFilterNoteForeground">#B45309</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesRefreshButtonBackground">#D7DDD4</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesRefreshButtonForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesRefreshButtonBorder">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesNavButtonBackground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesNavButtonForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesNavButtonBorder">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesNavButtonHoverBackground">#F7DD74</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesNavButtonHoverForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesNavButtonHoverBorder">#E3BD22</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesSwitchTrackBackground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesSwitchTrackBorder">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesSwitchSelectedBackground">#0284C7</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesSwitchSelectedForeground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesSwitchUnselectedForeground">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesListBoxBackground">#E0F2FE</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesListBoxBorder">#7DD3FC</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesListBoxItemHoverBackground">#BAE6FD</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesListBoxItemSelectedBackground">#7DD3FC</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesListViewBackground">#E8F6FC</SolidColorBrush>
+    <Color x:Key="ShadeButtonForeground_Cl">#FF000000</Color>
+    <SolidColorBrush x:Key="ShadeButtonForeground" Color="{StaticResource ShadeButtonForeground_Cl}" />
+    <SolidColorBrush x:Key="AddCustomerTitleForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerLabelForeground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerFieldBackground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerFieldForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerFieldBorder">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerListBackground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerConfirmButtonBackground">#BBF7D0</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerConfirmButtonForeground">#166534</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerConfirmButtonBorder">#86EFAC</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerCancelButtonBackground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerCancelButtonForeground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="AddCustomerCancelButtonBorder">#94A3B8</SolidColorBrush>
+    <!-- #endregion -->
+
+    <!-- #region Global Search panel chrome (header + footer on PrimaryColor band) -->
+    <SolidColorBrush x:Key="GlobalSearchHeaderForeground">#555555</SolidColorBrush>
+    <SolidColorBrush x:Key="GlobalSearchFooterForeground">#444444</SolidColorBrush>
+    <SolidColorBrush x:Key="GlobalSearchFooterEmphasisForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="GlobalSearchListBackground">#F5F8FA</SolidColorBrush>
+    <Color x:Key="GlobalSearchCustomerFieldBackground_Cl">#FFFFFF</Color>
+    <SolidColorBrush x:Key="GlobalSearchCustomerFieldBackground" Color="{StaticResource GlobalSearchCustomerFieldBackground_Cl}" />
+    <SolidColorBrush x:Key="GlobalSearchCustomerFieldForeground">#111111</SolidColorBrush>
+    <Color x:Key="GlobalSearchCustomerFieldBorder_Cl">#94A3B8</Color>
+    <SolidColorBrush x:Key="GlobalSearchCustomerFieldBorder" Color="{StaticResource GlobalSearchCustomerFieldBorder_Cl}" />
+    <SolidColorBrush x:Key="GlobalSearchCustomerFieldBorderHover">#FF3C77DD</SolidColorBrush>
+    <Color x:Key="GlobalSearchComboToggleBackground_Cl">#E8EDF3</Color>
+    <SolidColorBrush x:Key="GlobalSearchComboToggleBackground" Color="{StaticResource GlobalSearchComboToggleBackground_Cl}" />
+    <Color x:Key="GlobalSearchComboDropdownBackground_Cl">#FFFFFF</Color>
+    <SolidColorBrush x:Key="GlobalSearchComboDropdownBackground" Color="{StaticResource GlobalSearchComboDropdownBackground_Cl}" />
+    <Color x:Key="GlobalSearchComboToggleBorder_Cl">#94A3B8</Color>
+    <SolidColorBrush x:Key="GlobalSearchComboToggleBorder" Color="{StaticResource GlobalSearchComboToggleBorder_Cl}" />
+    <SolidColorBrush x:Key="GlobalSearchPagerButtonBackground">#E8ECF0</SolidColorBrush>
+    <SolidColorBrush x:Key="GlobalSearchPagerButtonForeground">#222222</SolidColorBrush>
+    <SolidColorBrush x:Key="GlobalSearchPagerButtonBorder">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="GlobalSearchPagerButtonHoverBackground">#D8DEE6</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region Accent & loading -->
@@ -563,6 +669,60 @@
     <sys:String x:Key="HomeTileEncodeTint">#33C4B5FD</sys:String>
     <sys:String x:Key="HomeTileHealthTint">#33FED7AA</sys:String>
     <sys:String x:Key="HomeTileSettingsTint">#33FCA5A5</sys:String>
+    <!-- #endregion -->
+
+    <!-- #region Home panel chrome -->
+    <SolidColorBrush x:Key="HomePanPanelBackground">#FAFFFFFF</SolidColorBrush>
+    <Color x:Key="HomePanPanelBackground_Cl">#FAFFFFFF</Color>
+    <SolidColorBrush x:Key="HomePanPanelBackgroundAlt">#F0F7FB</SolidColorBrush>
+    <Color x:Key="HomePanPanelBackgroundAlt_Cl">#F0F7FB</Color>
+    <SolidColorBrush x:Key="HomePanWellBackground">#F7F4E6</SolidColorBrush>
+    <Color x:Key="HomePanWellBackground_Cl">#F7F4E6</Color>
+    <SolidColorBrush x:Key="HomePanWellBorder">#BB64748B</SolidColorBrush>
+    <Color x:Key="HomePanWellBorder_Cl">#BB64748B</Color>
+    <SolidColorBrush x:Key="HomePanWellSheenTop">#FFFFFF</SolidColorBrush>
+    <Color x:Key="HomePanWellSheenTop_Cl">#FFFFFF</Color>
+    <SolidColorBrush x:Key="HomePanWellEditBorder">#FF0EA5E9</SolidColorBrush>
+    <Color x:Key="HomePanWellEditBorder_Cl">#FF0EA5E9</Color>
+    <Color x:Key="HomePanWellEditBorderGlow_Cl">#440EA5E9</Color>
+    <SolidColorBrush x:Key="HomeArchivesStatTotalForeground">#FF22C55E</SolidColorBrush>
+    <SolidColorBrush x:Key="HomeArchivesStatBetweenForeground">#FF0284C7</SolidColorBrush>
+    <SolidColorBrush x:Key="HomeArchivesStatRebuildForeground">#FFF59E0B</SolidColorBrush>
+    <SolidColorBrush x:Key="HomeStatusUpdateBackground">#FFD1FAE5</SolidColorBrush>
+    <Color x:Key="HomeStatusUpdateBackground_Cl">#FFD1FAE5</Color>
+    <SolidColorBrush x:Key="HomeStatusUpdateBorder">#FF86EFAC</SolidColorBrush>
+    <Color x:Key="HomeStatusUpdateBorder_Cl">#FF86EFAC</Color>
+    <SolidColorBrush x:Key="HomeStatusUpdateForeground">#FF166534</SolidColorBrush>
+    <Color x:Key="HomeStatusUpdateForeground_Cl">#FF166534</Color>
+    <SolidColorBrush x:Key="HomeStatusDebugBackground">#FFFFE4E6</SolidColorBrush>
+    <Color x:Key="HomeStatusDebugBackground_Cl">#FFFFE4E6</Color>
+    <SolidColorBrush x:Key="HomeStatusDebugBorder">#FFFDA4AF</SolidColorBrush>
+    <Color x:Key="HomeStatusDebugBorder_Cl">#FFFDA4AF</Color>
+    <SolidColorBrush x:Key="HomeStatusDebugForeground">#FFBE123C</SolidColorBrush>
+    <Color x:Key="HomeStatusDebugForeground_Cl">#FFBE123C</Color>
+    <SolidColorBrush x:Key="HomeStatusLogBackground">#FFE0F2FE</SolidColorBrush>
+    <Color x:Key="HomeStatusLogBackground_Cl">#FFE0F2FE</Color>
+    <SolidColorBrush x:Key="HomeStatusLogBorder">#FF7DD3FC</SolidColorBrush>
+    <Color x:Key="HomeStatusLogBorder_Cl">#FF7DD3FC</Color>
+    <SolidColorBrush x:Key="HomeStatusLogForeground">#FF0369A1</SolidColorBrush>
+    <Color x:Key="HomeStatusLogForeground_Cl">#FF0369A1</Color>
+    <SolidColorBrush x:Key="HomeTileAmbientGlow">#2234D9F5</SolidColorBrush>
+    <Color x:Key="HomeTileAmbientGlow_Cl">#2234D9F5</Color>
+    <Color x:Key="HomeAmbientGradientStart_Cl">#FFF8FAFD</Color>
+    <Color x:Key="HomeAmbientGradientMid_Cl">#FFF2F8F5</Color>
+    <Color x:Key="HomeAmbientGradientEnd_Cl">#FFF4F2FA</Color>
+    <BitmapImage x:Key="HomeSettingsButtonImage"
+                 UriSource="/Images/HomeButtons/settings.png" />
+    <BitmapImage x:Key="UpdateAvailableButtonImage"
+                 UriSource="/Images/Other/changes.png" />
+    <SolidColorBrush x:Key="InfobarCountStroke">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="InfobarCountLabelForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="InfobarPanCountFill">#F66D06</SolidColorBrush>
+    <SolidColorBrush x:Key="InfobarDigiPrescriptionsCountFill">#FFAA00</SolidColorBrush>
+    <SolidColorBrush x:Key="InfobarDigiCasesCountFill">#FBFF00</SolidColorBrush>
+    <SolidColorBrush x:Key="HomePaymentCountBadgeBackground">#FFEF4444</SolidColorBrush>
+    <SolidColorBrush x:Key="HomePaymentCountBadgeBorder">#FFB91C1C</SolidColorBrush>
+    <SolidColorBrush x:Key="HomePaymentCountBadgeForeground">#FFFFFF</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region OrderXmlCompare syntax (extends code editor) -->
@@ -590,7 +750,9 @@
     <Color x:Key="ImmersiveOrbPeach_Cl">#FFFFD6E8</Color>
     <Color x:Key="ImmersiveOrbMint_Cl">#FFD4F5C8</Color>
     <Color x:Key="ImmersiveCardShadow_Cl">#5534D9F5</Color>
+    <SolidColorBrush x:Key="ImmersiveCardShadow">#5534D9F5</SolidColorBrush>
     <Color x:Key="ImmersiveFocusRing_Cl">#8834D9F5</Color>
+    <SolidColorBrush x:Key="ImmersiveFocusRing">#8834D9F5</SolidColorBrush>
     <SolidColorBrush x:Key="ImmersiveGlassBackground">#F8FFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="ImmersiveGlassBackgroundStrong">#FAFFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="ImmersiveGlassBorder">#44CBD5E1</SolidColorBrush>

@@ -2906,7 +2906,7 @@ public partial class MainViewModel : ObservableObject
 
 
     #region PAN COLOR CHECKER PROPERTIES
-    private string pcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F7F4E6");
+    private string pcPanColor = ColorSchemeResourceCatalog.GetHex("HomePanWellBackground");
     public string PcPanColor
     {
         get => pcPanColor;
@@ -5277,7 +5277,7 @@ public partial class MainViewModel : ObservableObject
 
 
             await Task.Delay(500);
-            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F7F4E6");
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("HomePanWellBackground");
             PcPanColorFriendlyName = "Check pan color";
             NoNumberRegisteredShowsNow = Visibility.Collapsed;
         }
@@ -5300,7 +5300,7 @@ public partial class MainViewModel : ObservableObject
             PcPanNumber = "";
 
             await Task.Delay(3500);
-            PcPanColor = ColorSchemeResourceCatalog.GetHex("SchemeColor_F7F4E6");
+            PcPanColor = ColorSchemeResourceCatalog.GetHex("HomePanWellBackground");
             PcPanColorFriendlyName = "Check pan color";
             PanColorShowsNow = Visibility.Collapsed;
 

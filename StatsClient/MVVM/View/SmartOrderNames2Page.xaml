@@ -46,7 +46,6 @@
             <converter:TextToVisibilityConverter x:Key="TextToVisibilityConverter" />
             <converter:NullToHiddenConverter x:Key="NullToHiddenConverter" />
             <converter:LessThan10minutesInSecondstoVisibleConverter x:Key="LessThan10minutesInSecondstoVisibleConverter" />
-
             <Style x:Key="GridViewColumnHeaderGripper"
                    TargetType="Thumb">
                 <Setter Property="Width"
@@ -88,7 +87,7 @@
                 <DockPanel HorizontalAlignment="Left"
                            LastChildFill="False">
                     <TextBlock FontSize="11"
-                               Foreground="{DynamicResource BlackColor}"
+                               Foreground="{DynamicResource SmartOrderNamesTitleForeground}"
                                FontWeight="Normal"
                                Padding="8,0,0,0"
                                Width="{TemplateBinding Width}"
@@ -99,6 +98,137 @@
                     </TextBlock>
                 </DockPanel>
             </DataTemplate>
+
+            <Style x:Key="SmartOrderNamesListBoxItem"
+                   TargetType="ListBoxItem">
+                <Setter Property="Background"
+                        Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource SmartOrderNamesSectionLabelForeground}" />
+                <Setter Property="Padding"
+                        Value="4,2" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver"
+                             Value="True">
+                        <Setter Property="Background"
+                                Value="{StaticResource SmartOrderNamesListBoxItemHoverBackground}" />
+                    </Trigger>
+                    <Trigger Property="IsSelected"
+                             Value="True">
+                        <Setter Property="Background"
+                                Value="{StaticResource SmartOrderNamesListBoxItemSelectedBackground}" />
+                        <Setter Property="Foreground"
+                                Value="{StaticResource SmartOrderNamesNavButtonForeground}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="SmartOrderNamesCloseButton"
+                   TargetType="Button">
+                <Setter Property="Background"
+                        Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness"
+                        Value="0" />
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Border"
+                                    Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter Property="Background"
+                                            Value="{StaticResource SchemeColor_DE766B}"
+                                            TargetName="Border" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="SmartOrderNamesRefreshButton"
+                   TargetType="Button">
+                <Setter Property="Background"
+                        Value="{DynamicResource SmartOrderNamesRefreshButtonBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource SmartOrderNamesRefreshButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource SmartOrderNamesRefreshButtonBorder}" />
+                <Setter Property="BorderThickness"
+                        Value="1" />
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="Padding"
+                        Value="8,4" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="SmartOrderNamesSegmentRadio"
+                   TargetType="RadioButton">
+                <Setter Property="Foreground"
+                        Value="{DynamicResource SmartOrderNamesSwitchUnselectedForeground}" />
+                <Setter Property="FontSize"
+                        Value="13" />
+                <Setter Property="FontWeight"
+                        Value="SemiBold" />
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="HorizontalContentAlignment"
+                        Value="Center" />
+                <Setter Property="VerticalContentAlignment"
+                        Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RadioButton">
+                            <Border x:Name="segment"
+                                    Background="{DynamicResource TransparentBrush}"
+                                    CornerRadius="12"
+                                    Padding="14,6"
+                                    MinWidth="72">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked"
+                                         Value="True">
+                                    <Setter TargetName="segment"
+                                            Property="Background"
+                                            Value="{StaticResource SmartOrderNamesSwitchSelectedBackground}" />
+                                    <Setter Property="Foreground"
+                                            Value="{StaticResource SmartOrderNamesSwitchSelectedForeground}" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter TargetName="segment"
+                                            Property="Opacity"
+                                            Value="0.92" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -124,20 +254,17 @@
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="?"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Top"
-                           Cursor="Hand"
-                           Foreground="{DynamicResource BlackColor}"
-                           Panel.ZIndex="50"
-                           Margin="0,-10,0,0"
-                           FontSize="28">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="MouseDown">
-                            <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </TextBlock>
+                <Button Content="╳"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Width="36"
+                        Height="36"
+                        FontSize="18"
+                        Panel.ZIndex="50"
+                        Margin="0,-6,0,0"
+                        Foreground="{DynamicResource SmartOrderNamesTitleForeground}"
+                        Command="{Binding CloseWindowCommand}"
+                        Style="{StaticResource SmartOrderNamesCloseButton}" />
 
                 <Border BorderBrush="{DynamicResource VitaButtonBorderLight}"
                         BorderThickness="0,0,0,1"
@@ -166,7 +293,7 @@
                                        FontSize="20"
                                        Margin="0,0,0,0"
                                        Background="{DynamicResource TransparentBrush}"
-                                       Foreground="{DynamicResource BlackColor}"
+                                       Foreground="{DynamicResource SmartOrderNamesTitleForeground}"
                                        FontWeight="Light" />
                         </Grid>
 
@@ -182,16 +309,14 @@
                             <Button Content="Refresh list"
                                     Command="{Binding RefreshCommand}"
                                     IsTabStop="False"
-                                    Background="{DynamicResource SchemeColor_76999F}"
-                                    Foreground="{DynamicResource NamedBeige}"
-                                    Width="70"
+                                    Width="88"
                                     Height="30"
-                                    FontSize="9"
+                                    FontSize="11"
                                     Margin="0,-8,4,0"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
-                                    Cursor="Hand"
-                                    Panel.ZIndex="10" />
+                                    Panel.ZIndex="10"
+                                    Style="{StaticResource SmartOrderNamesRefreshButton}" />
                             <StackPanel Grid.Column="1"
                                         Margin="0,-5,40,0">
 
@@ -204,7 +329,7 @@
 
 
                                 <CheckBox Content="Show orders only without pan number"
-                                          Foreground="{DynamicResource NamedDarkRed}"
+                                          Foreground="{DynamicResource SmartOrderNamesFilterNoteForeground}"
                                           IsTabStop="False"
                                           Margin="0,10,0,0"
                                           VerticalAlignment="Center"
@@ -264,7 +389,7 @@
                                             <TextBlock Text="Pan Number"
                                                        FontSize="20"
                                                        HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource SchemeColor_1E1A16}"
+                                                       Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                        Margin="0,0,0,10"
                                                        VerticalAlignment="Center" />
                                             <TextBox Width="170"
@@ -296,7 +421,7 @@
                                             <StackPanel d:Visibility="Visible"
                                                         Visibility="{Binding AgeOfLastPanNumber, Converter={StaticResource LessThan10minutesInSecondstoVisibleConverter}}">
                                                 <Label Content="Previously set number"
-                                                       Foreground="{DynamicResource SchemeColor_1E1A16}"
+                                                       Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                        HorizontalAlignment="Center"
                                                        Visibility="{Binding LastPanNumber, Converter={StaticResource EmptyToHiddenConverter}}"
                                                        d:Visibility="Visible" />
@@ -353,7 +478,7 @@
                                         <Label Content="{Binding CustomerName}"
                                                d:Content="CustomerName"
                                                Grid.ColumnSpan="3"
-                                               Foreground="{DynamicResource SchemeColor_1E1A16}"
+                                               Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                HorizontalAlignment="Center"
                                                FontSize="40" />
 
@@ -372,7 +497,7 @@
                                                     HorizontalAlignment="Center">
 
                                             <TextBlock Text="Customer variations"
-                                                       Foreground="{DynamicResource SchemeColor_1E1A16}"
+                                                       Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                        Margin="0,10,0,2"
                                                        Visibility="{Binding CustomerSuggestionsList.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
                                                        d:Visibility="Visible"
@@ -382,8 +507,11 @@
                                                      HorizontalAlignment="Left"
                                                      IsTabStop="False"
                                                      Margin="0,0,0,0"
-                                                     Background="{DynamicResource DarkGrayBackround}"
-                                                     Foreground="{DynamicResource LightTextColor}"
+                                                     Background="{DynamicResource SmartOrderNamesListBoxBackground}"
+                                                     BorderBrush="{DynamicResource SmartOrderNamesListBoxBorder}"
+                                                     BorderThickness="1"
+                                                     Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
+                                                     ItemContainerStyle="{StaticResource SmartOrderNamesListBoxItem}"
                                                      Visibility="{Binding CustomerSuggestionsList.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
                                                      d:Visibility="Visible"
                                                      x:Name="listBoxCustomerVariations"
@@ -402,9 +530,10 @@
                                                 </ListBox.InputBindings>
                                             </ListBox>
                                             <Button Content=" Add New Name "
-                                                    Height="22"
+                                                    Height="28"
                                                     Margin="0,9,0,0"
                                                     IsTabStop="False"
+                                                    Style="{StaticResource SmartOrderNamesRefreshButton}"
                                                     Command="{Binding AddCustomerSuggestionCommand}" />
                                         </StackPanel>
                                         <Button Content="&gt;"
@@ -450,7 +579,7 @@
                                                 <RowDefinition />
                                             </Grid.RowDefinitions>
                                             <TextBlock Text="Choose a system"
-                                                       Foreground="{DynamicResource SchemeColor_1E1A16}"
+                                                       Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                        VerticalAlignment="Center"
                                                        HorizontalAlignment="Center"
                                                        Margin="4,0,0,0" />
@@ -460,9 +589,12 @@
                                                      Grid.Row="1"
                                                      Margin="4,1,4,4"
                                                      HorizontalContentAlignment="Center"
-                                                     Background="{DynamicResource DarkGrayBackround}"
-                                                     Foreground="{DynamicResource LightTextColor}"
+                                                     Background="{DynamicResource SmartOrderNamesListBoxBackground}"
+                                                     BorderBrush="{DynamicResource SmartOrderNamesListBoxBorder}"
+                                                     BorderThickness="1"
+                                                     Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                      FontSize="14"
+                                                     ItemContainerStyle="{StaticResource SmartOrderNamesListBoxItem}"
                                                      x:Name="listBoxDigiSystem"
                                                      SelectedItem="{Binding SelectedDigitalSystem}"
                                                      ItemsSource="{Binding DigitalSystems}">
@@ -513,7 +645,7 @@
                                                     VerticalAlignment="Center"
                                                     Grid.Column="1">
                                             <TextBlock Text="Carestream / Dexis ID / ASConnect ID"
-                                                       Foreground="{DynamicResource SchemeColor_1E1A16}"
+                                                       Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                        VerticalAlignment="Center"
                                                        FontSize="15"
                                                        Margin="0,10,0,2" />
@@ -629,7 +761,7 @@
                                                            Margin="0,5,0,0" />
                                                     <Label Content="No Hole"
                                                            FontSize="20"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                            Margin="0,-12,0,0" />
                                                 </StackPanel>
                                             </Button>
@@ -649,7 +781,7 @@
                                                            Margin="0,5,0,0" />
                                                     <Label Content="Access hole"
                                                            FontSize="20"
-                                                           Foreground="{DynamicResource BlackColor}"
+                                                           Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
                                                            Margin="0,-12,0,0" />
                                                 </StackPanel>
                                             </Button>
@@ -659,43 +791,46 @@
                                                     Grid.Row="1">
 
 
-                                            <StackPanel Width="250"
-                                                        Orientation="Horizontal"
-                                                        VerticalAlignment="Center">
-                                                <TextBlock Text="Customer comes: "
-                                                           Foreground="{DynamicResource SchemeColor_1E1A16}"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,0,2" />
-                                                <DockPanel VerticalAlignment="Center">
-
-                                                    <RadioButton Content="First"
-                                                                 Foreground="{DynamicResource BlackColor}"
-                                                                 IsTabStop="False"
-                                                                 VerticalAlignment="Center"
-                                                                 Margin="0,0,10,2"
-                                                                 Cursor="Hand"
-                                                                 IsChecked="{Binding NamingCustomerFirst}">
-                                                        <i:Interaction.Triggers>
-                                                            <i:EventTrigger EventName="Checked">
-                                                                <i:InvokeCommandAction Command="{Binding BuildNameCommand}" />
-                                                            </i:EventTrigger>
-                                                        </i:Interaction.Triggers>
-                                                    </RadioButton>
-                                                    <RadioButton Content="Last"
-                                                                 Foreground="{DynamicResource BlackColor}"
-                                                                 IsTabStop="False"
-                                                                 Cursor="Hand"
-                                                                 HorizontalAlignment="Right"
-                                                                 IsChecked="{Binding NamingCustomerLast}"
-                                                                 VerticalAlignment="Bottom"
-                                                                 Margin="0,0,4,2">
-                                                        <i:Interaction.Triggers>
-                                                            <i:EventTrigger EventName="Checked">
-                                                                <i:InvokeCommandAction Command="{Binding BuildNameCommand}" />
-                                                            </i:EventTrigger>
-                                                        </i:Interaction.Triggers>
-                                                    </RadioButton>
-                                                </DockPanel>
+                                            <StackPanel HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,0,15">
+                                                <TextBlock Text="Customer comes"
+                                                           Foreground="{DynamicResource SmartOrderNamesSectionLabelForeground}"
+                                                           HorizontalAlignment="Center"
+                                                           Margin="0,0,0,8"
+                                                           FontSize="13" />
+                                                <Border Background="{DynamicResource SmartOrderNamesSwitchTrackBackground}"
+                                                        BorderBrush="{DynamicResource SmartOrderNamesSwitchTrackBorder}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="14"
+                                                        Padding="3"
+                                                        HorizontalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <RadioButton Content="First"
+                                                                     GroupName="SmartOrderCustomerOrder"
+                                                                     Style="{StaticResource SmartOrderNamesSegmentRadio}"
+                                                                     IsTabStop="False"
+                                                                     IsChecked="{Binding NamingCustomerFirst}">
+                                                            <i:Interaction.Triggers>
+                                                                <i:EventTrigger EventName="Checked">
+                                                                    <i:InvokeCommandAction Command="{Binding BuildNameCommand}" />
+                                                                </i:EventTrigger>
+                                                            </i:Interaction.Triggers>
+                                                        </RadioButton>
+                                                        <RadioButton Content="Last"
+                                                                     GroupName="SmartOrderCustomerOrder"
+                                                                     Style="{StaticResource SmartOrderNamesSegmentRadio}"
+                                                                     IsTabStop="False"
+                                                                     Margin="4,0,0,0"
+                                                                     IsChecked="{Binding NamingCustomerLast}">
+                                                            <i:Interaction.Triggers>
+                                                                <i:EventTrigger EventName="Checked">
+                                                                    <i:InvokeCommandAction Command="{Binding BuildNameCommand}" />
+                                                                </i:EventTrigger>
+                                                            </i:Interaction.Triggers>
+                                                        </RadioButton>
+                                                    </StackPanel>
+                                                </Border>
                                             </StackPanel>
                                         </StackPanel>
 
@@ -740,7 +875,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Bleach010}"
+                                                        Style="{StaticResource Bleach010}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="040" />
                                                 <Button Content=" 030 "
@@ -750,7 +885,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Bleach010}"
+                                                        Style="{StaticResource Bleach010}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="030" />
                                                 <Button Content=" 020 "
@@ -760,7 +895,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Bleach010}"
+                                                        Style="{StaticResource Bleach010}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="020" />
                                                 <Button Content=" 010 "
@@ -770,7 +905,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Bleach010}"
+                                                        Style="{StaticResource Bleach010}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="010" />
                                             </StackPanel>
@@ -783,7 +918,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Bleach0M}"
+                                                        Style="{StaticResource Bleach0M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="0M4" />
                                                 <Button Content=" 0M3 "
@@ -793,7 +928,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Bleach0M}"
+                                                        Style="{StaticResource Bleach0M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="0M3" />
                                                 <Button Content=" 0M2 "
@@ -803,7 +938,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Bleach0M}"
+                                                        Style="{StaticResource Bleach0M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="0M2" />
                                                 <Button Content=" 0M1 "
@@ -813,7 +948,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Bleach0M}"
+                                                        Style="{StaticResource Bleach0M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="0M1" />
                                             </StackPanel>
@@ -828,7 +963,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource BleachBL}"
+                                                        Style="{StaticResource BleachBL}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="BL4" />
                                                 <Button Content=" BL3 "
@@ -838,7 +973,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource BleachBL}"
+                                                        Style="{StaticResource BleachBL}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="BL3" />
                                                 <Button Content=" BL2 "
@@ -848,7 +983,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource BleachBL}"
+                                                        Style="{StaticResource BleachBL}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="BL2" />
                                                 <Button Content=" BL1 "
@@ -858,7 +993,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource BleachBL}"
+                                                        Style="{StaticResource BleachBL}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="BL1" />
                                             </StackPanel>
@@ -873,7 +1008,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaA}"
+                                                        Style="{StaticResource VitaA}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="A4" />
                                                 <Button Content=" A3.5 "
@@ -883,7 +1018,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaA}"
+                                                        Style="{StaticResource VitaA}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="A35" />
                                                 <Button Content=" A3 "
@@ -893,7 +1028,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaA}"
+                                                        Style="{StaticResource VitaA}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="A3" />
                                                 <Button Content=" A2 "
@@ -903,7 +1038,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="true"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaA}"
+                                                        Style="{StaticResource VitaA}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="A2" />
                                                 <Button Content=" A1 "
@@ -913,7 +1048,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaA}"
+                                                        Style="{StaticResource VitaA}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="A1" />
                                             </StackPanel>
@@ -926,7 +1061,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaB}"
+                                                        Style="{StaticResource VitaB}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="B4" />
                                                 <Button Content=" B3 "
@@ -936,7 +1071,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaB}"
+                                                        Style="{StaticResource VitaB}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="B3" />
                                                 <Button Content=" B2 "
@@ -946,7 +1081,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaB}"
+                                                        Style="{StaticResource VitaB}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="B2" />
                                                 <Button Content=" B1 "
@@ -956,7 +1091,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaB}"
+                                                        Style="{StaticResource VitaB}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="B1" />
                                             </StackPanel>
@@ -969,7 +1104,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaC}"
+                                                        Style="{StaticResource VitaC}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="C4" />
                                                 <Button Content=" C3 "
@@ -979,7 +1114,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaC}"
+                                                        Style="{StaticResource VitaC}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="C3" />
                                                 <Button Content=" C2 "
@@ -989,7 +1124,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaC}"
+                                                        Style="{StaticResource VitaC}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="C2" />
                                                 <Button Content=" C1 "
@@ -999,7 +1134,7 @@
                                                         IsTabStop="True"
                                                         FontWeight="SemiBold"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaC}"
+                                                        Style="{StaticResource VitaC}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="C1" />
                                             </StackPanel>
@@ -1012,7 +1147,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaD}"
+                                                        Style="{StaticResource VitaD}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="D4" />
                                                 <Button Content=" D3 "
@@ -1022,7 +1157,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaD}"
+                                                        Style="{StaticResource VitaD}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="D3" />
                                                 <Button Content=" D2 "
@@ -1032,7 +1167,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource VitaD}"
+                                                        Style="{StaticResource VitaD}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="D2" />
                                             </StackPanel>
@@ -1062,7 +1197,7 @@
                                                     FontWeight="SemiBold"
                                                     IsTabStop="True"
                                                     Command="{Binding ShadeButtonClickedCommand}"
-                                                    Style="{StaticResource BleachBL}"
+                                                    Style="{StaticResource BleachBL}" Foreground="#FF000000"
                                                     Width="124"
                                                     CommandParameter="WAXUP" />
                                             <Button Content=" NIGHT GUARD "
@@ -1073,7 +1208,7 @@
                                                     FontWeight="SemiBold"
                                                     IsTabStop="True"
                                                     Command="{Binding ShadeButtonClickedCommand}"
-                                                    Style="{StaticResource Bleach0M}"
+                                                    Style="{StaticResource Bleach0M}" Foreground="#FF000000"
                                                     Width="124"
                                                     CommandParameter="NG" />
                                             <Button Content=" NO SHADE "
@@ -1085,7 +1220,7 @@
                                                     FontWeight="SemiBold"
                                                     IsTabStop="True"
                                                     Command="{Binding ShadeButtonClickedCommand}"
-                                                    Style="{StaticResource NoShade}"
+                                                    Style="{StaticResource NoShade}" Foreground="#FF000000"
                                                     Width="124"
                                                     CommandParameter="" />
                                             <Button Content=" GOLD "
@@ -1096,6 +1231,8 @@
                                                     FontWeight="SemiBold"
                                                     IsTabStop="True"
                                                     Command="{Binding ShadeButtonClickedCommand}"
+                                                    Style="{StaticResource ShadeGold}"
+                                                    Foreground="#FF000000"
                                                     Width="124"
                                                     CommandParameter="GOLD" />
                                         </StackPanel>
@@ -1113,7 +1250,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita5M}"
+                                                        Style="{StaticResource Vita5M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="5M1" />
                                                 <Button Content=" 5M2 "
@@ -1123,7 +1260,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita5M}"
+                                                        Style="{StaticResource Vita5M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="5M2" />
                                                 <Button Content=" 5M3 "
@@ -1133,7 +1270,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita5M}"
+                                                        Style="{StaticResource Vita5M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="5M3" />
                                             </StackPanel>
@@ -1146,7 +1283,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita4M}"
+                                                        Style="{StaticResource Vita4M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="4M1" />
                                                 <Button Content=" 4M2 "
@@ -1156,7 +1293,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita4M}"
+                                                        Style="{StaticResource Vita4M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="4M2" />
                                                 <Button Content=" 4M3 "
@@ -1166,7 +1303,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita4M}"
+                                                        Style="{StaticResource Vita4M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="4M3" />
                                             </StackPanel>
@@ -1178,7 +1315,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita3M}"
+                                                        Style="{StaticResource Vita3M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="3M1" />
                                                 <Button Content=" 3M2 "
@@ -1188,7 +1325,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita3M}"
+                                                        Style="{StaticResource Vita3M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="3M2" />
                                                 <Button Content=" 3M3 "
@@ -1198,7 +1335,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita3M}"
+                                                        Style="{StaticResource Vita3M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="3M3" />
                                             </StackPanel>
@@ -1210,7 +1347,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita2M}"
+                                                        Style="{StaticResource Vita2M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="2M1" />
                                                 <Button Content=" 2M2 "
@@ -1220,7 +1357,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita2M}"
+                                                        Style="{StaticResource Vita2M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="2M2" />
                                                 <Button Content=" 2M3 "
@@ -1230,7 +1367,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita2M}"
+                                                        Style="{StaticResource Vita2M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="2M3" />
                                             </StackPanel>
@@ -1242,7 +1379,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita1M}"
+                                                        Style="{StaticResource Vita1M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="1M1" />
                                                 <Button Content=" 1M2 "
@@ -1252,7 +1389,7 @@
                                                         FontWeight="SemiBold"
                                                         IsTabStop="True"
                                                         Command="{Binding ShadeButtonClickedCommand}"
-                                                        Style="{StaticResource Vita1M}"
+                                                        Style="{StaticResource Vita1M}" Foreground="#FF000000"
                                                         Width="58"
                                                         CommandParameter="1M2" />
                                             </StackPanel>
@@ -1273,7 +1410,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita2L}"
+                                                                Style="{StaticResource Vita2L}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="2L15" />
                                                         <Button Content=" 2L 2.5 "
@@ -1283,7 +1420,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita2L}"
+                                                                Style="{StaticResource Vita2L}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="2L25" />
                                                     </StackPanel>
@@ -1295,7 +1432,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita3L}"
+                                                                Style="{StaticResource Vita3L}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="3L15" />
                                                         <Button Content=" 3L 2.5 "
@@ -1305,7 +1442,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita3L}"
+                                                                Style="{StaticResource Vita3L}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="3L25" />
                                                     </StackPanel>
@@ -1317,7 +1454,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita4L}"
+                                                                Style="{StaticResource Vita4L}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="4L15" />
                                                         <Button Content="4L 2.5"
@@ -1327,7 +1464,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita4L}"
+                                                                Style="{StaticResource Vita4L}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="4L25" />
                                                     </StackPanel>
@@ -1345,7 +1482,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita2R}"
+                                                                Style="{StaticResource Vita2R}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="2R15" />
                                                         <Button Content=" 2R 2.5 "
@@ -1355,7 +1492,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita2R}"
+                                                                Style="{StaticResource Vita2R}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="2R25" />
                                                     </StackPanel>
@@ -1368,7 +1505,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita3R}"
+                                                                Style="{StaticResource Vita3R}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="3R15" />
                                                         <Button Content=" 3R 2.5 "
@@ -1378,7 +1515,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita3R}"
+                                                                Style="{StaticResource Vita3R}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="3R25" />
                                                     </StackPanel>
@@ -1391,7 +1528,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita4R}"
+                                                                Style="{StaticResource Vita4R}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="4R15" />
                                                         <Button Content=" 4R 2.5 "
@@ -1401,7 +1538,7 @@
                                                                 FontWeight="SemiBold"
                                                                 IsTabStop="True"
                                                                 Command="{Binding ShadeButtonClickedCommand}"
-                                                                Style="{StaticResource Vita4R}"
+                                                                Style="{StaticResource Vita4R}" Foreground="#FF000000"
                                                                 Width="58"
                                                                 CommandParameter="4R25" />
                                                     </StackPanel>
@@ -1558,7 +1695,7 @@
 
 
                     <ListView ItemsSource="{Binding NewOrdersByMe}"
-                              Background="{DynamicResource SchemeColor_C2EFFC}"
+                              Background="{DynamicResource SmartOrderNamesListViewBackground}"
                               BorderThickness="0"
                               Grid.Row="2"
                               Height="auto"
@@ -1632,6 +1769,8 @@
                                         Value="true" />
                                 <Setter Property="Background"
                                         Value="{DynamicResource TransparentBrush}" />
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource SmartOrderNamesSectionLabelForeground}" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -1651,9 +1790,9 @@
                                     <Trigger Property="IsMouseOver"
                                              Value="True">
                                         <Setter Property="BorderBrush"
-                                                Value="{StaticResource SchemeColor_79BBF2}" />
+                                                Value="{StaticResource SmartOrderNamesListBoxBorder}" />
                                         <Setter Property="Background"
-                                                Value="{StaticResource SchemeColor_6602C7FA}" />
+                                                Value="{StaticResource SmartOrderNamesListBoxItemHoverBackground}" />
                                         <Setter Property="Cursor"
                                                 Value="Hand" />
                                     </Trigger>

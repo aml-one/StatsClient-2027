@@ -107,6 +107,7 @@
     <None Remove="Images\HomeButtons\rx.png" />
     <None Remove="Images\HomeButtons\sentoutcases.png" />
     <None Remove="Images\HomeButtons\settings.png" />
+    <None Remove="Images\HomeButtons\settings_dark.png" />
     <None Remove="Images\HomeButtons\threeshape.png" />
     <None Remove="Images\Idioms\Desktop.png" />
     <None Remove="Images\Idioms\Phone.png" />
@@ -152,6 +153,7 @@
     <None Remove="Images\Other\archives.png" />
     <None Remove="Images\Other\box.png" />
     <None Remove="Images\Other\changes.png" />
+    <None Remove="Images\Other\changes_dark.png" />
     <None Remove="Images\Other\check.gif" />
     <None Remove="Images\Other\crown.png" />
     <None Remove="Images\Other\down-arrow.png" />
@@ -465,6 +467,9 @@
     <Resource Include="Images\HomeButtons\settings.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Images\HomeButtons\settings_dark.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Images\HomeButtons\threeshape.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -592,6 +597,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\Other\changes.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\changes_dark.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\Other\check.gif">

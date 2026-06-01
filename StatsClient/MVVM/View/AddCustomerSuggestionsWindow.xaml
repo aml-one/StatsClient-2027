@@ -8,8 +8,8 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="AddCustomerSuggestionsWindow"
-        Height="170"
-        Width="600"
+        Height="200"
+        Width="620"
         ResizeMode="NoResize"
         WindowStyle="None"
         WindowState="Normal"
@@ -17,14 +17,105 @@
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         Background="{DynamicResource TransparentBrush}"
-        Foreground="{DynamicResource BlackColor}">
+        Foreground="{DynamicResource AddCustomerLabelForeground}">
 
     <Window.DataContext>
         <viewmodel:AddCustomerSuggestionsViewModel />
     </Window.DataContext>
+
     <Window.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="AddCustomerCloseButton"
+                   TargetType="Button">
+                <Setter Property="Background"
+                        Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness"
+                        Value="0" />
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Border"
+                                    Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter Property="Background"
+                                            Value="{StaticResource SchemeColor_DE766B}"
+                                            TargetName="Border" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="AddCustomerFieldTextBox"
+                   TargetType="TextBox">
+                <Setter Property="Background"
+                        Value="{DynamicResource AddCustomerFieldBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource AddCustomerFieldForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource AddCustomerFieldBorder}" />
+                <Setter Property="BorderThickness"
+                        Value="1" />
+                <Setter Property="Padding"
+                        Value="6,2" />
+            </Style>
+
+            <Style x:Key="AddCustomerActionButtonBase"
+                   TargetType="Button">
+                <Setter Property="BorderThickness"
+                        Value="1" />
+                <Setter Property="Padding"
+                        Value="10,4" />
+                <Setter Property="FontSize"
+                        Value="13" />
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="AddCustomerAddButton"
+                   TargetType="Button"
+                   BasedOn="{StaticResource AddCustomerActionButtonBase}">
+                <Setter Property="Background"
+                        Value="{DynamicResource AddCustomerConfirmButtonBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource AddCustomerConfirmButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource AddCustomerConfirmButtonBorder}" />
+            </Style>
+
+            <Style x:Key="AddCustomerCancelButton"
+                   TargetType="Button"
+                   BasedOn="{StaticResource AddCustomerActionButtonBase}">
+                <Setter Property="Background"
+                        Value="{DynamicResource AddCustomerCancelButtonBackground}" />
+                <Setter Property="Foreground"
+                        Value="{DynamicResource AddCustomerCancelButtonForeground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource AddCustomerCancelButtonBorder}" />
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -40,87 +131,98 @@
                 Background="{DynamicResource PrimaryColor}"
                 ClipToBounds="True">
             <Grid Margin="7">
-                <TextBlock Text="?"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Top"
-                           Cursor="Hand"
-                           Panel.ZIndex="50"
-                           FontSize="16">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="MouseDown">
-                            <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </TextBlock>
-                <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+
+                <Grid Grid.Row="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="auto" />
-                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="130" />
                         <ColumnDefinition />
-                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="96" />
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="Customer Name:"
-                               VerticalAlignment="Top"
+                               VerticalAlignment="Center"
                                HorizontalAlignment="Right"
-                               Margin="0,3,6,0"
-                               FontSize="14" />
+                               Margin="0,0,8,6"
+                               Foreground="{DynamicResource AddCustomerLabelForeground}" />
 
                     <TextBox Grid.Column="1"
                              Grid.Row="0"
-                             FontSize="18"
+                             FontSize="16"
                              Margin="0,0,0,6"
+                             Style="{StaticResource AddCustomerFieldTextBox}"
                              Text="{Binding CustomerName}"
-                             Height="26" />
+                             Height="28"
+                             IsReadOnly="True" />
+
+                    <Button Content="╳"
+                            VerticalAlignment="Top"
+                            HorizontalAlignment="Right"
+                            Width="32"
+                            Height="26"
+                            FontSize="16"
+                            Grid.Column="2"
+                            Foreground="{DynamicResource AddCustomerTitleForeground}"
+                            Command="{Binding CloseWindowCommand}"
+                            Style="{StaticResource AddCustomerCloseButton}" />
 
                     <TextBlock Text="New Name:"
-                               VerticalAlignment="Top"
+                               VerticalAlignment="Center"
                                HorizontalAlignment="Right"
-                               Margin="0,3,6,0"
+                               Margin="0,0,8,6"
                                FontSize="14"
-                               Grid.Row="1" />
+                               Grid.Row="1"
+                               Foreground="{DynamicResource AddCustomerLabelForeground}" />
 
                     <TextBox Grid.Column="1"
                              Grid.Row="1"
-                             FontSize="18"
+                             FontSize="16"
                              Margin="0,0,0,6"
+                             Style="{StaticResource AddCustomerFieldTextBox}"
                              Text="{Binding NewName}"
-                             Height="26" />
+                             Height="28" />
 
                     <TextBlock Text="Registered Names:"
                                VerticalAlignment="Top"
                                HorizontalAlignment="Right"
-                               Margin="0,0,6,0"
+                               Margin="0,4,8,0"
                                FontSize="14"
-                               Grid.Row="2" />
+                               Grid.Row="2"
+                               Foreground="{DynamicResource AddCustomerLabelForeground}" />
 
-                    <Grid Grid.Column="1"
-                          Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="3*" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <ListBox Grid.Column="0" 
-                                 ItemsSource="{Binding CustomerSuggestionsList}"/>
+                    <ListBox Grid.Column="1"
+                             Grid.Row="2"
+                             Background="{DynamicResource AddCustomerListBackground}"
+                             BorderBrush="{DynamicResource AddCustomerFieldBorder}"
+                             BorderThickness="1"
+                             Foreground="{DynamicResource AddCustomerFieldForeground}"
+                             ItemsSource="{Binding CustomerSuggestionsList}" />
 
-                        <StackPanel Grid.Column="1"
-                                    VerticalAlignment="Bottom">
-                            <Button Content="Add"
-                                    Height="22"
-                                    Margin="6,0,0,3" 
-                                    Command="{Binding AddCommand}"/>
+                    <StackPanel Grid.Column="2"
+                                Grid.Row="2"
+                                VerticalAlignment="Bottom"
+                                Margin="8,0,0,0">
+                        <Button Content="Add"
+                                Height="28"
+                                Margin="0,0,0,6"
+                                Style="{StaticResource AddCustomerAddButton}"
+                                Command="{Binding AddCommand}" />
 
-                            <Button Content="Cancel"
-                                    Height="22"
-                                    Margin="6,0,0,0" 
-                                    Command="{Binding CloseWindowCommand}"/>
-                        </StackPanel>
-                    </Grid>
+                        <Button Content="Cancel"
+                                Height="28"
+                                Style="{StaticResource AddCustomerCancelButton}"
+                                Command="{Binding CloseWindowCommand}" />
+                    </StackPanel>
                 </Grid>
             </Grid>
         </Border>

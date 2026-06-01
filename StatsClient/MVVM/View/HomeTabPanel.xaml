@@ -8,11 +8,13 @@
              xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
              mc:Ignorable="d"
              d:DesignHeight="700"
-             d:DesignWidth="1400">
+             d:DesignWidth="1400"
+             Background="{DynamicResource WindowBackgroundBrush}">
     <UserControl.Resources>
         <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converter:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
         <converter:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
+        <converter:BrushToContrastForegroundConverter x:Key="BrushToContrastForegroundConverter" />
 
         <Style x:Key="HomeModuleTile"
                TargetType="Button">
@@ -40,6 +42,18 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid RenderTransformOrigin="0.5,0.5">
+                            <Border x:Name="AmbientGlow"
+                                    CornerRadius="18"
+                                    Margin="-7"
+                                    Opacity="0.2"
+                                    IsHitTestVisible="False">
+                                <Border.Background>
+                                    <SolidColorBrush Color="{DynamicResource HomeTileAmbientGlow_Cl}" />
+                                </Border.Background>
+                                <Border.Effect>
+                                    <BlurEffect Radius="14" />
+                                </Border.Effect>
+                            </Border>
                             <Border x:Name="Glow"
                                     CornerRadius="18"
                                     Margin="-4"
@@ -70,9 +84,9 @@
                                 </Border.BorderBrush>
                                 <Border.Effect>
                                     <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
-                                                      BlurRadius="16"
+                                                      BlurRadius="20"
                                                       ShadowDepth="0"
-                                                      Opacity="0.18" />
+                                                      Opacity="0.22" />
                                 </Border.Effect>
                                 <Border.RenderTransform>
                                     <TranslateTransform Y="0" />
@@ -331,7 +345,7 @@
             <Setter Property="CaretBrush"
                     Value="{DynamicResource ImmersiveFilterButtonForeground}" />
             <Setter Property="SelectionBrush"
-                    Value="{DynamicResource ImmersiveCardShadow_Cl}" />
+                    Value="{DynamicResource ImmersiveCardShadow}" />
             <Setter Property="FontSize"
                     Value="26" />
             <Setter Property="FontWeight"
@@ -397,7 +411,8 @@
                                 </Ellipse.Effect>
                             </Ellipse>
                             <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver"
@@ -448,16 +463,20 @@
             </i:EventTrigger>
         </i:Interaction.Triggers>
 
-        <!-- Pastel ambient background -->
+        <!-- Pastel ambient: full area, edges match frame so no horizontal seam lines -->
         <Grid IsHitTestVisible="False">
             <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0"
-                                     EndPoint="1,1">
-                    <GradientStop Color="{DynamicResource ImmersiveGradientStart_Cl}"
+                <LinearGradientBrush StartPoint="0.5,0"
+                                     EndPoint="0.5,1">
+                    <GradientStop Color="{DynamicResource WindowBackgroundColor}"
                                   Offset="0" />
-                    <GradientStop Color="{DynamicResource ImmersiveGradientMid_Cl}"
-                                  Offset="0.45" />
-                    <GradientStop Color="{DynamicResource ImmersiveGradientEnd_Cl}"
+                    <GradientStop Color="{DynamicResource HomeAmbientGradientStart_Cl}"
+                                  Offset="0.34" />
+                    <GradientStop Color="{DynamicResource HomeAmbientGradientMid_Cl}"
+                                  Offset="0.5" />
+                    <GradientStop Color="{DynamicResource HomeAmbientGradientStart_Cl}"
+                                  Offset="0.66" />
+                    <GradientStop Color="{DynamicResource WindowBackgroundColor}"
                                   Offset="1" />
                 </LinearGradientBrush>
             </Grid.Background>
@@ -559,7 +578,7 @@
                VerticalAlignment="Bottom"
                Margin="-110,0,0,-300"
                Opacity="0.06"
-               Panel.ZIndex="0"
+               Panel.ZIndex="1"
                IsHitTestVisible="False" />
 
         <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
@@ -567,7 +586,7 @@
                                 FontSize="140"
                                 FontWeight="SemiBold"
                                 Fill="{DynamicResource DialogCloseButtonBackground}"
-                                Panel.ZIndex="0"
+                                Panel.ZIndex="1"
                                 StrokeThickness="4"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
@@ -602,8 +621,8 @@
                         <Border CornerRadius="7"
                                 Padding="10,5"
                                 MinHeight="30"
-                                Background="{DynamicResource SchemeColor_FFD1FAE5}"
-                                BorderBrush="{DynamicResource SchemeColor_FF86EFAC}"
+                                Background="{DynamicResource HomeStatusUpdateBackground}"
+                                BorderBrush="{DynamicResource HomeStatusUpdateBorder}"
                                 BorderThickness="1"
                                 Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
                                 d:Visibility="Visible">
@@ -624,7 +643,7 @@
                                        d:Text="Update available!"
                                        FontSize="13"
                                        FontWeight="SemiBold"
-                                       Foreground="{DynamicResource SchemeColor_FF166534}"
+                                       Foreground="{DynamicResource HomeStatusUpdateForeground}"
                                        Cursor="Hand" />
                         </Border>
                     </Button>
@@ -636,8 +655,8 @@
                             <Border CornerRadius="8"
                                     MinWidth="36"
                                     MinHeight="30"
-                                    Background="{DynamicResource SchemeColor_FFFFE4E6}"
-                                    BorderBrush="{DynamicResource SchemeColor_FFFDA4AF}"
+                                    Background="{DynamicResource HomeStatusDebugBackground}"
+                                    BorderBrush="{DynamicResource HomeStatusDebugBorder}"
                                     BorderThickness="1"
                                     Visibility="{Binding DebugMessages.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
                                     d:Visibility="Visible">
@@ -645,7 +664,7 @@
                                            d:Text="17"
                                            FontSize="16"
                                            FontWeight="Bold"
-                                           Foreground="{DynamicResource SchemeColor_FFBE123C}"
+                                           Foreground="{DynamicResource HomeStatusDebugForeground}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            ToolTip="Debug Messages" />
@@ -663,8 +682,8 @@
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="LogBtn"
                                         CornerRadius="7"
-                                        Background="{DynamicResource ImmersiveAccentBlueLight}"
-                                        BorderBrush="{DynamicResource SchemeColor_FF7DD3FC}"
+                                        Background="{DynamicResource HomeStatusLogBackground}"
+                                        BorderBrush="{DynamicResource HomeStatusLogBorder}"
                                         BorderThickness="1"
                                         Padding="{TemplateBinding Padding}">
                                     <ContentPresenter HorizontalAlignment="Center"
@@ -675,13 +694,13 @@
                                              Value="True">
                                         <Setter TargetName="LogBtn"
                                                 Property="Background"
-                                                Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                                Value="{StaticResource HomeStatusLogBorder}" />
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Button.Template>
                         <Button.Foreground>
-                            <SolidColorBrush Color="{DynamicResource ImmersiveAccentBlue_Cl}" />
+                            <SolidColorBrush Color="{DynamicResource HomeStatusLogForeground_Cl}" />
                         </Button.Foreground>
                         <Button.FontSize>12</Button.FontSize>
                         <Button.FontWeight>SemiBold</Button.FontWeight>
@@ -719,11 +738,11 @@
                         <StackPanel.RenderTransform>
                             <TranslateTransform Y="0" />
                         </StackPanel.RenderTransform>
-                        <TextBlock Text="Welcome back"
+                        <TextBlock Text="Welcome back to"
                                    FontSize="14"
                                    Foreground="{DynamicResource ImmersiveTextMuted}"
                                    HorizontalAlignment="Center" />
-                        <core:OutlinedTextBlock Stroke="{DynamicResource WhiteBackground}"
+                        <core:OutlinedTextBlock Stroke="{DynamicResource PrimaryDarkColor}"
                                                 StrokePosition="Outside"
                                                 FontSize="36"
                                                 FontWeight="SemiBold"
@@ -841,8 +860,8 @@
                                                Width="56"
                                                HorizontalAlignment="Center" />
                                         <Border CornerRadius="7"
-                                                Background="{DynamicResource SchemeColor_FFEF4444}"
-                                                BorderBrush="{DynamicResource SchemeColor_FFB91C1C}"
+                                                Background="{DynamicResource HomePaymentCountBadgeBackground}"
+                                                BorderBrush="{DynamicResource HomePaymentCountBadgeBorder}"
                                                 BorderThickness="1"
                                                 MinWidth="26"
                                                 Height="26"
@@ -853,7 +872,7 @@
                                                 d:Visibility="Visible">
                                             <TextBlock Text="{Binding PaymentIssueCount}"
                                                        d:Text="3"
-                                                       Foreground="{DynamicResource WhiteBackground}"
+                                                       Foreground="{DynamicResource HomePaymentCountBadgeForeground}"
                                                        FontSize="13"
                                                        FontWeight="Bold"
                                                        HorizontalAlignment="Center"
@@ -935,7 +954,7 @@
                                        Text="{Binding TotalOrdersInArchivesDatastore}"
                                        d:Text="11"
                                        FontSize="11"
-                                       Foreground="{DynamicResource SchemeColor_FF16A34A}"
+                                       Foreground="{DynamicResource HomeArchivesStatTotalForeground}"
                                        FontWeight="SemiBold" />
                             <TextBlock Grid.Row="1"
                                        Grid.Column="0"
@@ -947,7 +966,7 @@
                                        Text="{Binding OrdersInArchivesDatastoreBetweenDates}"
                                        d:Text="11"
                                        FontSize="11"
-                                       Foreground="{DynamicResource SchemeColor_FF0284C7}"
+                                       Foreground="{DynamicResource HomeArchivesStatBetweenForeground}"
                                        FontWeight="SemiBold" />
                             <TextBlock Grid.Row="2"
                                        Grid.Column="0"
@@ -959,7 +978,7 @@
                                        Text="{Binding LastArchivesDatastoreRebuildDate}"
                                        d:Text="11"
                                        FontSize="11"
-                                       Foreground="{DynamicResource SchemeColor_FFB45309}"
+                                       Foreground="{DynamicResource HomeArchivesStatRebuildForeground}"
                                        FontWeight="SemiBold" />
                         </Grid>
                     </StackPanel>
@@ -978,9 +997,9 @@
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0"
                                              EndPoint="1,1">
-                            <GradientStop Color="{DynamicResource ImmersiveInputBackground_Cl}"
+                            <GradientStop Color="{DynamicResource HomePanPanelBackground_Cl}"
                                           Offset="0" />
-                            <GradientStop Color="{DynamicResource SchemeColor_F0F7FB_Cl}"
+                            <GradientStop Color="{DynamicResource HomePanPanelBackgroundAlt_Cl}"
                                           Offset="1" />
                         </LinearGradientBrush>
                     </Border.Background>
@@ -1063,17 +1082,30 @@
                               Height="54">
                             <Border CornerRadius="8"
                                     ClipToBounds="True"
-                                    Background="{Binding PcPanColor}"
-                                    d:Background="{DynamicResource SchemeColor_FFF7F4E6}"
-                                    BorderBrush="{DynamicResource SchemeColor_BB64748B}"
-                                    BorderThickness="1">
+                                    Background="{DynamicResource HomePanWellBackground}"
+                                    BorderThickness="1.5">
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0"
+                                                         EndPoint="1,1">
+                                        <GradientStop Color="{DynamicResource ImmersiveFocusRing_Cl}"
+                                                      Offset="0" />
+                                        <GradientStop Color="{DynamicResource HomePanWellEditBorder_Cl}"
+                                                      Offset="0.5" />
+                                        <GradientStop Color="{DynamicResource SchemeColor_88FBCFE8_Cl}"
+                                                      Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
                                 <Grid>
+                                    <Border CornerRadius="8"
+                                            Background="{Binding PcPanColor}"
+                                            Visibility="{Binding PanColorShowsNow}" />
                                     <Rectangle Opacity="0.08"
-                                               IsHitTestVisible="False">
+                                               IsHitTestVisible="False"
+                                               Visibility="{Binding PanColorShowsNow}">
                                         <Rectangle.Fill>
                                             <LinearGradientBrush StartPoint="0,0"
                                                                  EndPoint="0,1">
-                                                <GradientStop Color="{DynamicResource WhiteBackground_Cl}"
+                                                <GradientStop Color="{DynamicResource HomePanWellSheenTop_Cl}"
                                                               Offset="0" />
                                                 <GradientStop Color="{DynamicResource SchemeColor_00FFFFFF_Cl}"
                                                               Offset="0.45" />
@@ -1108,23 +1140,50 @@
                                   Background="{DynamicResource TransparentBrush}">
                                 <Button Style="{StaticResource PanActionCircleButton}"
                                         Background="{DynamicResource ImmersiveAccentBlueLight}"
+                                        Foreground="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToContrastForegroundConverter}}"
                                         ToolTip="Change color"
                                         Visibility="{Binding PanColorShowsNow}"
                                         d:Visibility="Hidden"
                                         Command="{Binding ChangeColorCommand}">
-                                    <Image Source="/Images/Other/edit.png"
-                                           Width="16"
-                                           Height="16" />
+                                    <Viewbox Width="16"
+                                             Height="16">
+                                        <Canvas Width="24"
+                                                Height="24">
+                                            <Path Data="M3,17.25 L3,21 L6.75,21 L17.81,9.94 L14.06,6.19 L3,17.25 Z M20.71,7.04 C21.1,6.65 21.1,6.02 20.71,5.63 L18.37,3.29 C17.98,2.9 17.35,2.9 16.96,3.29 L15.13,5.12 L18.88,8.87 L20.71,7.04 Z"
+                                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                  StrokeThickness="1.75"
+                                                  StrokeLineJoin="Round"
+                                                  StrokeStartLineCap="Round"
+                                                  StrokeEndLineCap="Round"
+                                                  Fill="{DynamicResource TransparentBrush}" />
+                                        </Canvas>
+                                    </Viewbox>
                                 </Button>
                                 <Button Style="{StaticResource PanActionCircleButton}"
                                         Background="{DynamicResource SchemeColor_FFD1FAE5}"
+                                        Foreground="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToContrastForegroundConverter}}"
                                         ToolTip="Add new number"
                                         Visibility="{Binding NoNumberRegisteredShowsNow}"
                                         d:Visibility="Visible"
                                         Command="{Binding AddNewNumberCommand}">
-                                    <Image Source="/Images/Other/add.png"
-                                           Width="16"
-                                           Height="16" />
+                                    <Viewbox Width="16"
+                                             Height="16">
+                                        <Canvas Width="24"
+                                                Height="24">
+                                            <Path Data="M8,4 L5,4 L5,7 M16,4 L19,4 L19,7 M8,20 L5,20 L5,17 M16,20 L19,20 L19,17"
+                                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                  StrokeThickness="1.75"
+                                                  StrokeStartLineCap="Round"
+                                                  StrokeEndLineCap="Round"
+                                                  Fill="{DynamicResource TransparentBrush}" />
+                                            <Path Data="M12,8 L12,16 M8,12 L16,12"
+                                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                  StrokeThickness="1.75"
+                                                  StrokeStartLineCap="Round"
+                                                  StrokeEndLineCap="Round"
+                                                  Fill="{DynamicResource TransparentBrush}" />
+                                        </Canvas>
+                                    </Viewbox>
                                 </Button>
                             </Grid>
                         </Grid>
@@ -1134,7 +1193,7 @@
                                     HorizontalAlignment="Center"
                                     Margin="14,8,14,12">
                             <TextBlock Text="Enter a pan number"
-                                       Foreground="{DynamicResource SchemeColor_FF94A3B8}"
+                                       Foreground="{DynamicResource ImmersiveTextMuted}"
                                        FontSize="10.5"
                                        VerticalAlignment="Center" />
                             <TextBlock Text="  +  "
@@ -1175,7 +1234,7 @@
                     <Image Source="/Images/stats_2025_Q512.png"
                            Height="40"
                            Margin="0,0,6,0" />
-                    <core:OutlinedTextBlock Stroke="{DynamicResource WhiteBackground}"
+                    <core:OutlinedTextBlock Stroke="{DynamicResource PrimaryDarkColor}"
                                             StrokePosition="Outside"
                                             FontSize="36"
                                             FontWeight="SemiBold"
