@@ -2247,6 +2247,42 @@
                                                        CommandParameter="{Binding .}" />
                             </i:EventTrigger-->
                         </i:Interaction.Triggers>
+                        <Grid>
+                        <Rectangle x:Name="WatchListAccent"
+                                   Width="4"
+                                   HorizontalAlignment="Left"
+                                   RadiusX="2"
+                                   RadiusY="2"
+                                   Margin="0,6,0,6"
+                                   Visibility="Collapsed">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#FF38BDF8" Offset="0" />
+                                    <GradientStop Color="#FF67E8F9" Offset="0.5" />
+                                    <GradientStop Color="#FF38BDF8" Offset="1" />
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <Path x:Name="WatchRibbon"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Top"
+                              Margin="0,-1,6,0"
+                              Width="26"
+                              Height="26"
+                              Stretch="Fill"
+                              Panel.ZIndex="4"
+                              Visibility="Collapsed"
+                              Data="M 0,0 L 26,0 L 26,10 L 16,10 L 10,16 L 10,26 L 0,26 Z">
+                            <Path.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#DD38BDF8" Offset="0" />
+                                    <GradientStop Color="#AA67E8F9" Offset="1" />
+                                </LinearGradientBrush>
+                            </Path.Fill>
+                            <Path.Effect>
+                                <DropShadowEffect Color="#5538BDF8" BlurRadius="8" ShadowDepth="0" Opacity="0.8" />
+                            </Path.Effect>
+                        </Path>
                         <Grid Background="{DynamicResource LvItemDetailedNew_ContentBackground}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="{Binding ElementName=headerIcon, Path=Width}" />
@@ -2418,6 +2454,7 @@
                                         <ColumnDefinition />
                                         <ColumnDefinition />
                                         <ColumnDefinition />
+                                        <ColumnDefinition />
 
                                     </Grid.ColumnDefinitions>
                                     <Button Width="28"
@@ -2527,6 +2564,22 @@
 
 
                                     </Button>
+                                    <Button Width="28"
+                                            Height="24"
+                                            Background="{DynamicResource LvItemDetailedNew_ButtonBackground}"
+                                            Margin="0,0,4,0"
+                                            Grid.Column="5"
+                                            ToolTip="Stats Design (cement shell, sculpt, export)"
+                                            Style="{StaticResource ThreeShapeListviewButton}"
+                                            Click="MenuItemOpenStatsDesign_Click"
+                                            d:Visibility="Visible">
+                                        <TextBlock Text="DES"
+                                                   FontSize="9"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource LvItemDetailedNew_PrimaryForeground}" />
+                                    </Button>
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="PreviewMouseDown">
                                             <i:InvokeCommandAction Command="{Binding DataContext.ItemClickedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"
@@ -2620,7 +2673,8 @@
                                             VerticalAlignment="Center"
                                             Margin="0,0,0,0">
 
-                                    <TextBlock Text="{Binding ExtOrderID}"
+                                    <TextBlock x:Name="tbDesigner"
+                                               Text="{Binding ExtOrderID}"
                                                Foreground="{DynamicResource LvItemDetailedNew_DesignerForeground}"
                                                FontSize="12"
                                                FontWeight="DemiBold"
@@ -2704,10 +2758,23 @@
 
 
                         </Grid>
+                        </Grid>
                     </Border>
 
 
                     <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsOnWatchList}"
+                                     Value="True">
+                            <Setter TargetName="WatchRibbon"
+                                    Property="Visibility"
+                                    Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsWatchListRow}"
+                                     Value="True">
+                            <Setter TargetName="WatchListAccent"
+                                    Property="Visibility"
+                                    Value="Visible" />
+                        </DataTrigger>
                         <Trigger Property="ItemsControl.AlternationIndex"
                                  Value="1">
                             <!--Setter TargetName="Item"
@@ -2788,6 +2855,16 @@
                             <Setter TargetName="ToolTipText"
                                     Property="Foreground"
                                     Value="{StaticResource LvItemDetailedNew_EncodeForeground}" />
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding ShowCheckedOutDesignerFromStats}"
+                                     Value="True">
+                            <Setter TargetName="tbDesigner"
+                                    Property="Foreground"
+                                    Value="{StaticResource LvItemDetailedNew_TooltipGreenForeground}" />
+                            <Setter TargetName="tbDesigner"
+                                    Property="FontWeight"
+                                    Value="SemiBold" />
                         </DataTrigger>
 
                         <Trigger Property="IsMouseOver"
@@ -5532,9 +5609,9 @@ RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}
                                        Grid.Row="0"
                                        Grid.Column="0"
                                        Grid.RowSpan="3" />
-                                
-                                
-                                <core:OutlinedTextBlock Stroke="{DynamicResource BlackColor}"
+
+
+                                <core:OutlinedTextBlock Stroke="{DynamicResource StrokeColor}"
                                                         StrokePosition="Outside"
                                                         FontSize="24"
                                                         FontWeight="SemiBold"
@@ -6102,6 +6179,12 @@ RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style TargetType="ListViewItem"
+           x:Key="LvItemWatchListStyle"
+           BasedOn="{StaticResource LvItemDetailedNewStyle}">
+        <Setter Property="Margin" Value="2,1,2,3" />
     </Style>
 
 

@@ -16,6 +16,9 @@ namespace StatsClient
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            StartupLog.BeginSession();
+            StartupLog.WriteStep("Application OnStartup");
+
             // Clear any stale WPF render-tier cache (DISPLAY* subkeys under Avalon.Graphics).
             // A stale Tier 0 from a previous RDP/console session prevents WPF re-probing the GPU.
             ClearWpfRenderTierCache();

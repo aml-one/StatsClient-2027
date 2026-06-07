@@ -80,6 +80,34 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private bool IsMainWindowReady => _mainWindow is not null;
+
+    private void InvokeOnMainWindowIfReady(Action<MainWindow> action)
+    {
+        if (_mainWindow is null)
+        {
+            return;
+        }
+
+        if (Application.Current.Dispatcher.CheckAccess())
+        {
+            if (_mainWindow is not null)
+            {
+                action(_mainWindow);
+            }
+
+            return;
+        }
+
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            if (_mainWindow is not null)
+            {
+                action(_mainWindow);
+            }
+        });
+    }
+
     private SentOutCasesViewModel? sentOutCasesViewModel;
     public SentOutCasesViewModel SentOutCasesViewModel
     {
@@ -143,8 +171,18 @@ public partial class MainViewModel : ObservableObject
         get => homeButtonShows;
         set
         {
+            if (homeButtonShows == value)
+            {
+                return;
+            }
+
             homeButtonShows = value;
             RaisePropertyChanged(nameof(HomeButtonShows));
+
+            if (value == Visibility.Visible && LoadingPanelVisibility == Visibility.Visible)
+            {
+                LoadingPanelVisibility = Visibility.Collapsed;
+            }
         }
     }
 
@@ -3512,6 +3550,7 @@ public partial class MainViewModel : ObservableObject
     public RelayCommand CbSettingModuleDebugCommand { get; set; }
     public RelayCommand CbSettingModulePrescriptionMakerCommand { get; set; }
     public RelayCommand CbSettingModulePendingDigitalsCommand { get; set; }
+    public RelayCommand CbSettingModuleKnowledgeBaseCommand { get; set; }
 
 
     public RelayCommand AddNewCustomerSuggestionCommand { get; set; }
@@ -3712,12 +3751,25 @@ public partial class MainViewModel : ObservableObject
     private static readonly FileSystemWatcher fswPrescriptionMaker = new();
     private static readonly FileSystemWatcher fswTriosFolderWatcher = new();
     private static readonly FileSystemWatcher fswIteroZipFileWhatcher = new();
+    private static readonly object IteroZipInFlightLock = new();
+    private static readonly HashSet<string> IteroZipPathsInFlight = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly SemaphoreSlim IteroZipProcessingGate = new(1, 1);
+    private static readonly SemaphoreSlim BackgroundTasksGate = new(1, 1);
     private PdfToImageConverter imageConverter = new();
 
 
     public MainViewModel()
     {
-        Instance = this;
+        lock (EnsureCreatedLock)
+        {
+            if (Instance is not null && !ReferenceEquals(Instance, this))
+            {
+                throw new InvalidOperationException(
+                    "MainViewModel is a singleton. Call MainViewModel.EnsureCreated() instead of creating a new instance.");
+            }
+
+            Instance = this;
+        }
 
         ClickCommand = new RelayCommand(o => TestCommandMethod(o));
 
@@ -3821,9 +3873,9 @@ public partial class MainViewModel : ObservableObject
         SearchLimitSelectionChangedCommand = new RelayCommand(o => SearchLimitSelectionChanged());
         ClearSearchStringCommand = new RelayCommand(o => SearchString = "");
         SearchForTextCommand = new RelayCommand(o => SearchForText());
-        SearchFieldClickedCommand = new RelayCommand(o => _MainWindow.tbSearch.Focus());
+        SearchFieldClickedCommand = new RelayCommand(o => TryFocusSearchField());
         SearchFieldKeyDownCommand = new RelayCommand(o => SearchFieldKeyDown());
-        SearchFieldArchivesClickedCommand = new RelayCommand(o => _MainWindow.tbSearchArchives.Focus());
+        SearchFieldArchivesClickedCommand = new RelayCommand(o => TryFocusArchivesSearchField());
         SearchFieldArchivesKeyDownCommand = new RelayCommand(o => SearchFieldArchivesKeyDown());
         Next50ResultOnArchivesSearchCommand = new RelayCommand(o => Next50ResultOnArchivesSearch());
         Previous50ResultOnArchivesSearchCommand = new RelayCommand(o => Previous50ResultOnArchivesSearch());
@@ -3838,7 +3890,7 @@ public partial class MainViewModel : ObservableObject
         ClearYearCriteriaCommand = new RelayCommand(o => ClearYearCriteria());
         HideNotificationCommand = new RelayCommand(o => HideNotification());
 
-        OpenUpOrderInfoWindowCommand = new RelayCommand(o => OpenUpOrderInfoWindow());
+        OpenUpOrderInfoWindowCommand = new RelayCommand(o => OpenUpOrderInfoWindow(o));
         SearchForOrderByOrderIssueClickCommand = new RelayCommand(o => SearchForOrderByOrderIssueClick());
         GenerateStCopyCommand = new RelayCommand(o => GenerateStCopy());
         OpenUpRenameOrderWindowCommand = new RelayCommand(o => OpenUpRenameOrderWindow());
@@ -3971,6 +4023,7 @@ public partial class MainViewModel : ObservableObject
         CbSettingModuleDebugCommand = new RelayCommand(o => CbSettingModuleDebugMethod());
         CbSettingModulePrescriptionMakerCommand = new RelayCommand(o => CbSettingModulePrescriptionMakerMethod());
         CbSettingModulePendingDigitalsCommand = new RelayCommand(o => CbSettingModulePendingDigitalsMethod());
+        CbSettingModuleKnowledgeBaseCommand = new RelayCommand(o => CbSettingModuleKnowledgeBaseMethod());
         InitEncodeIdentifierCommands();
         InitMeshFuseSettingsCommands();
 
@@ -3988,6 +4041,7 @@ public partial class MainViewModel : ObservableObject
         SwitchToPrescriptionMakerTabCommand = new RelayCommand(o => SwitchToPrescriptionMakerTab());
         SwitchToServerLogTabCommand = new RelayCommand(o => SwitchToServerLogTab());
         SwitchToAccountInfosTabCommand = new RelayCommand(o => SwitchToAccountInfosTab());
+        SwitchToKnowledgeBaseTabCommand = new RelayCommand(o => SwitchToKnowledgeBaseTab());
         SwitchToPanNrDuplicatesTabCommand = new RelayCommand(o => SwitchToPanNrDuplicatesTab());
         SwitchToOrderIssuesTabCommand = new RelayCommand(o => SwitchToOrderIssuesTab());
         SwitchToFolderSubscriptionTabCommand = new RelayCommand(o => SwitchToFolderSubscriptionTab());
@@ -4012,8 +4066,12 @@ public partial class MainViewModel : ObservableObject
         //SMessageButtonClickCommand = new RelayCommand(o => SMessageButtonClick(o));
 
 
-        bwInitialTasks.DoWork += InitialTasksAtApplicationStartup_DoWork;
-        bwInitialTasks.RunWorkerCompleted += InitialTasksAtApplicationStartup_RunWorkerCompleted;
+        if (!_initialStartupHandlersRegistered)
+        {
+            bwInitialTasks.DoWork += InitialTasksAtApplicationStartup_DoWork;
+            bwInitialTasks.RunWorkerCompleted += InitialTasksAtApplicationStartup_RunWorkerCompleted;
+            _initialStartupHandlersRegistered = true;
+        }
 
         bwListCases.DoWork += ListCases_DoWork;
         bwListCases.RunWorkerCompleted += ListCases_RunWorkerCompleted;
@@ -4101,6 +4159,8 @@ public partial class MainViewModel : ObservableObject
 
 
         BuildCustomerSuggestionsList();
+        InitializeWatchList();
+        InitializeKnowledgeBaseCommands();
     }
 
     private async void GetCaseInfoByLabnextID(object o)
@@ -4720,14 +4780,25 @@ public partial class MainViewModel : ObservableObject
 
     private async void GetAccountInfos()
     {
-        AccountInfoCategories = await GetAccountInfoCategories();
+        await GetAccountInfosAsync();
+    }
 
-        List<AccountInfoModel> list = await GetAccountInfoList(BgBorderColors);
+    internal async Task GetAccountInfosAsync()
+    {
+        var categories = await GetAccountInfoCategories().ConfigureAwait(false);
+        var borderColors = new Dictionary<string, string>(BgBorderColors);
+        List<AccountInfoModel> list = await GetAccountInfoList(borderColors).ConfigureAwait(false);
 
-        if (string.IsNullOrEmpty(SelectedAccountInfoCategory) || SelectedAccountInfoCategory == "All")
-            AccountInfoList = list;
-        else
-            AccountInfoList = list.Where(x => x.Category == SelectedAccountInfoCategory).ToList();
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            BgBorderColors = borderColors;
+            AccountInfoCategories = categories;
+
+            if (string.IsNullOrEmpty(SelectedAccountInfoCategory) || SelectedAccountInfoCategory == "All")
+                AccountInfoList = list;
+            else
+                AccountInfoList = list.Where(x => x.Category == SelectedAccountInfoCategory).ToList();
+        });
     }
 
     private void OpenWebsite(object obj)
@@ -4875,6 +4946,7 @@ public partial class MainViewModel : ObservableObject
         {
             LabnextCanReload = true;
             ClearAllSearchCriteria();
+            EnsureServerLogWebViewInitialized();
             _MainWindow.mainTabControl.SelectedItem = _MainWindow.serverLogsTab;
         });
     }
@@ -4919,6 +4991,7 @@ public partial class MainViewModel : ObservableObject
                 LabnextKeepAliveTimer.Start();
                 LabnextCanReload = true;
                 ClearAllSearchCriteria();
+                EnsureLabnextWebViewInitialized();
                 MoveLabnextViewToFolderSubscriptionTab();
                 SearchForPanNumberInLabnextForFolderSubscription();
             }
@@ -4952,6 +5025,7 @@ public partial class MainViewModel : ObservableObject
             _MainWindow.tbSearch.Focus();
             _MainWindow.mainTabControl.SelectedItem = _MainWindow.ThreeShapeTab;
             _MainWindow.tbSearch.Focus();
+            ApplyPendingStartupFilterIfNeeded();
         });
     }
 
@@ -4964,6 +5038,7 @@ public partial class MainViewModel : ObservableObject
             IsLabnextLookupIsOpen = false;
             LabnextCanReload = true;
             ClearAllSearchCriteria();
+            EnsureLabnextWebViewInitialized();
             MoveLabnextViewToLabnextTab();
             if (_MainWindow.webviewLabnext.IsInitialized)
             {
@@ -4989,11 +5064,37 @@ public partial class MainViewModel : ObservableObject
         {
             LabnextCanReload = true;
             ClearAllSearchCriteria();
-            HomeButtonShows = Visibility.Collapsed;
-            RefreshButtonShows = Visibility.Collapsed;
             _MainWindow.mainTabControl.SelectedItem = _MainWindow.HomeTab;
             ClearAllSearchCriteria();
+            UpdateTabChromeForSelection();
         });
+    }
+
+    public void UpdateTabChromeForSelection()
+    {
+        void Apply()
+        {
+            if (_MainWindow?.mainTabControl is null)
+                return;
+
+            var selected = _MainWindow.mainTabControl.SelectedItem;
+            HomeButtonShows = selected == _MainWindow.HomeTab
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            RefreshButtonShows = selected == _MainWindow.ThreeShapeTab
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        if (Application.Current.Dispatcher.CheckAccess())
+        {
+            Apply();
+        }
+        else
+        {
+            Application.Current.Dispatcher.Invoke(Apply);
+        }
     }
 
     private void Refresh3ShapeList()
@@ -5033,6 +5134,7 @@ public partial class MainViewModel : ObservableObject
             LabnextCanReload = true;
             ClearAllSearchCriteria();
             _MainWindow.mainTabControl.SelectedItem = _MainWindow.ThreeShapeTab;
+            ApplyPendingStartupFilterIfNeeded();
         });
     }
 
@@ -5523,7 +5625,15 @@ public partial class MainViewModel : ObservableObject
     private void PmAddNewPanNumber(object obj)
     {
         string number = obj.ToString()!;
-        _ = int.TryParse(number, out int num);
+        if (!int.TryParse(number, out int num) || num < 33 || num > 99999)
+        {
+            ShowNotificationMessage(
+                "Invalid pan number",
+                "Enter a pan number between 33 and 99999 (digits only, no leading zero).",
+                NotificationIcon.Warning);
+            PmAddNewNumber = "";
+            return;
+        }
 
         if (GetPanColorByNumber(num) != "0-0-0")
         {
@@ -5699,7 +5809,7 @@ public partial class MainViewModel : ObservableObject
                         Text = number,
                         FontSize = 16,
                         FontWeight = FontWeights.SemiBold,
-                        Foreground = ColorSchemeResourceCatalog.GetBrush("BlackColor"),
+                        Foreground = ColorSchemeResourceCatalog.GetBrush("PanNumberLabelForeground"),
                         Cursor = Cursors.Hand,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
@@ -5786,7 +5896,7 @@ public partial class MainViewModel : ObservableObject
                     Text = panNumbr,
                     FontSize = 16,
                     FontWeight = FontWeights.SemiBold,
-                    Foreground = ColorSchemeResourceCatalog.GetBrush("BlackColor"),
+                    Foreground = ColorSchemeResourceCatalog.GetBrush("PanNumberLabelForeground"),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Padding = new Thickness(4, 0, 4, 0),
@@ -7257,8 +7367,11 @@ public partial class MainViewModel : ObservableObject
                 PanNrDuplicatesFontColor = ColorSchemeResourceCatalog.GetNamedColorString("NamedColorString_Red");
         }
 
-        // Run background tasks
-        if (!bwBackgroundTasks.IsBusy && AppIsFullyLoaded)
+        // Run background tasks (single-flight — async DoWork yields immediately otherwise)
+        if (BackgroundTasksGate.CurrentCount == 0)
+            return;
+
+        if (!bwBackgroundTasks.IsBusy && AppIsFullyLoaded && _allowPeriodicBackgroundTasks)
             bwBackgroundTasks.RunWorkerAsync(argument: minutes.ToString() + "|" + seconds.ToString());
     }
 
@@ -7269,17 +7382,25 @@ public partial class MainViewModel : ObservableObject
 
 
 
-    public void OpenUpOrderInfoWindow()
+    public void OpenUpOrderInfoWindow(object? source = null)
     {
-        if (ThreeShapeObject is null)
+        ThreeShapeOrdersModel? order = ResolveOrderForOrderInfoWindow(source);
+        if (order is null)
+        {
             return;
+        }
 
-        bool archiveSelection = !string.IsNullOrWhiteSpace(ThreeShapeObject.OrderFolderPath) ||
-                                !string.IsNullOrWhiteSpace(ThreeShapeObject.XmlFilePath);
+        ThreeShapeObject = order;
+        OrderBeingWatched = order.IntOrderID ?? string.Empty;
+        SelectedItem = order;
+        TurnOnOffToolBarButtons(order);
+
+        bool archiveSelection = !string.IsNullOrWhiteSpace(order.OrderFolderPath) ||
+                                !string.IsNullOrWhiteSpace(order.XmlFilePath);
 
         if (archiveSelection)
         {
-            string xmlFilePath = ResolveXmlFilePath(ThreeShapeObject.XmlFilePath, ThreeShapeObject.OrderFolderPath ?? string.Empty, ThreeShapeObject.IntOrderID ?? string.Empty);
+            string xmlFilePath = ResolveXmlFilePath(order.XmlFilePath, order.OrderFolderPath ?? string.Empty, order.IntOrderID ?? string.Empty);
 
             if (string.IsNullOrWhiteSpace(xmlFilePath) || !File.Exists(xmlFilePath))
             {
@@ -7287,14 +7408,38 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
-            ThreeShapeObject.XmlFilePath = xmlFilePath;
+            order.XmlFilePath = xmlFilePath;
+            ThreeShapeObject = order;
         }
 
-        OrderInfoWindow orderInfoWindow = new(ThreeShapeObject)
+        OrderInfoWindow orderInfoWindow = new(order)
         {
             Owner = _MainWindow
         };
         orderInfoWindow.ShowDialog();
+    }
+
+    private ThreeShapeOrdersModel? ResolveOrderForOrderInfoWindow(object? source)
+    {
+        ThreeShapeOrdersModel? order = source as ThreeShapeOrdersModel;
+        order ??= ThreeShapeObject;
+
+        if (order?.IntOrderID is { Length: > 0 } orderId)
+        {
+            ThreeShapeOrdersModel? fromList = Current3ShapeOrderList.FirstOrDefault(x =>
+                string.Equals(x.IntOrderID, orderId, StringComparison.OrdinalIgnoreCase));
+            if (fromList is not null)
+            {
+                order = fromList;
+            }
+        }
+
+        if (order is null && SelectedItem is ThreeShapeOrdersModel selected)
+        {
+            order = selected;
+        }
+
+        return order;
     }
 
     public void SearchForOrderByOrderIssueClick()
@@ -7528,22 +7673,7 @@ public partial class MainViewModel : ObservableObject
     private void CbSettingWatchFolderPrescriptionMakerMethod()
     {
         WriteLocalSetting("ActivePrescriptionMaker", CbSettingWatchFolderPrescriptionMaker.ToString());
-        if (!string.IsNullOrEmpty(fswPrescriptionMaker.Path) && Directory.Exists(fswPrescriptionMaker.Path))
-        {
-            if (CbSettingWatchFolderPrescriptionMaker)
-            {
-                fswPrescriptionMaker.Path = PmWatchedPdfFolder;
-                fswPrescriptionMaker.Filter = "*.pdf";
-                fswPrescriptionMaker.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
-                fswPrescriptionMaker.Created += new FileSystemEventHandler(FswPrescriptionMaker_Created);
-                fswPrescriptionMaker.Changed += new FileSystemEventHandler(FswPrescriptionMaker_Changed);
-                fswPrescriptionMaker.EnableRaisingEvents = true;
-            }
-
-            fswPrescriptionMaker.EnableRaisingEvents = CbSettingWatchFolderPrescriptionMaker;
-        }
-        else
-            fswPrescriptionMaker.EnableRaisingEvents = CbSettingWatchFolderPrescriptionMaker;
+        ConfigurePrescriptionMakerFileWatcher();
     }
 
     private void CbSettingOpenUpSironaScanFolderMethod()
@@ -7738,19 +7868,61 @@ public partial class MainViewModel : ObservableObject
     private void CbSettingExtractIteroZipFilesMethod()
     {
         WriteLocalSetting("ExtractIteroZipFiles", CbSettingExtractIteroZipFiles.ToString());
+        ConfigureIteroZipFileWatcher();
+    }
 
-        if (fswIteroZipFileWhatcher.Path is null)
+    private void ConfigurePrescriptionMakerFileWatcher()
+    {
+        fswPrescriptionMaker.EnableRaisingEvents = false;
+        fswPrescriptionMaker.Created -= FswPrescriptionMaker_Created;
+        fswPrescriptionMaker.Changed -= FswPrescriptionMaker_Changed;
+
+        if (!CbSettingWatchFolderPrescriptionMaker
+            || string.IsNullOrWhiteSpace(PmWatchedPdfFolder)
+            || PmWatchedPdfFolder.Contains("Click here to", StringComparison.Ordinal)
+            || !Directory.Exists(PmWatchedPdfFolder))
         {
-            if (CbSettingExtractIteroZipFiles && Directory.Exists(PmDownloadFolder) && Directory.Exists(PmIteroExportFolder))
-            {
-                fswIteroZipFileWhatcher.Path = PmDownloadFolder;
-                fswIteroZipFileWhatcher.Filter = "iTero_Export_*.zip";
-                fswIteroZipFileWhatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
-                fswIteroZipFileWhatcher.Created += new FileSystemEventHandler(FswIteroZipFileWhatcher_Created);
-                fswIteroZipFileWhatcher.Changed += new FileSystemEventHandler(FswIteroZipFileWhatcher_Created);
-                fswIteroZipFileWhatcher.EnableRaisingEvents = true;
-            }
+            fswPrescriptionMaker.Path = string.Empty;
+            return;
         }
+
+        try
+        {
+            fswPrescriptionMaker.Path = PmWatchedPdfFolder;
+            fswPrescriptionMaker.Filter = "*.pdf";
+            fswPrescriptionMaker.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
+            fswPrescriptionMaker.Created += FswPrescriptionMaker_Created;
+            fswPrescriptionMaker.Changed += FswPrescriptionMaker_Changed;
+            fswPrescriptionMaker.EnableRaisingEvents = true;
+        }
+        catch (Exception ex)
+        {
+            fswPrescriptionMaker.EnableRaisingEvents = false;
+            fswPrescriptionMaker.Path = string.Empty;
+            AddDebugLine(ex);
+        }
+    }
+
+    private void ConfigureIteroZipFileWatcher()
+    {
+        fswIteroZipFileWhatcher.EnableRaisingEvents = false;
+        fswIteroZipFileWhatcher.Created -= FswIteroZipFileWhatcher_Created;
+        fswIteroZipFileWhatcher.Changed -= FswIteroZipFileWhatcher_Created;
+
+        if (!CbSettingExtractIteroZipFiles
+            || !Directory.Exists(PmDownloadFolder)
+            || !Directory.Exists(PmIteroExportFolder))
+        {
+            fswIteroZipFileWhatcher.Path = string.Empty;
+            return;
+        }
+
+        fswIteroZipFileWhatcher.Path = PmDownloadFolder;
+        fswIteroZipFileWhatcher.Filter = "iTero_Export_*.zip";
+        fswIteroZipFileWhatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
+        fswIteroZipFileWhatcher.Created += FswIteroZipFileWhatcher_Created;
+        fswIteroZipFileWhatcher.Changed += FswIteroZipFileWhatcher_Created;
+        fswIteroZipFileWhatcher.EnableRaisingEvents = true;
     }
 
     #endregion SETTINGS TAB METHODS
@@ -7865,6 +8037,11 @@ public partial class MainViewModel : ObservableObject
 
     private void ListUpdateTimer_Tick(object? sender, EventArgs e)
     {
+        if (!AppIsFullyLoaded || !IsMainWindowReady)
+        {
+            return;
+        }
+
         if (ListUpdateable && AllowThreeShapeOrderListUpdates)
         {
             AllowToShowProgressBar = false;
@@ -8407,7 +8584,7 @@ public partial class MainViewModel : ObservableObject
     private async void FocusOnSearchField()
     {
         await Task.Delay(150);
-        _MainWindow.tbSearch.Focus();
+        TryFocusSearchField();
     }
 
     private void ItemRightClicked(object obj)
@@ -8517,17 +8694,23 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
+            if (!IsMainWindowReady)
+            {
+                return;
+            }
 
             _MainWindow.listView3ShapeOrders.ItemsSource = Current3ShapeOrderList;
             _MainWindow.listView3ShapeOrders.Items.Refresh();
             _MainWindow.pb3ShapeProgressBar.Value = 0;
-            await Task.Run(() => GroupList());
+            GroupList();
 
             // Order count in list
             OrderCountText = Current3ShapeOrderList.Count == 1 ? Current3ShapeOrderList.Count + " order" : Current3ShapeOrderList.Count + " orders";
             OrderCount = Current3ShapeOrderList.Count;
             AllowToShowProgressBar = true;
 
+
+            ApplyWatchFlagsToCurrent3ShapeList();
 
             if (OrderBeingWatched.Length > 0)
             {
@@ -8552,7 +8735,7 @@ public partial class MainViewModel : ObservableObject
             _MainWindow.listViewArchives.ItemsSource = CurrentArchivesList;
             _MainWindow.listViewArchives.Items.Refresh();
             _MainWindow.pbArchivesProgressBar.Value = 0;
-            await Task.Run(() => GroupList());
+            GroupList();
 
             // Order count in list
             ArchivesCountText = CurrentArchivesList.Count == 1 ? CurrentArchivesList.Count + " order" : CurrentArchivesList.Count + " orders";
@@ -8566,16 +8749,20 @@ public partial class MainViewModel : ObservableObject
 
     public void GroupList()
     {
-        Application.Current.Dispatcher.Invoke(new Action(() =>
+        void ApplyGrouping()
         {
             try
             {
+                if (_mainWindow?.pb3ShapeProgressBar is not { } progressBar ||
+                    _mainWindow.listView3ShapeOrders is not { } listView ||
+                    listView.Items is null)
+                {
+                    return;
+                }
 
+                progressBar.Value = 0;
 
-                _MainWindow.pb3ShapeProgressBar.Value = 0;
-
-                _MainWindow.listView3ShapeOrders.Items.GroupDescriptions.Clear();
-                //var property = _MainWindow.GroupBy.SelectedItem as string;
+                listView.Items.GroupDescriptions.Clear();
                 var property = SelectedGroupByItem;
 
 
@@ -8637,7 +8824,21 @@ public partial class MainViewModel : ObservableObject
             {
                 AddDebugLine(ex, ex.Message);
             }
-        }));
+        }
+
+        if (!IsMainWindowReady)
+        {
+            return;
+        }
+
+        if (Application.Current.Dispatcher.CheckAccess())
+        {
+            ApplyGrouping();
+        }
+        else
+        {
+            Application.Current.Dispatcher.Invoke(ApplyGrouping);
+        }
     }
 
     private bool IsTheSame(ThreeShapeOrdersModel FirstObject, ThreeShapeOrdersModel? SecondObject)
@@ -8707,9 +8908,8 @@ public partial class MainViewModel : ObservableObject
             if (_MainWindow.mainTabControl.SelectedItem == _MainWindow.tabLabnext || _MainWindow.mainTabControl.SelectedItem == _MainWindow.folderSubscriptionTab)
             {
                 LabnextCanReload = true;
-                HomeButtonShows = Visibility.Collapsed;
-                RefreshButtonShows = Visibility.Collapsed;
                 _MainWindow.mainTabControl.SelectedItem = _MainWindow.HomeTab;
+                UpdateTabChromeForSelection();
             }
         }));
 
@@ -9228,6 +9428,11 @@ public partial class MainViewModel : ObservableObject
 
     private async void ListCases_DoWork(object? sender, DoWorkEventArgs e)
     {
+        if (!IsMainWindowReady)
+        {
+            return;
+        }
+
         ThreeShapeServerIsDown = false;
         var data = (SearchData)e.Argument!;
         string keyWordOrFilter = data.KeyWordOrFilter!;
@@ -9950,7 +10155,12 @@ public partial class MainViewModel : ObservableObject
 
         Application.Current.Dispatcher.Invoke(new Action(() =>
         {
-            _MainWindow.pb3ShapeProgressBar.Maximum = countedResults;
+            if (_mainWindow?.pb3ShapeProgressBar is not { } progressBar)
+            {
+                return;
+            }
+
+            progressBar.Maximum = countedResults;
         }));
 
         //CountedResultsInt = countedResults;
@@ -9963,15 +10173,20 @@ public partial class MainViewModel : ObservableObject
 
         Application.Current.Dispatcher.Invoke(new Action(() =>
         {
+            if (_mainWindow?.pb3ShapeProgressBar is not { } progressBar)
+            {
+                return;
+            }
+
             FilterString = keyWordOrFilter.Trim();
             //if (FilterInUse)
             //    tbFilterString.Foreground = ColorSchemeResourceCatalog.GetBrush("NamedDarkGreen");
             //else
             //    tbFilterString.Foreground = ColorSchemeResourceCatalog.GetBrush("AgeColorSteel");
 
-            _MainWindow.pb3ShapeProgressBar.Value = 0;
+            progressBar.Value = 0;
             if (AllowToShowProgressBar)
-                _MainWindow.pb3ShapeProgressBar.Visibility = Visibility.Visible;
+                progressBar.Visibility = Visibility.Visible;
         }));
 
         TempSearchLimitIgnore = false;
@@ -10420,12 +10635,27 @@ public partial class MainViewModel : ObservableObject
                     {
                         OrderCount = Current3ShapeOrderList.Count;
                         OrderCountText = Current3ShapeOrderList.Count.ToString() + " orders";
+                        if (_mainWindow?.pb3ShapeProgressBar is not { } progressBar)
+                        {
+                            return;
+                        }
+
                         if (AllowToShowProgressBar)
-                            _MainWindow.pb3ShapeProgressBar.Value += 1;
+                            progressBar.Value += 1;
                         else
-                            _MainWindow.pb3ShapeProgressBar.Value = 0;
+                            progressBar.Value = 0;
                     }));
                 }
+            }
+
+            try
+            {
+                var checkedOutDesigners = GetCheckedOutDesignerFriendlyNamesByOrderId();
+                ApplyCheckedOutDesignerNames(Current3ShapeOrderList, checkedOutDesigners);
+            }
+            catch (Exception ex)
+            {
+                AddDebugLine(ex);
             }
 
         }
@@ -10450,7 +10680,10 @@ public partial class MainViewModel : ObservableObject
 
         Application.Current.Dispatcher.Invoke(new Action(() =>
         {
-            _MainWindow.pb3ShapeProgressBar.Value = 0;
+            if (_mainWindow?.pb3ShapeProgressBar is { } progressBar)
+            {
+                progressBar.Value = 0;
+            }
         }));
     }
 
@@ -10729,6 +10962,11 @@ public partial class MainViewModel : ObservableObject
 
     private void FilterMenuItemClicked(object obj)
     {
+        if (!IsMainWindowReady)
+        {
+            return;
+        }
+
         ShowingFiltersPanel = Visibility.Collapsed;
         _MainWindow.pb3ShapeProgressBar.Value = 0;
         Current3ShapeOrderList.Clear();
@@ -10770,6 +11008,11 @@ public partial class MainViewModel : ObservableObject
 
     private void Search(string keyWord)
     {
+        if (!IsMainWindowReady)
+        {
+            return;
+        }
+
         WriteLocalSetting("FilterUsed", "");
 
         ListUpdateable = true;
@@ -10805,6 +11048,11 @@ public partial class MainViewModel : ObservableObject
 
     public void Search(string Filter, bool SearchWithFilter)
     {
+        if (!IsMainWindowReady)
+        {
+            return;
+        }
+
         _MainWindow.pb3ShapeProgressBar.Value = 0;
         ListUpdateable = true;
         ActiveFilterInUse = Filter;
@@ -11154,26 +11402,37 @@ public partial class MainViewModel : ObservableObject
 
     private async void BwBackgroundTasks_DoWork(object? sender, DoWorkEventArgs e)
     {
+        if (!await BackgroundTasksGate.WaitAsync(0))
+        {
+            return;
+        }
+
+        try
+        {
+        if (!IsMainWindowReady)
+        {
+            return;
+        }
+
         string arg = (string)e.Argument!;
         string[] argParts = arg.Split('|');
         _ = int.TryParse(argParts[0], out int minute);
         _ = int.TryParse(argParts[1], out int second);
 
-        Application.Current.Dispatcher.Invoke(new Action(async () =>
+        bool serverIsWritingDatabase = await Task.Run(CheckIfServerIsWritingDatabase);
+        string? lastDatabaseUpdate = null;
+        if (CbSettingModuleFolderSubscription)
         {
-            if (_MainWindow.mainTabControl.SelectedItem != _MainWindow.HomeTab)
-                HomeButtonShows = Visibility.Visible;
+            lastDatabaseUpdate = await Task.Run(GetLastDatabaseUpdate);
+        }
 
-            if (_MainWindow.mainTabControl.SelectedItem == _MainWindow.ThreeShapeTab)
-                RefreshButtonShows = Visibility.Visible;
-            else
-                RefreshButtonShows = Visibility.Collapsed;
+        await Application.Current.Dispatcher.InvokeAsync(async () =>
+        {
+            UpdateTabChromeForSelection();
 
-
-            //ServerStatus = GetStatsServerStatus();
-            ServerIsWritingDatabase = CheckIfServerIsWritingDatabase();
-            if (CbSettingModuleFolderSubscription)
-                FsLastDatabaseUpdate = GetLastDatabaseUpdate();
+            ServerIsWritingDatabase = serverIsWritingDatabase;
+            if (lastDatabaseUpdate is not null)
+                FsLastDatabaseUpdate = lastDatabaseUpdate;
 
             await Task.Run(LookForPendingTask);
 
@@ -11235,7 +11494,7 @@ public partial class MainViewModel : ObservableObject
 
                 PrescriptionWithNoInconsistencys = listGood;
             }
-        }));
+        });
 
         if (InfoTabActive)
         {
@@ -11301,6 +11560,11 @@ public partial class MainViewModel : ObservableObject
             {
                 Application.Current.Dispatcher.Invoke(new Action(async () =>
                 {
+                    if (_mainWindow?.webview?.CoreWebView2 is null)
+                    {
+                        return;
+                    }
+
                     await _MainWindow.webview.ExecuteScriptAsync("window.scroll(0,10000000)");
                 }));
             }
@@ -11325,114 +11589,65 @@ public partial class MainViewModel : ObservableObject
 
 
             FirstRun = false;
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+
+            int casesDesigningNow = await Task.Run(() => GetOpenedForDesignCasesCount(ServerID));
+            string serverLogPath = @$"\\{StatsServersComputerName}\StatsSystemsLogs$\StatsSystem_log_{DateTime.Now:yyyy-MM-dd}.html";
+            bool serverLogExists = await Task.Run(() => FileExistsWithTimeout(serverLogPath, 3000));
+            string folderSubscriptionCountedEntries = await Task.Run(GetBackFolderSubscriptionCountedEntries);
+            string sentOutIssuesCountText = await Task.Run(GetSentOutIssuesCount);
+            int digiPrescriptionsTodayCount = CbSettingShowDigiPrescriptionsCount
+                ? await Task.Run(GetCurrentDigiPrescriptionCount)
+                : 0;
+            int digiCasesIn3ShapeTodayCount = CbSettingShowDigiCasesIn3ShapeTodayCount
+                ? await Task.Run(GetDigiCasesIn3ShapeTodayCount)
+                : 0;
+            bool isDcasActive = await Task.Run(() =>
             {
-                int casesDesigningNow = GetOpenedForDesignCasesCount(ServerID);
+                _ = bool.TryParse(ReadStatsSetting("dcas_EmailWatcherActive"), out bool active);
+                return active;
+            });
+
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
                 if (casesDesigningNow > 0)
                 {
                     DesignerOpenToolTip = casesDesigningNow.ToString();
-
-                    //if (MainWindow.Instance.panelDesignerOpen.Children.Count > casesDesigningNow ||
-                    //    MainWindow.Instance.panelDesignerOpen.Children.Count < casesDesigningNow)
-                    //{
-                    //    MainWindow.Instance.panelDesignerOpen.Children.Clear();
-
-                    //    for (int i = 0; i < casesDesigningNow; i++)
-                    //    {
-                    //        //Effect bitmapEffect = new DropShadowEffect
-                    //        //{
-                    //        //    ShadowDepth = 1,
-                    //        //    Opacity = 0.55,
-                    //        //    Color = Colors.Orange,
-                    //        //    Direction = 270
-                    //        //};
-
-
-                    //        Image image = new()
-                    //        {
-                    //            Source = new BitmapImage(new Uri("pack://application:,,,/Images/ListViewIcons/psModelling.png")),
-                    //            Width = 16,
-                    //            Height = 16,
-                    //            Cursor = Cursors.Hand,
-                    //            ToolTip = casesDesigningNow.ToString() + " case is open for design",
-                    //            Margin = new Thickness(0, 3, 1, 0), 
-                    //            //Effect = bitmapEffect,
-                    //        };
-
-                    //        //Style s = new();
-
-
-                    //        //Setter setterButtonBg = new()
-                    //        //{
-                    //        //    Property = Button.BackgroundProperty,
-                    //        //    Value = ColorSchemeResourceCatalog.GetBrush("RedColor")
-                    //        //};
-
-
-
-                    //        //s.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
-                    //        //s.Setters.Add(new Setter(Button.BorderBrushProperty, ColorSchemeResourceCatalog.GetBrush("TransparentBrush")));
-                    //        //s.Setters.Add(new Setter(Button.BackgroundProperty, ColorSchemeResourceCatalog.GetBrush("TransparentBrush")));
-
-
-                    //        //Button btn = new()
-                    //        //{
-                    //        //    Content = image,
-                    //        //    Command = JumpToCasesOpenedForDesignNowCommand,
-                    //        //    //Style = Application.Current.Resources["BlankButtonNew"] as Style
-                    //        //    Style = s
-                    //        //};
-
-                    //        MainWindow.Instance.panelDesignerOpen.Children.Add(image);
-
-                    //    }
-                    //}
-
                     DesignerOpen = true;
                 }
                 else
                 {
-                    //MainWindow.Instance.panelDesignerOpen.Children.Clear();
                     DesignerOpen = false;
                 }
 
-                FsCountedEntries = GetBackFolderSubscriptionCountedEntries();
+                FsCountedEntries = folderSubscriptionCountedEntries;
 
-                _ = int.TryParse(GetSentOutIssuesCount(), out int sentOutIssues);
+                _ = int.TryParse(sentOutIssuesCountText, out int sentOutIssues);
                 SentOutIssuesCount = sentOutIssues;
 
 
                 if (CbSettingShowDigiPrescriptionsCount)
-                    DigiPrescriptionsTodayCount = GetCurrentDigiPrescriptionCount();
+                    DigiPrescriptionsTodayCount = digiPrescriptionsTodayCount;
 
                 if (CbSettingShowDigiCasesIn3ShapeTodayCount)
-                    DigiCasesIn3ShapeTodayCount = GetDigiCasesIn3ShapeTodayCount();
+                    DigiCasesIn3ShapeTodayCount = digiCasesIn3ShapeTodayCount;
 
                 FillUpDigiCasePanel();
 
 
                 FillUpPendingDigiCaseNumberList();
 
-                _ = bool.TryParse(ReadStatsSetting("dcas_EmailWatcherActive"), out bool isDCASIsActive);
-                IsDCASIsActive = isDCASIsActive;
+                IsDCASIsActive = isDcasActive;
 
-
-
-                //checking if server log is readable
-                if (File.Exists(@$"\\{StatsServersComputerName}\StatsSystemsLogs$\StatsSystem_log_{DateTime.Now:yyyy-MM-dd}.html"))
+                if (serverLogExists)
                 {
                     ServerLogCanBeRead = true;
-                    ServerLogUrl = @$"\\{StatsServersComputerName}\StatsSystemsLogs$\StatsSystem_log_{DateTime.Now:yyyy-MM-dd}.html";
-                    if (_MainWindow.webview.Source != new Uri(ServerLogUrl))
-                        _MainWindow.webview.Source = new Uri(ServerLogUrl);
+                    ServerLogUrl = serverLogPath;
                 }
                 else
+                {
                     ServerLogCanBeRead = false;
-
-
-
-
-            }));
+                }
+            });
         }
 
         if (second % 59 == 1)
@@ -11458,18 +11673,11 @@ public partial class MainViewModel : ObservableObject
 
         if (minute % 59 == 0 && second < 3)
             BuildingUpDates();
-
-
-        //setting up an event handler for getting the JSON text from webview on pan number lookup
-        Application.Current.Dispatcher.Invoke(new Action(() =>
+        }
+        finally
         {
-            if (_MainWindow.webviewLabnext.CoreWebView2 is not null && !EventHandlerAlreadyAdded && CbSettingModuleLabnext)
-            {
-                _MainWindow.webviewLabnext.CoreWebView2.WebResourceResponseReceived += CoreWebView2_WebResourceResponseReceived;
-                _MainWindow.webviewLabnext.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
-                EventHandlerAlreadyAdded = true;
-            }
-        }));
+            BackgroundTasksGate.Release();
+        }
     }
 
     private async void CoreWebView2_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
@@ -11697,232 +11905,7 @@ public partial class MainViewModel : ObservableObject
     }
 
     #region >> Initial Tasks at startup
-    private void InitialTasksAtApplicationStartup_DoWork(object? sender, DoWorkEventArgs e)
-    {
-        Application.Current.Dispatcher.Invoke(new Action(async () =>
-        {
-            SplashViewModel.Instance.LoadingText = "Gathering info from database..";
-            ThisSite = DatabaseOperations.GetServerSiteName();
-            ThreeShapeDirectoryHelper = DatabaseOperations.GetServerFileDirectory();
-            //ServerFriendlyNameHelper = DatabaseOperations.GetServerName();
-
-            // Initialize PaymentListCutOffDate from database settings
-            InitializePaymentListCutOffDate();
-
-            _ = bool.TryParse(ReadLocalSetting("GlassyEffect"), out bool GlassyEffect);
-            _ = bool.TryParse(ReadLocalSetting("ShowAvailablePanCount"), out bool ShowAvailablePanCount);
-            _ = bool.TryParse(ReadLocalSetting("StartAppMinimized"), out bool StartAppMinimized);
-            //_ = bool.TryParse(ReadLocalSetting("ShowBottomInfoBar"), out bool showBottomInfoBar);
-            //_ = bool.TryParse(ReadLocalSetting("ShowDigiDetails"), out bool showDigiDetails);
-            _ = bool.TryParse(ReadLocalSetting("ShowDigiCases"), out bool showDigiCases);
-            _ = bool.TryParse(ReadLocalSetting("ActivePrescriptionMaker"), out bool activePrescriptionMaker);
-            _ = bool.TryParse(ReadLocalSetting("OpenUpSironaScanFolder"), out bool openUpSironaScanFolder);
-            _ = bool.TryParse(ReadLocalSetting("ShowEmptyPanCount"), out bool showEmptyPanCount);
-            _ = bool.TryParse(ReadLocalSetting("ExtractIteroZipFiles"), out bool extractIteroZipFiles);
-            _ = bool.TryParse(ReadLocalSetting("PmOpenUpPrescriptions"), out bool pmOpenUpPrescriptions);
-            _ = bool.TryParse(ReadLocalSetting("ShowPendingDigiCases"), out bool showPendingDigiCases);
-            _ = bool.TryParse(ReadLocalSetting("KeepUserLoggedInLabnext"), out bool keepUserLoggedInLabnext);
-            _ = bool.TryParse(ReadLocalSetting("ShowDigiPrescriptionsCount"), out bool showDigiPrescriptionsCount);
-            _ = bool.TryParse(ReadLocalSetting("AnnounceNewlyDesignedOrdersOnScreen"), out bool announceNewlyDesignedOrdersOnScreen);
-            _ = bool.TryParse(ReadLocalSetting("ShowDigiCasesIn3ShapeTodayCount"), out bool showDigiCasesIn3ShapeTodayCount);
-            _ = bool.TryParse(ReadLocalSetting("ShowOtherUsersPanNumbers"), out bool showOtherUsersPanNumbers);
-
-            _ = bool.TryParse(ReadLocalSetting("ModuleFolderSubscription"), out bool moduleFolderSubscription);
-            _ = bool.TryParse(ReadLocalSetting("ModuleAccountInfos"), out bool moduleAccountInfos);
-            _ = bool.TryParse(ReadLocalSetting("ModuleLabnext"), out bool moduleLabnext);
-            _ = bool.TryParse(ReadLocalSetting("ModuleSmartOrderNames"), out bool moduleSmartOrderNames);
-            _ = bool.TryParse(ReadLocalSetting("ModuleDebug"), out bool moduleDebug);
-            _ = bool.TryParse(ReadLocalSetting("ModulePrescriptionMaker"), out bool modulePrescriptionMaker);
-            _ = bool.TryParse(ReadLocalSetting("ModulePendingDigitals"), out bool modulePendingDigitals);
-            _ = bool.TryParse(ReadLocalSetting("ModuleEncodeIdentifier"), out bool moduleEncodeIdentifier);
-
-            _ = bool.TryParse(ReadStatsSetting("dcas_EmailWatcherActive"), out bool isDCASIsActive);
-
-
-
-            if (!bool.TryParse(ReadLocalSetting("IncludePendingDigiCases"), out bool includePendingDigiCases))
-                CbSettingIncludePendingDigiCasesInNewlyArrived = true;
-
-            CbSettingGlassyEffect = GlassyEffect;
-
-
-            CbSettingStartAppMinimized = StartAppMinimized;
-            //ShowBottomInfoBar = showBottomInfoBar;
-            //CbSettingShowDigiDetails = showDigiDetails;
-            CbSettingShowDigiCases = showDigiCases;
-            CbSettingWatchFolderPrescriptionMaker = activePrescriptionMaker;
-            CbSettingOpenUpSironaScanFolder = openUpSironaScanFolder;
-            CbSettingShowEmptyPanCount = showEmptyPanCount;
-            CbSettingExtractIteroZipFiles = extractIteroZipFiles;
-            PmOpenUpPrescriptionsBool = pmOpenUpPrescriptions;
-            CbSettingShowPendingDigiCases = showPendingDigiCases;
-            CbSettingKeepUserLoggedInLabnext = keepUserLoggedInLabnext;
-            CbSettingIncludePendingDigiCasesInNewlyArrived = includePendingDigiCases;
-            CbSettingShowDigiPrescriptionsCount = showDigiPrescriptionsCount;
-            CbSettingShowDigiCasesIn3ShapeTodayCount = showDigiCasesIn3ShapeTodayCount;
-            CbSettingShowOtherUsersPanNumbers = showOtherUsersPanNumbers;
-
-            CbSettingModuleFolderSubscription = moduleFolderSubscription;
-            CbSettingModuleAccountInfos = moduleAccountInfos;
-            CbSettingModuleLabnext = moduleLabnext;
-            CbSettingModuleSmartOrderNames = moduleSmartOrderNames;
-            CbSettingModuleDebug = moduleDebug;
-            CbSettingModulePrescriptionMaker = modulePrescriptionMaker;
-            CbSettingModulePendingDigitals = modulePendingDigitals;
-            CbSettingModuleEncodeIdentifier = moduleEncodeIdentifier;
-            if (CbSettingModuleEncodeIdentifier)
-                LoadEncodeIdentifierSettings();
-
-            LoadDcmViewerFuseSettings();
-
-            IsDCASIsActive = isDCASIsActive;
-
-            TriosInboxFolder = ThreeShapeDirectoryHelper + @"3ShapeCommunicate\Inbox";
-
-            LabnextLabID = ReadStatsSetting("LabnextLabID");
-            LabnextUrl = $"https://{LabnextLabID}.labnext.net/lab/";
-
-            if (CbSettingModuleLabnext)
-                _MainWindow.webviewLabnext.Source = new Uri(LabnextUrl);
-
-            LabNextWebViewStatusText = "/";
-
-            string srchLimit = ReadLocalSetting("SearchLimit");
-            if (!string.IsNullOrEmpty(srchLimit))
-                SearchLimit = srchLimit;
-
-            string tmOut = ReadLocalSetting("TimeoutForImportAncmnt");
-            if (!string.IsNullOrEmpty(tmOut))
-                TimeOut = tmOut;
-
-
-            if (CbSettingModuleLabnext)
-                LabnextLoadingHiderTimer.Start();
-
-#if !DEBUG
-
-            if (Directory.Exists(TriosInboxFolder))
-            {
-                fswTriosFolderWatcher.Path = TriosInboxFolder;
-                fswTriosFolderWatcher.Filter = "*.*";
-                fswTriosFolderWatcher.NotifyFilter = NotifyFilters.DirectoryName;
-                fswTriosFolderWatcher.Created += new FileSystemEventHandler(FswTriosFolderWatcher_Created);
-                fswTriosFolderWatcher.Deleted += new FileSystemEventHandler(FswTriosFolderWatcher_Deleted);
-                fswTriosFolderWatcher.EnableRaisingEvents = true;
-                CountTriosCases();
-            }
-#endif
-
-            PendingDigiCasesReplacementName = ReadLocalSetting("PendingDigiCasesReplacementName");
-            if (string.IsNullOrEmpty(PendingDigiCasesReplacementName))
-                PendingDigiCasesReplacementName = "PendingDigi";
-
-            FsubscrTargetFolder = ReadLocalSetting("SubscriptionCopyFolder");
-            PmWatchedPdfFolder = ReadLocalSetting("PmWatchedPdfFolder");
-            if (string.IsNullOrEmpty(PmWatchedPdfFolder))
-                PmWatchedPdfFolder = "Click here to setup..";
-
-            PmFinalPrescriptionsFolder = ReadLocalSetting("FinalPrescriptionsFolder");
-            if (string.IsNullOrEmpty(PmFinalPrescriptionsFolder))
-                PmFinalPrescriptionsFolder = "Click here to setup..";
-
-            PmSironaScansFolder = ReadLocalSetting("SironaScansFolder");
-            if (string.IsNullOrEmpty(PmSironaScansFolder))
-                PmSironaScansFolder = "Click here to setup..";
-
-            PmIteroExportFolder = ReadLocalSetting("IteroExportFolder");
-            if (string.IsNullOrEmpty(PmIteroExportFolder))
-                PmIteroExportFolder = "Click here to setup..";
-
-            PmDownloadFolder = ReadLocalSetting("PmDownloadFolder");
-            if (string.IsNullOrEmpty(PmDownloadFolder))
-                PmDownloadFolder = "Click here to setup..";
-
-            if (PmDownloadFolder.Contains("Click here to"))
-            {
-                PmDownloadFolder = Environment.GetEnvironmentVariable("USERPROFILE") + @"\" + @"Downloads\";
-            }
-
-            //if (ShowBottomInfoBar)
-            //    BottomBarSize = 120;
-            //else
-            //    BottomBarSize = 35;
-
-            SetAppVersion();
-
-            ResetDigiSystemColors();
-
-            FillUpEmptyPanNumberPanel();
-
-            BuildCommentRuleList();
-
-            if (CbSettingModuleAccountInfos)
-                GetAccountInfos();
-
-            PDFTemp = DataBaseFolder + @"PDFTemp";
-
-            if (Directory.Exists(PDFTemp))
-                Directory.Delete(PDFTemp, true);
-
-            Directory.CreateDirectory(PDFTemp);
-
-            if (CbSettingWatchFolderPrescriptionMaker && Directory.Exists(PmWatchedPdfFolder))
-            {
-                fswPrescriptionMaker.Path = PmWatchedPdfFolder;
-                fswPrescriptionMaker.Filter = "*.pdf";
-                fswPrescriptionMaker.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
-                fswPrescriptionMaker.Created += new FileSystemEventHandler(FswPrescriptionMaker_Created);
-                fswPrescriptionMaker.Changed += new FileSystemEventHandler(FswPrescriptionMaker_Changed);
-                fswPrescriptionMaker.EnableRaisingEvents = true;
-            }
-
-            if (CbSettingExtractIteroZipFiles && Directory.Exists(PmDownloadFolder) && Directory.Exists(PmIteroExportFolder))
-            {
-                fswIteroZipFileWhatcher.Path = PmDownloadFolder;
-                fswIteroZipFileWhatcher.Filter = "iTero_Export_*.zip";
-                fswIteroZipFileWhatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
-                fswIteroZipFileWhatcher.Created += new FileSystemEventHandler(FswIteroZipFileWhatcher_Created);
-                fswIteroZipFileWhatcher.Changed += new FileSystemEventHandler(FswIteroZipFileWhatcher_Created);
-                fswIteroZipFileWhatcher.EnableRaisingEvents = true;
-
-            }
-
-            PmSendToList = GetAllSendToEnties();
-
-            if (StartAppMinimized && MainWindow.Instance is not null)
-                MainWindow.Instance.WindowState = WindowState.Minimized;
-
-
-
-
-
-            await ReportClientLoginToDatabase(true);
-
-            // deleting old entries from local database on startup
-            DeleteOldOrderToIgnoredListLocalDB();
-            DeleteOldPMEventsFromLocalDB();
-
-            SearchHistory = await GetBackAllSearchHistoryFromLocalDB();
-
-            //UpdateSearchHistorryContextMenu();
-
-            DeleteOldSearchHistoryFromLocalDB();
-
-            ReadBackAllEvent();
-
-            await FillUpIngnoredOrdersInInconsistencyList();
-
-            TotalOrdersInArchivesDatastore = DatabaseOperations.GetTotalOrdersForArchives().ToString("N0");
-            OrdersInArchivesDatastoreBetweenDates = DatabaseOperations.GetOrdersBetweenDatesForArchives();
-            LastArchivesDatastoreRebuildDate = DatabaseOperations.GetLastRebuiltDateForArchives();
-
-            PaymentIssueCount = await GetPaymentIssueCountFromDB();
-            DesignerPaymentSummaryList = await GetDesignerPaymentSummaryFromDB();
-            //DoublePaidOrdersList = await GetDoublePaidOrdersListFromDB(); 
-            PaidToWrongPersonOrdersList = await GetPaidToWrongPersonsOrdersListFromDB();
-        }));
-    }
-
+    // Startup orchestration: MainViewModel.Startup.cs
 
     private async void SetAppVersion()
     {
@@ -11931,37 +11914,61 @@ public partial class MainViewModel : ObservableObject
         AppVersionDouble = appVersionDouble;
     }
 
-    public void InitialTasksAtApplicationStartup_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
-    {
-        SplashViewModel.Instance.LoadingText = "Loading finished!";
-        SplashViewModel.Instance.mainWindow!.Show();
-        SplashWindow.Instance.Hide();
-        AppIsFullyLoaded = true;
-#if DEBUG
-        AddDebugLine(null, "App started");
-#endif
-        GeneralTimer_Tick(sender, e);
-    }
-
 
     private async void FswIteroZipFileWhatcher_Created(object sender, FileSystemEventArgs e)
     {
-        if (!CbSettingExtractIteroZipFiles)
+        if (!CbSettingExtractIteroZipFiles || string.IsNullOrWhiteSpace(e.FullPath) || string.IsNullOrWhiteSpace(e.Name))
+        {
             return;
+        }
 
-        string exportFolder = PmIteroExportFolder;
+        lock (IteroZipInFlightLock)
+        {
+            if (!IteroZipPathsInFlight.Add(e.FullPath))
+            {
+                return;
+            }
+        }
 
-        if (string.IsNullOrEmpty(exportFolder))
-            return;
-
-        //bool success = false;
         try
         {
-            if (Directory.Exists($@"{exportFolder}\{e.Name!.Replace(".zip", "")}"))
+            await ProcessIteroZipFileAsync(e).ConfigureAwait(false);
+        }
+        finally
+        {
+            lock (IteroZipInFlightLock)
+            {
+                IteroZipPathsInFlight.Remove(e.FullPath);
+            }
+        }
+    }
+
+    private async Task ProcessIteroZipFileAsync(FileSystemEventArgs e)
+    {
+        var exportFolder = PmIteroExportFolder;
+        if (string.IsNullOrWhiteSpace(exportFolder))
+        {
+            return;
+        }
+
+        var zipFileName = e.Name!;
+        var extractFolderName = zipFileName.Replace(".zip", "", StringComparison.OrdinalIgnoreCase);
+        var extractPath = Path.Combine(exportFolder, extractFolderName);
+        var zipId = extractFolderName.Replace("iTero_Export_", "", StringComparison.OrdinalIgnoreCase);
+
+        await IteroZipProcessingGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            if (!await WaitForIteroZipReadyAsync(e.FullPath).ConfigureAwait(false))
+            {
+                return;
+            }
+
+            if (Directory.Exists(extractPath))
             {
                 try
                 {
-                    Directory.Delete($@"{exportFolder}\{e.Name!.Replace(".zip", "")}", true);
+                    Directory.Delete(extractPath, recursive: true);
                 }
                 catch (Exception ex)
                 {
@@ -11969,51 +11976,87 @@ public partial class MainViewModel : ObservableObject
                 }
             }
 
-            //// blocking the thread until the file is released / dowloaded for a time of maximum 11 seconds
-            //int i = 0;
-            //FileInfo file = new(e.FullPath);
-            //while (IsFileLocked(file) || i > 10)
-            //{
-            //    await Task.Delay(1000);
-            //    i++;
-            //}
+            await Task.Run(() => ZipFile.ExtractToDirectory(e.FullPath, extractPath, true)).ConfigureAwait(false);
 
-            await Task.Run(() => ZipFile.ExtractToDirectory(e.FullPath, $@"{exportFolder}\{e.Name!.Replace(".zip", "")}", true));
-
-            LastIteroZipFileId = e.Name!.Replace(".zip", "").Replace("iTero_Export_", "");
-            //success = true;
-            //if (success)
-            File.Delete(e.FullPath);
-
-            Application.Current.Dispatcher.Invoke(new Action(async () =>
+            try
             {
-                ShowNotificationMessage("iTero Case Downloaded", $"There is a new Itero case placed into Export folder! Id: {LastIteroZipFileId}", NotificationIcon.Success, false);
-                AddEventToEventListLocalDB($"iTero Zip file downloaded: {LastIteroZipFileId}", "SteelBlue");
+                if (File.Exists(e.FullPath))
+                {
+                    File.Delete(e.FullPath);
+                }
+            }
+            catch (IOException)
+            {
+                // Another watcher pass or the browser may still have the zip open briefly.
+            }
+
+            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                LastIteroZipFileId = zipId;
+                ShowNotificationMessage(
+                    "iTero Case Downloaded",
+                    $"There is a new Itero case placed into Export folder! Id: {zipId}",
+                    NotificationIcon.Success,
+                    false);
+                AddEventToEventListLocalDB($"iTero Zip file downloaded: {zipId}", "SteelBlue");
                 ReadBackAllEvent();
                 SystemSounds.Beep.Play();
                 await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Green"));
                 ZipArchiveIconGrowAnimation();
                 CountiTeroFolders();
-            }));
+            });
         }
         catch (Exception ex)
         {
             if (ex.Message.Contains("end of central directory record", StringComparison.CurrentCultureIgnoreCase))
             {
-                Application.Current.Dispatcher.Invoke(new Action(async () =>
+                await Application.Current.Dispatcher.InvokeAsync(async () =>
                 {
-                    ShowNotificationMessage("iTero Case Download Issue", $"There is a new Itero case downloaded but the file is CORRUPT! Please download it again! Id: {LastIteroZipFileId}", NotificationIcon.Error, false);
-                    AddEventToEventListLocalDB($"iTero Zip file issue: {LastIteroZipFileId}", ColorSchemeResourceCatalog.GetHex("SchemeColor_F66D06"));
+                    LastIteroZipFileId = zipId;
+                    ShowNotificationMessage(
+                        "iTero Case Download Issue",
+                        $"There is a new Itero case downloaded but the file is CORRUPT! Please download it again! Id: {zipId}",
+                        NotificationIcon.Error,
+                        false);
+                    AddEventToEventListLocalDB($"iTero Zip file issue: {zipId}", ColorSchemeResourceCatalog.GetHex("SchemeColor_F66D06"));
                     ReadBackAllEvent();
                     SystemSounds.Beep.Play();
                     await BlinkWindow(ColorSchemeResourceCatalog.GetNamedColorString("BlinkColor_Red"));
-                }));
+                });
                 return;
             }
 
             if (!ex.Message.Contains("because it is being used by another process", StringComparison.CurrentCultureIgnoreCase))
+            {
                 AddDebugLine(ex);
+            }
         }
+        finally
+        {
+            IteroZipProcessingGate.Release();
+        }
+    }
+
+    private async Task<bool> WaitForIteroZipReadyAsync(string fullPath)
+    {
+        var file = new FileInfo(fullPath);
+        for (var attempt = 0; attempt < 30; attempt++)
+        {
+            if (!file.Exists)
+            {
+                return false;
+            }
+
+            if (!IsFileLocked(file))
+            {
+                return true;
+            }
+
+            await Task.Delay(500).ConfigureAwait(false);
+            file.Refresh();
+        }
+
+        return file.Exists && !IsFileLocked(file);
     }
 
     private void CountiTeroFolders()
@@ -12062,13 +12105,6 @@ public partial class MainViewModel : ObservableObject
     }
 
 
-    internal static void StartInitialTasks()
-    {
-        if (!bwInitialTasks.IsBusy)
-        {
-            bwInitialTasks.RunWorkerAsync();
-        }
-    }
     #endregion >> Initial Tasks at startup
 
     #region Looking for Update
@@ -12177,15 +12213,16 @@ public partial class MainViewModel : ObservableObject
 
     private void ZipArchiveIconGrowAnimation()
     {
-        Application.Current.Dispatcher.Invoke(new Action(() =>
+        Application.Current.Dispatcher.Invoke(() =>
         {
-            if (MainWindow.Instance is not null)
+            if (MainWindow.Instance is not null
+                && MainWindow.Instance.FindResource("ZipArchiveIconGrowAnimation") is BeginStoryboard sb)
             {
-                BeginStoryboard? sb = MainWindow.Instance.FindResource("ZipArchiveIconGrowAnimation")! as BeginStoryboard;
-                sb!.Storyboard.Completed += ZipArchiveIconGrowAnimation_Completed;
-                sb!.Storyboard.Begin();
+                sb.Storyboard.Completed -= ZipArchiveIconGrowAnimation_Completed;
+                sb.Storyboard.Completed += ZipArchiveIconGrowAnimation_Completed;
+                sb.Storyboard.Begin();
             }
-        }));
+        });
     }
 
 
@@ -12359,6 +12396,12 @@ public partial class MainViewModel : ObservableObject
             case "openSmartRenameWindw":
                 {
                     SmartOrderNamesWindow.ShowDialog();
+                    break;
+                }
+
+            case "openWatchList":
+                {
+                    SwitchToWatchListTab();
                     break;
                 }
 

@@ -15,7 +15,7 @@
             Width="76"
             Height="42"
             Background="{DynamicResource TransparentBrush}"
-            Command="{Binding DataContext.ClickOnPanNumberCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+            Command="{Binding ClickCommand, RelativeSource={RelativeSource AncestorType={x:Type local:Pan}}}"
             CommandParameter="{Binding PanNumber}">
         <Button.Content>
             <Border Background="{Binding PanColor}"
@@ -35,7 +35,7 @@
                             BorderThickness="0.5">
                         <TextBlock Text="{Binding PanNumber}"
                                    d:Text="20080"
-                                   Foreground="{DynamicResource BlackColor}"
+                                   Foreground="{DynamicResource PanNumberLabelForeground}"
                                    FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"

@@ -56,6 +56,14 @@ public class ThreeShapeOrdersModel{
     public List<DesignerHistoryModel>? DesignerHistory { get; set; } = [];
     public bool HasAnyImage { get; set; } = false;
     public bool IsItRedo { get; set; } = false;
+
+    public bool IsOnWatchList { get; set; }
+
+    /// <summary>True when rendered on the dedicated Watch List tab (left accent chrome).</summary>
+    public bool IsWatchListRow { get; set; }
+
+    /// <summary>Designer column shows StatsDB checked-out designer (green).</summary>
+    public bool ShowCheckedOutDesignerFromStats { get; set; }
 }
 
 

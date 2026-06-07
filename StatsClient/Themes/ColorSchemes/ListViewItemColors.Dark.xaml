@@ -489,7 +489,7 @@
     <SolidColorBrush x:Key="LvItemExportHistory_ComputerForeground">#300300</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemExportHistory_ContentBackground">#EFFFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemExportHistory_DesignerForeground">#AE0270</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemExportHistory_EventForeground">#222222</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemExportHistory_EventForeground">#94A3B8</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemExportHistory_HoverBackground">#d4e9fb</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemExportHistory_HoverBackgroundAlt">AliceBlue</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemExportHistory_HoverBorderBrush">#79bbf2</SolidColorBrush>
@@ -824,8 +824,8 @@
     <!-- #endregion -->
 
     <!-- #region LvItemPrescriptionInconsistencys -->
-    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_AlternateBackground">#22777777</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_AlternateRowBackground">#55777777</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_AlternateBackground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_AlternateRowBackground">#334155</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_BorderBrush">#CCCCCC</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ButtonBackground">#55FFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_CardBackground">#F8FFFFFF</SolidColorBrush>
@@ -841,8 +841,8 @@
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_LastTouchedForeground">#027575</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ManufacturerForeground">#8d8d3d</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MaterialForeground">#3f793f</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MissingOrderForeground">#4299AE</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MissingRxForeground">#FF7200</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MissingOrderForeground">#FB923C</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MissingRxForeground">#F472B6</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_ModDateForeground">#034400</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_MutedForeground">#44474D</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionInconsistencys_PanHoverBorderBrush">#e0b000</SolidColorBrush>
@@ -856,10 +856,10 @@
     <!-- #endregion -->
 
     <!-- #region LvItemPrescriptionMakerEventsList -->
-    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_AlternateBackground">#f7fefe</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_AlternateRowBackground">#55777777</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_BorderBrush">#CCCCCC</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_BracketForeground">#EEEEEE</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_AlternateBackground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_AlternateRowBackground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_BorderBrush">#4A5568</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_BracketForeground">#64748B</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_ButtonBackground">#55FFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_CardBackground">#F8FFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_CardBorderBrush">#44CBD5E1</SolidColorBrush>
@@ -881,9 +881,9 @@
     <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PanSwatchBorderBrush">#F5F5F5</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PatientFirstForeground">#666666</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PatientLastForeground">#777777</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PrimaryForeground">#000000</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_SecondaryForeground">#666666</SolidColorBrush>
-    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_TimeForeground">#222222</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_PrimaryForeground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_SecondaryForeground">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_TimeForeground">#94A3B8</SolidColorBrush>
     <SolidColorBrush x:Key="LvItemPrescriptionMakerEventsList_WarningBackground">#B3AE9B</SolidColorBrush>
     <!-- #endregion -->
 

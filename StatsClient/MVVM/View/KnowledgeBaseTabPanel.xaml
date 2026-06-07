@@ -1,0 +1,896 @@
+<UserControl x:Class="StatsClient.MVVM.View.KnowledgeBaseTabPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700"
+             d:DesignWidth="1400">
+    <UserControl.Resources>
+        <converter:ByteArrayToImageConverter x:Key="ByteArrayToImageConverter" />
+        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converter:InverseVisibilityConverter x:Key="InverseVisibilityConverter" />
+        <converter:InverseBoolConverter x:Key="InverseBoolConverter" />
+
+        <!-- KB-local contrast (canvas darker, fields lighter) -->
+        <SolidColorBrush x:Key="KbCanvasBrush" Color="#38485A" />
+        <SolidColorBrush x:Key="KbFieldBrush" Color="#566C82" />
+        <SolidColorBrush x:Key="KbFieldFocusBrush" Color="#667F98" />
+        <SolidColorBrush x:Key="KbFieldBorderBrush" Color="#7A93AB" />
+        <SolidColorBrush x:Key="KbDropZoneFillBrush" Color="#2F4052" />
+        <SolidColorBrush x:Key="KbDropZoneBorderBrush" Color="#8FA4B8" />
+        <SolidColorBrush x:Key="KbDangerForegroundBrush" Color="#FF7A88" />
+        <SolidColorBrush x:Key="KbDangerHoverBrush" Color="#44D64545" />
+
+        <Style x:Key="KbSectionLabel"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource FilterSectionHeaderText}">
+            <Setter Property="Margin" Value="0,14,0,6" />
+        </Style>
+
+        <Style x:Key="KbTextBox"
+               TargetType="TextBox">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Background" Value="{StaticResource KbFieldBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="BorderBrush" Value="{StaticResource KbFieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="CaretBrush" Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Shell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Shell"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveFocusRing}" />
+                                <Setter TargetName="Shell"
+                                        Property="Background"
+                                        Value="{StaticResource KbFieldFocusBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbMultilineTextBox"
+               TargetType="TextBox"
+               BasedOn="{StaticResource KbTextBox}">
+            <Setter Property="Height" Value="Auto" />
+            <Setter Property="MinHeight" Value="120" />
+            <Setter Property="AcceptsReturn" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
+
+        <Style x:Key="KbComboToggle"
+               TargetType="ToggleButton">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="ClickMode" Value="Press" />
+            <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbComboBoxItem"
+               TargetType="ComboBoxItem">
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemShell"
+                                CornerRadius="5"
+                                Margin="0,1"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{DynamicResource TransparentBrush}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemShell"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueLight}" />
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource ImmersiveAccentBlue}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemShell"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueLight}" />
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource ImmersiveAccentBlue}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbComboBox"
+               TargetType="ComboBox">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="Background" Value="{StaticResource KbFieldBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource KbFieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="12,0,32,0" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource KbComboBoxItem}" />
+            <Setter Property="ItemTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border x:Name="ComboShell"
+                                    CornerRadius="7"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" />
+                            <ToggleButton Style="{StaticResource KbComboToggle}"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press" />
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding ItemTemplate}"
+                                              IsHitTestVisible="False" />
+                            <Path Data="M0,0 L4,4 L8,0 Z"
+                                  Fill="{DynamicResource ImmersiveTextMuted}"
+                                  Width="8"
+                                  Height="5"
+                                  Stretch="Fill"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,12,0"
+                                  IsHitTestVisible="False" />
+                            <Popup Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   PopupAnimation="Fade">
+                                <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Margin="0,4,0,0"
+                                        CornerRadius="8"
+                                        Background="{StaticResource KbFieldBrush}"
+                                        BorderBrush="{StaticResource KbFieldBorderBrush}"
+                                        BorderThickness="1"
+                                        Padding="2">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ComboShell"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveFocusRing}" />
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="ComboShell"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveFocusRing}" />
+                                <Setter TargetName="ComboShell"
+                                        Property="Background"
+                                        Value="{StaticResource KbFieldBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbPrimaryButton"
+               TargetType="Button"
+               BasedOn="{StaticResource ImmersiveFilterButton}">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="MinWidth" Value="88" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="KbSecondaryButton"
+               TargetType="Button">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="MinWidth" Value="72" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveAccentBlue}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="7"
+                                Background="{DynamicResource ImmersiveAccentBlueLight}"
+                                BorderBrush="{DynamicResource ImmersiveAccentBlueBorder}"
+                                BorderThickness="1"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Btn" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbGhostButton"
+               TargetType="Button">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextMuted}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="6"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource SchemeColor_33FFFFFF}" />
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource ImmersiveTextPrimary}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbTagChip"
+               TargetType="ToggleButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextMuted}" />
+            <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ImmersiveInputBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Chip"
+                                CornerRadius="14"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Chip"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueLight}" />
+                                <Setter TargetName="Chip"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource ImmersiveAccentBlue}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chip"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveFocusRing}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbDropZone"
+               TargetType="Border">
+            <Setter Property="MinHeight" Value="72" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="{StaticResource KbDropZoneFillBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource KbDropZoneBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+        </Style>
+
+        <Style x:Key="KbDangerButton"
+               TargetType="Button"
+               BasedOn="{StaticResource KbGhostButton}">
+            <Setter Property="Foreground" Value="{StaticResource KbDangerForegroundBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="6"
+                                Background="{DynamicResource TransparentBrush}"
+                                BorderBrush="{StaticResource KbDangerForegroundBrush}"
+                                BorderThickness="1"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource KbDangerHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbCardRowButton"
+               TargetType="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Row"
+                                CornerRadius="8"
+                                Padding="10,8"
+                                Background="{DynamicResource TransparentBrush}"
+                                BorderBrush="{DynamicResource TransparentBrush}"
+                                BorderThickness="1">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Row"
+                                        Property="Background"
+                                        Value="{StaticResource SchemeColor_33FFFFFF}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Row"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueLight}" />
+                                <Setter TargetName="Row"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="KbTagButton"
+               TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource ImmersiveAccentBlue}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="{StaticResource ImmersiveAccentBlueLight}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ImmersiveAccentBlueBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chip"
+                                CornerRadius="14"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chip"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource KbCanvasBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource ThreeShapeHeaderBackgroundColor}"
+                BorderBrush="{DynamicResource LightGrayBorderAndShadowColor}"
+                BorderThickness="0,0,0,1"
+                Padding="8,12,16,12">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="{Binding KnowledgeBaseStatusText}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,14,0"
+                               FontSize="12"
+                               Foreground="{DynamicResource ImmersiveTextMuted}" />
+                    <Button Content="Refresh"
+                            Style="{StaticResource KbSecondaryButton}"
+                            Command="{Binding KnowledgeBaseRefreshCommand}"
+                            Margin="0,0,8,0" />
+                    <Button Content="New card"
+                            Style="{StaticResource KbPrimaryButton}"
+                            Command="{Binding KnowledgeBaseNewCardCommand}" />
+                </StackPanel>
+                <TextBlock Text="Knowledge Base"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ImmersiveTextPrimary}" />
+            </DockPanel>
+        </Border>
+
+        <!-- Schema warning -->
+        <Border Grid.Row="1"
+                Padding="8,8,16,8"
+                Visibility="{Binding KnowledgeBaseSchemaAvailable, Converter={StaticResource InverseVisibilityConverter}}">
+            <TextBlock Text="{Binding KnowledgeBaseSchemaMessage}"
+                       Foreground="{DynamicResource MarkAsRushButtonColor}"
+                       TextWrapping="Wrap" />
+        </Border>
+
+        <!-- Main content: flat columns, subtle dividers only -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="248" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition MinWidth="280"
+                                   Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition MinWidth="0">
+                    <ColumnDefinition.Style>
+                        <Style TargetType="ColumnDefinition">
+                            <Setter Property="Width"
+                                    Value="0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding KnowledgeBaseDetailPaneVisible}"
+                                             Value="True">
+                                    <Setter Property="MinWidth"
+                                            Value="320" />
+                                    <Setter Property="Width"
+                                            Value="630" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ColumnDefinition.Style>
+                </ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <!-- Filters -->
+            <ScrollViewer Grid.Column="0"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="8,12,12,12">
+                <StackPanel>
+                    <TextBlock Text="Search"
+                               Style="{StaticResource KbSectionLabel}"
+                               Margin="0,0,0,6" />
+                    <TextBox Text="{Binding KnowledgeBaseSearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource KbTextBox}" />
+
+                    <Button Content="Clear filters"
+                            Style="{StaticResource KbGhostButton}"
+                            Command="{Binding KnowledgeBaseClearFiltersCommand}"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,8,0,0" />
+
+                    <TextBlock Text="Category"
+                               Style="{StaticResource KbSectionLabel}" />
+                    <ComboBox ItemsSource="{Binding KnowledgeBaseCategories}"
+                              SelectedItem="{Binding KnowledgeBaseFilterCategory}"
+                              Style="{StaticResource KbComboBox}" />
+
+                    <TextBlock Text="Tags"
+                               Style="{StaticResource KbSectionLabel}" />
+                    <ItemsControl ItemsSource="{Binding KnowledgeBaseTagFilters}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Content="{Binding TagName}"
+                                              Style="{StaticResource KbTagChip}"
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Search by image"
+                               Style="{StaticResource KbSectionLabel}" />
+                    <Border Style="{StaticResource KbDropZone}"
+                            AllowDrop="True"
+                            Drop="VisionSearchDropZone_Drop"
+                            PreviewDragOver="VisionSearchDropZone_PreviewDragOver">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="8">
+                            <Image Width="48"
+                                   Height="48"
+                                   Opacity="0.85"
+                                   Source="{Binding KnowledgeBaseSearchImageBytes, Converter={StaticResource ByteArrayToImageConverter}}" />
+                            <TextBlock Text="Drop photo here"
+                                       FontSize="11"
+                                       Margin="0,6,0,0"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
+                        </StackPanel>
+                    </Border>
+                    <Button Content="Find matching entries"
+                            Style="{StaticResource KbPrimaryButton}"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Stretch"
+                            Command="{Binding KnowledgeBaseSearchByImageCommand}"
+                            IsEnabled="{Binding KnowledgeBaseVisionSearchRunning, Converter={StaticResource InverseBoolConverter}}" />
+
+                    <ItemsControl ItemsSource="{Binding KnowledgeBaseVisionResults}"
+                                  Margin="0,10,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="6"
+                                        Padding="8,6"
+                                        Margin="0,0,0,4"
+                                        Background="{StaticResource KbFieldBrush}"
+                                        BorderBrush="{StaticResource KbFieldBorderBrush}"
+                                        BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                                        <TextBlock Text="{Binding Reason}"
+                                                   FontSize="11"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Rectangle Grid.Column="1"
+                       Width="1"
+                       Margin="0,16"
+                       Fill="{DynamicResource ImmersiveGlassBorder}"
+                       Opacity="0.45" />
+
+            <!-- Card list -->
+            <DockPanel Grid.Column="2"
+                       Margin="0,12,0,12">
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Entries"
+                           Style="{StaticResource KbSectionLabel}"
+                           Margin="8,0,8,8" />
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Select an entry to view its details."
+                           FontSize="12"
+                           FontStyle="Italic"
+                           Foreground="{DynamicResource ImmersiveTextMuted}"
+                           Margin="8,0,8,12"
+                           Visibility="{Binding KnowledgeBaseDetailPaneVisible, Converter={StaticResource InverseVisibilityConverter}}" />
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Margin="4,0,4,0">
+                    <ItemsControl ItemsSource="{Binding KnowledgeBaseCards}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding DataContext.KnowledgeBaseSelectCardCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource KbCardRowButton}">
+                                    <DockPanel LastChildFill="True">
+                                        <Border DockPanel.Dock="Left"
+                                                Width="52"
+                                                Height="52"
+                                                CornerRadius="6"
+                                                Margin="0,0,10,0"
+                                                Background="{StaticResource KbFieldBrush}"
+                                                BorderBrush="{StaticResource KbFieldBorderBrush}"
+                                                BorderThickness="1">
+                                            <Image Source="{Binding ThumbnailData, Converter={StaticResource ByteArrayToImageConverter}}"
+                                                   Stretch="Uniform"
+                                                   Margin="4" />
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="13"
+                                                       Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                                            <TextBlock Text="{Binding CategoryName}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource ImmersiveAccentBlue}" />
+                                            <TextBlock Text="{Binding BodyPreview}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxHeight="32"
+                                                       TextWrapping="Wrap"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                            <TextBlock Text="{Binding TagsDisplay}"
+                                                       FontSize="10"
+                                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+
+            <Rectangle Grid.Column="3"
+                       Width="1"
+                       Margin="0,16"
+                       Fill="{DynamicResource ImmersiveGlassBorder}"
+                       Opacity="0.45"
+                       Visibility="{Binding KnowledgeBaseDetailPaneVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+            <!-- Detail pane: view or edit -->
+            <ScrollViewer Grid.Column="4"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="8,12,16,12"
+                          Visibility="{Binding KnowledgeBaseDetailPaneVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,14">
+                        <StackPanel DockPanel.Dock="Right"
+                                    Orientation="Horizontal">
+                            <Button Content="Edit"
+                                    Style="{StaticResource KbSecondaryButton}"
+                                    Command="{Binding KnowledgeBaseEditCardCommand}"
+                                    Margin="0,0,8,0"
+                                    Visibility="{Binding KnowledgeBaseIsViewMode, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <Button Content="Done"
+                                    Style="{StaticResource KbPrimaryButton}"
+                                    Command="{Binding KnowledgeBaseCloseDetailCommand}"
+                                    Margin="0,0,8,0"
+                                    Visibility="{Binding KnowledgeBaseIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <Button Content="Close"
+                                    Style="{StaticResource KbGhostButton}"
+                                    Command="{Binding KnowledgeBaseCloseDetailCommand}"
+                                    Visibility="{Binding KnowledgeBaseIsViewMode, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding KnowledgeBaseDetailPaneTitle}"
+                                   FontSize="17"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                    </DockPanel>
+
+                    <TextBlock Text="Title"
+                               Style="{StaticResource KbSectionLabel}"
+                               Margin="0,0,0,6" />
+                    <TextBox Text="{Binding KnowledgeBaseEditorTitle, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource KbTextBox}"
+                             IsReadOnly="{Binding KnowledgeBaseIsViewMode}" />
+
+                    <TextBlock Text="Category"
+                               Style="{StaticResource KbSectionLabel}" />
+                    <TextBox Text="{Binding KnowledgeBaseEditorCategoryName, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource KbTextBox}"
+                             IsReadOnly="{Binding KnowledgeBaseIsViewMode}" />
+
+                    <TextBlock Text="Notes"
+                               Style="{StaticResource KbSectionLabel}" />
+                    <TextBox Text="{Binding KnowledgeBaseEditorBody, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource KbMultilineTextBox}"
+                             IsReadOnly="{Binding KnowledgeBaseIsViewMode}" />
+
+                    <TextBlock Text="Weblinks"
+                               Style="{StaticResource KbSectionLabel}" />
+                    <ItemsControl ItemsSource="{Binding KnowledgeBaseEditorLinks}"
+                                  Margin="0,0,0,4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource KbTextBox}"
+                                             IsReadOnly="{Binding DataContext.KnowledgeBaseIsViewMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             LostFocus="LinkEditor_LostFocus"
+                                             Margin="0,0,6,0" />
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding Url, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource KbTextBox}"
+                                             IsReadOnly="{Binding DataContext.KnowledgeBaseIsViewMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             LostFocus="LinkEditor_LostFocus"
+                                             Margin="0,0,6,0" />
+                                    <Button Grid.Column="2"
+                                            Content="Remove"
+                                            Style="{StaticResource KbGhostButton}"
+                                            Command="{Binding DataContext.KnowledgeBaseRemoveLinkCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding DataContext.KnowledgeBaseIsEditMode, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="Add link"
+                            Style="{StaticResource KbSecondaryButton}"
+                            Command="{Binding KnowledgeBaseAddLinkCommand}"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,4"
+                            Visibility="{Binding KnowledgeBaseIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                    <TextBlock Text="Images"
+                               Style="{StaticResource KbSectionLabel}" />
+                    <Border Style="{StaticResource KbDropZone}"
+                            AllowDrop="True"
+                            Drop="EditorImageDropZone_Drop"
+                            PreviewDragOver="EditorImageDropZone_PreviewDragOver"
+                            Visibility="{Binding KnowledgeBaseIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="Drop images here to attach"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource ImmersiveTextMuted}" />
+                    </Border>
+                    <ItemsControl ItemsSource="{Binding KnowledgeBaseEditorImages}"
+                                  Margin="0,8,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,8,8"
+                                        CornerRadius="6"
+                                        BorderBrush="{StaticResource KbFieldBorderBrush}"
+                                        BorderThickness="1"
+                                        Background="{StaticResource KbFieldBrush}">
+                                    <Image Width="88"
+                                           Height="88"
+                                           Margin="4"
+                                           Source="{Binding ThumbnailData, Converter={StaticResource ByteArrayToImageConverter}}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Tags"
+                               Style="{StaticResource KbSectionLabel}" />
+                    <ItemsControl ItemsSource="{Binding KnowledgeBaseEditorTags}"
+                                  Visibility="{Binding KnowledgeBaseIsViewMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,6,6"
+                                        Padding="10,5"
+                                        CornerRadius="14"
+                                        Background="{StaticResource ImmersiveAccentBlueLight}"
+                                        BorderBrush="{StaticResource ImmersiveAccentBlueBorder}"
+                                        BorderThickness="1">
+                                    <TextBlock Text="{Binding}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ImmersiveAccentBlue}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding KnowledgeBaseEditorTags}"
+                                  Visibility="{Binding KnowledgeBaseIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding}"
+                                        Style="{StaticResource KbTagButton}"
+                                        Command="{Binding DataContext.KnowledgeBaseRemoveTagCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <DockPanel Margin="0,4,0,0"
+                               Visibility="{Binding KnowledgeBaseIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button DockPanel.Dock="Right"
+                                Content="Add"
+                                Style="{StaticResource KbSecondaryButton}"
+                                Command="{Binding KnowledgeBaseAddTagCommand}"
+                                Margin="8,0,0,0" />
+                        <TextBox Text="{Binding KnowledgeBaseNewTagText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource KbTextBox}" />
+                    </DockPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,16,0,0"
+                                Visibility="{Binding KnowledgeBaseIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Content="Preview backup"
+                                Style="{StaticResource KbGhostButton}"
+                                Command="{Binding KnowledgeBasePreviewBackupCommand}"
+                                Visibility="{Binding KnowledgeBaseHasBackup, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,0,8,0" />
+                        <Button Content="Restore backup"
+                                Style="{StaticResource KbGhostButton}"
+                                Command="{Binding KnowledgeBaseRestoreBackupCommand}"
+                                Visibility="{Binding KnowledgeBaseHasBackup, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,0,8,0" />
+                        <Button Content="Delete card"
+                                Style="{StaticResource KbDangerButton}"
+                                Command="{Binding KnowledgeBaseDeleteCardCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

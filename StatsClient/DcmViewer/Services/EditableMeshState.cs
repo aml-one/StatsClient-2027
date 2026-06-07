@@ -1,5 +1,7 @@
 using System.Windows.Media.Media3D;
+using HelixToolkit.Maths;
 using HelixToolkit.Wpf.SharpDX;
+using Color4 = HelixToolkit.Maths.Color4;
 
 namespace DCMViewer.Services;
 
@@ -10,6 +12,7 @@ internal sealed class EditableMeshState
     private readonly int[] _triangleIndices;
     private readonly List<int>[] _neighbors;
     private readonly Vector3D[] _vertexNormals;
+    private Color4[]? _vertexColors;
 
     public EditableMeshState(MeshSnapshot snapshot)
     {
@@ -198,10 +201,48 @@ internal sealed class EditableMeshState
         return changed;
     }
 
+    public void SetVertexColors(Color4[]? colors)
+    {
+        if (colors is not null && colors.Length != _positions.Length)
+        {
+            throw new ArgumentException("Vertex color count must match vertex count.", nameof(colors));
+        }
+
+        _vertexColors = colors;
+    }
+
+    public void FairVertices(
+        IReadOnlyCollection<int> targetVertices,
+        int passes = 2,
+        double lambda = 0.35,
+        int expandRings = 1)
+    {
+        if (targetVertices.Count == 0)
+        {
+            return;
+        }
+
+        StatsDesignMeshSmoothing.LaplacianFair(
+            _positions,
+            _triangleIndices,
+            targetVertices,
+            passes,
+            lambda,
+            expandRings);
+        RecomputeVertexNormals();
+        InvalidateBrushQueryCache();
+    }
+
+    public void FairChangedVertices(Point3D[] before, Point3D[] after, int passes = 2, double lambda = 0.35)
+    {
+        var changed = StatsDesignMeshSmoothing.CollectChangedVertices(before, after);
+        FairVertices(changed, passes, lambda, expandRings: 1);
+    }
+
     public void PushToModel(MeshGeometryModel3D model)
     {
         ArgumentNullException.ThrowIfNull(model);
-        model.Geometry = SharpDxMeshFactory.CreateGeometry(ToSnapshot());
+        model.Geometry = SharpDxMeshFactory.CreateGeometry(ToSnapshot(), _vertexColors);
     }
 
     public Vector3D GetNearestSurfaceNormal(Point3D point)

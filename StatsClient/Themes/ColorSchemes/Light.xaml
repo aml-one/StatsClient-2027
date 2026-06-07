@@ -114,6 +114,8 @@
 
     <!-- #region Action buttons -->
     <SolidColorBrush x:Key="ShowRxButtonColor">#C6BE13</SolidColorBrush>
+    <SolidColorBrush x:Key="ShowRxButtonForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="ShowRxButtonBorder">#888888</SolidColorBrush>
     <SolidColorBrush x:Key="GrabANumberButtonColor">#56795F</SolidColorBrush>
     <SolidColorBrush x:Key="MarkAsRushButtonColor">#76595F</SolidColorBrush>
     <SolidColorBrush x:Key="AddSendToLineButtonColor">#96995F</SolidColorBrush>
@@ -121,6 +123,19 @@
     <!-- #endregion -->
 
     <!-- #region RX / prescription -->
+    <SolidColorBrush x:Key="PanNumberLabelForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerPageBackground" Color="{StaticResource WindowBackgroundColor}" />
+    <SolidColorBrush x:Key="RxMakerPanelBackground">#E8EAED</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerPanelBorder">#999999</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerSectionHeaderBackground">#666674</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerSectionHeaderForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerLabelForeground">#555555</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerValueForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerCountForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerInputBackground">#EFE7C9</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerInputForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerInputBorder">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerOrdersListBackground">#EEFFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="RXEventsTitle">#667466</SolidColorBrush>
     <SolidColorBrush x:Key="RXLogTitleBackground">#666674</SolidColorBrush>
     <!-- #endregion -->
@@ -259,6 +274,10 @@
     <SolidColorBrush x:Key="FooterSearchBorder">#888888</SolidColorBrush>
     <SolidColorBrush x:Key="FooterSearchBorderHover">#FF3C77DD</SolidColorBrush>
     <SolidColorBrush x:Key="FooterSearchWatermarkForeground">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterModuleShortcutBackground">#F1F5F9</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterModuleShortcutBorder">#CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterModuleShortcutHoverBackground">#E0F2FE</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterModuleShortcutHoverBorder">#7DD3FC</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region Converters -->
@@ -410,10 +429,18 @@
     <Color x:Key="MessageBoxHeaderGradientStart">#C6C9CF</Color>
     <Color x:Key="MessageBoxHeaderGradientEnd">#B6B9BF</Color>
     <SolidColorBrush x:Key="MessageBoxTitleBorder">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxTitleForeground">#111111</SolidColorBrush>
     <SolidColorBrush x:Key="MessageBoxBodyForeground">#000000</SolidColorBrush>
     <SolidColorBrush x:Key="MessageBoxSubtitleForeground">#333333</SolidColorBrush>
     <SolidColorBrush x:Key="MessageBoxHintForeground">#777777</SolidColorBrush>
     <SolidColorBrush x:Key="MessageBoxBodyFill">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxBorderBrush">#333333</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxAccentColor">#04C100</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonPrimaryBackground">#EFE7C9</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonPrimaryForeground">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonSecondaryBackground">#46494F</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonSecondaryForeground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonBorderBrush">#333333</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region Popup / menu -->
@@ -567,6 +594,8 @@
     <SolidColorBrush x:Key="OrderInfoToolbarValueForeground">#000000</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoToolbarAddScanForeground">#1F9D49</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoToolbarRefreshForeground">#2A6AA3</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoWatchListEyeInactive">#5C5C5C</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoWatchListEyeActive">#A68B2A</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameAccent">#65a7b5</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameCommentAccent">#32a89e</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameDivider">#CCCCCC</SolidColorBrush>
@@ -591,6 +620,7 @@
     <SolidColorBrush x:Key="OrderRenameConfirmButtonBorder">#86EFAC</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesTitleForeground">#1E293B</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesSectionLabelForeground">#334155</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesHintForeground">#6D4702</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesFilterNoteForeground">#B45309</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesRefreshButtonBackground">#D7DDD4</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesRefreshButtonForeground">#1E293B</SolidColorBrush>
@@ -1446,6 +1476,14 @@
     <Color x:Key="MessageBoxHintForeground_Cl">#777777</Color>
     <Color x:Key="MessageBoxSubtitleForeground_Cl">#333333</Color>
     <Color x:Key="MessageBoxTitleBorder_Cl">#666666</Color>
+    <Color x:Key="MessageBoxTitleForeground_Cl">#111111</Color>
+    <Color x:Key="MessageBoxBorderBrush_Cl">#333333</Color>
+    <Color x:Key="MessageBoxAccentColor_Cl">#04C100</Color>
+    <Color x:Key="MessageBoxButtonPrimaryBackground_Cl">#EFE7C9</Color>
+    <Color x:Key="MessageBoxButtonPrimaryForeground_Cl">#111111</Color>
+    <Color x:Key="MessageBoxButtonSecondaryBackground_Cl">#46494F</Color>
+    <Color x:Key="MessageBoxButtonSecondaryForeground_Cl">#FFFFFF</Color>
+    <Color x:Key="MessageBoxButtonBorderBrush_Cl">#333333</Color>
     <Color x:Key="ModalBodyForeground_Cl">#46627A</Color>
     <Color x:Key="ModalCardBackground_Cl">#E6F8FAFD</Color>
     <Color x:Key="ModalCardBorderLight_Cl">#88B8C6D5</Color>
@@ -1528,6 +1566,8 @@
     <Color x:Key="SettingsSideTabSelectedForeground_Cl">#F1F5F9</Color>
     <Color x:Key="SettingsTabHeaderBackground_Cl">#66696F</Color>
     <Color x:Key="ShowRxButtonColor_Cl">#C6BE13</Color>
+    <Color x:Key="ShowRxButtonForeground_Cl">#111111</Color>
+    <Color x:Key="ShowRxButtonBorder_Cl">#888888</Color>
     <Color x:Key="SplashAccentBlueLight_Cl">#38BDF8</Color>
     <Color x:Key="SplashAccentBlue_Cl">#0369A1</Color>
     <Color x:Key="SplashBackground_Cl">#EEEEEE</Color>

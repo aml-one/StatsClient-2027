@@ -434,7 +434,8 @@
                             <ContentPresenter x:Name="MyContentPresenter"
                                               Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -466,7 +467,7 @@
                 <Setter Property="Background"
                         Value="{StaticResource VitaButtonAccentGold}" />
                 <Setter Property="Foreground"
-                        Value="{StaticResource BlackColor}" />
+                        Value="{StaticResource ShadeButtonForeground}" />
                 <Setter Property="BorderBrush"
                         Value="{StaticResource NamedYellow}" />
                 
@@ -2504,6 +2505,59 @@
         </Style.Triggers>
     </Style>
     <!--#endregion SHADE BUTTON STYLES -->
+
+
+    <Style TargetType="Button"
+           x:Key="FooterModuleShortcutButton">
+        <Setter Property="Width"
+                Value="54" />
+        <Setter Property="Height"
+                Value="54" />
+        <Setter Property="Margin"
+                Value="4,0" />
+        <Setter Property="Padding"
+                Value="0" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="Background"
+                Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="OverridesDefaultStyle"
+                Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="card"
+                            Background="{DynamicResource FooterModuleShortcutBackground}"
+                            BorderBrush="{DynamicResource FooterModuleShortcutBorder}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="card"
+                                    Property="Background"
+                                    Value="{StaticResource FooterModuleShortcutHoverBackground}" />
+                            <Setter TargetName="card"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource FooterModuleShortcutHoverBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="card"
+                                    Property="Opacity"
+                                    Value="0.88" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     
 
     <Style x:Key="HealthReportListView"

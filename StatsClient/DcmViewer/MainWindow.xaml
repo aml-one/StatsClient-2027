@@ -912,6 +912,13 @@
                                         Thickness="1.2"
                                         Color="{DynamicResource ViewerSectionPlaneColor}" />
 
+                <hx:LineGeometryModel3D x:Name="CutPlaneIntersectionVisual"
+                                        Visibility="Collapsed"
+                                        Thickness="2.8"
+                                        Color="#FFE82E2E"
+                                        IsHitTestVisible="False"
+                                        RenderOrder="2700" />
+
                 <hx:LineGeometryModel3D x:Name="MeasurementLine"
                                         Visibility="Collapsed"
                                         Thickness="2.4"
@@ -926,6 +933,24 @@
                                         Color="{DynamicResource ViewerHighlightColor}"
                                         IsHitTestVisible="False"
                                         RenderOrder="2600" />
+                <hx:LineGeometryModel3D x:Name="MarginLineHaloInnerVisual"
+                                        Visibility="Collapsed"
+                                        Thickness="5.0"
+                                        Color="{DynamicResource ViewerMeasurementColorDark}"
+                                        IsHitTestVisible="False"
+                                        RenderOrder="2640" />
+                <hx:LineGeometryModel3D x:Name="MarginLineHaloOuterVisual"
+                                        Visibility="Collapsed"
+                                        Thickness="5.0"
+                                        Color="{DynamicResource ViewerMeasurementColorDark}"
+                                        IsHitTestVisible="False"
+                                        RenderOrder="2645" />
+                <hx:LineGeometryModel3D x:Name="MarginLineVisual"
+                                        Visibility="Collapsed"
+                                        Thickness="3.0"
+                                        Color="{DynamicResource ViewerMeasurementColor}"
+                                        IsHitTestVisible="False"
+                                        RenderOrder="2650" />
             </hx:Viewport3DX>
 
 
@@ -1273,7 +1298,8 @@
 
 
                 <!-- Top-right icon buttons and section offset slider -->
-                <StackPanel Grid.Column="1">
+                <StackPanel x:Name="DesignHostExportMergePanel"
+                            Grid.Column="1">
                     <Button Style="{StaticResource IconButton}"
                             ToolTip="Export visible scans as separate STL files"
                             Command="{Binding ExportSeparatedMeshesCommand}">
@@ -1385,6 +1411,262 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Design edit tools — same floating slot as the old sculpt panel (left of toolbar) -->
+            <Border x:Name="DesignEditToolsPanel"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,8,58,0"
+                    Width="190"
+                    Padding="10,8"
+                    Background="{DynamicResource GlassPanelBackground}"
+                    BorderBrush="{DynamicResource GlassPanelBorder}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Panel.ZIndex="27"
+                    Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              MaxHeight="520">
+                    <StackPanel>
+                        <TextBlock Text="Design edit"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ViewerInfoPanelTitleForeground}"
+                                   Margin="0,0,0,4" />
+                        <TextBlock Text="Local edits only. DCM files are not modified."
+                                   TextWrapping="Wrap"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource ViewerMenuForeground}"
+                                   Margin="0,0,0,10" />
+
+                        <TextBlock Text="Sculpt"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ViewerInfoPanelTitleForeground}"
+                                   Margin="0,0,0,6">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCutPlaneMode}"
+                                                     Value="True">
+                                            <Setter Property="Opacity" Value="0.45" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <StackPanel Margin="0,0,0,10">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCutPlaneMode}"
+                                                     Value="True">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <UniformGrid Columns="4"
+                                           Margin="0,0,0,8">
+                                <Button Command="{Binding SelectSculptToolCommand}"
+                                        CommandParameter="Add"
+                                        ToolTip="Add material"
+                                        Margin="0,0,4,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button"
+                                               BasedOn="{StaticResource SculptToolSelectButton}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SculptToolName}"
+                                                             Value="Add">
+                                                    <Setter Property="Background"
+                                                            Value="{StaticResource SemanticLinkHoverBackground}" />
+                                                    <Setter Property="BorderBrush"
+                                                            Value="{StaticResource SemanticLinkColor}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Image Source="/DcmViewer/Images/add.png"
+                                           Width="22"
+                                           Height="22"
+                                           Stretch="Uniform" />
+                                </Button>
+                                <Button Command="{Binding SelectSculptToolCommand}"
+                                        CommandParameter="Remove"
+                                        ToolTip="Remove material"
+                                        Margin="0,0,4,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button"
+                                               BasedOn="{StaticResource SculptToolSelectButton}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SculptToolName}"
+                                                             Value="Remove">
+                                                    <Setter Property="Background"
+                                                            Value="{StaticResource SemanticLinkHoverBackground}" />
+                                                    <Setter Property="BorderBrush"
+                                                            Value="{StaticResource SemanticLinkColor}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Image Source="/DcmViewer/Images/remove.png"
+                                           Width="22"
+                                           Height="22"
+                                           Stretch="Uniform" />
+                                </Button>
+                                <Button Command="{Binding SelectSculptToolCommand}"
+                                        CommandParameter="Smooth"
+                                        ToolTip="Smooth surface"
+                                        Margin="0,0,4,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button"
+                                               BasedOn="{StaticResource SculptToolSelectButton}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SculptToolName}"
+                                                             Value="Smooth">
+                                                    <Setter Property="Background"
+                                                            Value="{StaticResource SemanticLinkHoverBackground}" />
+                                                    <Setter Property="BorderBrush"
+                                                            Value="{StaticResource SemanticLinkColor}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Image Source="/DcmViewer/Images/smooth.png"
+                                           Width="22"
+                                           Height="22"
+                                           Stretch="Uniform" />
+                                </Button>
+                                <Button Command="{Binding SelectSculptToolCommand}"
+                                        CommandParameter="Grab"
+                                        ToolTip="Grab / move"
+                                        Margin="0">
+                                    <Button.Style>
+                                        <Style TargetType="Button"
+                                               BasedOn="{StaticResource SculptToolSelectButton}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SculptToolName}"
+                                                             Value="Grab">
+                                                    <Setter Property="Background"
+                                                            Value="{StaticResource SemanticLinkHoverBackground}" />
+                                                    <Setter Property="BorderBrush"
+                                                            Value="{StaticResource SemanticLinkColor}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Image Source="/DcmViewer/Images/grab_move.png"
+                                           Width="22"
+                                           Height="22"
+                                           Stretch="Uniform" />
+                                </Button>
+                            </UniformGrid>
+                            <Slider Style="{StaticResource SculptKnobSlider}"
+                                    Tag="/DcmViewer/Images/radius_icon.png"
+                                    Minimum="0.20"
+                                    Maximum="3"
+                                    Value="{Binding SculptBrushRadiusMm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TickFrequency="0.05"
+                                    IsSnapToTickEnabled="False"
+                                    Margin="0,0,0,2" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource ViewerMenuForeground}"
+                                       Margin="0,0,0,6"
+                                       Text="{Binding SculptBrushRadiusMm, StringFormat={}{0:0.00} mm}" />
+                            <Slider Style="{StaticResource SculptKnobSlider}"
+                                    Tag="/DcmViewer/Images/amplitude_icon.png"
+                                    Minimum="0.05"
+                                    Maximum="1"
+                                    Value="{Binding SculptBrushStrength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TickFrequency="0.05"
+                                    IsSnapToTickEnabled="False"
+                                    Margin="0,0,0,2" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource ViewerMenuForeground}"
+                                       Text="{Binding SculptBrushStrength, StringFormat={}{0:0.00}}" />
+                        </StackPanel>
+
+                        <Border Height="1"
+                                Background="{DynamicResource GlassPanelBorder}"
+                                Margin="0,0,0,10" />
+
+                        <TextBlock Text="Cut plane"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ViewerInfoPanelTitleForeground}"
+                                   Margin="0,0,0,6" />
+                        <Button Content="Cut plane tool"
+                                Command="{Binding ToggleCutPlaneModeCommand}"
+                                Padding="8,4"
+                                Margin="0,0,0,6"
+                                HorizontalContentAlignment="Center">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="FontWeight" Value="Normal" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCutPlaneMode}"
+                                                     Value="True">
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                            <Setter Property="Background"
+                                                    Value="{StaticResource SemanticLinkHoverBackground}" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="{StaticResource SemanticLinkColor}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Slider x:Name="CutPlaneOffsetSlider"
+                                Style="{StaticResource SectionHeaderSlider}"
+                                Minimum="-1"
+                                Maximum="1"
+                                Value="{Binding CutPlaneOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TickFrequency="0.1"
+                                Visibility="Collapsed"
+                                ToolTip="Cut plane offset"
+                                Margin="0,0,0,8"
+                                PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
+                        <UniformGrid Columns="2"
+                                     Margin="0,0,0,10">
+                            <Button Content="Flip side"
+                                    Command="{Binding FlipCutPlaneSideCommand}"
+                                    Margin="0,0,4,0"
+                                    Padding="8,4" />
+                            <Button Content="Apply cut"
+                                    Command="{Binding ApplyCutPlaneCommand}"
+                                    Margin="0"
+                                    Padding="8,4"
+                                    FontWeight="SemiBold" />
+                        </UniformGrid>
+
+                        <Border Height="1"
+                                Background="{DynamicResource GlassPanelBorder}"
+                                Margin="0,0,0,8" />
+
+                        <UniformGrid Columns="2"
+                                     Margin="0,0,0,8">
+                            <Button Content="Undo"
+                                    Command="{Binding UndoDesignEditCommand}"
+                                    Margin="0,0,4,0"
+                                    Padding="8,4"
+                                    ToolTip="Undo (Ctrl+Z)" />
+                            <Button Content="Redo"
+                                    Command="{Binding RedoDesignEditCommand}"
+                                    Margin="0"
+                                    Padding="8,4"
+                                    ToolTip="Redo (Ctrl+Y)" />
+                        </UniformGrid>
+                        <Button Content="Save STL"
+                                Command="{Binding SaveDesignEditStlCommand}"
+                                Padding="8,5"
+                                FontWeight="SemiBold"
+                                ToolTip="Export to StatsDesignEdit/Exports — DCM untouched." />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
             <Border x:Name="SectionProfilePanel"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
@@ -1495,7 +1777,7 @@
 
 
 
-            <!-- Sculpt tool panel (top-right; replaces Order Info "Last touched by" while active) -->
+            <!-- Sculpt tool panel (standalone viewer / non–design-edit sculpt) -->
             <Border x:Name="SculptToolPanel"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
@@ -1667,11 +1949,22 @@
                                    Height="22"
                                    Stretch="Uniform" />
                         </Button>
-                        <Button Style="{StaticResource SculptPanelIconButton}"
-                                Command="{Binding SaveSculptedDcmCommand}"
+                        <Button Command="{Binding SaveSculptedDcmCommand}"
                                 IsEnabled="{Binding CanSaveSculptedDcm}"
                                 ToolTip="Save sculpted geometry to DCM (.dcm.bak backup)"
                                 Margin="0">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource SculptPanelIconButton}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDesignEditMode}"
+                                                     Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <Image Source="/DcmViewer/Images/save.png"
                                    Width="22"
                                    Height="22"

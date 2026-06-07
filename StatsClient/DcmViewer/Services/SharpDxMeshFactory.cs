@@ -5,13 +5,14 @@ using HelixToolkit.SharpDX;
 using HelixToolkit.Wpf.SharpDX;
 using System.Numerics;
 using System.Windows.Media.Media3D;
+using Color4 = HelixToolkit.Maths.Color4;
 using SharpDxMeshGeometry3D = HelixToolkit.SharpDX.MeshGeometry3D;
 
 namespace DCMViewer.Services;
 
 internal static class SharpDxMeshFactory
 {
-    public static SharpDxMeshGeometry3D CreateGeometry(MeshSnapshot snapshot)
+    public static SharpDxMeshGeometry3D CreateGeometry(MeshSnapshot snapshot, Color4[]? vertexColors = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
 
@@ -29,12 +30,29 @@ internal static class SharpDxMeshFactory
 
         var normals = new Vector3Collection(MeshGeometryHelper.CalculateNormals(positions, indices));
 
-        return new SharpDxMeshGeometry3D
+        var geometry = new SharpDxMeshGeometry3D
         {
             Positions = positions,
             Indices = indices,
             Normals = normals
         };
+
+        if (vertexColors is not null && vertexColors.Length == snapshot.Positions.Length)
+        {
+            var colors = new Color4Collection(vertexColors.Length);
+            foreach (var color in vertexColors)
+            {
+                colors.Add(color);
+            }
+
+            geometry.Colors = colors;
+        }
+        else
+        {
+            geometry.Colors = null;
+        }
+
+        return geometry;
     }
 
     public static LineGeometry3D CreateLineGeometry(IReadOnlyList<Vector3> points)

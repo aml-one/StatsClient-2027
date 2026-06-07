@@ -26,6 +26,7 @@ public partial class DcmViewerCanvasComponent : UserControl
     private UIElement? _hostedContent;
     private List<DCMFileItem>? _pendingCaseFiles;
     private string? _pendingOrderFolderPath;
+    private string? _pendingDesignOrderId;
 
     private static ImageSource? TryCreateDefaultLogoSource()
     {
@@ -95,6 +96,13 @@ public partial class DcmViewerCanvasComponent : UserControl
             typeof(DcmViewerCanvasComponent),
             new PropertyMetadata(true));
 
+    public static readonly DependencyProperty HostModeProperty =
+        DependencyProperty.Register(
+            nameof(HostMode),
+            typeof(ViewerHostMode),
+            typeof(DcmViewerCanvasComponent),
+            new PropertyMetadata(ViewerHostMode.Standard));
+
     public static readonly DependencyProperty IsLogoVisibleProperty =
         DependencyProperty.Register(
             nameof(IsLogoVisible),
@@ -149,6 +157,14 @@ public partial class DcmViewerCanvasComponent : UserControl
 
     /// <summary>DCM viewer view model when hosted with <see cref="UseFullAppShell"/>.</summary>
     public MainViewModel? ViewerViewModel => _embeddedWindow?.ViewModel;
+
+    public void ClearDesignMargin()
+    {
+        ViewerViewModel?.ClearMargin();
+        _embeddedWindow?.RefreshMarginLineVisual();
+    }
+
+    public void EnsureViewportHealth() => _embeddedWindow?.EnsureEmbeddedViewportHealth();
 
     /// <summary>True while the embedded viewer cross-section tool is active.</summary>
     public bool IsSectionModeActive => ViewerViewModel?.IsSectionMode == true;
@@ -226,6 +242,13 @@ public partial class DcmViewerCanvasComponent : UserControl
     {
         get => (bool)GetValue(UseFullAppShellProperty);
         set => SetValue(UseFullAppShellProperty, value);
+    }
+
+    /// <summary>Embedded shell layout mode (order info vs stats design).</summary>
+    public ViewerHostMode HostMode
+    {
+        get => (ViewerHostMode)GetValue(HostModeProperty);
+        set => SetValue(HostModeProperty, value);
     }
 
     /// <summary>
@@ -306,13 +329,26 @@ public partial class DcmViewerCanvasComponent : UserControl
         }
 
         _pendingCaseFiles = null;
-        _pendingOrderFolderPath = null;
+        if (HostMode != ViewerHostMode.Design)
+        {
+            _pendingOrderFolderPath = null;
+            _pendingDesignOrderId = null;
+        }
+
         return EnsureEmbeddedWindowLoadedAsync();
     }
 
     public void CancelBusyWork()
     {
         _embeddedWindow?.ViewModel?.CancelBusyWork();
+    }
+
+    public void ConfigureDesignSession(string orderFolderPath, string orderId)
+    {
+        HostMode = ViewerHostMode.Design;
+        _pendingOrderFolderPath = orderFolderPath;
+        _pendingDesignOrderId = orderId;
+        _embeddedWindow?.ConfigureAsDesignHost(orderFolderPath, orderId);
     }
 
     public Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files, string? orderFolderPath = null)
@@ -350,6 +386,9 @@ public partial class DcmViewerCanvasComponent : UserControl
         }));
     }
 
+    public bool TryUndoMarginFromKeyboard() =>
+        _embeddedWindow?.TryUndoMarginFromKeyboard() == true;
+
     public bool TryUndoSculptFromKeyboard() =>
         _embeddedWindow?.TryUndoSculptFromKeyboard() == true;
 
@@ -383,6 +422,7 @@ public partial class DcmViewerCanvasComponent : UserControl
         _embeddedWindow.ShutdownEmbeddedHost();
         _embeddedWindow.Close();
         _embeddedWindow = null;
+        MainViewModel.UiDispatcher = null;
     }
 
     public async Task ReloadCaseFilesAsync(IEnumerable<DCMFileItem> files, string? orderFolderPath = null)
@@ -533,18 +573,46 @@ public partial class DcmViewerCanvasComponent : UserControl
         }
     }
 
+    /// <summary>
+    /// After the viewport is reparented into this control, all viewer UI work must use this
+    /// dispatcher — not the hidden <see cref="MainWindow"/> dispatcher (same thread, different
+    /// dispatcher object, which causes cross-thread access exceptions on the viewport).
+    /// </summary>
+    private void SyncHostUiDispatcher()
+    {
+        if (_embeddedWindow is not null)
+        {
+            _embeddedWindow.SetHostUiDispatcher(Dispatcher);
+        }
+    }
+
+    public Task RunOnHostUiAsync(Func<Task> action) =>
+        _embeddedWindow?.RunOnHostUiAsync(action)
+        ?? Dispatcher.InvokeAsync(action).Task.Unwrap();
+
     private async Task EnsureEmbeddedWindowLoadedCoreAsync()
     {
         if (_embeddedWindow is not null)
         {
             _embeddedWindow.SetCanvasBackgroundTransparent(IsBackgroundTransparent);
-            _embeddedWindow.EnsureEmbeddedHostAppearance();
             if (Content is null && _hostedContent is not null)
             {
                 Content = _hostedContent;
             }
 
+            SyncHostUiDispatcher();
             EnsureViewerDataContext();
+
+            if (HostMode == ViewerHostMode.Design &&
+                !string.IsNullOrWhiteSpace(_pendingOrderFolderPath) &&
+                !string.IsNullOrWhiteSpace(_pendingDesignOrderId))
+            {
+                _embeddedWindow.ConfigureAsDesignHost(_pendingOrderFolderPath, _pendingDesignOrderId);
+            }
+            else
+            {
+                _embeddedWindow.EnsureEmbeddedHostAppearance();
+            }
 
             _embeddedWindow.RestoreEmbeddedInteraction();
 
@@ -558,33 +626,54 @@ public partial class DcmViewerCanvasComponent : UserControl
             return;
         }
 
-        // Do not call Show() — a brief visible window caused a white flash in Order Info.
-        _embeddedWindow = new MainWindow(suppressStartupLoad: true, isEmbeddedHost: true)
+        // Create and reparent on this control's dispatcher so the viewport and host share one dispatcher.
+        await Dispatcher.InvokeAsync(() =>
         {
-            ShowInTaskbar = false,
-            WindowStyle = WindowStyle.None,
-            Visibility = Visibility.Hidden,
-            Width = 0,
-            Height = 0,
-            Left = -32000,
-            Top = -32000
-        };
-        _embeddedWindow.SetCanvasBackgroundTransparent(IsBackgroundTransparent);
+            // Do not call Show() — a brief visible window caused a white flash in Order Info.
+            _embeddedWindow = new MainWindow(suppressStartupLoad: true, isEmbeddedHost: true, hostMode: HostMode)
+            {
+                ShowInTaskbar = false,
+                WindowStyle = WindowStyle.None,
+                Visibility = Visibility.Hidden,
+                Width = 0,
+                Height = 0,
+                Left = -32000,
+                Top = -32000
+            };
+            _embeddedWindow.SetCanvasBackgroundTransparent(IsBackgroundTransparent);
 
-        if (_embeddedWindow.Content is not UIElement hostedContent)
+            if (_embeddedWindow.Content is not UIElement hostedContent)
+            {
+                return;
+            }
+
+            _hostedContent = hostedContent;
+            _embeddedWindow.Content = null;
+            Content = _hostedContent;
+        });
+
+        if (_embeddedWindow is null || _hostedContent is null)
         {
             return;
         }
 
-        _hostedContent = hostedContent;
-        _embeddedWindow.Content = null;
-        Content = _hostedContent;
+        SyncHostUiDispatcher();
         EnsureViewerDataContext();
-        _embeddedWindow.AttachEmbeddedHost();
+        _embeddedWindow.AttachEmbeddedHost(Dispatcher);
 
         await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Loaded);
 
-        _embeddedWindow.EnsureEmbeddedHostAppearance();
+        if (HostMode == ViewerHostMode.Design &&
+            !string.IsNullOrWhiteSpace(_pendingOrderFolderPath) &&
+            !string.IsNullOrWhiteSpace(_pendingDesignOrderId))
+        {
+            _embeddedWindow.ConfigureAsDesignHost(_pendingOrderFolderPath, _pendingDesignOrderId);
+        }
+        else
+        {
+            _embeddedWindow.EnsureEmbeddedHostAppearance();
+        }
+
         _embeddedWindow.RestoreEmbeddedInteraction();
 
         if (_pendingCaseFiles is { Count: > 0 })
@@ -621,10 +710,21 @@ public partial class DcmViewerCanvasComponent : UserControl
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
-        if (UseFullAppShell)
+        if (!UseFullAppShell || DesignerProperties.GetIsInDesignMode(this))
         {
-            ShutdownEmbeddedHost();
+            return;
         }
+
+        // Visual-tree churn (resize, reparent) can fire Unloaded without closing Stats Design — do not tear down the embed.
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
+        {
+            if (IsLoaded)
+            {
+                return;
+            }
+
+            _embeddedWindow?.UnhookCompositionRenderingOnly();
+        });
     }
 
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -636,7 +736,9 @@ public partial class DcmViewerCanvasComponent : UserControl
 
         if (IsVisible)
         {
+            _embeddedWindow.HookCompositionRenderingIfNeeded();
             _embeddedWindow.RestoreEmbeddedInteraction();
+            _embeddedWindow.EnsureEmbeddedViewportHealth();
         }
     }
 

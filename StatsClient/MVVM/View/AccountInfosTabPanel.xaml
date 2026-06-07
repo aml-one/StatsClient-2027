@@ -11,15 +11,24 @@
     <UserControl.Resources>
         <converter:EmptyToHiddenConverter x:Key="EmptyToHiddenConverter" />
 
-        <Style x:Key="AccountInfoSearchBox" TargetType="TextBox">
-            <Setter Property="Height" Value="34" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Background" Value="{DynamicResource ImmersiveInputBackground}" />
-            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextPrimary}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ImmersiveInputBorder}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style x:Key="AccountInfoSearchBox"
+               TargetType="TextBox">
+            <Setter Property="Height"
+                    Value="34" />
+            <Setter Property="FontSize"
+                    Value="14" />
+            <Setter Property="Padding"
+                    Value="12,6" />
+            <Setter Property="Background"
+                    Value="{DynamicResource ImmersiveInputBackground}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource ImmersiveInputBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -33,9 +42,14 @@
                                           VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource ImmersiveFocusRing}" />
-                                <Setter TargetName="Shell" Property="Background" Value="{StaticResource WhiteBackground}" />
+                            <Trigger Property="IsFocused"
+                                     Value="True">
+                                <Setter TargetName="Shell"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveFocusRing}" />
+                                <Setter TargetName="Shell"
+                                        Property="Background"
+                                        Value="{StaticResource WhiteBackground}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -43,14 +57,22 @@
             </Setter>
         </Style>
 
-        <Style x:Key="AccountInfoClearButton" TargetType="Button">
-            <Setter Property="Height" Value="34" />
-            <Setter Property="MinWidth" Value="64" />
-            <Setter Property="Padding" Value="12,0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Foreground" Value="{DynamicResource ImmersiveAccentBlue}" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+        <Style x:Key="AccountInfoClearButton"
+               TargetType="Button">
+            <Setter Property="Height"
+                    Value="34" />
+            <Setter Property="MinWidth"
+                    Value="64" />
+            <Setter Property="Padding"
+                    Value="12,0" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveAccentBlue}" />
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -64,8 +86,11 @@
                                               VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Btn" Property="Background" Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueBorder}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -306,10 +331,14 @@
 
     <Grid ClipToBounds="True">
         <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="{DynamicResource ImmersiveGradientStart_Cl}" Offset="0" />
-                <GradientStop Color="{DynamicResource ImmersiveGradientMid_Cl}" Offset="0.45" />
-                <GradientStop Color="{DynamicResource ImmersiveGradientEnd_Cl}" Offset="1" />
+            <LinearGradientBrush StartPoint="0,0"
+                                 EndPoint="1,1">
+                <GradientStop Color="{DynamicResource ImmersiveGradientStart_Cl}"
+                              Offset="0" />
+                <GradientStop Color="{DynamicResource ImmersiveGradientMid_Cl}"
+                              Offset="0.45" />
+                <GradientStop Color="{DynamicResource ImmersiveGradientEnd_Cl}"
+                              Offset="1" />
             </LinearGradientBrush>
         </Grid.Background>
 
@@ -322,8 +351,10 @@
                  IsHitTestVisible="False">
             <Ellipse.Fill>
                 <RadialGradientBrush>
-                    <GradientStop Color="{DynamicResource SchemeColor_FFC4B5FD_Cl}" Offset="0" />
-                    <GradientStop Color="{DynamicResource SchemeColor_00C4B5FD_Cl}" Offset="1" />
+                    <GradientStop Color="{DynamicResource SchemeColor_FFC4B5FD_Cl}"
+                                  Offset="0" />
+                    <GradientStop Color="{DynamicResource SchemeColor_00C4B5FD_Cl}"
+                                  Offset="1" />
                 </RadialGradientBrush>
             </Ellipse.Fill>
         </Ellipse>
@@ -337,8 +368,10 @@
                  IsHitTestVisible="False">
             <Ellipse.Fill>
                 <RadialGradientBrush>
-                    <GradientStop Color="{DynamicResource ImmersiveOrbCyan_Cl}" Offset="0" />
-                    <GradientStop Color="{DynamicResource ImmersiveOrbCyanTransparent_Cl}" Offset="1" />
+                    <GradientStop Color="{DynamicResource ImmersiveOrbCyan_Cl}"
+                                  Offset="0" />
+                    <GradientStop Color="{DynamicResource ImmersiveOrbCyanTransparent_Cl}"
+                                  Offset="1" />
                 </RadialGradientBrush>
             </Ellipse.Fill>
         </Ellipse>
@@ -379,14 +412,11 @@
                            FontSize="13"
                            Foreground="{DynamicResource ImmersiveTextMuted}"
                            HorizontalAlignment="Left" />
-                <core:OutlinedTextBlock Stroke="{DynamicResource WhiteBackground}"
-                                        StrokePosition="Outside"
-                                        FontSize="30"
-                                        FontWeight="SemiBold"
-                                        Fill="{DynamicResource ImmersiveTextPrimary}"
-                                        StrokeThickness="3"
-                                        Text="Account Infos"
-                                        Margin="0,2,0,0" />
+                <TextBlock FontSize="30"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource ImmersiveTextPrimary}"
+                           Text="Account Infos"
+                           Margin="0,2,0,0" />
             </StackPanel>
 
             <Border Grid.Row="1"

@@ -4,8 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using DCMViewer.Services;
+using HelixToolkit.Maths;
 using HelixToolkit.SharpDX;
 using HelixToolkit.Wpf.SharpDX;
+using Color4 = HelixToolkit.Maths.Color4;
 namespace DCMViewer.ViewModels;
 
 public enum MeshCategory
@@ -21,6 +23,12 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
     /// <summary>Opacity at or above this value uses the opaque render pass.</summary>
     public const double OpaqueOpacityThreshold = 0.999;
 
+    /// <summary>
+    /// Helix blends as (1 - f) * diffuse + f * vertexColor. Keep vertices use the material diffuse so they
+    /// match the unmodified restoration; removal vertices use a red tint at this factor.
+    /// </summary>
+    internal const float CutPlanePreviewBlendFactor = 0.55f;
+
     private MaterialPalette _palette;
     private double _specularIntensity = 1.0;
     private double _specularShininess = 90.0;
@@ -31,6 +39,10 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
     private Point3D[]? _sculptBaselinePositions;
     private MaterialPalette? _savedPalette;
     private string? _savedTextureName;
+    private Color4[]? _contactHeatmapColors;
+    private Color4[]? _thicknessBreachColors;
+    private Color4[]? _cutPlanePreviewColors;
+    private float _vertexColorBlendingFactor;
 
     public LoadedMeshItemViewModel(
         string filePath,
@@ -112,6 +124,8 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
 
     public MeshSnapshot? MeshSnapshot => IsLoadFailed ? null : _editableMesh.ToSnapshot();
 
+    internal EditableMeshState EditableMesh => _editableMesh;
+
     internal Vector3D GetSurfaceNormalNear(Point3D point) => _editableMesh.GetNearestSurfaceNormal(point);
 
     internal Point3D[] BuildSculptBrushRingPoints(Point3D center, Vector3D normal, double radius)
@@ -153,6 +167,7 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
         }
 
         _editableMesh.RestorePositions(positions);
+        ApplyActiveVertexOverlay();
         RefreshGeometryAfterSculpt();
     }
 
@@ -163,8 +178,130 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
             return;
         }
 
+        _cutPlanePreviewColors = null;
+        _vertexColorBlendingFactor = 0f;
         _editableMesh = new EditableMeshState(snapshot);
+        _editableMesh.SetVertexColors(null);
+        ApplyActiveVertexOverlay();
         RefreshGeometryAfterSculpt();
+    }
+
+    internal void ApplyContactHeatmap(Color4[] vertexColors)
+    {
+        if (IsLoadFailed || vertexColors.Length != _editableMesh.VertexCount)
+        {
+            return;
+        }
+
+        _thicknessBreachColors = null;
+        _cutPlanePreviewColors = null;
+        _contactHeatmapColors = vertexColors;
+        _vertexColorBlendingFactor = 1.0f;
+        _editableMesh.SetVertexColors(vertexColors);
+        RefreshGeometryAfterSculpt();
+    }
+
+    internal void ApplyThicknessBreachOverlay(Color4[] vertexColors)
+    {
+        if (IsLoadFailed || vertexColors.Length != _editableMesh.VertexCount)
+        {
+            return;
+        }
+
+        _contactHeatmapColors = null;
+        _cutPlanePreviewColors = null;
+        _thicknessBreachColors = vertexColors;
+        _vertexColorBlendingFactor = 1.0f;
+        _editableMesh.SetVertexColors(vertexColors);
+        RefreshGeometryAfterSculpt();
+    }
+
+    internal Color4 GetMaterialDiffuseColor4() =>
+        _palette.FrontDiffuse.ToColor4(_opacity);
+
+    internal void ApplyCutPlanePreview(Color4[] vertexColors)
+    {
+        if (IsLoadFailed || vertexColors.Length != _editableMesh.VertexCount)
+        {
+            return;
+        }
+
+        _cutPlanePreviewColors = vertexColors;
+        _vertexColorBlendingFactor = CutPlanePreviewBlendFactor;
+        _editableMesh.SetVertexColors(vertexColors);
+        RefreshGeometryAfterSculpt();
+    }
+
+    internal void ClearCutPlanePreview()
+    {
+        if (_cutPlanePreviewColors is null)
+        {
+            return;
+        }
+
+        _cutPlanePreviewColors = null;
+        if (_contactHeatmapColors is null && _thicknessBreachColors is null)
+        {
+            _vertexColorBlendingFactor = 0f;
+            _editableMesh.SetVertexColors(null);
+            RefreshGeometryAfterSculpt();
+            return;
+        }
+
+        ApplyActiveVertexOverlay();
+        RefreshGeometryAfterSculpt();
+    }
+
+    internal void ClearContactHeatmap() => ClearVertexColorOverlay();
+
+    internal void ClearThicknessBreachOverlay() => ClearVertexColorOverlay();
+
+    internal void ClearVertexColorOverlay()
+    {
+        if (_contactHeatmapColors is null &&
+            _thicknessBreachColors is null &&
+            _cutPlanePreviewColors is null)
+        {
+            return;
+        }
+
+        _contactHeatmapColors = null;
+        _thicknessBreachColors = null;
+        _cutPlanePreviewColors = null;
+        _vertexColorBlendingFactor = 0f;
+        _editableMesh.SetVertexColors(null);
+        RefreshGeometryAfterSculpt();
+    }
+
+    internal void FairVerticesAfterSculpt(Point3D[] before, Point3D[] after)
+    {
+        if (IsLoadFailed || before.Length != after.Length)
+        {
+            return;
+        }
+
+        _editableMesh.FairChangedVertices(before, after);
+        ApplyActiveVertexOverlay();
+        RefreshGeometryAfterSculpt();
+    }
+
+    private void ApplyActiveVertexOverlay()
+    {
+        if (_thicknessBreachColors is not null)
+        {
+            _editableMesh.SetVertexColors(_thicknessBreachColors);
+            _vertexColorBlendingFactor = 1.0f;
+        }
+        else if (_contactHeatmapColors is not null)
+        {
+            _editableMesh.SetVertexColors(_contactHeatmapColors);
+            _vertexColorBlendingFactor = 1.0f;
+        }
+        else if (_cutPlanePreviewColors is not null)
+        {
+            _editableMesh.SetVertexColors(_cutPlanePreviewColors);
+            _vertexColorBlendingFactor = CutPlanePreviewBlendFactor;
+        }
     }
 
     internal bool TryApplySculptStroke(
@@ -190,6 +327,7 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
             return;
         }
 
+        ApplyActiveVertexOverlay();
         _editableMesh.PushToModel(Model);
         ApplyMaterial();
     }
@@ -333,7 +471,8 @@ public sealed class LoadedMeshItemViewModel : INotifyPropertyChanged
             DiffuseColor = frontDiffuse,
             SpecularColor = specular,
             SpecularShininess = (float)shininess,
-            EmissiveColor = backDiffuse * (float)_palette.EmissiveScale
+            EmissiveColor = backDiffuse * (float)_palette.EmissiveScale,
+            VertexColorBlendingFactor = _vertexColorBlendingFactor
         };
 
         // Phong alpha only — Helix transparent pass + embedded clear causes black background.

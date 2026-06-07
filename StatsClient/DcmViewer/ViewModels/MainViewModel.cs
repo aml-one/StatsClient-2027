@@ -23,6 +23,9 @@ namespace DCMViewer.ViewModels;
 
 public sealed partial class MainViewModel : INotifyPropertyChanged
 {
+    /// <summary>Dispatcher that owns the embedded viewer UI; set by <see cref="MainWindow"/>.</summary>
+    public static Dispatcher? UiDispatcher { get; set; }
+
     private const string HideLayerLabelsSettingKey = "DcmViewerHideLayerLabels";
     private const double LayerPanelWidthWithLabels = 330;
     private const double LayerPanelWidthWithoutLabels = 144;
@@ -113,23 +116,49 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         _toggleAbutmentGroupExpandedCommand = new RelayCommand(ToggleAbutmentGroupExpanded);
         _toggleHideLayerLabelsCommand = new RelayCommand(ToggleHideLayerLabels);
         InitSculptCommands();
+        InitDesignCommands();
+        InitDesignEditCommands();
+        InitMarginCommands();
         _loadedFiles.CollectionChanged += LoadedFilesOnCollectionChanged;
 
-        EffectsManager = new DefaultEffectsManager();
+        EnsureEffectsManager();
         InitializeLightRig();
         ApplyLightingStrength();
         UpdateLightRigFromCamera(_cameraLookDirection, _cameraUpDirection);
         RebuildSceneItems();
     }
 
-    public IEffectsManager EffectsManager { get; }
+    private DefaultEffectsManager? _effectsManager;
+
+    public IEffectsManager EffectsManager
+    {
+        get
+        {
+            EnsureEffectsManager();
+            return _effectsManager!;
+        }
+    }
+
+    public void EnsureEffectsManager()
+    {
+        if (_effectsManager is not null)
+        {
+            return;
+        }
+
+        _effectsManager = new DefaultEffectsManager();
+        OnPropertyChanged(nameof(EffectsManager));
+    }
 
     public void DisposeEffectsManager()
     {
-        if (EffectsManager is IDisposable disposable)
+        if (_effectsManager is IDisposable disposable)
         {
             disposable.Dispose();
         }
+
+        _effectsManager = null;
+        OnPropertyChanged(nameof(EffectsManager));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -521,6 +550,28 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Sets the bound camera pose (embedded host must use this instead of writing Viewport.Camera directly).</summary>
+    internal void SetCameraPose(Point3D position, Vector3D lookDirection, Vector3D upDirection)
+    {
+        if (_cameraPosition != position)
+        {
+            _cameraPosition = position;
+            OnPropertyChanged(nameof(CameraPosition));
+        }
+
+        if (_cameraLookDirection != lookDirection)
+        {
+            _cameraLookDirection = lookDirection;
+            OnPropertyChanged(nameof(CameraLookDirection));
+        }
+
+        if (_cameraUpDirection != upDirection)
+        {
+            _cameraUpDirection = upDirection;
+            OnPropertyChanged(nameof(CameraUpDirection));
+        }
+    }
+
     public string StatusText
     {
         get => _statusText;
@@ -581,6 +632,11 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 
     public CancellationToken BeginCancellableBusy(string statusText, bool resetProgress = true)
     {
+        if (!WpfUiThread.CheckAccess())
+        {
+            return WpfUiThread.RunAsync(() => BeginCancellableBusy(statusText, resetProgress)).GetAwaiter().GetResult();
+        }
+
         EndBusy(suppressPropertyChange: false);
         _busyCancellationSource = new CancellationTokenSource();
         if (resetProgress)
@@ -595,21 +651,24 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 
     public void CancelBusyWork()
     {
-        if (_busyCancellationSource is null && !IsBusy)
+        WpfUiThread.Invoke(() =>
         {
-            return;
-        }
+            if (_busyCancellationSource is null && !IsBusy)
+            {
+                return;
+            }
 
-        try
-        {
-            _busyCancellationSource?.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
+            try
+            {
+                _busyCancellationSource?.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
 
-        StatusText = "Canceled.";
-        EndBusy();
+            StatusText = "Canceled.";
+            EndBusy();
+        });
     }
 
     private void EndBusy(bool suppressPropertyChange = false)
@@ -658,6 +717,12 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 
     public async Task LoadFilesAsync(IEnumerable<string> filePaths, bool clearExisting, CancellationToken cancellationToken = default)
     {
+        if (!WpfUiThread.CheckAccess())
+        {
+            await WpfUiThread.RunAsync(() => LoadFilesAsync(filePaths, clearExisting, cancellationToken));
+            return;
+        }
+
         var normalizedPaths = filePaths
             .Where(path => !string.IsNullOrWhiteSpace(path))
             .Select(Path.GetFullPath)
@@ -745,51 +810,15 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
                             decodeMode,
                             applySceneTransform: sceneTransformKind != SceneTransformKind.None,
                             sceneTransformKind: sceneTransformKind),
-                        cancellationToken);
+                        cancellationToken).ConfigureAwait(false);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var category = ResolveMeshCategory(filePath, parsed.Properties);
-                    var (palette, textureName) = ResolveMaterialPalette(filePath, parsed.Properties, category);
-
-                    var geometry = SharpDxMeshFactory.CreateGeometry(parsed.Mesh);
-                    var meshModel = new MeshGeometryModel3D
+                    await WpfUiThread.RunAsync(() =>
                     {
-                        Geometry = geometry
-                    };
-
-                    var scanArch = ResolveScanArch(filePath);
-                    var loadedFile = new LoadedMeshItemViewModel(
-                        filePath,
-                        meshModel,
-                        parsed.Mesh,
-                        palette,
-                        parsed.Bounds,
-                        parsed.VertexCount,
-                        parsed.TriangleCount,
-                        parsed.IsEncrypted,
-                        parsed.Properties.ContainsKey("PackageLockList"),
-                        category,
-                        scanArch,
-                        appliedTextureName: textureName,
-                        writeProfile: parsed.WriteProfile);
-
-                    if (loadedFile.Category == MeshCategory.Restoration)
-                    {
-                        loadedFile.Opacity = _restorationGroupOpacity;
-                        loadedFile.IsVisible = _restorationGroupVisible;
-                    }
-                    else if (loadedFile.Category == MeshCategory.Abutment)
-                    {
-                        loadedFile.Opacity = _abutmentGroupOpacity;
-                        loadedFile.IsVisible = _abutmentGroupVisible;
-                    }
-
-                    loadedFile.SetSpecularIntensity(GetSpecularIntensity());
-                    loadedFile.SetSpecularShininess(GetSpecularShininess());
-                    loadedFile.PropertyChanged += LoadedFileOnPropertyChanged;
-                    _loadedFiles.Add(loadedFile);
-                    loadedNow++;
+                        IntegrateParsedFileOnUiThread(filePath, parsed, fallbackCategory, ref loadedNow);
+                        LoadProgress = (double)processedNow / totalFiles;
+                    });
                 }
                 catch (OperationCanceledException)
                 {
@@ -807,47 +836,101 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
                         ResolveScanArch(filePath),
                         isPackageLocked: isPackageLocked,
                         isEncrypted: isPackageLocked);
-                    _loadedFiles.Add(failedFile);
-                    failedNow++;
+                    await WpfUiThread.RunAsync(() =>
+                    {
+                        _loadedFiles.Add(failedFile);
+                        failedNow++;
+                        LoadProgress = (double)processedNow / totalFiles;
+                    });
                 }
-
-                LoadProgress = (double)processedNow / totalFiles;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            LoadProgress = 1;
-            RebuildSceneItems();
-            FrameCameraToBounds(GetVisibleBounds());
-
-            var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
-            var visibleTriangleCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.TriangleCount);
-
-            if (loadedNow == 0 && failedNow == 0)
+            await WpfUiThread.RunAsync(() =>
             {
-                StatusText = $"No new files loaded. Loaded files: {_loadedFiles.Count:N0}";
-            }
-            else
-            {
-                StatusText = $"Loaded {loadedNow:N0} file(s) | Failed: {failedNow:N0} | Visible files: {_loadedFiles.Count(item => item.IsVisible):N0} | Vertices: {visibleVertexCount:N0} | Triangles: {visibleTriangleCount:N0}";
-            }
+                LoadProgress = 1;
+                RebuildSceneItems();
+                FrameCameraToBounds(GetVisibleBounds());
+
+                var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
+                var visibleTriangleCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.TriangleCount);
+
+                if (loadedNow == 0 && failedNow == 0)
+                {
+                    StatusText = $"No new files loaded. Loaded files: {_loadedFiles.Count:N0}";
+                }
+                else
+                {
+                    StatusText = $"Loaded {loadedNow:N0} file(s) | Failed: {failedNow:N0} | Visible files: {_loadedFiles.Count(item => item.IsVisible):N0} | Vertices: {visibleVertexCount:N0} | Triangles: {visibleTriangleCount:N0}";
+                }
+            });
         }
         catch (OperationCanceledException)
         {
-            StatusText = "Canceled.";
+            WpfUiThread.Invoke(() => StatusText = "Canceled.");
             throw;
         }
         catch (Exception ex)
         {
-            StatusText = $"Failed to load file: {ex.Message}";
+            WpfUiThread.Invoke(() => StatusText = $"Failed to load file: {ex.Message}");
         }
         finally
         {
             if (managesBusyScope)
             {
-                EndBusy();
+                WpfUiThread.Invoke(() => EndBusy());
             }
         }
+    }
+
+    private void IntegrateParsedFileOnUiThread(
+        string filePath,
+        ParsedMeshData parsed,
+        MeshCategory fallbackCategory,
+        ref int loadedNow)
+    {
+        var category = ResolveMeshCategory(filePath, parsed.Properties);
+        var (palette, textureName) = ResolveMaterialPalette(filePath, parsed.Properties, category);
+
+        var geometry = SharpDxMeshFactory.CreateGeometry(parsed.Mesh);
+        var meshModel = new MeshGeometryModel3D
+        {
+            Geometry = geometry
+        };
+
+        var scanArch = ResolveScanArch(filePath);
+        var loadedFile = new LoadedMeshItemViewModel(
+            filePath,
+            meshModel,
+            parsed.Mesh,
+            palette,
+            parsed.Bounds,
+            parsed.VertexCount,
+            parsed.TriangleCount,
+            parsed.IsEncrypted,
+            parsed.Properties.ContainsKey("PackageLockList"),
+            category,
+            scanArch,
+            appliedTextureName: textureName,
+            writeProfile: parsed.WriteProfile);
+
+        if (loadedFile.Category == MeshCategory.Restoration)
+        {
+            loadedFile.Opacity = _restorationGroupOpacity;
+            loadedFile.IsVisible = _restorationGroupVisible;
+        }
+        else if (loadedFile.Category == MeshCategory.Abutment)
+        {
+            loadedFile.Opacity = _abutmentGroupOpacity;
+            loadedFile.IsVisible = _abutmentGroupVisible;
+        }
+
+        loadedFile.SetSpecularIntensity(GetSpecularIntensity());
+        loadedFile.SetSpecularShininess(GetSpecularShininess());
+        loadedFile.PropertyChanged += LoadedFileOnPropertyChanged;
+        _loadedFiles.Add(loadedFile);
+        loadedNow++;
     }
 
     public bool UnloadFile(string filePath)
@@ -1158,14 +1241,13 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
             }
         }
 
-        var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is null || dispatcher.CheckAccess())
+        if (WpfUiThread.CheckAccess())
         {
             Apply();
             return;
         }
 
-        dispatcher.Invoke(Apply);
+        WpfUiThread.Invoke(Apply);
     }
 
     private async void ExportSeparatedMeshes()
@@ -1231,6 +1313,11 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         if (IsSectionMode)
         {
             IsSculptMode = false;
+            if (IsDesignEditMode && IsCutPlaneMode)
+            {
+                IsCutPlaneMode = false;
+                ClearCutPlaneState();
+            }
         }
 
         if (!IsSectionMode)
@@ -1305,7 +1392,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         CompleteBusyWork();
     }
 
-    public void CompleteBusyWork() => EndBusy();
+    public void CompleteBusyWork() => WpfUiThread.Invoke(() => EndBusy());
 
     public void EnsureSectionModeForEncode()
     {
@@ -1349,8 +1436,16 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    internal void RebuildSceneItemsPublic() => RebuildSceneItems();
+
     private void RebuildSceneItems()
     {
+        if (!WpfUiThread.CheckAccess())
+        {
+            WpfUiThread.Invoke(RebuildSceneItems);
+            return;
+        }
+
         _sceneItems.Clear();
         _lightsAdded = false;
         EnsureLightsInScene();

@@ -832,6 +832,22 @@
                             </Button>
                         </Border>
 
+                        <Border Style="{StaticResource HomeTileReveal5}"
+                                Visibility="{Binding CbSettingModuleKnowledgeBase, Converter={StaticResource BoolToVisibilityConverter}}"
+                                d:Visibility="Visible">
+                            <Button Command="{Binding SwitchToKnowledgeBaseTabCommand}"
+                                    Style="{StaticResource HomeModuleTile}"
+                                    Tag="{DynamicResource HomeTileSettingsTint}">
+                                <StackPanel>
+                                    <Image Source="/Images/database.png"
+                                           Height="72"
+                                           Width="62" />
+                                    <TextBlock Text="Knowledge Base"
+                                               Style="{StaticResource HomeModuleTitle}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
                         <Border Style="{StaticResource HomeTileReveal6}"
                                 Visibility="{Binding CbSettingModuleFolderSubscription, Converter={StaticResource BoolToVisibilityConverter}}"
                                 d:Visibility="Visible">

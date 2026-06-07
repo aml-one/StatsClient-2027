@@ -1,6 +1,7 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using StatsClient.MVVM.Core;
+using StatsClient.MVVM.Core;
 using StatsClient.MVVM.ViewModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -54,7 +55,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     
     public MainWindow(string url)
     {
+        DataContext = MainViewModel.Instance;
         InitializeComponent();
+        DataObject.AddPastingHandler(tbPmAddNewNumber, TbPmAddNewNumber_Pasting);
 
         webviewLabnext.Source = new Uri(url);
     }
@@ -63,11 +66,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         //Register Syncfusion license
         Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JGaF5cXGpCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWH1ceXRcQ2heVkZ+XkpWYEs=");
+        StartupLog.WritePhase("MainWindow", "Constructor begin");
         Instance = this;
-        InitializeComponent();
         DataContext = MainViewModel.Instance;
-
+        StartupLog.WriteDetail("MainWindow", $"DataContext set to Instance hash={MainViewModel.Instance.GetHashCode()}");
+        InitializeComponent();
+        StartupLog.WritePhase("MainWindow", "InitializeComponent complete");
+        DataObject.AddPastingHandler(tbPmAddNewNumber, TbPmAddNewNumber_Pasting);
         MainViewModel.Instance._MainWindow = this;
+        SplashViewModel.Instance.mainWindow = this;
+        Loaded += MainWindow_StartupLoaded;
+
         pb3ShapeProgressBar.Value = 0;
         pbArchivesProgressBar.Value = 0;
 
@@ -84,15 +93,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         string groupProp = ReadLocalSetting("GroupBy");
         if (groupProp != null)
         {
-            GroupBy.SelectedItem = groupProp;
-            MainViewModel.Instance.GroupList();
+            MainViewModel.Instance.SelectedGroupByItem = groupProp;
         }
 
         string filterUsed = ReadLocalSetting("FilterUsed");
-        if (!string.IsNullOrEmpty(filterUsed)) 
+        if (!string.IsNullOrEmpty(filterUsed))
         {
-            MainViewModel.Instance.Search(filterUsed, true);
-            MainViewModel.Instance.ShowNotificationMessage("Startup", "Last view was restored!");
+            MainViewModel.Instance.ScheduleStartupFilterRestore(filterUsed);
         }
 
         tbSearch.PreviewKeyDown += new KeyEventHandler(HandleEsc);
@@ -261,6 +268,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (e.Source != mainTabControl)
+            return;
+
+        MainViewModel.Instance.UpdateTabChromeForSelection();
+
         if (!ThreeShapeTab.IsSelected)
         {
             MainViewModel.Instance.ThreeShapeObject = null;
@@ -345,6 +357,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         settingsTab.IsSelected = true;
     }
 
+    private void MainWindow_StartupLoaded(object sender, RoutedEventArgs e)
+    {
+        Loaded -= MainWindow_StartupLoaded;
+        StartupLog.WritePhase("MainWindow", "Loaded event — visual tree ready");
+        MainViewModel.Instance.LogStartupVmSnapshot("MainWindow Loaded");
+        StartupLog.Flush();
+    }
+
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
         MainViewModel.Instance.SmartOrderNamesWindow.Owner = this;
@@ -362,6 +382,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         webviewLabnext.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
         webviewLabnext.NavigationCompleted -= WebviewLabnext_NavigationCompleted;
         webviewLabnext.NavigationCompleted += WebviewLabnext_NavigationCompleted;
+        MainViewModel.Instance.TryEnsureLabnextWebViewEventHandlers();
     }
 
     private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
@@ -649,6 +670,96 @@ return 'submit-not-found';
         if (MainViewModel.Instance.PaymentOrderListDesigners.Count == 0)
         {
             await MainViewModel.Instance.LoadPaymentDesignersAsync();
+        }
+    }
+
+    private const int PmAddNewNumberMin = 33;
+    private const int PmAddNewNumberMax = 99999;
+
+    private static bool IsAllowedPmAddNewNumberText(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return true;
+        }
+
+        foreach (char c in text)
+        {
+            if (!char.IsDigit(c))
+            {
+                return false;
+            }
+        }
+
+        if (text[0] == '0')
+        {
+            return false;
+        }
+
+        if (text.Length > 5)
+        {
+            return false;
+        }
+
+        if (text.Length == 1)
+        {
+            return text[0] >= '3';
+        }
+
+        if (text.Length == 2 && text[0] == '3' && text[1] < '3')
+        {
+            return false;
+        }
+
+        return int.TryParse(text, out int value) && value <= PmAddNewNumberMax;
+    }
+
+    private static string BuildProposedTextBoxValue(TextBox textBox, string insertion)
+    {
+        string current = textBox.Text;
+        int start = textBox.SelectionStart;
+        int length = textBox.SelectionLength;
+        if (start < 0)
+        {
+            start = 0;
+        }
+
+        if (start > current.Length)
+        {
+            start = current.Length;
+        }
+
+        if (length < 0 || start + length > current.Length)
+        {
+            length = 0;
+        }
+
+        return current.Remove(start, length).Insert(start, insertion);
+    }
+
+    private void TbPmAddNewNumber_PreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+        if (sender is not TextBox textBox)
+        {
+            return;
+        }
+
+        string proposed = BuildProposedTextBoxValue(textBox, e.Text);
+        e.Handled = !IsAllowedPmAddNewNumberText(proposed);
+    }
+
+    private void TbPmAddNewNumber_Pasting(object sender, DataObjectPastingEventArgs e)
+    {
+        if (sender is not TextBox textBox || !e.DataObject.GetDataPresent(typeof(string)))
+        {
+            return;
+        }
+
+        string pasteText = (string)e.DataObject.GetData(typeof(string))!;
+        string proposed = BuildProposedTextBoxValue(textBox, pasteText);
+        if (!IsAllowedPmAddNewNumberText(proposed))
+        {
+            e.CancelCommand();
         }
     }
 }

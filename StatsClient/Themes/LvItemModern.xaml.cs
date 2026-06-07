@@ -1,4 +1,5 @@
-﻿using StatsClient.MVVM.View;
+﻿using StatsClient.MVVM.Model;
+using StatsClient.MVVM.View;
 using StatsClient.MVVM.ViewModel;
 using System.Diagnostics;
 using System.Windows;
@@ -15,7 +16,18 @@ public partial class LvItemModern
 
     private void MenuItemOpenUpOrderInfoWindow_Click(object sender, RoutedEventArgs e)
     {
-        MainViewModel.Instance.OpenUpOrderInfoWindow();
+        ThreeShapeOrdersModel? order = null;
+        if (sender is MenuItem menuItem)
+        {
+            order = menuItem.DataContext as ThreeShapeOrdersModel;
+            if (order is null && menuItem.Parent is ContextMenu contextMenu &&
+                contextMenu.PlacementTarget is FrameworkElement target)
+            {
+                order = target.DataContext as ThreeShapeOrdersModel;
+            }
+        }
+
+        MainViewModel.Instance.OpenUpOrderInfoWindow(order);
     }
 
 
@@ -48,6 +60,27 @@ public partial class LvItemModern
     private void MenuItemExploreFolder_Click(object sender, RoutedEventArgs e)
     {
         MainViewModel.Instance.ExploreOrderFolder();
+    }
+
+    private async void MenuItemOpenStatsDesign_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element)
+        {
+            return;
+        }
+
+        var order = element.DataContext as ThreeShapeOrdersModel
+                    ?? MainViewModel.Instance.ThreeShapeObject;
+        if (order is null)
+        {
+            return;
+        }
+
+        MainViewModel.Instance.ThreeShapeObject = order;
+        MainViewModel.Instance.OrderBeingWatched = order.IntOrderID ?? string.Empty;
+
+        await OrderInfoWindow.ReleaseLocksIfViewingOrderAsync(order.IntOrderID ?? string.Empty);
+        StatsDesignWindow.ShowForOrder(order, MainWindow.Instance);
     }
 
     private void AccountInfosShowPassword_Button_Click(object sender, RoutedEventArgs e)

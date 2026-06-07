@@ -257,10 +257,15 @@ internal class Functions
             {
                 File.ReadAllLines(designedByFile).ToList().ForEach(x =>
                 {
-                    string[] parts = x.Split(']');
+                    if (string.IsNullOrWhiteSpace(x))
+                    {
+                        return;
+                    }
+
+                    string[] parts = x.Split(']', 2);
 
                     _ = DateTime.TryParse(parts[0].Replace("[", ""), out DateTime dtTime);
-                    string designr = parts[1].Trim();
+                    string designr = parts.Length > 1 ? parts[1].Trim() : string.Empty;
                     
                     designerHistory.Add(new DesignedByModel()
                     {
@@ -285,10 +290,15 @@ internal class Functions
             {
                 File.ReadAllLines(designedByFile).ToList().ForEach(x =>
                 {
-                    string[] parts = x.Split(']');
+                    if (string.IsNullOrWhiteSpace(x))
+                    {
+                        return;
+                    }
+
+                    string[] parts = x.Split(']', 2);
 
                     _ = DateTime.TryParse(parts[0].Replace("[", ""), out DateTime dtTime);
-                    string designr = parts[1].Trim();
+                    string designr = parts.Length > 1 ? parts[1].Trim() : string.Empty;
 
                     designerHistory.Add(new DesignedByModel()
                     {

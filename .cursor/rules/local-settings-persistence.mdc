@@ -1,0 +1,18 @@
+---
+description: Persist client settings and user lists via LocalSettingsDB only
+globs:
+  - StatsClient/**/*.cs
+---
+
+# Local settings persistence
+
+**Always use `StatsClient/MVVM/Core/LocalSettingsDB.cs` for anything that must survive app restarts.**
+
+| Need | Approach |
+|------|----------|
+| Single flag, string, or small preference | `LocalSettingsDB.WriteLocalSetting(name, value)` / `ReadLocalSetting(name)` |
+| Structured list (orders, history, watch list, etc.) | Add a `main.*` SQLite table in `CreatingLocalConfigFiles()` and a `#region` with load/save helpers on `LocalSettingsDB` |
+
+**Do not** add standalone JSON/XML/config files under `%ProgramData%\Stats_Client\` or elsewhere for settings unless explicitly approved.
+
+`WatchListStore` is a thin in-memory cache; persistence lives in `LocalSettingsDB` (`WatchListEntries` table).

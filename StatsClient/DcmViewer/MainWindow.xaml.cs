@@ -14,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using DCMViewer.Services;
 using DCMViewer.ViewModels;
@@ -38,6 +40,10 @@ public partial class MainWindow : Window
 
     /// <summary>When true, this window hosts its content inside Order Info instead of running standalone.</summary>
     public bool IsEmbeddedHost { get; set; }
+
+    public ViewerHostMode HostMode { get; private set; } = ViewerHostMode.Standard;
+
+    private const double DesignChromeLeftMargin = 300;
 
     public MainViewModel ViewModel => _viewModel;
 
@@ -87,6 +93,12 @@ public partial class MainWindow : Window
     private bool _isSectionRefreshQueued;
     private bool _isCompositionRenderingHooked;
     private bool _isSculptDragging;
+    private bool _isMarginRedrawDragging;
+    private bool _marginVisualUpdateQueued;
+    private bool _marginFullRibbonUpdateQueued;
+    private bool _pendingEmbeddedCameraFit;
+    private List<StatsDesignMeshSpatialIndex>? _marginPrepSpatialIndices;
+    private CancellationTokenSource? _marginRibbonUpdateCancellation;
     private LoadedMeshItemViewModel? _sculptTarget;
     private Point _sculptLastScreen;
     private Vector3D _sculptLastNormal = new(0, 0, 1);
@@ -103,10 +115,11 @@ public partial class MainWindow : Window
     private string _lastZoomPercentLabel = string.Empty;
     private Brush? _defaultWatermarkBackground;
     private bool _encodeSectionMeasureStyle;
+    private Dispatcher? _hostUiDispatcher;
 
     public void RestoreEmbeddedInteraction()
     {
-        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        BeginInvokeHostUi(() =>
         {
             Viewport.UpdateLayout();
             Viewport.IsZoomEnabled = true;
@@ -118,18 +131,75 @@ public partial class MainWindow : Window
             UpdateZoomPercentLabel();
             Viewport.Focus();
             Keyboard.Focus(Viewport);
-        }));
+        }, DispatcherPriority.Loaded);
+    }
+
+    /// <summary>Dispatcher for all viewport and scene mutations (host canvas after embed).</summary>
+    public Dispatcher HostUiDispatcher => _hostUiDispatcher ?? Viewport?.Dispatcher ?? Dispatcher;
+
+    public void SetHostUiDispatcher(Dispatcher hostUiDispatcher)
+    {
+        _hostUiDispatcher = hostUiDispatcher ?? throw new ArgumentNullException(nameof(hostUiDispatcher));
+        MainViewModel.UiDispatcher = hostUiDispatcher;
+    }
+
+    private void BeginInvokeHostUi(Action action, DispatcherPriority priority = DispatcherPriority.Normal) =>
+        HostUiDispatcher.BeginInvoke(priority, action);
+
+    private Dispatcher ResolveUiDispatcher() => HostUiDispatcher;
+
+    public void RunOnHostUi(Action action)
+    {
+        var dispatcher = HostUiDispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        dispatcher.Invoke(action);
+    }
+
+    public Task RunOnHostUiAsync(Func<Task> action)
+    {
+        var dispatcher = HostUiDispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            return action();
+        }
+
+        return dispatcher.InvokeAsync(action).Task.Unwrap();
     }
 
     public async Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files, string? orderFolderPath = null)
     {
+        var uiDispatcher = ResolveUiDispatcher();
+        if (!uiDispatcher.CheckAccess())
+        {
+            await uiDispatcher.InvokeAsync(() => LoadCaseFilesAsync(files, orderFolderPath)).Task.Unwrap();
+            return;
+        }
+
         var fileItems = files
             .Where(x => !string.IsNullOrWhiteSpace(x.FilePath) && File.Exists(x.FilePath))
             .GroupBy(x => Path.GetFullPath(x.FilePath), StringComparer.OrdinalIgnoreCase)
             .Select(x => x.First())
             .ToList();
 
-        _viewModel.SetSculptOrderFolder(orderFolderPath);
+        if (HostMode != ViewerHostMode.Design &&
+            string.IsNullOrWhiteSpace(orderFolderPath) &&
+            fileItems.Count > 0)
+        {
+            orderFolderPath = TryResolveOrderFolderFromCaseFiles(fileItems);
+        }
+
+        if (HostMode != ViewerHostMode.Design)
+        {
+            _viewModel.SetSculptOrderFolder(orderFolderPath);
+            _viewModel.ConfigureOrderInfoHost();
+            _viewModel.ConfigureDesignEditOrderFolder(orderFolderPath);
+        }
+
         _viewModel.TextureOverrides.Clear();
         _viewModel.CategoryOverrides.Clear();
         _viewModel.IsExternalFileDropEnabled = false;
@@ -144,13 +214,29 @@ public partial class MainWindow : Window
             await _viewModel.LoadFilesAsync(
                 fileItems.Select(x => x.FilePath),
                 clearExisting: true,
-                cancellationToken: _viewModel.BusyCancellationToken);
+                cancellationToken: _viewModel.BusyCancellationToken).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
         {
             throw;
         }
 
+        if (!uiDispatcher.CheckAccess())
+        {
+            await uiDispatcher.InvokeAsync(() => ApplyLoadedCaseFileVisibility(fileItems));
+            return;
+        }
+
+        ApplyLoadedCaseFileVisibility(fileItems);
+
+        if (HostMode == ViewerHostMode.Design)
+        {
+            ScheduleEmbeddedSceneRefreshAfterLoad();
+        }
+    }
+
+    private void ApplyLoadedCaseFileVisibility(IReadOnlyList<DCMFileItem> fileItems)
+    {
         var hiddenFiles = fileItems
             .Where(x => x.StartHidden)
             .Select(x => Path.GetFullPath(x.FilePath))
@@ -167,7 +253,47 @@ public partial class MainWindow : Window
         RestoreEmbeddedInteraction();
         ScheduleTopRightOverlayFade();
         EnsureEmbeddedHostAppearance();
+        if (_viewModel.IsDesignEditMode)
+        {
+            _viewModel.ExitDesignEditMode();
+        }
+
+        _viewModel.ResetDesignEditSessionCache();
+        _viewModel.ReloadDesignEditStepStore();
+        _viewModel.CaptureDesignEditOriginals();
         _viewModel.ApplyPersistedSculptTree();
+        _viewModel.RestoreRestorationsToOriginalsIfNeeded();
+    }
+
+    private static string? TryResolveOrderFolderFromCaseFiles(IReadOnlyList<DCMFileItem> fileItems)
+    {
+        foreach (var item in fileItems)
+        {
+            if (string.IsNullOrWhiteSpace(item.FilePath))
+            {
+                continue;
+            }
+
+            var directory = Path.GetDirectoryName(Path.GetFullPath(item.FilePath));
+            while (!string.IsNullOrWhiteSpace(directory))
+            {
+                if (Directory.Exists(Path.Combine(directory, "CAD")) ||
+                    Directory.Exists(Path.Combine(directory, "Scans")))
+                {
+                    return directory;
+                }
+
+                var xmlCandidate = Path.Combine(directory, Path.GetFileName(directory) + ".xml");
+                if (File.Exists(xmlCandidate))
+                {
+                    return directory;
+                }
+
+                directory = Path.GetDirectoryName(directory);
+            }
+        }
+
+        return null;
     }
 
     public async Task AddCaseFileAsync(DCMFileItem file)
@@ -181,7 +307,7 @@ public partial class MainWindow : Window
         ApplyFileOverrides(file);
 
         var hiddenFile = file.StartHidden;
-        await _viewModel.LoadFilesAsync(new[] { fullPath }, clearExisting: false);
+        await _viewModel.LoadFilesAsync(new[] { fullPath }, clearExisting: false).ConfigureAwait(true);
 
         if (hiddenFile)
         {
@@ -265,13 +391,28 @@ public partial class MainWindow : Window
         }
     }
 
-    public void AttachEmbeddedHost()
+    public void ConfigureAsDesignHost(string orderFolderPath, string orderId)
     {
+        RunOnHostUi(() =>
+        {
+            HostMode = ViewerHostMode.Design;
+            _viewModel.ConfigureDesignHost(orderFolderPath, orderId);
+            EnsureDesignHostAppearance();
+            ApplySculptModeFromViewModel();
+            MainViewModel.UiDispatcher = HostUiDispatcher;
+        });
+    }
+
+    public void AttachEmbeddedHost(Dispatcher hostUiDispatcher)
+    {
+        SetHostUiDispatcher(hostUiDispatcher);
+        _viewModel.EnsureEffectsManager();
         HookCompositionRendering();
         PinViewerDataContext();
         UpdateProjectionToggleButtonState();
         UpdateClippingToggleButtonState();
         UpdateHideLayerLabelsButtonState();
+        ApplyHostChromeVisibility();
     }
 
     public async Task PrepareForHostUnloadAsync()
@@ -283,8 +424,38 @@ public partial class MainWindow : Window
     public void ShutdownEmbeddedHost()
     {
         UnhookCompositionRendering();
+    }
+
+    public void EnsureEmbeddedViewportHealth()
+    {
+        if (!IsEmbeddedHost)
+        {
+            return;
+        }
+
+        RunOnHostUi(() =>
+        {
+            _viewModel.EnsureEffectsManager();
+            _viewModel.RebuildSceneItemsPublic();
+            foreach (var item in _viewModel.LoadedFiles)
+            {
+                item.ApplyRenderState();
+            }
+
+            _marginPrepSpatialIndices = null;
+            Viewport?.InvalidateRender();
+        });
+    }
+
+    private void TeardownEmbeddedHostResources()
+    {
+        UnhookCompositionRendering();
         _viewModel.DisposeEffectsManager();
     }
+
+    public void HookCompositionRenderingIfNeeded() => HookCompositionRendering();
+
+    public void UnhookCompositionRenderingOnly() => UnhookCompositionRendering();
 
     private void HookCompositionRendering()
     {
@@ -339,6 +510,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (HostMode == ViewerHostMode.Design)
+        {
+            EnsureDesignHostAppearance();
+            return;
+        }
+
         EmbeddedViewerBackdrop.ApplyEmbeddedHostAppearance(WatermarkCanvas, Viewport);
         if (Content is Grid hostRoot)
         {
@@ -349,10 +526,47 @@ public partial class MainWindow : Window
         TopRightChromeGrid.Margin = new Thickness(0, 10, 212, 0);
         ZoomBadgeBorder.Margin = new Thickness(EmbeddedChromeLeftMargin, 10, 0, 0);
         BottomStatusBorder.Margin = new Thickness(EmbeddedChromeLeftMargin, 0, 212, 8);
+        ApplyDesignEditToolsPanelLayout();
 
         ApplyEmbeddedViewportChromeLayout();
-
+        ApplyHostChromeVisibility();
         ConfigureTransparencyRendering();
+    }
+
+    public void EnsureDesignHostAppearance()
+    {
+        if (!IsEmbeddedHost || HostMode != ViewerHostMode.Design)
+        {
+            return;
+        }
+
+        EmbeddedViewerBackdrop.ApplyEmbeddedHostAppearance(WatermarkCanvas, Viewport);
+        if (Content is Grid hostRoot)
+        {
+            hostRoot.Background = ColorSchemeResourceCatalog.GetBrush("TransparentBrush");
+        }
+
+        TopRightChromeGrid.Margin = new Thickness(0, 10, 10, 0);
+        ZoomBadgeBorder.Margin = new Thickness(DesignChromeLeftMargin, 10, 0, 0);
+        BottomStatusBorder.Margin = new Thickness(DesignChromeLeftMargin, 0, 10, 8);
+
+        ApplyEmbeddedViewportChromeLayout();
+        ApplyHostChromeVisibility();
+        ConfigureTransparencyRendering();
+    }
+
+    private void ApplyHostChromeVisibility()
+    {
+        var isDesign = HostMode == ViewerHostMode.Design;
+        if (FindName("DesignHostExportMergePanel") is UIElement mergePanel)
+        {
+            mergePanel.Visibility = isDesign ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (FindName("SculptToggleButton") is UIElement sculptToggle)
+        {
+            sculptToggle.Visibility = isDesign ? Visibility.Collapsed : Visibility.Visible;
+        }
     }
 
     private void ApplyEmbeddedViewportChromeLayout()
@@ -424,8 +638,9 @@ public partial class MainWindow : Window
             Viewport.ActualWidth,
             Viewport.ActualHeight);
         var targetDistance = fitDistance / zoomScale;
-        camera.Position = center - (look * targetDistance);
-        camera.LookDirection = center - camera.Position;
+        var position = center - (look * targetDistance);
+        var lookDirection = center - position;
+        _viewModel.SetCameraPose(position, lookDirection, up);
     }
 
     private Point3D GetEmbeddedLookAtCenter(Rect3D bounds)
@@ -466,14 +681,51 @@ public partial class MainWindow : Window
                 return;
             }
 
+            if (Viewport.ActualWidth < 1 || Viewport.ActualHeight < 1)
+            {
+                Viewport.SizeChanged -= OnViewportSizedForEmbeddedInitialView;
+                Viewport.SizeChanged += OnViewportSizedForEmbeddedInitialView;
+                return;
+            }
+
             ApplyEmbeddedDefaultZoom();
             ConfigureRotationBehavior();
             SyncLightingToCamera();
             UpdateZoomPercentLabel();
+            Viewport.InvalidateRender();
         }
 
-        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, Apply);
-        Dispatcher.BeginInvoke(DispatcherPriority.Render, Apply);
+        BeginInvokeHostUi(Apply, DispatcherPriority.ApplicationIdle);
+        BeginInvokeHostUi(Apply, DispatcherPriority.Render);
+    }
+
+    private void OnViewportSizedForEmbeddedInitialView(object sender, SizeChangedEventArgs e)
+    {
+        if (Viewport.ActualWidth < 1 || Viewport.ActualHeight < 1)
+        {
+            return;
+        }
+
+        Viewport.SizeChanged -= OnViewportSizedForEmbeddedInitialView;
+        ApplyEmbeddedInitialView();
+    }
+
+    internal void ScheduleEmbeddedSceneRefreshAfterLoad()
+    {
+        if (!IsEmbeddedHost)
+        {
+            return;
+        }
+
+        _pendingShowAllAfterModelUpdate = true;
+        _pendingEmbeddedCameraFit = true;
+        BeginInvokeHostUi(() =>
+        {
+            _viewModel.EnsureEffectsManager();
+            _viewModel.RebuildSceneItemsPublic();
+            ApplyEmbeddedInitialView();
+            Viewport?.InvalidateRender();
+        }, DispatcherPriority.Loaded);
     }
 
     public void EnsureEmbeddedHostCanvasTransparent() => EnsureEmbeddedHostAppearance();
@@ -510,10 +762,11 @@ public partial class MainWindow : Window
     {
     }
 
-    public MainWindow(bool suppressStartupLoad, bool isEmbeddedHost)
+    public MainWindow(bool suppressStartupLoad, bool isEmbeddedHost, ViewerHostMode hostMode = ViewerHostMode.Standard)
     {
         SuppressStartupLoad = suppressStartupLoad;
         IsEmbeddedHost = isEmbeddedHost;
+        HostMode = hostMode;
 
         InitializeComponent();
         EnsureSectionPlaneFillMaterial();
@@ -524,7 +777,15 @@ public partial class MainWindow : Window
             ShowInTaskbar = false;
             ShowActivated = false;
             ConfigureViewportGestures();
-            EnsureEmbeddedHostAppearance();
+            if (hostMode == ViewerHostMode.Design)
+            {
+                EnsureDesignHostAppearance();
+            }
+            else
+            {
+                EnsureEmbeddedHostAppearance();
+            }
+
             WatermarkCanvas.SizeChanged += WatermarkCanvas_OnSizeChanged;
         }
         else
@@ -569,12 +830,19 @@ public partial class MainWindow : Window
         Closed += (_, _) => RenderCapability.TierChanged -= OnRenderTierChanged;
 
         _viewModel = new MainViewModel(new DcmParser());
+        if (!isEmbeddedHost)
+        {
+            MainViewModel.UiDispatcher = Dispatcher;
+        }
+
         if (isEmbeddedHost)
         {
             _viewModel.SuppressAutomaticCameraFraming = true;
         }
 
         _viewModel.PropertyChanged += ViewModelOnPropertyChanged;
+        _viewModel.DesignEditCutPlaneVisualsChanged += (_, _) => ApplyCutPlaneModeFromViewModel();
+        _viewModel.MarginVisualRefreshRequested += QueueMarginLineVisualUpdate;
         _viewModel.LoadedFiles.CollectionChanged += LoadedFilesOnCollectionChanged;
         DataContext = _viewModel;
         _viewModel.FuseInnerSidePickHandler = PickFuseInnerSideHintsAsync;
@@ -607,14 +875,13 @@ public partial class MainWindow : Window
 
         Closed += (_, _) =>
         {
-            UnhookCompositionRendering();
-            if (!IsEmbeddedHost)
-            {
-                _viewModel.DisposeEffectsManager();
-            }
+            TeardownEmbeddedHostResources();
         };
         SyncLightingToCamera();
         UpdateZoomPercentLabel();
+        Viewport.PreviewMouseLeftButtonDown += Viewport_OnPreviewMouseLeftButtonDown;
+        Viewport.PreviewMouseMove += Viewport_OnPreviewMouseMove;
+        Viewport.PreviewMouseLeftButtonUp += Viewport_OnPreviewMouseLeftButtonUp;
         Viewport.MouseLeftButtonDown += Viewport_OnMouseLeftButtonDown;
         Viewport.MouseMove += Viewport_OnMouseMove;
         Viewport.MouseLeftButtonUp += Viewport_OnMouseLeftButtonUp;
@@ -747,8 +1014,16 @@ public partial class MainWindow : Window
 
     private void ViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        var uiDispatcher = ResolveUiDispatcher();
+        if (!uiDispatcher.CheckAccess())
+        {
+            uiDispatcher.BeginInvoke(() => ViewModelOnPropertyChanged(sender, e));
+            return;
+        }
+
         if (string.Equals(e.PropertyName, nameof(MainViewModel.SceneItems), StringComparison.Ordinal))
         {
+            _marginPrepSpatialIndices = null;
             ConfigureRotationBehavior();
             ScheduleTopRightOverlayFade();
             if (_viewModel.IsSectionMode)
@@ -759,19 +1034,17 @@ public partial class MainWindow : Window
             if (_pendingShowAllAfterModelUpdate && !GetVisibleBounds().IsEmpty)
             {
                 _pendingShowAllAfterModelUpdate = false;
-                Dispatcher.BeginInvoke(
-                    DispatcherPriority.Loaded,
-                    new Action(() =>
+                BeginInvokeHostUi(() =>
+                {
+                    if (IsEmbeddedHost)
                     {
-                        if (IsEmbeddedHost)
-                        {
-                            ApplyEmbeddedInitialView();
-                        }
-                        else
-                        {
-                            ShowAllButton_Click(this, new RoutedEventArgs());
-                        }
-                    }));
+                        ApplyEmbeddedInitialView();
+                    }
+                    else
+                    {
+                        ShowAllButton_Click(this, new RoutedEventArgs());
+                    }
+                }, DispatcherPriority.Loaded);
             }
         }
 
@@ -782,6 +1055,40 @@ public partial class MainWindow : Window
 
         if (string.Equals(e.PropertyName, nameof(MainViewModel.IsSculptMode), StringComparison.Ordinal))
         {
+            ApplySculptModeFromViewModel();
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.IsDesignEditMode), StringComparison.Ordinal) ||
+            string.Equals(e.PropertyName, nameof(MainViewModel.ShowDesignEditPanel), StringComparison.Ordinal))
+        {
+            ApplyDesignEditModeFromViewModel();
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.IsCutPlaneMode), StringComparison.Ordinal))
+        {
+            ApplyCutPlaneModeFromViewModel();
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.IsMarginMode), StringComparison.Ordinal))
+        {
+            ApplyMarginModeFromViewModel();
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.MarginPointCount), StringComparison.Ordinal) ||
+            string.Equals(e.PropertyName, nameof(MainViewModel.IsMarginClosed), StringComparison.Ordinal) ||
+            string.Equals(e.PropertyName, nameof(MainViewModel.MarginGeometryRevision), StringComparison.Ordinal))
+        {
+            QueueMarginLineVisualUpdate();
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.UndercutHotspotPoints), StringComparison.Ordinal))
+        {
+            UpdateUndercutHotspotVisuals();
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.DesignWorkflowStep), StringComparison.Ordinal))
+        {
+            ApplyMarginModeFromViewModel();
             ApplySculptModeFromViewModel();
         }
 
@@ -798,6 +1105,11 @@ public partial class MainWindow : Window
             UpdateSectionPlane();
         }
 
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.CutPlaneOffset), StringComparison.Ordinal) && _viewModel.IsCutPlaneMode)
+        {
+            UpdateCutPlaneVisual();
+        }
+
         if (string.Equals(e.PropertyName, nameof(MainViewModel.MeasureStartSection), StringComparison.Ordinal) ||
             string.Equals(e.PropertyName, nameof(MainViewModel.MeasureEndSection), StringComparison.Ordinal))
         {
@@ -806,9 +1118,18 @@ public partial class MainWindow : Window
 
         if (IsEmbeddedHost &&
             string.Equals(e.PropertyName, nameof(MainViewModel.IsBusy), StringComparison.Ordinal) &&
+            !_viewModel.IsBusy &&
+            _pendingEmbeddedCameraFit)
+        {
+            _pendingEmbeddedCameraFit = false;
+            BeginInvokeHostUi(ApplyEmbeddedInitialView, DispatcherPriority.ApplicationIdle);
+        }
+
+        if (IsEmbeddedHost &&
+            string.Equals(e.PropertyName, nameof(MainViewModel.IsBusy), StringComparison.Ordinal) &&
             !_viewModel.IsBusy)
         {
-            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, ApplyEmbeddedInitialView);
+            BeginInvokeHostUi(() => Viewport?.InvalidateRender(), DispatcherPriority.Render);
         }
 
         if (string.Equals(e.PropertyName, nameof(MainViewModel.IsBusy), StringComparison.Ordinal))
@@ -838,7 +1159,7 @@ public partial class MainWindow : Window
         }
 
         _isSectionRefreshQueued = true;
-        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        BeginInvokeHostUi(() =>
         {
             _isSectionRefreshQueued = false;
             if (!_viewModel.IsSectionMode)
@@ -849,7 +1170,7 @@ public partial class MainWindow : Window
             _viewModel.ApplySectionPlane(_activeSectionPlanePoint, _activeSectionPlaneNormal, _viewModel.IsSectionMode);
             UpdateSectionPlaneVisual(_activeSectionPlanePoint, _activeSectionPlaneNormal);
             UpdateSectionProfileView(_activeSectionPlanePoint, _activeSectionPlaneNormal, resetCanvasTransform: false);
-        }));
+        }, DispatcherPriority.Background);
     }
 
     private void LoadedFilesOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -904,7 +1225,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        Dispatcher.BeginInvoke(() =>
+        BeginInvokeHostUi(() =>
         {
             if (IsEmbeddedHost && Viewport.IsVisible)
             {
@@ -964,7 +1285,7 @@ public partial class MainWindow : Window
         }
 
         Viewport.ZoomExtents(250);
-        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () =>
+        BeginInvokeHostUi(() =>
         {
             ConfigureRotationBehavior();
             SyncLightingToCamera();
@@ -1461,13 +1782,13 @@ public partial class MainWindow : Window
         if (IsEmbeddedHost)
         {
             PositionEmbeddedSectionProfilePanel();
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+            BeginInvokeHostUi(() =>
             {
                 if (_viewModel.IsSectionMode)
                 {
                     PositionEmbeddedSectionProfilePanel();
                 }
-            });
+            }, DispatcherPriority.Loaded);
         }
 
         var bounds = GetVisibleBounds();
@@ -1530,14 +1851,46 @@ public partial class MainWindow : Window
         MeasurementText.Visibility = Visibility.Collapsed;
     }
 
-    private void Viewport_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void Viewport_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (TryHandleEncodeIdentifyPick(e))
         {
+            e.Handled = true;
             return;
         }
 
         if (TryHandleFuseInnerSidePick(e))
+        {
+            e.Handled = true;
+            return;
+        }
+
+        if (_viewModel.IsMarginMode)
+        {
+            if (_viewModel.CanPaintMarginAsPencil)
+            {
+                if (TryBeginMarginRedraw(e))
+                {
+                    e.Handled = true;
+                }
+            }
+            else if (TryAddMarginPoint(e))
+            {
+                e.Handled = true;
+            }
+
+            return;
+        }
+    }
+
+    private void Viewport_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.Handled)
+        {
+            return;
+        }
+
+        if (_viewModel.IsMarginMode)
         {
             return;
         }
@@ -1549,6 +1902,11 @@ public partial class MainWindow : Window
                 e.Handled = true;
             }
 
+            return;
+        }
+
+        if (TryPlaceCutPlaneFromClick(e))
+        {
             return;
         }
 
@@ -1731,7 +2089,8 @@ public partial class MainWindow : Window
     {
         if (FindName("SculptToolPanel") is FrameworkElement sculptToolPanel)
         {
-            sculptToolPanel.Visibility = _viewModel.IsSculptMode ? Visibility.Visible : Visibility.Collapsed;
+            var showFloatingSculpt = _viewModel.IsSculptMode && !_viewModel.IsDesignEditMode;
+            sculptToolPanel.Visibility = showFloatingSculpt ? Visibility.Visible : Visibility.Collapsed;
         }
 
         Viewport.IsRotationEnabled = true;
@@ -1744,6 +2103,276 @@ public partial class MainWindow : Window
             EndSculptStroke();
             ClearSculptBrushPreview();
         }
+    }
+
+    private void ApplyMarginModeFromViewModel()
+    {
+        if (_viewModel.IsMarginMode)
+        {
+            EndSculptStroke();
+            ClearSculptBrushPreview();
+            Viewport.IsRotationEnabled = true;
+            Viewport.IsPanEnabled = true;
+            Viewport.IsZoomEnabled = true;
+        }
+
+        UpdateMarginLineVisual();
+        UpdateToolButtonStates();
+    }
+
+    private bool TryAddMarginPoint(MouseButtonEventArgs e)
+    {
+        var hit = FindMarginHit(e.GetPosition(Viewport));
+        if (hit is null)
+        {
+            return false;
+        }
+
+        if (_viewModel.TryAddMarginPoint(hit.Value.Point))
+        {
+            UpdateMarginLineVisual();
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryBeginMarginRedraw(MouseButtonEventArgs e)
+    {
+        var hit = FindMarginHit(e.GetPosition(Viewport));
+        if (hit is null)
+        {
+            return false;
+        }
+
+        if (!_viewModel.TryBeginMarginRedraw(hit.Value.Point))
+        {
+            return false;
+        }
+
+        _isMarginRedrawDragging = true;
+        StopViewportCameraSpin();
+        Viewport.IsRotationEnabled = false;
+        Viewport.IsPanEnabled = false;
+        Viewport.IsZoomEnabled = false;
+        Viewport.CaptureMouse();
+        UpdateMarginLineVisual();
+        return true;
+    }
+
+    private void TryExtendMarginRedraw(Point screenPoint)
+    {
+        var hit = FindMarginHit(screenPoint);
+        if (hit is null)
+        {
+            return;
+        }
+
+        if (_viewModel.TryExtendMarginRedraw(hit.Value.Point))
+        {
+            UpdateMarginLineVisual();
+        }
+    }
+
+    private void EndMarginRedraw(bool commit)
+    {
+        if (!_isMarginRedrawDragging && !_viewModel.IsMarginRedrawStrokeActive)
+        {
+            return;
+        }
+
+        _isMarginRedrawDragging = false;
+        if (commit)
+        {
+            _viewModel.TryCommitMarginRedraw();
+        }
+        else
+        {
+            _viewModel.CancelMarginRedraw();
+        }
+
+        if (_viewModel.IsMarginMode)
+        {
+            Viewport.IsRotationEnabled = true;
+            Viewport.IsPanEnabled = true;
+            Viewport.IsZoomEnabled = true;
+        }
+
+        StopViewportCameraSpin();
+        if (Viewport.IsMouseCaptured)
+        {
+            Viewport.ReleaseMouseCapture();
+        }
+
+        UpdateMarginLineVisual();
+    }
+
+    private (LoadedMeshItemViewModel Target, Point3D Point)? FindMarginHit(Point screenPoint)
+    {
+        foreach (var hit in Viewport.FindHits(screenPoint))
+        {
+            if (hit.ModelHit is not MeshGeometryModel3D model)
+            {
+                continue;
+            }
+
+            var target = _viewModel.FindLoadedFileByModel(model);
+            if (target is null || !_viewModel.CanPickMarginOnMesh(target))
+            {
+                continue;
+            }
+
+            var point = new Point3D(hit.PointHit.X, hit.PointHit.Y, hit.PointHit.Z);
+            return (target, point);
+        }
+
+        return null;
+    }
+
+    public void RefreshMarginLineVisual() => QueueMarginLineVisualUpdate();
+
+    private void QueueMarginLineVisualUpdate()
+    {
+        var uiDispatcher = ResolveUiDispatcher();
+        if (!uiDispatcher.CheckAccess())
+        {
+            uiDispatcher.BeginInvoke(QueueMarginLineVisualUpdate, DispatcherPriority.Render);
+            return;
+        }
+
+        if (_marginVisualUpdateQueued)
+        {
+            return;
+        }
+
+        _marginVisualUpdateQueued = true;
+        uiDispatcher.BeginInvoke(() =>
+        {
+            _marginVisualUpdateQueued = false;
+            UpdateMarginLineVisual();
+        }, DispatcherPriority.Render);
+    }
+
+    private void UpdateMarginLineVisual()
+    {
+        var displayPolyline = _viewModel.BuildMarginDisplayPolyline();
+        if (!_viewModel.IsDesignHostMode || displayPolyline.Count < 2)
+        {
+            MarginLineHaloInnerVisual.Geometry = null;
+            MarginLineHaloOuterVisual.Geometry = null;
+            MarginLineVisual.Geometry = null;
+            MarginLineHaloInnerVisual.Visibility = Visibility.Collapsed;
+            MarginLineHaloOuterVisual.Visibility = Visibility.Collapsed;
+            MarginLineVisual.Visibility = Visibility.Collapsed;
+            _marginFullRibbonUpdateQueued = false;
+            return;
+        }
+
+        // In the margin step, always keep the line lightweight to avoid UI freezes.
+        if (_viewModel.IsMarginMode || _viewModel.ShouldUseFastMarginVisual)
+        {
+            ApplyFastMarginLineVisual(displayPolyline);
+            // Full halo ribbon is expensive; only attempt it outside of margin placement.
+            if (!_viewModel.IsMarginMode)
+            {
+                ScheduleFullMarginRibbonUpdate();
+            }
+            return;
+        }
+
+        ApplyFullMarginRibbonVisual(displayPolyline);
+    }
+
+    private void ApplyFastMarginLineVisual(IReadOnlyList<Point3D> displayPolyline)
+    {
+        var core = StatsDesignMarginLineVisualBuilder.BuildFastCore(displayPolyline);
+        MarginLineHaloInnerVisual.Geometry = null;
+        MarginLineHaloOuterVisual.Geometry = null;
+        MarginLineVisual.Geometry = core;
+        MarginLineHaloInnerVisual.Visibility = Visibility.Collapsed;
+        MarginLineHaloOuterVisual.Visibility = Visibility.Collapsed;
+        MarginLineVisual.Visibility = core is null ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void ApplyFullMarginRibbonVisual(IReadOnlyList<Point3D> displayPolyline)
+    {
+        var prepMeshes = _viewModel.GetPrepSnapshotsForMarginVisual();
+        _marginPrepSpatialIndices ??= prepMeshes
+            .Select(mesh => new StatsDesignMeshSpatialIndex(mesh))
+            .ToList();
+
+        var ribbon = StatsDesignMarginLineVisualBuilder.Build(
+            displayPolyline,
+            prepMeshes,
+            _viewModel.InsertionAxis,
+            _marginPrepSpatialIndices);
+
+        MarginLineHaloInnerVisual.Geometry = ribbon.HaloInner;
+        MarginLineHaloOuterVisual.Geometry = ribbon.HaloOuter;
+        MarginLineVisual.Geometry = ribbon.Core;
+        MarginLineHaloInnerVisual.Visibility = Visibility.Visible;
+        MarginLineHaloOuterVisual.Visibility = Visibility.Visible;
+        MarginLineVisual.Visibility = Visibility.Visible;
+    }
+
+    private void ScheduleFullMarginRibbonUpdate()
+    {
+        if (_viewModel.IsMarginMode || _viewModel.ShouldUseFastMarginVisual)
+        {
+            return;
+        }
+
+        _marginRibbonUpdateCancellation?.Cancel();
+        _marginRibbonUpdateCancellation?.Dispose();
+        _marginRibbonUpdateCancellation = new CancellationTokenSource();
+        var token = _marginRibbonUpdateCancellation.Token;
+
+        // Snapshot inputs on the UI thread.
+        var displayPolyline = _viewModel.BuildMarginDisplayPolyline();
+        if (displayPolyline.Count < 2)
+        {
+            return;
+        }
+
+        var prepMeshes = _viewModel.GetPrepSnapshotsForMarginVisual();
+        _marginPrepSpatialIndices ??= prepMeshes.Select(mesh => new StatsDesignMeshSpatialIndex(mesh)).ToList();
+        var indices = _marginPrepSpatialIndices;
+        var axis = _viewModel.InsertionAxis;
+
+        _marginFullRibbonUpdateQueued = true;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // Coalesce rapid updates.
+                await Task.Delay(180, token).ConfigureAwait(false);
+                var ribbon = StatsDesignMarginLineVisualBuilder.Build(displayPolyline, prepMeshes, axis, indices);
+
+                BeginInvokeHostUi(() =>
+                {
+                    _marginFullRibbonUpdateQueued = false;
+                    if (token.IsCancellationRequested || _viewModel.IsMarginMode || _viewModel.ShouldUseFastMarginVisual)
+                    {
+                        return;
+                    }
+
+                    MarginLineHaloInnerVisual.Geometry = ribbon.HaloInner;
+                    MarginLineHaloOuterVisual.Geometry = ribbon.HaloOuter;
+                    MarginLineVisual.Geometry = ribbon.Core;
+                    MarginLineHaloInnerVisual.Visibility = Visibility.Visible;
+                    MarginLineHaloOuterVisual.Visibility = Visibility.Visible;
+                    MarginLineVisual.Visibility = Visibility.Visible;
+                }, DispatcherPriority.Background);
+            }
+            catch (OperationCanceledException)
+            {
+                // ignored
+            }
+            catch
+            {
+                // Best-effort visual; ignore failures.
+            }
+        }, token);
     }
 
     private void HideSculptBrushVisual()
@@ -1802,10 +2431,35 @@ public partial class MainWindow : Window
         {
             ClearSculptBrushPreview();
         }
+
+        if (_isMarginRedrawDragging)
+        {
+            EndMarginRedraw(commit: true);
+        }
+    }
+
+    private void Viewport_OnPreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_viewModel.IsMarginMode && _isMarginRedrawDragging)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+            {
+                EndMarginRedraw(commit: true);
+                return;
+            }
+
+            TryExtendMarginRedraw(e.GetPosition(Viewport));
+            e.Handled = true;
+        }
     }
 
     private void Viewport_OnMouseMove(object sender, MouseEventArgs e)
     {
+        if (e.Handled)
+        {
+            return;
+        }
+
         if (_viewModel.IsSculptMode)
         {
             if (_isSculptDragging && _sculptTarget is not null)
@@ -1841,8 +2495,22 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    private void Viewport_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isMarginRedrawDragging)
+        {
+            EndMarginRedraw(commit: true);
+            e.Handled = true;
+        }
+    }
+
     private void Viewport_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
+        if (e.Handled || _isMarginRedrawDragging)
+        {
+            return;
+        }
+
         if (!_isSculptDragging)
         {
             return;
@@ -1855,6 +2523,7 @@ public partial class MainWindow : Window
     private void Viewport_OnLostMouseCapture(object sender, MouseEventArgs e)
     {
         StopViewportCameraSpin();
+        EndMarginRedraw(commit: true);
         EndSculptStroke();
     }
 
@@ -1938,6 +2607,12 @@ public partial class MainWindow : Window
 
         if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
         {
+            if (TryUndoMarginFromKeyboard())
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (!_viewModel.IsSculptMode)
             {
                 return;
@@ -1981,6 +2656,18 @@ public partial class MainWindow : Window
         return _viewModel.TryRedoSculpt();
     }
 
+    public bool TryUndoMarginFromKeyboard()
+    {
+        if (!_viewModel.IsMarginMode || !_viewModel.UndoMarginPointCommand.CanExecute(null))
+        {
+            return false;
+        }
+
+        _viewModel.UndoMarginPointCommand.Execute(null);
+        RefreshMarginLineVisual();
+        return true;
+    }
+
     public bool TryUndoSculptFromKeyboard()
     {
         if (!_viewModel.IsSculptMode)
@@ -2014,7 +2701,7 @@ public partial class MainWindow : Window
             }
 
             var target = _viewModel.FindLoadedFileByModel(model);
-            if (target is null || target.IsLoadFailed || !target.IsVisible)
+            if (target is null || target.IsLoadFailed || !target.IsVisible || !_viewModel.CanSculptMesh(target))
             {
                 continue;
             }

@@ -105,6 +105,26 @@ public static class MaterialLibrary
                 Color.FromRgb(200, 170, 90),
                 Color.FromRgb(210, 190, 140)),
 
+            // Stats Design: open inner cement surface (not listed in UI).
+            ["DesignInner"] = new MaterialPalette(
+                FrontDiffuse: Color.FromRgb(245, 220, 72),
+                BackDiffuse: Color.FromRgb(210, 178, 48),
+                FrontSpecular: Color.FromRgb(255, 244, 170),
+                SpecularShininessOverride: 72,
+                SpecularIntensityScale: 0.95,
+                AmbientScale: 0.28,
+                EmissiveScale: 0.08),
+
+            // Stats Design: library tooth placement preview (not listed in UI).
+            ["LibraryPreview"] = new MaterialPalette(
+                FrontDiffuse: Color.FromRgb(198, 228, 255),
+                BackDiffuse: Color.FromRgb(142, 178, 220),
+                FrontSpecular: Color.FromRgb(235, 248, 255),
+                SpecularShininessOverride: 88,
+                SpecularIntensityScale: 1.05,
+                AmbientScale: 0.22,
+                EmissiveScale: 0.06),
+
             // Temporary preview while picking unified-shell working side (not listed in UI).
             ["WorkingSide"] = new MaterialPalette(
                 FrontDiffuse: Color.FromRgb(168, 210, 152),

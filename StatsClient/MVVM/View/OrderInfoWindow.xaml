@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewmodel="clr-namespace:StatsClient.MVVM.ViewModel"
+        xmlns:view="clr-namespace:StatsClient.MVVM.View"
         xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:dcm="clr-namespace:DCMViewer.Controls"
@@ -41,11 +42,97 @@
                 <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
                 <ResourceDictionary Source="/Themes/ControlStyles.xaml" />
                 <ResourceDictionary Source="/Themes/TabControlStyles.xaml" />
-                <ResourceDictionary Source="/Themes/CircleCheckBox.xaml" />            </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="OrderInfoWatchListEyeToggle"
+                   TargetType="CheckBox">
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="Width"
+                        Value="24" />
+                <Setter Property="Height"
+                        Value="24" />
+                <Setter Property="Background"
+                        Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness"
+                        Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <Border Background="{DynamicResource TransparentBrush}"
+                                    Padding="1">
+                                <TextBlock x:Name="EyeIcon"
+                                           FontFamily="Segoe MDL2 Assets"
+                                           Text="&#xE7B3;"
+                                           FontSize="16"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource OrderInfoWatchListEyeInactive}"
+                                           Opacity="0.32" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked"
+                                         Value="True">
+                                    <Setter TargetName="EyeIcon"
+                                            Property="Foreground"
+                                            Value="{StaticResource OrderInfoWatchListEyeActive}" />
+                                    <Setter TargetName="EyeIcon"
+                                            Property="Opacity"
+                                            Value="1" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter TargetName="EyeIcon"
+                                            Property="Opacity"
+                                            Value="0.55" />
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsChecked"
+                                                   Value="True" />
+                                        <Condition Property="IsMouseOver"
+                                                   Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="EyeIcon"
+                                            Property="Opacity"
+                                            Value="0.88" />
+                                </MultiTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
             <converter:EmptyToHiddenConverter x:Key="EmptyToHiddenConverter" />
             <converter:EmptyToCollapsedConverter x:Key="EmptyToCollapsedConverter" />
             <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converter:BoolToInverseVisibilityConverter x:Key="BoolToInverseVisibilityConverter" />
+            <converter:StringToImageConverter x:Key="StringToImageConverter" />
+
+            <DataTemplate x:Key="OrderInfoHeaderImageTemplate">
+                <Button Background="{DynamicResource TransparentBrush}"
+                        BorderThickness="0"
+                        Padding="2"
+                        Margin="0,0,4,0"
+                        Cursor="Hand"
+                        Command="{Binding DataContext.ImageClickedCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        CommandParameter="{Binding Path}"
+                        ToolTip="Open image">
+                    <Border Width="60"
+                            Height="60"
+                            CornerRadius="4"
+                            BorderBrush="{DynamicResource GlassPanelBorder}"
+                            BorderThickness="1"
+                            Background="{DynamicResource GlassPanelBackground}"
+                            ClipToBounds="True">
+                        <Image Source="{Binding Path, Converter={StaticResource StringToImageConverter}}"
+                               Stretch="Uniform"
+                               MaxWidth="58"
+                               MaxHeight="58"
+                               RenderOptions.BitmapScalingMode="HighQuality" />
+                    </Border>
+                </Button>
+            </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -82,31 +169,49 @@
                     <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
 
-                <Border Background="{DynamicResource DialogCloseButtonBackground}"
-                        Width="65"
-                        Height="40"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Cursor="Hand"
-                        Panel.ZIndex="50"
-                        Margin="0,-10,-7,0"
-                        CornerRadius="0,9,0,0">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="MouseDown">
-                            <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Panel.ZIndex="50"
+                            Margin="0,-6,-7,0">
+                    <Button x:Name="btnToggleFullscreen"
+                            Width="32"
+                            Height="32"
+                            Margin="0,4,2,0"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource TransparentBrush}"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            ToolTip="Fullscreen"
+                            Click="ToggleFullscreen_Click">
+                        <TextBlock x:Name="tbFullscreenIcon"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   Text="&#xE740;"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Button>
 
-                    <TextBlock Text="&#x2573;"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="0,0,0,0"
-                               Foreground="{DynamicResource WhiteBackground}"
-                               FontWeight="Bold"
-                               Panel.ZIndex="50"
-                               FontSize="16" />
+                    <Border Background="{DynamicResource DialogCloseButtonBackground}"
+                            Width="52"
+                            Height="40"
+                            Cursor="Hand"
+                            CornerRadius="0,9,0,0">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseDown">
+                                <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
 
-                </Border>
+                        <TextBlock Text="&#x2573;"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource WhiteBackground}"
+                                   FontWeight="Bold"
+                                   FontSize="16" />
+                    </Border>
+                </StackPanel>
 
                 <Border BorderBrush="{DynamicResource VitaButtonBorderLight}"
                         BorderThickness="0,0,0,1"
@@ -147,6 +252,13 @@
                                 <Image Source="/Images/ToolBar/rename.png" />
                             </Button.Content>
                         </Button>
+
+                        <CheckBox Style="{StaticResource OrderInfoWatchListEyeToggle}"
+                                  IsChecked="{Binding IsOnWatchList, Mode=TwoWay}"
+                                  Margin="6,0,12,4"
+                                  VerticalAlignment="Center"
+                                  ToolTip="Watch this order"
+                                  Visibility="{Binding IsArchiveOrder, Converter={StaticResource BoolToInverseVisibilityConverter}}" />
 
                         <Grid PreviewMouseDown="TitleBar_PreviewMouseDown"
                               Cursor="Hand">
@@ -286,9 +398,11 @@
                                    Name="tbLastName" />
                     </StackPanel>
 
-                    <DockPanel Grid.Column="2">
-                        <StackPanel  Width="110"
-                                     Margin="20,0">
+                    <DockPanel Grid.Column="2"
+                               LastChildFill="True">
+                        <StackPanel Width="110"
+                                    Margin="20,0"
+                                    DockPanel.Dock="Left">
                             <Border BorderBrush="{DynamicResource OrderInfoDividerDark}"
                                     BorderThickness="1"
                                     Margin="10"
@@ -324,7 +438,9 @@
                             </Border>
                         </StackPanel>
 
-                        <StackPanel  HorizontalAlignment="Right">
+                        <StackPanel DockPanel.Dock="Right"
+                                    HorizontalAlignment="Right"
+                                    MinWidth="180">
                             <DockPanel LastChildFill="False">
                                 <Border CornerRadius="7"
                                         BorderThickness="1"
@@ -386,6 +502,25 @@
                                        HorizontalAlignment="Right"
                                        Name="tbCustomer" />
                         </StackPanel>
+
+                        <ScrollViewer x:Name="orderInfoHeaderImagesPanel"
+                                      VerticalAlignment="Center"
+                                      VerticalScrollBarVisibility="Disabled"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      Margin="12,0,12,0"
+                                      MaxHeight="68"
+                                      Visibility="Collapsed"
+                                      AllowDrop="True"
+                                      Drop="Thumbnails_Drop">
+                            <ItemsControl ItemsSource="{Binding ImageList}"
+                                          ItemTemplate="{StaticResource OrderInfoHeaderImageTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </DockPanel>
                 </Grid>
 
@@ -414,11 +549,12 @@
                                     CornerRadius="4"
                                     BorderBrush="{DynamicResource GlassPanelBorder}"
                                     BorderThickness="1">
-                                <ScrollViewer Margin="12,10,12,10"
-                                              VerticalScrollBarVisibility="Auto"
-                                              Background="{DynamicResource TransparentBrush}">
-                                    <Grid Background="{DynamicResource TransparentBrush}">
-                                        <StackPanel>
+                                <Grid Margin="12,10,12,10">
+                                    <ScrollViewer x:Name="orderInfoOverviewScroll"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  Background="{DynamicResource TransparentBrush}">
+                                        <Grid Background="{DynamicResource TransparentBrush}">
+                                            <StackPanel>
                                             <StackPanel Margin="0,1,15,8">
                                                 <TextBlock Text="DIGITAL CASE"
                                                            FontSize="10"
@@ -538,11 +674,19 @@
 
                                             <Button x:Name="btnIdentifyEncodeCap"
                                                     Content="Identify Encode healing cap"
-                                                    Margin="0,8,15,12"
+                                                    Margin="0,8,15,4"
                                                     Padding="10,6"
                                                     HorizontalAlignment="Left"
                                                     Click="IdentifyEncodeCap_Click"
                                                     ToolTip="Pick 3 points on the healing cap top; the viewer will align, measure diameter, and suggest a 3Shape library entry." />
+
+                                            <Button x:Name="btnOpenStatsDesign"
+                                                    Content="Open Stats Design"
+                                                    Margin="0,4,15,4"
+                                                    Padding="10,6"
+                                                    HorizontalAlignment="Left"
+                                                    Click="OpenStatsDesign_Click"
+                                                    ToolTip="Full-screen design workspace: cement shell, sculpt restoration only, export STL to StatsCAD." />
 
                                             <StackPanel Margin="0,0,15,0"
                                                         Visibility="{Binding Comments, Converter={StaticResource EmptyToHiddenConverter}}">
@@ -563,6 +707,10 @@
                                         </StackPanel>
                                     </Grid>
                                 </ScrollViewer>
+
+                                <view:OrderInfoDesignEditStepsPanel x:Name="orderInfoDesignEditStepsPanel"
+                                                                    Visibility="Collapsed" />
+                                </Grid>
                             </Border>
 
                             <Grid HorizontalAlignment="Right"
@@ -571,13 +719,19 @@
                                   Margin="0,8,10,8"
                                   Panel.ZIndex="20">
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition />
                                     <RowDefinition Height="2" />
                                     <RowDefinition MaxHeight="105"
                                                    MinHeight="10" />
                                 </Grid.RowDefinitions>
 
-                                <Border Grid.Row="0"
+                                <view:OrderInfoDesignEditPanel x:Name="orderInfoDesignEditPanel"
+                                                               Grid.Row="0"
+                                                               Margin="0,0,0,6"
+                                                               Visibility="Collapsed" />
+
+                                <Border Grid.Row="1"
                                         Background="{DynamicResource GlassPanelBackground}"
                                         CornerRadius="4"
                                         BorderBrush="{DynamicResource GlassPanelBorder}"
@@ -622,7 +776,7 @@
                                 </Border>
 
 
-                                <Grid Grid.Row="2"
+                                <Grid Grid.Row="3"
                                       Background="{DynamicResource TransparentBrush}">
                                     <Grid.ContextMenu>
                                         <ContextMenu x:Name="designerContextMenu" />
@@ -878,6 +1032,7 @@
 
                     <TabItem Header="Images"
                              x:Name="tabPageImages"
+                             Visibility="Collapsed"
                              Background="{DynamicResource OrderInfoFooterBackground}">
 
 
@@ -969,6 +1124,58 @@
                                 <Image Source="/Images/ToolBar/xml.png" />
                             </Button.Content>
                         </Button>
+                        <Button x:Name="btnToolbarDes"
+                                Width="44"
+                                Height="44"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Background="{DynamicResource TransparentBrush}"
+                                BorderThickness="0"
+                                Margin="0,0,10,0"
+                                ToolTip="Stats Design"
+                                Click="OpenStatsDesign_Click">
+                            <TextBlock Text="DES"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </Button>
+                        <Button x:Name="btnToolbarEnc"
+                                Width="44"
+                                Height="44"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Background="{DynamicResource TransparentBrush}"
+                                BorderThickness="0"
+                                Margin="0,0,10,0"
+                                ToolTip="Identify Encode healing cap"
+                                Click="IdentifyEncodeCap_Click">
+                            <TextBlock Text="ENC"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </Button>
+                        <ToggleButton x:Name="btnDesignEditToggle"
+                                      Width="52"
+                                      Height="44"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Left"
+                                      Background="{DynamicResource TransparentBrush}"
+                                      BorderThickness="0"
+                                      Margin="0,0,10,0"
+                                      Click="DesignEditToggle_Click"
+                                      Visibility="{Binding CanShowDesignEditButton, Converter={StaticResource BoolToVisibilityConverter}}"
+                                      ToolTip="Edit the 3Shape restoration locally. Changes save to StatsDesignEdit only; DCM files are not modified.">
+                            <TextBlock Text="EDIT"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </ToggleButton>
                         <!--<Button Width="44"
                                 Height="44"
                                 VerticalAlignment="Center"
@@ -1007,8 +1214,8 @@
                             <ColumnDefinition Width="44" />
                         </Grid.ColumnDefinitions>
 
-                        <Button Width="44"
-                                Height="44"
+                        <Button Width="38"
+                                Height="38"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Right"
                                 Background="{DynamicResource TransparentBrush}"
@@ -1017,12 +1224,12 @@
                                 Command="{Binding GenerateArchiveZipCommand}"
                                 Grid.Column="0">
                             <Button.Content>
-                                <Image Source="/Images/Other/download.png" />
+                                <Image Source="/Images/ToolBar/download.png" />
                             </Button.Content>
                         </Button>
 
-                        <Button Width="44"
-                                Height="44"
+                        <Button Width="40"
+                                Height="40"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Right"
                                 Background="{DynamicResource TransparentBrush}"
@@ -1031,7 +1238,7 @@
                                 Grid.Column="2"
                                 Command="{Binding ImportArchiveOrderCommand}">
                             <Button.Content>
-                                <Image Source="/Images/ToolBar/new_folder.png" />
+                                <Image Source="/Images/ToolBar/import.png" />
                             </Button.Content>
                         </Button>
                     </Grid>

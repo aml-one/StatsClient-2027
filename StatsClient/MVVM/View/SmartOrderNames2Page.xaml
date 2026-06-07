@@ -448,7 +448,7 @@
                                                        Visibility="{Binding LastPanNumber, Converter={StaticResource EmptyToHiddenConverter}}"
                                                        d:Visibility="Visible"
                                                        HorizontalContentAlignment="Center"
-                                                       Foreground="{DynamicResource SchemeColor_6D4702}" />
+                                                       Foreground="{DynamicResource SmartOrderNamesHintForeground}" />
 
                                             </StackPanel>
                                         </StackPanel>
@@ -701,7 +701,7 @@
                                                    d:Visibility="Visible"
                                                    Visibility="{Binding AgeOfASConnectID, Converter={StaticResource LessThan10minutesInSecondstoVisibleConverter}}"
                                                    HorizontalContentAlignment="Center"
-                                                   Foreground="{DynamicResource SchemeColor_6D4702}" />
+                                                   Foreground="{DynamicResource SmartOrderNamesHintForeground}" />
                                         </StackPanel>
                                         <Button Content="&gt;"
                                                 Margin="0,10,0,0"

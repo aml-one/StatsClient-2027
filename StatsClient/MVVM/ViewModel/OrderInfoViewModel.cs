@@ -39,7 +39,28 @@ public class OrderInfoViewModel : ObservableObject
         set
         {
             threeShapeObject = value;
+            SyncWatchListStateFromOrder();
             RaisePropertyChanged(nameof(ThreeShapeObject));
+        }
+    }
+
+    private bool _suppressWatchListSync;
+    private bool isOnWatchList;
+    public bool IsOnWatchList
+    {
+        get => isOnWatchList;
+        set
+        {
+            if (isOnWatchList == value)
+                return;
+
+            isOnWatchList = value;
+            RaisePropertyChanged(nameof(IsOnWatchList));
+
+            if (_suppressWatchListSync || ThreeShapeObject is null || IsArchiveOrder)
+                return;
+
+            MainViewModel.Instance.ToggleWatchListForOrder(ThreeShapeObject, value);
         }
     }
 
@@ -330,6 +351,10 @@ public class OrderInfoViewModel : ObservableObject
         }
     }
 
+    public bool CanShowDesignEditButton =>
+        ThreeShapeObject?.MaxProcessStatusID == "psModelled" &&
+        ThreeShapeObject.IsCaseWereDesigned;
+
 
     #endregion Properties
 
@@ -343,7 +368,27 @@ public class OrderInfoViewModel : ObservableObject
     public RelayCommand GenerateArchiveZipCommand { get; set; }
     public RelayCommand ImportArchiveOrderCommand { get; set; }
     public RelayCommand RenameOrderCommand { get; set; }
-    
+
+    private void SyncWatchListStateFromOrder()
+    {
+        _suppressWatchListSync = true;
+        try
+        {
+            if (ThreeShapeObject is null || string.IsNullOrWhiteSpace(ThreeShapeObject.IntOrderID))
+            {
+                isOnWatchList = false;
+                RaisePropertyChanged(nameof(IsOnWatchList));
+                return;
+            }
+
+            isOnWatchList = MainViewModel.Instance.IsOrderOnWatchList(ThreeShapeObject.IntOrderID);
+            RaisePropertyChanged(nameof(IsOnWatchList));
+        }
+        finally
+        {
+            _suppressWatchListSync = false;
+        }
+    }
 
     public OrderInfoViewModel()
     {
@@ -686,9 +731,9 @@ public class OrderInfoViewModel : ObservableObject
 
         ApplyBackgroundData(backgroundData);
         ApplyLastTouchedByUi(backgroundData.LastTouchedByList);
-        UpdateDesignedByList();
         ApplyPanColorUi(backgroundData.PanColorBrush);
         ApplyDesignerMenuUi(designersList);
+        UpdateDesignedByList();
         ReloadImages(false);
 
         //tbOrderUpdated.Visibility = Visibility.Visible;
@@ -899,6 +944,7 @@ public class OrderInfoViewModel : ObservableObject
         Items = data.Items;
         LastTouchedByList = data.LastTouchedByList;
         ThreeShapeObject!.IsCaseWereDesigned = data.IsCaseWereDesigned;
+        RaisePropertyChanged(nameof(CanShowDesignEditButton));
     }
 
     private void ApplyLastTouchedByUi(List<LastTouchedByModel> lastTouchedByList)
@@ -921,7 +967,7 @@ public class OrderInfoViewModel : ObservableObject
             };
 
             Brush badgeBackground = CreateComputerBadgeBrush(computerName);
-            Brush badgeForeground = IsDarkBrushColor(badgeBackground) ? ColorSchemeResourceCatalog.GetBrush("WhiteBackground") : ColorSchemeResourceCatalog.GetBrush("BlackColor");
+            Brush badgeForeground = GetContrastingBadgeForeground(badgeBackground);
 
             Border computerBadge = new()
             {
@@ -1277,7 +1323,7 @@ public class OrderInfoViewModel : ObservableObject
 
         LastDesignedByList = GetLastDesignedByListData(ThreeShapeObject.IntOrderID!);
 
-        if (LastDesignedByList.Count == 0 && IsArchiveOrder && !string.IsNullOrWhiteSpace(ThreeShapeObject.DesignerName))
+        if (LastDesignedByList.Count == 0 && !string.IsNullOrWhiteSpace(ThreeShapeObject.DesignerName))
         {
             LastDesignedByList =
             [
@@ -1295,7 +1341,7 @@ public class OrderInfoViewModel : ObservableObject
         {
             foreach (DesignedByModel item in LastDesignedByList)
             {
-                string designerName = item.Designer ?? string.Empty;
+                string designerName = ResolveDesignedByDisplayName(item);
                 string dateTime = item.DateTimeStr ?? string.Empty;
 
                 _ = DateTime.TryParse(dateTime, out DateTime dtm);
@@ -1310,7 +1356,7 @@ public class OrderInfoViewModel : ObservableObject
                 {
                     FontWeight = FontWeights.SemiBold,
                     FontSize = 12,
-                    Foreground = ColorSchemeResourceCatalog.GetBrush("BlackColor"),
+                    Foreground = ColorSchemeResourceCatalog.GetBrush("GlassPanelValueForeground"),
                     Text = designerName
                 };
                 stckPanel.Children.Add(dtbCompName);
@@ -1335,6 +1381,46 @@ public class OrderInfoViewModel : ObservableObject
         }
         else
             _InfoWindow.borderLastDesignedByPanel.Visibility = Visibility.Collapsed;
+    }
+
+    private string ResolveDesignedByDisplayName(DesignedByModel item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.Designer))
+        {
+            return item.Designer!;
+        }
+
+        if (!string.IsNullOrWhiteSpace(ThreeShapeObject?.DesignerName))
+        {
+            return ThreeShapeObject.DesignerName!;
+        }
+
+        string? fromLastDesigner = TryResolveDesignerFromLastDesignerFile(ThreeShapeObject!.IntOrderID!);
+        return string.IsNullOrWhiteSpace(fromLastDesigner) ? string.Empty : fromLastDesigner;
+    }
+
+    private string? TryResolveDesignerFromLastDesignerFile(string orderId)
+    {
+        string path = Path.Combine(DatabaseOperations.GetServerFileDirectory(), orderId, "lastDesigner");
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            string designerId = File.ReadAllText(path).Trim();
+            if (string.IsNullOrWhiteSpace(designerId))
+            {
+                return null;
+            }
+
+            return Designers.FirstOrDefault(x => x.DesignerID == designerId)?.FriendlyName ?? designerId;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public void WindowClosing()
@@ -1399,11 +1485,13 @@ public class OrderInfoViewModel : ObservableObject
             }
         }
 
-        if (!isThereAnyPicture && !ReleaseFileLocks)
-            _InfoWindow.tabPageImages.Visibility = Visibility.Collapsed;
-        else
-            _InfoWindow.tabPageImages.Visibility = Visibility.Visible;
+        var showHeaderImages = isThereAnyPicture && !ReleaseFileLocks;
+        _InfoWindow.orderInfoHeaderImagesPanel.Visibility = showHeaderImages
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        _InfoWindow.tabPageImages.Visibility = Visibility.Collapsed;
 
+        RaisePropertyChanged(nameof(ImageList));
         _InfoWindow.Thumbnails.Items.Refresh();
     }
 
@@ -1756,6 +1844,12 @@ public class OrderInfoViewModel : ObservableObject
         Color color = ColorFromHsv(hue, 0.35, 0.92);
         return new SolidColorBrush(color);
     }
+
+    /// <summary>
+    /// Badge labels need true black/white — not theme <c>BlackColor</c>, which is light body text in dark mode.
+    /// </summary>
+    private static Brush GetContrastingBadgeForeground(Brush background) =>
+        IsDarkBrushColor(background) ? Brushes.White : Brushes.Black;
 
     private static bool IsDarkBrushColor(Brush brush)
     {

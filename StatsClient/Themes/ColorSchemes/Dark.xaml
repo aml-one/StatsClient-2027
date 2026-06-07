@@ -50,6 +50,7 @@
     <!-- #region Text (dark surfaces — BlackColor is light body text; BlackColor_Cl stays black for shadows) -->
     <SolidColorBrush x:Key="LightTextColor">#F1F5F9</SolidColorBrush>
     <SolidColorBrush x:Key="BlackColor">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="StrokeColor">#333333</SolidColorBrush>
     <SolidColorBrush x:Key="TodayButtonForeground">#0F172A</SolidColorBrush>
     <SolidColorBrush x:Key="LastIteroIDTextColor">#86EFAC</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoPtNameColor">#6EE7B7</SolidColorBrush>
@@ -107,23 +108,38 @@
 
     <!-- #region Fields & panels -->
     <SolidColorBrush x:Key="CreamYellowFieldColor">#EFE7C9</SolidColorBrush>
-    <SolidColorBrush x:Key="EmptyPansBackground">#777777</SolidColorBrush>
+    <SolidColorBrush x:Key="EmptyPansBackground">#4A6FA5</SolidColorBrush>
     <SolidColorBrush x:Key="EmptyPansBorder">#999999</SolidColorBrush>
     <SolidColorBrush x:Key="SettingsInputBackground">#555555</SolidColorBrush>
     <SolidColorBrush x:Key="SettingsListBackground">#777777</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region Action buttons -->
-    <SolidColorBrush x:Key="ShowRxButtonColor">#C6BE13</SolidColorBrush>
-    <SolidColorBrush x:Key="GrabANumberButtonColor">#56795F</SolidColorBrush>
-    <SolidColorBrush x:Key="MarkAsRushButtonColor">#76595F</SolidColorBrush>
+    <SolidColorBrush x:Key="ShowRxButtonColor">#E3BD22</SolidColorBrush>
+    <SolidColorBrush x:Key="ShowRxButtonForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="ShowRxButtonBorder">#F5E6A8</SolidColorBrush>
+    <SolidColorBrush x:Key="GrabANumberButtonColor">#2F855A</SolidColorBrush>
+    <SolidColorBrush x:Key="MarkAsRushButtonColor">#9F3D4A</SolidColorBrush>
     <SolidColorBrush x:Key="AddSendToLineButtonColor">#96995F</SolidColorBrush>
     <SolidColorBrush x:Key="AddMissingButtonColor">#76995F</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region RX / prescription -->
-    <SolidColorBrush x:Key="RXEventsTitle">#667466</SolidColorBrush>
-    <SolidColorBrush x:Key="RXLogTitleBackground">#666674</SolidColorBrush>
+    <SolidColorBrush x:Key="PanNumberLabelForeground">#000000</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerPageBackground" Color="{StaticResource WindowBackgroundColor}" />
+    <SolidColorBrush x:Key="RxMakerPanelBackground">#2A3342</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerPanelBorder">#4A5568</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerSectionHeaderBackground">#3D4F63</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerSectionHeaderForeground">#F1F5F9</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerLabelForeground">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerValueForeground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerCountForeground">#FFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerInputBackground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerInputForeground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerInputBorder">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="RxMakerOrdersListBackground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="RXEventsTitle">#3D4F63</SolidColorBrush>
+    <SolidColorBrush x:Key="RXLogTitleBackground">#3D4F63</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region Today button gradient -->
@@ -260,16 +276,20 @@
     <SolidColorBrush x:Key="FooterSearchBorder">#9938BDF8</SolidColorBrush>
     <SolidColorBrush x:Key="FooterSearchBorderHover">#CC38BDF8</SolidColorBrush>
     <SolidColorBrush x:Key="FooterSearchWatermarkForeground">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterModuleShortcutBackground">#3D5268</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterModuleShortcutBorder">#6678899D</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterModuleShortcutHoverBackground">#53667B</SolidColorBrush>
+    <SolidColorBrush x:Key="FooterModuleShortcutHoverBorder">#9938BDF8</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region Converters -->
     <SolidColorBrush x:Key="PaymentStatusPaidColor">#27AE60</SolidColorBrush>
     <SolidColorBrush x:Key="PaymentStatusUnpaidColor">#E74C3C</SolidColorBrush>
     <SolidColorBrush x:Key="PaymentStatusUnknownColor">Gray</SolidColorBrush>
-    <SolidColorBrush x:Key="InconsistencyBothFilledColor">#00571C</SolidColorBrush>
-    <SolidColorBrush x:Key="InconsistencyFlaggedColor">#06A2B0</SolidColorBrush>
-    <SolidColorBrush x:Key="InconsistencyEmptyFirstColor">#E1005A</SolidColorBrush>
-    <SolidColorBrush x:Key="InconsistencyEmptySecondColor">#B07F0B</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyBothFilledColor">#4ADE80</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyFlaggedColor">#38BDF8</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyEmptyFirstColor">#F472B6</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyEmptySecondColor">#FB923C</SolidColorBrush>
     <SolidColorBrush x:Key="AgeColorFresh">SeaGreen</SolidColorBrush>
     <SolidColorBrush x:Key="AgeColorRecent">LimeGreen</SolidColorBrush>
     <SolidColorBrush x:Key="AgeColorGreen">Green</SolidColorBrush>
@@ -316,7 +336,7 @@
     <SolidColorBrush x:Key="CommentColorMuted">Gray</SolidColorBrush>
     <SolidColorBrush x:Key="CommentColorHighlight">Blue</SolidColorBrush>
     <SolidColorBrush x:Key="PanColorNameGreen">Green</SolidColorBrush>
-    <SolidColorBrush x:Key="InconsistencyEmptyBackground">White</SolidColorBrush>
+    <SolidColorBrush x:Key="InconsistencyEmptyBackground">#1E293B</SolidColorBrush>
     <SolidColorBrush x:Key="ViewerToolInactiveForeground">Black</SolidColorBrush>
     <SolidColorBrush x:Key="XmlCompareTransparentBackground">Transparent</SolidColorBrush>
     <sys:String x:Key="NamedColorString_Black">Black</sys:String>
@@ -407,14 +427,22 @@
     <!-- #endregion -->
 
     <!-- #region Message box -->
-    <SolidColorBrush x:Key="MessageBoxBackground">#FFFFFF</SolidColorBrush>
-    <Color x:Key="MessageBoxHeaderGradientStart">#C6C9CF</Color>
-    <Color x:Key="MessageBoxHeaderGradientEnd">#B6B9BF</Color>
-    <SolidColorBrush x:Key="MessageBoxTitleBorder">#666666</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxBackground">#2A3342</SolidColorBrush>
+    <Color x:Key="MessageBoxHeaderGradientStart">#3D4F63</Color>
+    <Color x:Key="MessageBoxHeaderGradientEnd">#2F3D4F</Color>
+    <SolidColorBrush x:Key="MessageBoxTitleBorder">#4A5568</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxTitleForeground">#F1F5F9</SolidColorBrush>
     <SolidColorBrush x:Key="MessageBoxBodyForeground">#E2E8F0</SolidColorBrush>
-    <SolidColorBrush x:Key="MessageBoxSubtitleForeground">#CBD5E1</SolidColorBrush>
-    <SolidColorBrush x:Key="MessageBoxHintForeground">#94A3B8</SolidColorBrush>
-    <SolidColorBrush x:Key="MessageBoxBodyFill">#111111</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxSubtitleForeground">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxHintForeground">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxBodyFill">#F1F5F9</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxBorderBrush">#64748B</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxAccentColor">#4A90A4</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonPrimaryBackground">#C9A227</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonPrimaryForeground">#1E293B</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonSecondaryBackground">#46494F</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonSecondaryForeground">#E2E8F0</SolidColorBrush>
+    <SolidColorBrush x:Key="MessageBoxButtonBorderBrush">#94A3B8</SolidColorBrush>
     <!-- #endregion -->
 
     <!-- #region Popup / menu -->
@@ -568,6 +596,8 @@
     <SolidColorBrush x:Key="OrderInfoToolbarValueForeground">#E2E8F0</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoToolbarAddScanForeground">#86EFAC</SolidColorBrush>
     <SolidColorBrush x:Key="OrderInfoToolbarRefreshForeground">#7DD3FC</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoWatchListEyeInactive">#94A3B8</SolidColorBrush>
+    <SolidColorBrush x:Key="OrderInfoWatchListEyeActive">#F7E08C</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameAccent">#65a7b5</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameCommentAccent">#32a89e</SolidColorBrush>
     <SolidColorBrush x:Key="OrderRenameDivider">#6678899D</SolidColorBrush>
@@ -592,6 +622,7 @@
     <SolidColorBrush x:Key="OrderRenameConfirmButtonBorder">#664ADE80</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesTitleForeground">#E2E8F0</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesSectionLabelForeground">#CBD5E1</SolidColorBrush>
+    <SolidColorBrush x:Key="SmartOrderNamesHintForeground">#94A3B8</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesFilterNoteForeground">#FCA5A5</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesRefreshButtonBackground">#415366</SolidColorBrush>
     <SolidColorBrush x:Key="SmartOrderNamesRefreshButtonForeground">#E0F2FE</SolidColorBrush>
@@ -788,7 +819,7 @@
     <Color x:Key="SchemeColor_007D45_Cl">#007D45</Color>
     <SolidColorBrush x:Key="SchemeColor_008048">#008048</SolidColorBrush>
     <Color x:Key="SchemeColor_008048_Cl">#008048</Color>
-    <SolidColorBrush x:Key="SchemeColor_008269">#008269</SolidColorBrush>
+    <SolidColorBrush x:Key="SchemeColor_008269">#09D4AC</SolidColorBrush>
     <Color x:Key="SchemeColor_008269_Cl">#008269</Color>
     <SolidColorBrush x:Key="SchemeColor_009B9B9B">#009B9B9B</SolidColorBrush>
     <Color x:Key="SchemeColor_009B9B9B_Cl">#009B9B9B</Color>
@@ -990,7 +1021,7 @@
     <Color x:Key="SchemeColor_67467D_Cl">#67467D</Color>
     <SolidColorBrush x:Key="SchemeColor_6A540A">#6A540A</SolidColorBrush>
     <Color x:Key="SchemeColor_6A540A_Cl">#6A540A</Color>
-    <SolidColorBrush x:Key="SchemeColor_6D4702">#6D4702</SolidColorBrush>
+    <SolidColorBrush x:Key="SchemeColor_6D4702">#94A3B8</SolidColorBrush>
     <Color x:Key="SchemeColor_6D4702_Cl">#6D4702</Color>
     <SolidColorBrush x:Key="SchemeColor_7060A5FA">#7060A5FA</SolidColorBrush>
     <Color x:Key="SchemeColor_7060A5FA_Cl">#7060A5FA</Color>
@@ -1375,7 +1406,7 @@
     <Color x:Key="DialogSubtitleForeground_Cl">#1B2A38</Color>
     <Color x:Key="DialogSurfaceBackground_Cl">#FFFFFF</Color>
     <Color x:Key="DialogTitleForeground_Cl">#2A3A52</Color>
-    <Color x:Key="EmptyPansBackground_Cl">#777777</Color>
+    <Color x:Key="EmptyPansBackground_Cl">#4A6FA5</Color>
     <Color x:Key="EmptyPansBorder_Cl">#999999</Color>
     <Color x:Key="EslScrollbarThumbHover_Cl">#999999</Color>
     <Color x:Key="EslScrollbarThumbPressed_Cl">#777777</Color>
@@ -1429,10 +1460,10 @@
     <Color x:Key="ImmersiveTextMuted_Cl">#FF94A3B8</Color>
     <Color x:Key="ImmersiveTextPrimary_Cl">#FFE2E8F0</Color>
     <Color x:Key="ImmersiveTextSecondary_Cl">#FFCBD5E1</Color>
-    <Color x:Key="InconsistencyBothFilledColor_Cl">#00571C</Color>
-    <Color x:Key="InconsistencyEmptyBackground_Cl">White</Color>
-    <Color x:Key="InconsistencyEmptyFirstColor_Cl">#E1005A</Color>
-    <Color x:Key="InconsistencyEmptySecondColor_Cl">#B07F0B</Color>
+    <Color x:Key="InconsistencyBothFilledColor_Cl">#4ADE80</Color>
+    <Color x:Key="InconsistencyEmptyBackground_Cl">#1E293B</Color>
+    <Color x:Key="InconsistencyEmptyFirstColor_Cl">#F472B6</Color>
+    <Color x:Key="InconsistencyEmptySecondColor_Cl">#FB923C</Color>
     <Color x:Key="InconsistencyFlaggedColor_Cl">#06A2B0</Color>
     <Color x:Key="IteroFilesCount_Cl">#FF1D06</Color>
     <Color x:Key="LastIteroIDTextColor_Cl">#066D06</Color>
@@ -1441,14 +1472,22 @@
     <Color x:Key="LightPrpleColor_Cl">#CCCCFF</Color>
     <Color x:Key="LightTextColor_Cl">BlanchedAlmond</Color>
     <Color x:Key="MarkAsRushButtonColor_Cl">#76595F</Color>
-    <Color x:Key="MessageBoxBackground_Cl">#FFFFFF</Color>
-    <Color x:Key="MessageBoxBodyFill_Cl">#111111</Color>
+    <Color x:Key="MessageBoxBackground_Cl">#2A3342</Color>
+    <Color x:Key="MessageBoxBodyFill_Cl">#F1F5F9</Color>
     <Color x:Key="MessageBoxBodyForeground_Cl">#E2E8F0</Color>
-    <Color x:Key="MessageBoxHeaderGradientEnd_Cl">#B6B9BF</Color>
-    <Color x:Key="MessageBoxHeaderGradientStart_Cl">#C6C9CF</Color>
-    <Color x:Key="MessageBoxHintForeground_Cl">#94A3B8</Color>
-    <Color x:Key="MessageBoxSubtitleForeground_Cl">#CBD5E1</Color>
-    <Color x:Key="MessageBoxTitleBorder_Cl">#666666</Color>
+    <Color x:Key="MessageBoxHeaderGradientEnd_Cl">#2F3D4F</Color>
+    <Color x:Key="MessageBoxHeaderGradientStart_Cl">#3D4F63</Color>
+    <Color x:Key="MessageBoxHintForeground_Cl">#64748B</Color>
+    <Color x:Key="MessageBoxSubtitleForeground_Cl">#94A3B8</Color>
+    <Color x:Key="MessageBoxTitleBorder_Cl">#4A5568</Color>
+    <Color x:Key="MessageBoxTitleForeground_Cl">#F1F5F9</Color>
+    <Color x:Key="MessageBoxBorderBrush_Cl">#64748B</Color>
+    <Color x:Key="MessageBoxAccentColor_Cl">#4A90A4</Color>
+    <Color x:Key="MessageBoxButtonPrimaryBackground_Cl">#C9A227</Color>
+    <Color x:Key="MessageBoxButtonPrimaryForeground_Cl">#1E293B</Color>
+    <Color x:Key="MessageBoxButtonSecondaryBackground_Cl">#46494F</Color>
+    <Color x:Key="MessageBoxButtonSecondaryForeground_Cl">#E2E8F0</Color>
+    <Color x:Key="MessageBoxButtonBorderBrush_Cl">#94A3B8</Color>
     <Color x:Key="ModalBodyForeground_Cl">#46627A</Color>
     <Color x:Key="ModalCardBackground_Cl">#E6F8FAFD</Color>
     <Color x:Key="ModalCardBorderLight_Cl">#88B8C6D5</Color>
@@ -1530,7 +1569,9 @@
     <Color x:Key="SettingsSideTabSelectedBorder_Cl">#64748B</Color>
     <Color x:Key="SettingsSideTabSelectedForeground_Cl">#F1F5F9</Color>
     <Color x:Key="SettingsTabHeaderBackground_Cl">#66696F</Color>
-    <Color x:Key="ShowRxButtonColor_Cl">#C6BE13</Color>
+    <Color x:Key="ShowRxButtonColor_Cl">#E3BD22</Color>
+    <Color x:Key="ShowRxButtonForeground_Cl">#1E293B</Color>
+    <Color x:Key="ShowRxButtonBorder_Cl">#F5E6A8</Color>
     <Color x:Key="SplashAccentBlueLight_Cl">#38BDF8</Color>
     <Color x:Key="SplashAccentBlue_Cl">#0369A1</Color>
     <Color x:Key="SplashBackground_Cl">#38485A</Color>

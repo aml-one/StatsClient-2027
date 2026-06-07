@@ -7,7 +7,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!-- Color scheme must load first: theme XAML uses StaticResource in trigger setters. -->
-                <ResourceDictionary Source="/Themes/ColorSchemes/Light.xaml" />
+                <ResourceDictionary Source="/Themes/ColorSchemes/Dark.xaml" />
                 <ResourceDictionary Source="/Themes/ScrollBar.xaml" />
                 <ResourceDictionary Source="/Themes/TabControlStyles.xaml" />
                 <ResourceDictionary Source="/Themes/CircleCheckBox.xaml" />

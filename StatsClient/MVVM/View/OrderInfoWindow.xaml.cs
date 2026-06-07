@@ -32,6 +32,9 @@ namespace StatsClient.MVVM.View;
 
 public partial class OrderInfoWindow : Window, INotifyPropertyChanged
 {
+    private const double DefaultMaxWidth = 1920;
+    private const double DefaultMaxHeight = 1200;
+
     private OrderInfoWindow? instance;
     private List<DCMFileItem>? _currentCaseFiles;
     private DcmViewerViewModel? _hookedViewerViewModel;
@@ -76,6 +79,40 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         LocationChanged += (_, _) => PositionScanPickerWindow();
         SizeChanged += (_, _) => PositionScanPickerWindow();
         Activated += (_, _) => KeepScanPickerAboveOwner();
+        StateChanged += (_, _) => UpdateFullscreenButtonIcon();
+    }
+
+    private void ToggleFullscreen_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            WindowState = WindowState.Normal;
+            MaxWidth = DefaultMaxWidth;
+            MaxHeight = DefaultMaxHeight;
+        }
+        else
+        {
+            MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;
+            MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
+            WindowState = WindowState.Maximized;
+        }
+
+        UpdateFullscreenButtonIcon();
+    }
+
+    private void UpdateFullscreenButtonIcon()
+    {
+        if (tbFullscreenIcon is null)
+        {
+            return;
+        }
+
+        var isMaximized = WindowState == WindowState.Maximized;
+        tbFullscreenIcon.Text = isMaximized ? "\uE73F" : "\uE740";
+        if (btnToggleFullscreen is not null)
+        {
+            btnToggleFullscreen.ToolTip = isMaximized ? "Exit fullscreen" : "Fullscreen";
+        }
     }
 
     private async void OrderInfoWindow_Loaded(object sender, RoutedEventArgs e)
@@ -151,7 +188,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         viewModel.PropertyChanged += ViewerViewModelOnPropertyChanged;
         UpdateOverviewLoadingOverlay();
         UpdateOrderInfoLeftPanelVisibility();
-        UpdateLastTouchedByPanelVisibility();
+        UpdateOrderInfoRightPanels();
     }
 
     private void ViewerViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -170,6 +207,89 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         {
             Dispatcher.BeginInvoke(UpdateLastTouchedByPanelVisibility, DispatcherPriority.DataBind);
         }
+
+        if (string.Equals(e.PropertyName, "IsDesignEditMode", StringComparison.Ordinal))
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                UpdateOrderInfoLeftPanelForDesignEdit();
+                UpdateOrderInfoRightPanels();
+            }, DispatcherPriority.DataBind);
+        }
+    }
+
+    private void UpdateOrderInfoLeftPanelForDesignEdit()
+    {
+        var viewModel = dcmViewer.ViewerViewModel;
+        var inDesignEdit = viewModel?.IsDesignEditMode == true;
+
+        if (orderInfoOverviewScroll is not null)
+        {
+            orderInfoOverviewScroll.Visibility = inDesignEdit ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (orderInfoDesignEditStepsPanel is not null)
+        {
+            var showSteps = inDesignEdit && OrderInfoViewModel.Instance.CanShowDesignEditButton;
+            orderInfoDesignEditStepsPanel.Visibility = showSteps ? Visibility.Visible : Visibility.Collapsed;
+            if (showSteps && viewModel is not null)
+            {
+                orderInfoDesignEditStepsPanel.BindViewer(viewModel);
+            }
+            else
+            {
+                orderInfoDesignEditStepsPanel.UnbindViewer();
+            }
+        }
+    }
+
+    private void UpdateOrderInfoRightPanels()
+    {
+        var viewModel = dcmViewer.ViewerViewModel;
+        if (viewModel?.IsDesignEditMode == true)
+        {
+            orderInfoDesignEditPanel?.BindViewer(viewModel);
+        }
+        else
+        {
+            orderInfoDesignEditPanel?.UnbindViewer();
+        }
+
+        UpdateDesignEditUiState();
+    }
+
+    private void DesignEditToggle_Click(object sender, RoutedEventArgs e)
+    {
+        dcmViewer.ViewerViewModel?.ToggleDesignEditModeCommand.Execute(null);
+        UpdateOrderInfoLeftPanelForDesignEdit();
+        UpdateOrderInfoRightPanels();
+    }
+
+    private void UpdateDesignEditUiState()
+    {
+        var viewModel = dcmViewer.ViewerViewModel;
+        if (btnDesignEditToggle is not null)
+        {
+            btnDesignEditToggle.IsChecked = viewModel?.IsDesignEditMode == true;
+        }
+
+        UpdateOrderInfoLeftPanelForDesignEdit();
+        if (orderInfoDesignEditPanel is not null)
+        {
+            var showTools = OrderInfoViewModel.Instance.CanShowDesignEditButton &&
+                            viewModel?.IsDesignEditMode == true;
+            orderInfoDesignEditPanel.Visibility = showTools ? Visibility.Visible : Visibility.Collapsed;
+            if (showTools && viewModel is not null)
+            {
+                orderInfoDesignEditPanel.BindViewer(viewModel);
+            }
+            else if (!showTools)
+            {
+                orderInfoDesignEditPanel.UnbindViewer();
+            }
+        }
+
+        UpdateLastTouchedByPanelVisibility();
     }
 
     internal void UpdateLastTouchedByPanelVisibility()
@@ -179,7 +299,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             return;
         }
 
-        if (dcmViewer.ViewerViewModel?.IsSculptMode == true)
+        if (dcmViewer.ViewerViewModel?.IsDesignEditMode == true)
         {
             borderLastTouchedByPanel.Visibility = Visibility.Collapsed;
             return;
@@ -198,6 +318,10 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
 
         var hideForSection = dcmViewer.ViewerViewModel?.IsSectionMode == true;
         OrderInfoLeftPanel.Visibility = hideForSection ? Visibility.Collapsed : Visibility.Visible;
+        if (!hideForSection)
+        {
+            UpdateOrderInfoLeftPanelForDesignEdit();
+        }
     }
 
     private void UpdateOverviewLoadingOverlay()
@@ -217,6 +341,13 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
                 e.Handled = true;
             }
 
+            return;
+        }
+
+        if (e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            dcmViewer.ViewerViewModel?.RedoDesignEditCommand.Execute(null);
+            e.Handled = true;
             return;
         }
 
@@ -255,6 +386,12 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             }
             else
             {
+                if (dcmViewer.ViewerViewModel?.IsDesignEditMode == true)
+                {
+                    dcmViewer.ViewerViewModel.ExitDesignEditMode();
+                }
+
+                orderInfoDesignEditPanel?.UnbindViewer();
                 dcmViewer.UnloadViewer();
             }
          }
@@ -263,6 +400,12 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
 
     private void Window_Closing(object sender, CancelEventArgs e)
     {
+        if (dcmViewer.ViewerViewModel?.IsDesignEditMode == true)
+        {
+            dcmViewer.ViewerViewModel.ExitDesignEditMode();
+        }
+
+        orderInfoDesignEditPanel?.UnbindViewer();
         CloseScanPickerWindow();
         OrderInfoViewModel.Instance.WindowClosing();
     }
@@ -459,6 +602,8 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
             return;
 
         await staticInstance.ReleaseOrderFileLocksForRenameAsync();
+        staticInstance.dcmViewer.ShutdownEmbeddedHost();
+        DcmViewerViewModel.UiDispatcher = null;
     }
 
     public async Task ReloadCaseFilesForCurrentOrderAsync()
@@ -470,7 +615,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
 
         DCMFinderResult result = await Task.Run(
             () => DCMFinder.FindForCase(OrderInfoViewModel.Instance.ThreeShapeObject),
-            dcmViewer.ViewerViewModel?.BusyCancellationToken ?? CancellationToken.None);
+            dcmViewer.ViewerViewModel?.BusyCancellationToken ?? CancellationToken.None).ConfigureAwait(true);
 
         dcmViewer.ViewerViewModel?.BusyCancellationToken.ThrowIfCancellationRequested();
 
@@ -489,6 +634,7 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
         AddDefaultPreparationScans(_currentCaseFiles);
         await dcmViewer.LoadCaseFilesAsync(_currentCaseFiles, GetCurrentOrderFolder());
         EnsureViewerLoadingHook();
+        UpdateOrderInfoLeftPanelForDesignEdit();
     }
 
     private static DCMFileItem CreateCaseFileItem(OrderScanPickerItem item)
@@ -538,6 +684,11 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
                                      || path.EndsWith(".ply", StringComparison.OrdinalIgnoreCase)))
             {
                 var fullPath = Path.GetFullPath(filePath);
+                if (!CaseScanDiscoveryRules.ShouldIncludeInCaseDiscovery(fullPath))
+                {
+                    continue;
+                }
+
                 if (knownPaths.Contains(fullPath))
                 {
                     continue;
@@ -634,6 +785,11 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
                                  || path.EndsWith(".ply", StringComparison.OrdinalIgnoreCase)))
         {
             var fullPath = Path.GetFullPath(filePath);
+            if (!CaseScanDiscoveryRules.ShouldIncludeInCaseDiscovery(fullPath))
+            {
+                continue;
+            }
+
             string group;
             if (fromCadFolder)
             {
@@ -660,6 +816,19 @@ public partial class OrderInfoWindow : Window, INotifyPropertyChanged
                 IsLoaded = loadedPaths.Contains(fullPath)
             });
         }
+    }
+
+    private async void OpenStatsDesign_Click(object sender, RoutedEventArgs e)
+    {
+        if (OrderInfoViewModel.Instance.ThreeShapeObject is not ThreeShapeOrdersModel order)
+        {
+            return;
+        }
+
+        await ReleaseOrderFileLocksForRenameAsync();
+        dcmViewer.ShutdownEmbeddedHost();
+        DcmViewerViewModel.UiDispatcher = null;
+        StatsDesignWindow.ShowForOrder(order, this);
     }
 
     private async void IdentifyEncodeCap_Click(object sender, RoutedEventArgs e)

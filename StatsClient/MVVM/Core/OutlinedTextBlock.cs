@@ -56,13 +56,13 @@ public class OutlinedTextBlock : FrameworkElement
       "Fill",
       typeof(Brush),
       typeof(OutlinedTextBlock),
-      new FrameworkPropertyMetadata(Brushes.Black, FrameworkPropertyMetadataOptions.AffectsRender));
+      new FrameworkPropertyMetadata(Brushes.Black, FrameworkPropertyMetadataOptions.AffectsRender, OnFormattedTextInvalidated));
 
     public static readonly DependencyProperty StrokeProperty = DependencyProperty.Register(
       "Stroke",
       typeof(Brush),
       typeof(OutlinedTextBlock),
-      new FrameworkPropertyMetadata(Brushes.Black, FrameworkPropertyMetadataOptions.AffectsRender));
+      new FrameworkPropertyMetadata(Brushes.Black, FrameworkPropertyMetadataOptions.AffectsRender, OnFormattedTextInvalidated));
 
     public static readonly DependencyProperty StrokeThicknessProperty = DependencyProperty.Register(
       "StrokeThickness",
@@ -212,24 +212,45 @@ public class OutlinedTextBlock : FrameworkElement
 
     protected override void OnRender(DrawingContext drawingContext)
     {
-        EnsureGeometry();
-
-        drawingContext.DrawGeometry(Fill, null, _TextGeometry);
-
-        if (StrokePosition == StrokePosition.Outside)
+        if (drawingContext is null || Fill is null || Stroke is null)
         {
-            drawingContext.PushClip(_clipGeometry);
-        }
-        else if (StrokePosition == StrokePosition.Inside)
-        {
-            drawingContext.PushClip(_TextGeometry);
+            return;
         }
 
-        drawingContext.DrawGeometry(null, _Pen, _TextGeometry);
-
-        if (StrokePosition == StrokePosition.Outside || StrokePosition == StrokePosition.Inside)
+        try
         {
-            drawingContext.Pop();
+            EnsureGeometry();
+            if (_TextGeometry is null || _Pen is null)
+            {
+                return;
+            }
+
+            drawingContext.DrawGeometry(Fill, null, _TextGeometry);
+
+            if (StrokePosition == StrokePosition.Outside)
+            {
+                if (_clipGeometry is not null)
+                {
+                    drawingContext.PushClip(_clipGeometry);
+                }
+            }
+            else if (StrokePosition == StrokePosition.Inside)
+            {
+                drawingContext.PushClip(_TextGeometry);
+            }
+
+            drawingContext.DrawGeometry(null, _Pen, _TextGeometry);
+
+            if (StrokePosition == StrokePosition.Outside || StrokePosition == StrokePosition.Inside)
+            {
+                drawingContext.Pop();
+            }
+        }
+        catch
+        {
+            _FormattedText = null;
+            _TextGeometry = null;
+            _clipGeometry = null;
         }
     }
 
@@ -261,6 +282,7 @@ public class OutlinedTextBlock : FrameworkElement
 
         // need to re-generate the geometry now that the dimensions have changed
         _TextGeometry = null;
+        _clipGeometry = null;
         UpdatePen();
 
         return finalSize;
@@ -272,6 +294,8 @@ public class OutlinedTextBlock : FrameworkElement
         var outlinedTextBlock = (OutlinedTextBlock)dependencyObject;
         outlinedTextBlock._FormattedText = null;
         outlinedTextBlock._TextGeometry = null;
+        outlinedTextBlock._clipGeometry = null;
+        outlinedTextBlock.UpdatePen();
 
         outlinedTextBlock.InvalidateMeasure();
         outlinedTextBlock.InvalidateVisual();
@@ -336,8 +360,16 @@ public class OutlinedTextBlock : FrameworkElement
 
         if (StrokePosition == StrokePosition.Outside)
         {
-            var boundsGeo = new RectangleGeometry(new Rect(0, 0, ActualWidth, ActualHeight));
+            var width = double.IsNaN(ActualWidth) || ActualWidth <= 0 ? Math.Ceiling(_FormattedText.Width) : ActualWidth;
+            var height = double.IsNaN(ActualHeight) || ActualHeight <= 0 ? Math.Ceiling(_FormattedText.Height) : ActualHeight;
+            width = Math.Max(width, 1);
+            height = Math.Max(height, 1);
+            var boundsGeo = new RectangleGeometry(new Rect(0, 0, width, height));
             _clipGeometry = Geometry.Combine(boundsGeo, _TextGeometry, GeometryCombineMode.Exclude, null);
+        }
+        else
+        {
+            _clipGeometry = null;
         }
     }
 }

@@ -1561,85 +1561,90 @@ public partial class DatabaseOperations
         return list;
     }
 
-    public static async Task<List<string>> GetAccountInfoCategories()
+    public static Task<List<string>> GetAccountInfoCategories()
     {
-        List<string> list = [];
-        list.Add("All");
-
-        try
+        return Task.Run(() =>
         {
-            string connectionString = await Task.Run(ConnectionStrToStatsDatabase);
-            string query = @$"SELECT Category FROM dbo.AccountInfos GROUP BY Category";
+            List<string> list = [];
+            list.Add("All");
 
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(query, connection);
-            connection.Open();
-
-            using SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                list.Add(reader[0].ToString()!);
-            }
-        }
-        catch (Exception)
-        {
-        }
+                string connectionString = ConnectionStrToStatsDatabase();
+                string query = @$"SELECT Category FROM dbo.AccountInfos GROUP BY Category";
 
-        return list;
+                using SqlConnection connection = new(connectionString);
+                SqlCommand command = new(query, connection);
+                connection.Open();
+
+                using SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    list.Add(reader[0].ToString()!);
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return list;
+        });
     }
 
     public static async Task<List<AccountInfoModel>> GetAccountInfoList(Dictionary<string, string> bgBorderColors)
     {
-        List<AccountInfoModel> list = [];
-
-        try
+        return await Task.Run(() =>
         {
-            string connectionString = await Task.Run(ConnectionStrToStatsDatabase);
-            string query = @$"SELECT * FROM dbo.AccountInfos ORDER BY Category ASC, SubCategory ASC, FriendlyName ASC";
+            List<AccountInfoModel> list = [];
 
-            using SqlConnection connection = new(connectionString);
-            SqlCommand command = new(query, connection);
-            connection.Open();
-
-            using SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                byte[] data = Convert.FromBase64String(reader["Credentials"].ToString()!);
-                string json = Encoding.UTF8.GetString(data);
+                string connectionString = ConnectionStrToStatsDatabase();
+                string query = @$"SELECT * FROM dbo.AccountInfos ORDER BY Category ASC, SubCategory ASC, FriendlyName ASC";
 
-                AccountCredential credentials = JsonConvert.DeserializeObject<AccountCredential>(json)!;
+                using SqlConnection connection = new(connectionString);
+                SqlCommand command = new(query, connection);
+                connection.Open();
 
-                string subCategory = reader["SubCategory"].ToString()!;
-
-                string bgBorderColor = bgBorderColors.FirstOrDefault(x => x.Value == subCategory).Key;
-                if (string.IsNullOrEmpty(bgBorderColor))
+                using SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
                 {
-                    string colorKey = bgBorderColors.FirstOrDefault(x => x.Value == "").Key;
-                    bgBorderColor = colorKey;
-                    bgBorderColors[colorKey] = subCategory;
+                    byte[] data = Convert.FromBase64String(reader["Credentials"].ToString()!);
+                    string json = Encoding.UTF8.GetString(data);
+
+                    AccountCredential credentials = JsonConvert.DeserializeObject<AccountCredential>(json)!;
+
+                    string subCategory = reader["SubCategory"].ToString()!;
+
+                    string bgBorderColor = bgBorderColors.FirstOrDefault(x => x.Value == subCategory).Key;
+                    if (string.IsNullOrWhiteSpace(bgBorderColor))
+                    {
+                        string colorKey = bgBorderColors.FirstOrDefault(x => x.Value == "").Key;
+                        bgBorderColor = colorKey;
+                        bgBorderColors[colorKey] = subCategory;
+                    }
+
+                    AccountInfoModel model = new()
+                    {
+                        FriendlyName = reader["FriendlyName"].ToString(),
+                        Category = reader["Category"].ToString(),
+                        SubCategory = subCategory,
+                        Website = reader["Website"].ToString(),
+                        Credentials = credentials,
+                        ApplicationName = reader["ApplicationName"].ToString(),
+                        ApplicationPath = reader["ApplicationPath"].ToString(),
+                        Color = bgBorderColor
+                    };
+
+                    list.Add(model);
                 }
-
-                AccountInfoModel model = new()
-                {
-                    FriendlyName = reader["FriendlyName"].ToString(),
-                    Category = reader["Category"].ToString(),
-                    SubCategory = subCategory,
-                    Website = reader["Website"].ToString(),
-                    Credentials = credentials,
-                    ApplicationName = reader["ApplicationName"].ToString(),
-                    ApplicationPath = reader["ApplicationPath"].ToString(),
-                    Color = bgBorderColor
-                };
-
-                list.Add(model);
-                MainViewModel.Instance.BgBorderColors = bgBorderColors;
             }
-        }
-        catch (Exception)
-        {
-        }
+            catch (Exception)
+            {
+            }
 
-        return list;
+            return list;
+        });
     }
 
 
@@ -1705,6 +1710,44 @@ public partial class DatabaseOperations
         }
 
         return list;
+    }
+
+    /// <summary>
+    /// OrderID (3Shape IntOrderID) → designer FriendlyName for rows in CheckedOutCases.
+    /// </summary>
+    public static Dictionary<string, string> GetCheckedOutDesignerFriendlyNamesByOrderId()
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        try
+        {
+            string connectionString = ConnectionStrToStatsDatabase();
+            const string query = @"
+SELECT c.OrderID, d.FriendlyName
+FROM dbo.CheckedOutCases c
+INNER JOIN dbo.Designers d ON d.DesignerID = c.Designer
+WHERE c.OrderID IS NOT NULL AND LTRIM(RTRIM(c.OrderID)) <> ''";
+
+            using SqlConnection connection = new(connectionString);
+            using SqlCommand command = new(query, connection);
+            connection.Open();
+
+            using SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                string orderId = reader["OrderID"]?.ToString() ?? "";
+                string friendlyName = reader["FriendlyName"]?.ToString() ?? "";
+                if (string.IsNullOrWhiteSpace(orderId) || string.IsNullOrWhiteSpace(friendlyName))
+                    continue;
+
+                map[orderId] = friendlyName;
+            }
+        }
+        catch (Exception)
+        {
+        }
+
+        return map;
     }
 
     public static async Task<List<DesignerModel>> GetDesignersModel()

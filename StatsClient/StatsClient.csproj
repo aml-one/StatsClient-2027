@@ -212,8 +212,10 @@
     <None Remove="Images\system-update.png" />
     <None Remove="Images\ToolBar\assign.png" />
     <None Remove="Images\ToolBar\dcm.png" />
+    <None Remove="Images\ToolBar\download.png" />
     <None Remove="Images\ToolBar\folder.png" />
     <None Remove="Images\ToolBar\id.png" />
+    <None Remove="Images\ToolBar\import.png" />
     <None Remove="Images\ToolBar\info.png" />
     <None Remove="Images\ToolBar\info2.png" />
     <None Remove="Images\ToolBar\labnext.png" />
@@ -776,10 +778,16 @@
     <Resource Include="Images\ToolBar\dcm.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Images\ToolBar\download.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Images\ToolBar\folder.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\ToolBar\id.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\import.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\ToolBar\info.png">
@@ -838,6 +846,17 @@
     <Resource Include="DcmViewer\Images\*.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StatsClient.KnowledgeBase.Core\StatsClient.KnowledgeBase.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Smile Libraries\**\*.*">
+      <Link>Smile Libraries\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

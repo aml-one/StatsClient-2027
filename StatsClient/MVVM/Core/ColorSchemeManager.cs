@@ -8,7 +8,7 @@ public static class ColorSchemeManager
 {
     public const string LightScheme = "Light";
     public const string DarkScheme = "Dark";
-    public const string DefaultScheme = LightScheme;
+    public const string DefaultScheme = DarkScheme;
     public const string LocalSettingKey = "ColorScheme";
 
     private static ResourceDictionary? _activeSchemeDictionary;
@@ -24,7 +24,7 @@ public static class ColorSchemeManager
 
         var savedScheme = ReadLocalSetting(LocalSettingKey);
         var scheme = string.IsNullOrWhiteSpace(savedScheme)
-            ? CurrentScheme
+            ? DefaultScheme
             : NormalizeScheme(savedScheme);
 
         Apply(scheme);

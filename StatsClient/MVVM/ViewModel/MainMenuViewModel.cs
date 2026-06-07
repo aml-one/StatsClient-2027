@@ -86,6 +86,7 @@ public class MainMenuViewModel : ObservableObject
             new MainMenuItemModel { Icon = "/Images/ToolBar/folder.png", Header = "Open Manufacturing folder", Command = "openManufFolder", Visible = GetVisibility(hideMenuItems, hideItems, "openManufFolder")},
             new MainMenuItemModel { Icon = "/Images/ToolBar/folder.png", Header = "Open Trios Inbox folder", Command = "openTriosInbox", Visible = GetVisibility(hideMenuItems, hideItems, "openTriosInbox")},
             new MainMenuItemModel { Icon = "/Images/ToolBar/rename.png", Header = "Smart Order Names", Command = "openSmartRenameWindw", Visible = GetVisibility(hideMenuItems, hideItems, "openSmartRenameWindw")},
+            new MainMenuItemModel { Icon = "/Images/ListViewIcons/psScanned.png", Header = "Watch list", Command = "openWatchList", Visible = GetVisibility(hideMenuItems, hideItems, "openWatchList")},
         ];
     }
 
@@ -109,7 +110,7 @@ public class MainMenuViewModel : ObservableObject
 
     public void ShowSmartRenameMenuItem()
     {
-        BuildMenu("lookForUpdate|openManufFolder|openTriosInbox|openSmartRenameWindw", false);
+        BuildMenu("lookForUpdate|openManufFolder|openTriosInbox|openSmartRenameWindw|openWatchList", false);
     }
     
     public void HideSmartRenameMenuItem()

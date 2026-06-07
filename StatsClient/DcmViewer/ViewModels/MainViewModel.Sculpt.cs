@@ -258,6 +258,20 @@ public partial class MainViewModel
 
     private void ToggleSculptMode()
     {
+        if (IsDesignHostMode)
+        {
+            SetTransientStatus(IsMarginMode
+                ? "Switch to the Sculpt step to use sculpt tools."
+                : "Use the workflow steps on the left — Sculpt enables sculpt tools.");
+            return;
+        }
+
+        if (IsDesignEditMode && IsCutPlaneMode)
+        {
+            SetTransientStatus("Turn off cut plane mode before sculpting.");
+            return;
+        }
+
         IsSculptMode = !IsSculptMode;
         if (IsSculptMode)
         {
@@ -289,33 +303,51 @@ public partial class MainViewModel
 
     internal void CommitSculptStroke()
     {
-        if (_sculptPendingGeometryRefresh && _sculptStrokeTarget is not null)
+        var strokeTarget = _sculptStrokeTarget;
+        var strokeStart = _sculptStrokeStartPositions;
+        var strokeHadChanges = _sculptStrokeHadChanges;
+
+        if (_sculptPendingGeometryRefresh && strokeTarget is not null)
         {
-            _sculptStrokeTarget.RefreshGeometryAfterSculpt();
+            strokeTarget.RefreshGeometryAfterSculpt();
             RequestVisualRefresh();
             _sculptPendingGeometryRefresh = false;
         }
 
-        if (_sculptStrokeTarget is not null &&
-            _sculptStrokeStartPositions is not null &&
-            _sculptStrokeHadChanges)
+        LoadedMeshItemViewModel? designCrownTarget = null;
+        if (strokeTarget is not null && strokeStart is not null && strokeHadChanges)
         {
-            var afterPositions = _sculptStrokeTarget.CaptureSculptPositions();
-            _sculptUndoStack.Push(new SculptHistoryEntry
+            var afterPositions = strokeTarget.CaptureSculptPositions();
+            if (IsDesignHostMode &&
+                IsDesignCrownItem(strokeTarget) &&
+                CurrentSculptTool != SculptBrushTool.Smooth)
             {
-                Target = _sculptStrokeTarget,
-                Before = _sculptStrokeStartPositions,
-                After = afterPositions,
-                Tool = CurrentSculptTool,
-                Radius = SculptBrushRadiusMm,
-                Strength = SculptBrushStrength
-            });
-            _sculptRedoStack.Clear();
-            PersistSculptStroke(_sculptStrokeTarget, _sculptStrokeStartPositions, afterPositions);
+                strokeTarget.FairVerticesAfterSculpt(strokeStart, afterPositions);
+                designCrownTarget = strokeTarget;
+            }
 
-            while (_sculptUndoStack.Count > MaxSculptUndoSteps)
+            if (IsDesignEditMode)
             {
-                TrimOldestSculptUndoEntry();
+                RecordDesignEditSculptStroke(strokeTarget, strokeStart, afterPositions);
+            }
+            else
+            {
+                _sculptUndoStack.Push(new SculptHistoryEntry
+                {
+                    Target = strokeTarget,
+                    Before = strokeStart,
+                    After = afterPositions,
+                    Tool = CurrentSculptTool,
+                    Radius = SculptBrushRadiusMm,
+                    Strength = SculptBrushStrength
+                });
+                _sculptRedoStack.Clear();
+                PersistSculptStroke(strokeTarget, strokeStart, afterPositions);
+
+                while (_sculptUndoStack.Count > MaxSculptUndoSteps)
+                {
+                    TrimOldestSculptUndoEntry();
+                }
             }
         }
 
@@ -323,10 +355,20 @@ public partial class MainViewModel
         _sculptStrokeStartPositions = null;
         _sculptStrokeHadChanges = false;
         UpdateSculptUndoCommands();
+
+        if (strokeHadChanges && designCrownTarget is not null && IsThicknessBreachOverlayVisible)
+        {
+            _ = RefreshThicknessBreachOverlayAsync();
+        }
     }
 
     public bool TryUndoSculpt()
     {
+        if (IsDesignEditMode)
+        {
+            return TryUndoDesignEdit();
+        }
+
         if (_sculptUndoStack.Count == 0)
         {
             return false;
@@ -338,6 +380,11 @@ public partial class MainViewModel
 
     public bool TryRedoSculpt()
     {
+        if (IsDesignEditMode)
+        {
+            return TryRedoDesignEdit();
+        }
+
         if (_sculptRedoStack.Count == 0)
         {
             return false;
@@ -349,6 +396,12 @@ public partial class MainViewModel
 
     private void UndoSculpt()
     {
+        if (IsDesignEditMode)
+        {
+            UndoDesignEdit();
+            return;
+        }
+
         if (_sculptUndoStack.Count == 0)
         {
             return;
@@ -361,11 +414,22 @@ public partial class MainViewModel
         RequestVisualRefresh();
         UpdateSculptUndoCommands();
         UpdateSculptSaveCommand();
+        if (IsThicknessBreachOverlayVisible && IsDesignCrownItem(entry.Target))
+        {
+            _ = RefreshThicknessBreachOverlayAsync();
+        }
+
         SetTransientStatus("Sculpt stroke undone.");
     }
 
     private void RedoSculpt()
     {
+        if (IsDesignEditMode)
+        {
+            RedoDesignEdit();
+            return;
+        }
+
         if (_sculptRedoStack.Count == 0)
         {
             return;
@@ -378,6 +442,11 @@ public partial class MainViewModel
         RequestVisualRefresh();
         UpdateSculptUndoCommands();
         UpdateSculptSaveCommand();
+        if (IsThicknessBreachOverlayVisible && IsDesignCrownItem(entry.Target))
+        {
+            _ = RefreshThicknessBreachOverlayAsync();
+        }
+
         SetTransientStatus("Sculpt stroke redone.");
     }
 
@@ -529,9 +598,18 @@ public partial class MainViewModel
 
     private void UpdateSculptUndoCommands()
     {
-        CanUndoSculpt = _sculptUndoStack.Count > 0;
-        CanUndoAllSculpt = _sculptTree?.HasSteps == true;
-        CanRedoSculpt = _sculptRedoStack.Count > 0;
+        if (IsDesignEditMode)
+        {
+            CanUndoSculpt = CanUndoDesignEdit;
+            CanRedoSculpt = CanRedoDesignEdit;
+            CanUndoAllSculpt = false;
+        }
+        else
+        {
+            CanUndoSculpt = _sculptUndoStack.Count > 0;
+            CanUndoAllSculpt = _sculptTree?.HasSteps == true;
+            CanRedoSculpt = _sculptRedoStack.Count > 0;
+        }
 
         if (UndoSculptCommand is RelayCommand undoRelay)
         {
@@ -592,7 +670,7 @@ public partial class MainViewModel
         Vector3D surfaceNormal,
         Vector3D? grabDelta)
     {
-        if (!IsSculptMode || target.IsLoadFailed)
+        if (!IsSculptMode || target.IsLoadFailed || !CanSculptMesh(target))
         {
             return false;
         }

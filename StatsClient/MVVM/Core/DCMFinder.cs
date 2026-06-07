@@ -173,6 +173,11 @@ public static class DCMFinder
 
             foreach (string file in allCandidates)
             {
+                if (!CaseScanDiscoveryRules.ShouldIncludeInCaseDiscovery(file))
+                {
+                    continue;
+                }
+
                 string normalizedName = NormalizeName(Path.GetFileNameWithoutExtension(file));
                 if (IsPreparationScan(normalizedName))
                 {
@@ -238,6 +243,11 @@ public static class DCMFinder
 
         foreach (string file in miscDcmFiles)
         {
+            if (!CaseScanDiscoveryRules.ShouldIncludeInCaseDiscovery(file))
+            {
+                continue;
+            }
+
             string fileName = Path.GetFileNameWithoutExtension(file);
             string normalizedName = NormalizeName(fileName);
             bool isBiteScan = normalizedName.Contains("bite", StringComparison.Ordinal);

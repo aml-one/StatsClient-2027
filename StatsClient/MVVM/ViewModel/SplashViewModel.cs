@@ -249,24 +249,35 @@ public class SplashViewModel : ObservableObject
 
     internal async void StartLoading()
     {
-        await AnimateProgress(20); // Step 1: Starting
-        await Task.Run(DatabaseConnection.SetCredentials); // getting credentials for SQL server from BaseSettings.Config file
+        StartupLog.WriteStep("Splash: loading started");
+        await AnimateProgress(20);
+        StartupLog.WriteStep("Splash: loading SQL credentials");
+        await Task.Run(DatabaseConnection.SetCredentials);
 
-        await AnimateProgress(50); // Step 2: Credentials loaded
-        LoadingText = "Checking local configs..";
-        await Task.Run(CreatingLocalConfigFiles); // first try.. initialize database
+        await AnimateProgress(50);
+        await SetSplashStatusAsync("Checking local configs..");
+        await Task.Run(CreatingLocalConfigFiles);
 
-        await AnimateProgress(80); // Step 3: Local configs checked
+        await AnimateProgress(80);
+        StartupLog.WriteStep("Splash: starting server connection check");
         timerCheckServerConnectionFirstTime.Start();
+    }
+
+    private Task SetSplashStatusAsync(string message)
+    {
+        StartupLog.WriteStep($"Splash: {message}");
+        return Application.Current.Dispatcher.InvokeAsync(() => LoadingText = message).Task;
     }
 
     private async void CheckStatsServerConnection()
     {
         isEverythingOkay = true;
-        await Task.Run(CreatingLocalConfigFiles); // double tap.. to make sure database initialized correctly
-        LoadingText = "Checking server connection..";
+        StartupLog.WriteStep("Splash: verifying local database");
+        await Task.Run(CreatingLocalConfigFiles);
+        await SetSplashStatusAsync("Checking server connection..");
         try
         {
+            StartupLog.WriteStep("Splash: opening SQL connection");
             using (var connection = new SqlConnection(DatabaseConnection.ConnectionStrToStatsDatabase()))
             {
                 var query = "select 1";
@@ -275,11 +286,13 @@ public class SplashViewModel : ObservableObject
                 command.ExecuteScalar();
             }
             FinishedWithServerConnectionCheck = true;
-            await AnimateProgress(173, 800); // Step 4: Server connection established (100%)
-            LoadingText = "Successfully connected to server!";
+            await AnimateProgress(173, 800);
+            await SetSplashStatusAsync("Successfully connected to server!");
+            StartupLog.WriteStep("Splash: server connection OK");
         }
         catch (Exception ex)
         {
+            StartupLog.WriteError("Splash: server connection failed", ex);
             Debug.WriteLine($"[{ex.LineNumber()}] {ex.Message}");
             MainViewModel.Instance?.AddDebugLine(ex);
             if (ex.Message.Contains("Login failed for user"))
@@ -301,15 +314,17 @@ public class SplashViewModel : ObservableObject
                         command.ExecuteScalar();
                     }
                     FinishedWithServerConnectionCheck = true;
-                    await AnimateProgress(173, 800); // Step 4: Server connection established (100%)
-                    LoadingText = "Successfully connected to server!";
+                    await AnimateProgress(173, 800);
+                    await SetSplashStatusAsync("Successfully connected to server!");
+                    StartupLog.WriteStep("Splash: server connection OK (fallback instance)");
                 }
                 catch (Exception exx)
                 {
+                    StartupLog.WriteError("Splash: server connection failed (fallback)", exx);
                     MainViewModel.Instance?.AddDebugLine(exx);
                     Debug.WriteLine($"[{exx.LineNumber()}] {exx.Message}");
                     isEverythingOkay = false;
-                    LoadingText = "Couldn't connect to server..";
+                    await SetSplashStatusAsync("Couldn't connect to server..");
                     LoadingText = exx.Message;
                 }
             }
@@ -323,6 +338,7 @@ public class SplashViewModel : ObservableObject
     {
         if (!isEverythingOkay)
         {
+            StartupLog.WriteStep("Splash: prompting user after connection failure");
             SMessageBoxResult dg = ShowMessageBox("Error", $"Could not connect to DataBase server!\nServer might be offline or not accessible.", SMessageBoxButtons.TryAgainClose, NotificationIcon.Warning, 15, SplashWindow.Instance);
             if (dg == SMessageBoxResult.TryAgain)
             {
@@ -336,9 +352,11 @@ public class SplashViewModel : ObservableObject
         }
         else
         {
+            StartupLog.WriteStep("Splash: checking saved window position");
             await CheckSavedWindowPosition();
 
-            mainWindow = new();
+            StartupLog.WriteStep("Splash: preparing application startup");
+            MainViewModel.EnsureCreated();
             MainViewModel.StartInitialTasks();
         }
     }
