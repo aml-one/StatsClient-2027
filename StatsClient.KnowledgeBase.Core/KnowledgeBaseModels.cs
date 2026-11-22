@@ -34,6 +34,14 @@ public sealed class KnowledgeBaseCardImage
     public int SortOrder { get; set; }
 }
 
+public sealed class KnowledgeBaseCardCrossReferenceInfo
+{
+    public int CardId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string BodyText { get; set; } = string.Empty;
+    public IReadOnlyList<string> Tags { get; set; } = [];
+}
+
 public sealed class KnowledgeBaseCardSummary
 {
     public int CardId { get; set; }
@@ -99,6 +107,7 @@ public sealed class KnowledgeBaseSaveRequest
     public string Title { get; set; } = string.Empty;
     public string BodyText { get; set; } = string.Empty;
     public int? CategoryId { get; set; }
+    public string? CategoryName { get; set; }
     public string MachineName { get; set; } = string.Empty;
     public List<KnowledgeBaseCardLink> Links { get; set; } = [];
     public List<KnowledgeBaseCardImage> Images { get; set; } = [];
@@ -121,4 +130,11 @@ public sealed class KnowledgeBaseVisionMatch
     public string Title { get; set; } = string.Empty;
     public double Confidence { get; set; }
     public string Reason { get; set; } = string.Empty;
+
+    public int ConfidencePercent => (int)Math.Round(NormalizeConfidence(Confidence) * 100);
+
+    public string ConfidenceDisplay => $"{ConfidencePercent}% match";
+
+    public static double NormalizeConfidence(double value) =>
+        value > 1.0 ? Math.Clamp(value / 100.0, 0, 1) : Math.Clamp(value, 0, 1);
 }

@@ -3,38 +3,32 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 
-namespace StatsClient.MVVM.View
+namespace StatsClient.MVVM.View;
+
+public partial class MainMenu : UserControl, INotifyPropertyChanged
 {
-    public partial class MainMenu : UserControl, INotifyPropertyChanged
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public static event PropertyChangedEventHandler? PropertyChangedStatic;
+
+    public static void RaisePropertyChangedStatic([CallerMemberName] string? propertyname = null)
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public static event PropertyChangedEventHandler? PropertyChangedStatic;
+        PropertyChangedStatic?.Invoke(typeof(ObservableObject), new PropertyChangedEventArgs(propertyname));
+    }
 
-        public static void RaisePropertyChangedStatic([CallerMemberName] string? propertyname = null)
+    private static MainMenu? staticInstance;
+    public static MainMenu StaticInstance
+    {
+        get => staticInstance!;
+        set
         {
-            PropertyChangedStatic?.Invoke(typeof(ObservableObject), new PropertyChangedEventArgs(propertyname));
+            staticInstance = value;
+            RaisePropertyChangedStatic(nameof(StaticInstance));
         }
+    }
 
-        private static MainMenu? staticInstance;
-        public static MainMenu StaticInstance
-        {
-            get => staticInstance!;
-            set
-            {
-                staticInstance = value;
-                RaisePropertyChangedStatic(nameof(StaticInstance));
-            }
-        }
-
-        public MainMenu()
-        {
-            StaticInstance = this;
-            InitializeComponent();
-        }
-
-        public void FocusOnMainMenu()
-        {
-            focusedTextBox.Focus();
-        }
+    public MainMenu()
+    {
+        StaticInstance = this;
+        InitializeComponent();
     }
 }

@@ -1,0 +1,94 @@
+<Window x:Class="StatsClient.MVVM.View.PrescriptionPreviousNumbersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Previous Numbers"
+        Height="420"
+        Width="320"
+        MinHeight="280"
+        MinWidth="260"
+        MaxWidth="420"
+        ResizeMode="CanResizeWithGrip"
+        WindowStyle="None"
+        ShowInTaskbar="False"
+        WindowStartupLocation="Manual"
+        FontFamily="Segoe UI"
+        Background="{DynamicResource TransparentBrush}">
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="4"
+                      CaptionHeight="0" />
+    </WindowChrome.WindowChrome>
+
+    <Border CornerRadius="8"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+            Background="{DynamicResource ClassicWindowBackgroundBrush}"
+            ClipToBounds="True">
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource ImmersiveGlassBackground}"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="6,6,0,0"
+                    Padding="10,8"
+                    Margin="-10,-10,-10,8"
+                    PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown">
+                <Grid>
+                    <TextBlock Text="Previous Numbers — Today"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ImmersiveTextPrimary}"
+                               VerticalAlignment="Center" />
+                    <TextBlock x:Name="CloseButton"
+                               Text="╳"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               FontSize="14"
+                               Cursor="Hand"
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+                               ToolTip="Close"
+                               PreviewMouseLeftButtonDown="CloseButton_PreviewMouseLeftButtonDown" />
+                </Grid>
+            </Border>
+
+            <TextBlock Grid.Row="1"
+                       Text="Click a number to reload its prescription."
+                       FontSize="10"
+                       Foreground="{DynamicResource ImmersiveTextMuted}"
+                       Margin="0,0,0,8"
+                       TextWrapping="Wrap" />
+
+            <ListBox x:Name="NumbersList"
+                     Grid.Row="2"
+                     ItemsSource="{Binding Rows}"
+                     SelectionChanged="NumbersList_SelectionChanged"
+                     BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                     BorderThickness="1"
+                     Background="{DynamicResource ImmersiveGlassBackground}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="6,4">
+                            <StackPanel>
+                                <TextBlock Text="{Binding PanNumber}"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                                <TextBlock Text="{Binding StatusSummary}"
+                                           FontSize="10"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                <TextBlock Text="{Binding SavedTimeDisplay}"
+                                           FontSize="10"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Border>
+</Window>

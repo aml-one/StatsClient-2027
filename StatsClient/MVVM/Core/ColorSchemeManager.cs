@@ -16,6 +16,9 @@ public static class ColorSchemeManager
 
     public static string CurrentScheme => _currentScheme;
 
+    public static bool IsDarkScheme =>
+        string.Equals(_currentScheme, DarkScheme, StringComparison.OrdinalIgnoreCase);
+
     public static IReadOnlyList<string> AvailableSchemes { get; } = [LightScheme, DarkScheme];
 
     public static void ApplySavedFromLocalSettings()

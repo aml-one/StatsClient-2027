@@ -19,6 +19,7 @@
         AllowsTransparency="True"
         Foreground="{DynamicResource BlackColor}"
         Closing="Window_Closing"
+        Closed="Window_Closed"
         LocationChanged="Window_LocationChanged"
         Loaded="Window_Loaded"
         SizeChanged="Window_SizeChanged"
@@ -71,26 +72,6 @@
                 </Storyboard>
             </BeginStoryboard>
 
-
-            <BeginStoryboard x:Key="ZipArchiveIconGrowAnimation">
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="zipArchiveIcon"
-                                     Storyboard.TargetProperty="(Width)"
-                                     Duration="0:0:0.6"
-                                     From="0"
-                                     To="512" />
-                </Storyboard>
-            </BeginStoryboard>
-
-            <BeginStoryboard x:Key="ZipArchiveIconShrinkAnimation">
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="zipArchiveIcon"
-                                     Storyboard.TargetProperty="(Width)"
-                                     Duration="0:0:0.5"
-                                     From="512"
-                                     To="0" />
-                </Storyboard>
-            </BeginStoryboard>
 
             <converter:InverseVisibilityConverter x:Key="InverseVisibilityConverter" />
             <converter:InverseBoolConverter x:Key="InverseBoolConverter" />
@@ -252,7 +233,7 @@
             <Style x:Key="GridViewFlatColumnHeaderStyle"
                    TargetType="{x:Type GridViewColumnHeader}">
                 <Setter Property="Height"
-                        Value="20" />
+                        Value="22" />
                 <Setter Property="Padding"
                         Value="4,0,-6,0" />
                 <Setter Property="HorizontalContentAlignment"
@@ -314,13 +295,16 @@
 
             <ControlTemplate x:Key="CustomHeaderPendingDigi"
                              TargetType="GridViewColumnHeader">
-                <Grid Background="{DynamicResource LightGrayBorderAndShadowColor}"
-                      Height="20"
+                <Grid Background="{DynamicResource ImmersiveGlassBackground}"
+                      Height="24"
                       Margin="-2,0,0,0">
-                    <TextBlock Background="{DynamicResource LightGrayBorderAndShadowColor}"
-                               Foreground="{DynamicResource LightTextColor}"
+                    <TextBlock Background="{DynamicResource ImmersiveGlassBackground}"
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
                                Text="{TemplateBinding Tag}"
-                               VerticalAlignment="Center" />
+                               VerticalAlignment="Center"
+                               Padding="4,0" />
                     <Thumb x:Name="PART_HeaderGripper"
                            HorizontalAlignment="Right"
                            Margin="0"
@@ -335,7 +319,8 @@
         <SolidColorBrush Opacity="{Binding CbSettingGlassyEffect, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToOpacityConverter}}" />
     </Window.Background>
 
-    <Border CornerRadius="8,8,4,8"
+    <Grid Tag="WindowModalBackdropHost">
+        <Border CornerRadius="8,8,4,8"
             BorderThickness="0.5"
             BorderBrush="{DynamicResource BlackColor}"
             Background="{Binding WindowBackground}"
@@ -356,15 +341,40 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
 
+                <ProgressBar x:Name="pb3ShapeProgressBar"
+                             Style="{StaticResource ThreeShapeOrderSearchProgressBar}"
+                             Grid.Row="2"
+                             Panel.ZIndex="10"
+                             VerticalAlignment="Bottom"
+                             Margin="-2,0,0,-1"
+                             Maximum="100"
+                             Minimum="0"
+                             Value="0"
+                             Visibility="Collapsed"
+                             Opacity="1"
+                             ClipToBounds="True"
+                             Grid.ColumnSpan="4" />
 
-                <localView:MainMenu Panel.ZIndex="2000"
+                <Border x:Name="mainMenuDismissOverlay"
+                        Grid.ColumnSpan="2"
+                        Grid.Row="1"
+                        Grid.RowSpan="2"
+                        Panel.ZIndex="2999"
+                        d:Visibility="Hidden"
+                        Background="#01000000"
+                        Visibility="{Binding MainMenuOpen}"
+                        PreviewMouseDown="MainMenuDismissOverlay_PreviewMouseDown" />
+
+                <localView:MainMenu x:Name="mainMenuPopup"
+                                    Panel.ZIndex="3000"
                                     Grid.ColumnSpan="2"
-                                    Grid.RowSpan="3"
-                                    Visibility="{Binding DataContext.MainMenuOpen, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
-                                    d:Visibility="Hidden"
+                                    Grid.Row="1"
+                                    Grid.RowSpan="2"
+                                    Visibility="{Binding MainMenuOpen}"
+                                    d:Visibility="Collapsed"
                                     HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Margin="3,150,0,35" />
+                                    VerticalAlignment="Bottom"
+                                    Margin="2,0,0,46" />
 
 
 
@@ -385,7 +395,7 @@
                         d:Visibility="Visible">
                     <Grid>
 
-                        <Rectangle Width="38"
+                        <Rectangle Width="39"
                                    Height="54" />
                         <Button x:Name="btnHome3"
                                 Content="🗘"
@@ -394,7 +404,7 @@
                                 Margin="0,-8,0,0"
                                 FontSize="26"
                                 Panel.ZIndex="201"
-                                Foreground="{DynamicResource WhiteBackground}"
+                                Foreground="{StaticResource PanNumberLabelForeground}"
                                 Background="{DynamicResource TransparentBrush}"
                                 BorderBrush="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
@@ -408,12 +418,14 @@
                                 <Style TargetType="{x:Type Button}">
                                     <Setter Property="Background"
                                             Value="{DynamicResource TransparentBrush}" />
+                                    <Setter Property="Foreground"
+                                            Value="{StaticResource PanNumberLabelForeground}" />
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type Button}">
                                                 <Button x:Name="Border"
                                                         BorderBrush="{DynamicResource TransparentBrush}"
-                                                        Foreground="{DynamicResource BlackColor}"
+                                                        Foreground="{StaticResource PanNumberLabelForeground}"
                                                         Background="{TemplateBinding Background}"
                                                         Command="{Binding Refresh3ShapeListCommand}">
                                                     <ContentPresenter HorizontalAlignment="Center"
@@ -440,7 +452,7 @@
                                    VerticalAlignment="Bottom"
                                    FontSize="8"
                                    FontWeight="Bold"
-                                   Foreground="{DynamicResource WhiteBackground}"
+                                   Foreground="{StaticResource PanNumberLabelForeground}"
                                    Margin="0,3,0,3" />
                     </Grid>
                     <Border.BitmapEffect>
@@ -468,7 +480,7 @@
                         d:Visibility="Visible">
                     <Grid>
 
-                        <Rectangle Width="38"
+                        <Rectangle Width="39"
                                    Height="54" />
                         <Button x:Name="btnHome2"
                                 Content="↩"
@@ -477,7 +489,7 @@
                                 Margin="0,-8,0,0"
                                 FontSize="26"
                                 Panel.ZIndex="201"
-                                Foreground="{DynamicResource WhiteBackground}"
+                                Foreground="{StaticResource PanNumberLabelForeground}"
                                 Background="{DynamicResource TransparentBrush}"
                                 BorderBrush="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
@@ -491,12 +503,14 @@
                                 <Style TargetType="{x:Type Button}">
                                     <Setter Property="Background"
                                             Value="{DynamicResource TransparentBrush}" />
+                                    <Setter Property="Foreground"
+                                            Value="{StaticResource PanNumberLabelForeground}" />
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type Button}">
                                                 <Button x:Name="Border"
                                                         BorderBrush="{DynamicResource TransparentBrush}"
-                                                        Foreground="{DynamicResource BlackColor}"
+                                                        Foreground="{StaticResource PanNumberLabelForeground}"
                                                         Background="{TemplateBinding Background}"
                                                         Command="{Binding SwitchToHomeTabCommand}">
                                                     <ContentPresenter HorizontalAlignment="Center"
@@ -523,7 +537,7 @@
                                    VerticalAlignment="Bottom"
                                    FontSize="8"
                                    FontWeight="Bold"
-                                   Foreground="{DynamicResource WhiteBackground}"
+                                   Foreground="{StaticResource PanNumberLabelForeground}"
                                    Margin="0,3,0,3" />
                     </Grid>
                     <Border.BitmapEffect>
@@ -600,38 +614,6 @@
                                 Style="{StaticResource TitleBarSideButtonStyle}"
                                 Command="{Binding SwitchToHomeTabCommand}" />
 
-                        <Button x:Name="btnSettings"
-                                Width="40"
-                                Height="35"
-                                FontSize="14"
-                                Padding="0,5,0,0"
-                                DockPanel.Dock="Top"
-                                Margin="-1,0,0,0"
-                                Panel.ZIndex="50"
-                                IsTabStop="False"
-                                Style="{StaticResource TitleBarSideButtonStyle}"
-                                Command="{Binding SwitchToSettingsTabCommand}">
-                            <Button.Content>
-                                <Image Source="{DynamicResource HomeSettingsButtonImage}"
-                                       Width="16"
-                                       Height="16"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" />
-                            </Button.Content>
-                        </Button>
-
-                        <Button x:Name="btnMenu"
-                                Content="≡"
-                                Width="40"
-                                Height="35"
-                                FontSize="14"
-                                Padding="0,5,0,0"
-                                DockPanel.Dock="Top"
-                                Margin="-1,0,0,0"
-                                Panel.ZIndex="50"
-                                IsTabStop="False"
-                                Style="{StaticResource TitleBarSideButtonStyle}"
-                                Command="{Binding OpenCloseMenuCommand}" />
                         <Button x:Name="btnUpdate"
                                 Width="40"
                                 Height="35"
@@ -681,10 +663,14 @@
                                    d:Visibility="Visible">
                             <Grid Height="24"
                                   DockPanel.Dock="Left"
+                                  Cursor="Hand"
                                   Margin="0,0,0,0">
                                 <Image Source="/Images/ListViewIcons/psModelling.png"
-                                       Height="20"
-                                       Cursor="Hand">
+                                       Height="12"
+                                       Cursor="Hand"
+                                       Margin="0,0,2,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Top">
                                     <Image.BitmapEffect>
                                         <DropShadowBitmapEffect Color="{DynamicResource SchemeColor_55B02200_Cl}"
                                                                 Direction="270"
@@ -692,44 +678,48 @@
                                                                 Opacity="0.40"
                                                                 Softness="5" />
                                     </Image.BitmapEffect>
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="PreviewMouseDown">
-                                            <i:InvokeCommandAction Command="{Binding JumpToCasesOpenedForDesignNowCommand}" />
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
                                 </Image>
                                 <TextBlock Text="{Binding DesignerOpenToolTip}"
                                            d:Text="9"
-                                           FontSize="12"
-                                           FontWeight="Bold"
+                                           FontSize="24"
+                                           FontWeight="Normal"
                                            Foreground="{DynamicResource InfobarPanCountFill}"
-                                           HorizontalAlignment="Right"
+                                           HorizontalAlignment="Center"
                                            VerticalAlignment="Top"
-                                           Margin="0,-2,2,0" />
+                                           Margin="0,-2,0,0" />
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="PreviewMouseDown">
+                                        <i:InvokeCommandAction Command="{Binding JumpToCasesOpenedForDesignNowCommand}" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
                             </Grid>
                         </DockPanel>
                         <!--#endregion DESIGNER OPEN ICONS DISPLAY -->
 
                         <Grid DockPanel.Dock="Bottom"
                               Background="{DynamicResource TransparentBrush}"
-                              Margin="0,0,0,0"
-                              PreviewMouseDown="TitleBar_PreviewMouseDown">
+                              Margin="0,0,0,0">
                             <Grid Height="39"
-                                  DockPanel.Dock="Bottom"
                                   Margin="0,0,0,8">
-                                <Image Source="/Images/stats_2025_Q512.png"
-                                       Height="25"
-                                       x:Name="programIcon"
-                                       DockPanel.Dock="Bottom"
-                                       Visibility="{Binding HomeButtonShows}"
-                                       d:Visibility="Visible"
-                                       Margin="5,5,5,9">
-                                    <!--i:Interaction.Triggers>
-                                <i:EventTrigger EventName="MouseDown">
-                                    <i:InvokeCommandAction Command="{Binding OpenCloseMenuCommand}" />
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers-->
-                                </Image>
+                                <Button x:Name="btnAppLogoMenu"
+                                        Width="38"
+                                        Height="38"
+                                        Padding="0"
+                                        Cursor="Hand"
+                                        Panel.ZIndex="10"
+                                        Background="{DynamicResource TransparentBrush}"
+                                        BorderBrush="{DynamicResource TransparentBrush}"
+                                        BorderThickness="0"
+                                        ToolTip="Open menu"
+                                        IsEnabled="{Binding CanOpenMainMenu}"
+                                        Command="{Binding OpenCloseMenuCommand}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                    <Image Source="/Images/stats_2025_Q512.png"
+                                           Height="25"
+                                           x:Name="programIcon"
+                                           IsHitTestVisible="False" />
+                                </Button>
                             </Grid>
                         </Grid>
 
@@ -768,7 +758,7 @@
                                            Margin="0,0,0,120"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Bottom"
-                                           Foreground="{DynamicResource DialogCloseButtonBackground}"
+                                           Foreground="{DynamicResource HomeButtonColor}"
                                            Panel.ZIndex="-1"
                                            FontSize="14" />
                             </Grid>
@@ -1218,21 +1208,7 @@
 
 
 
-                                <ProgressBar x:Name="pb3ShapeProgressBar"
-                                             Grid.Row="1"
-                                             Panel.ZIndex="10"
-                                             Height="6"
-                                             VerticalAlignment="Top"
-                                             Margin="0,22,0,0"
-                                             Maximum="100"
-                                             Minimum="0"
-                                             Value="25"
-                                             Foreground="{DynamicResource SchemeColor_0CE10C}"
-                                             BorderThickness="0"
-                                             Opacity="1"
-                                             Background="{DynamicResource TransparentBrush}"
-                                             ClipToBounds="True"
-                                             Grid.ColumnSpan="4" />
+
 
 
                                 <Border Grid.Row="1"
@@ -1451,16 +1427,18 @@
 
 
                                         <StackPanel Orientation="Horizontal"
-                                                    Margin="2,1,4,0"
+                                                    Margin="2,0,4,0"
                                                     Grid.Column="2"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Top"
                                                     Panel.ZIndex="1"
-                                                    Height="20"
+                                                    Height="22"
                                                     Background="{DynamicResource ThreeShapeHeaderBackgroundColor}">
 
                                             <Label Content="Group By:"
-                                                   Padding="2,2,3,0"
+                                                   Padding="2,3,5,3"
+                                                   Height="21"
+                                                   Margin="0,-1,0,0"
                                                    Foreground="{DynamicResource ImmersiveTextPrimary}" />
                                             <ComboBox x:Name="GroupBy"
                                                       ItemsSource="{Binding GroupBy}"
@@ -1680,6 +1658,7 @@
                                               VerticalAlignment="Bottom"
                                               Margin="-172,-630,0,0"
                                               ClipToBounds="True"
+                                              Visibility="Collapsed"
                                               d:Visibility="Visible"
                                               RenderTransformOrigin="0.5,1"
                                               Opacity="0">
@@ -1691,6 +1670,8 @@
                                             </Grid.RenderTransform>
                                             <Grid.Style>
                                                 <Style TargetType="Grid">
+                                                    <Setter Property="Visibility"
+                                                            Value="Collapsed" />
                                                     <Style.Triggers>
                                                         <!-- Opening Animation -->
                                                         <DataTrigger Binding="{Binding ShowingFiltersPanel}"
@@ -2056,13 +2037,15 @@
                         <Grid Margin="5"
                               x:Name="prescriptionMakerTabGrid"
                               AllowDrop="True"
-                              Background="{DynamicResource RxMakerPageBackground}"
-                              ToolTip="Drop a photo of pan boxes here, or paste an image with Ctrl+V / Shift+Insert">
+                              Background="{DynamicResource RxMakerPageBackground}">
                             <Grid.RowDefinitions>
-                                <RowDefinition />
+                                <RowDefinition Height="*"
+                                               MaxHeight="600" />
                                 <RowDefinition Height="70" />
-                                <RowDefinition Height="75" />
-                                <RowDefinition Height="250" />
+                                <RowDefinition Height="Auto"
+                                               MinHeight="130" />
+                                <RowDefinition Height="*"
+                                               MinHeight="180" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition MaxWidth="690" />
@@ -2073,33 +2056,21 @@
                                     BorderBrush="{DynamicResource EmptyPansBorder}"
                                     BorderThickness="1"
                                     Grid.Column="0"
-                                    Grid.Row="0">
-                                <WrapPanel x:Name="pmPanelPanek"
-                                           Orientation="Horizontal" />
+                                    Grid.Row="0"
+                                    MaxHeight="600">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <WrapPanel x:Name="pmPanelPanek"
+                                               Orientation="Horizontal" />
+                                </ScrollViewer>
                             </Border>
 
 
-                            <Border Grid.ColumnSpan="5"
-                                    Grid.RowSpan="6"
-                                    Panel.ZIndex="20"
-                                    Cursor="Hand"
-                                    x:Name="zipArchiveIcon"
-                                    d:Visibility="Hidden"
-                                    Width="512">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="MouseDown">
-                                        <i:InvokeCommandAction Command="{Binding HideZipArchiveIconCommand}" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                                <Grid>
-
-                                    <Image Source="/Images/Other/zip.png"
-                                           Visibility="{Binding HomeButtonShows}"
-                                           d:Visibility="Visible"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center" />
-                                </Grid>
-                            </Border>
+                            <uc:IteroZipCelebrationOverlay x:Name="iteroZipCelebration"
+                                                           Grid.ColumnSpan="5"
+                                                           Grid.RowSpan="6"
+                                                           Panel.ZIndex="20"
+                                                           DismissRequested="IteroZipCelebration_DismissRequested" />
 
 
 
@@ -2111,16 +2082,12 @@
                                     Panel.ZIndex="101"
                                     Cursor="Hand"
                                     Visibility="{Binding ShowingPrescriptionPreviewPanel}"
-                                    d:Visibility="Hidden">
+                                    d:Visibility="Hidden"
+                                    PreviewMouseDown="PrescriptionPreviewOverlay_PreviewMouseDown">
                                 <Border.Background>
                                     <SolidColorBrush Opacity="0.75"
                                                      Color="{DynamicResource BlackColor_Cl}" />
                                 </Border.Background>
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="MouseDown">
-                                        <i:InvokeCommandAction Command="{Binding HidePrescriptionPreviewPanelCommand}" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
                                 <Grid Margin="0,0,0,0">
                                     <StackPanel Grid.Column="1"
                                                 Grid.Row="3"
@@ -2141,7 +2108,34 @@
 
                                     </StackPanel>
 
-                                    <Border Margin="0,0,0,0"
+                                    <StackPanel x:Name="prescriptionEditPanToolbar"
+                                                VerticalAlignment="Bottom"
+                                                HorizontalAlignment="Left"
+                                                Panel.ZIndex="10"
+                                                Margin="12,12,0,0">
+                                        <Button x:Name="editPanPositionButton"
+                                                Content="Edit Number Position"
+                                                Style="{StaticResource RxMakerYellowButton}"
+                                                Padding="14,6"
+                                                Margin="0,0,0,6"
+                                                Visibility="{Binding PmCanEditPanPosition}"
+                                                Click="EditPanPositionButton_Click" />
+                                        <Button x:Name="editRushPositionButton"
+                                                Content="Edit RUSH Position"
+                                                Style="{StaticResource RxMakerYellowButton}"
+                                                Padding="14,6"
+                                                Margin="0,0,0,6"
+                                                Visibility="{Binding PmCanEditRushPosition}"
+                                                Click="EditRushPositionButton_Click" />
+                                        <Button x:Name="editInfoLabelPositionButton"
+                                                Content="Edit Label Position"
+                                                Style="{StaticResource RxMakerYellowButton}"
+                                                Padding="14,6"
+                                                Visibility="{Binding PmCanEditInfoLabelPosition}"
+                                                Click="EditInfoLabelPositionButton_Click" />
+                                    </StackPanel>
+
+                                    <Border Margin="-5"
                                             BorderBrush="{DynamicResource TabLegacyForegroundDisabled}"
                                             BorderThickness="1"
                                             Background="{DynamicResource SchemeColor_D1CCB8}">
@@ -2159,7 +2153,7 @@
                                                  d:Visibility="Visible"
                                                  Margin="0,58,0,0" />
                                     <TextBlock Text="Processing.."
-                                               Foreground="{DynamicResource RxMakerValueForeground}"
+                                               Foreground="{DynamicResource ShowRxButtonForeground}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
                                                FontSize="30"
@@ -2167,7 +2161,7 @@
                                                Visibility="{Binding ProcessingDigiPrescriptionNow}"
                                                d:Visibility="Visible" />
                                     <TextBlock Text="Please wait!"
-                                               Foreground="{DynamicResource RxMakerLabelForeground}"
+                                               Foreground="{DynamicResource ShowRxButtonForeground}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
                                                FontSize="10"
@@ -2184,6 +2178,7 @@
                                     Grid.Row="0"
                                     Grid.ColumnSpan="2"
                                     Grid.RowSpan="4"
+                                    Margin="-5"
                                     Panel.ZIndex="100"
                                     Visibility="{Binding ShowingTakeANumberPanel}"
                                     d:Visibility="Hidden">
@@ -2212,13 +2207,11 @@
                                                 <ColumnDefinition Width="120" />
                                             </Grid.ColumnDefinitions>
                                             <Button Content="Take it"
-                                                    Background="{DynamicResource SchemeColor_C6F9CF}"
-                                                    Foreground="{DynamicResource BlackColor}"
-                                                    Height="40"
+                                                    Style="{StaticResource RxMakerPrimaryButton}"
                                                     Command="{Binding TakeAPanNumberCommand}" />
 
                                             <Button Content="Cancel"
-                                                    Background="{DynamicResource SchemeColor_C6696F}"
+                                                    Style="{StaticResource RxMakerSecondaryButton}"
                                                     Grid.Column="2"
                                                     Command="{Binding PmCancelTakingANumberCommand}" />
 
@@ -2327,50 +2320,100 @@
                                     </StackPanel>
 
 
-                                    <StackPanel Grid.Column="1"
-                                                HorizontalAlignment="Right">
+                                    <Grid Grid.Column="1">
+                                        <CheckBox Content="Initiate Order Creation"
+                                                  VerticalAlignment="Top"
+                                                  HorizontalAlignment="Left"
+                                                  Margin="5,0,0,0"
+                                                  FontSize="11"
+                                                  Foreground="{DynamicResource RxMakerLabelForeground}"
+                                                  IsChecked="{Binding InitiateOrderCreation}"
+                                                  Style="{StaticResource CircleCheckBox}" />
+
+                                        <Button Content="Create Order"
+                                                Style="{StaticResource RxMakerCompactColoredButton}"
+                                                Background="{DynamicResource ShowRxButtonColor}"
+                                                Foreground="{DynamicResource ShowRxButtonForeground}"
+                                                BorderBrush="{DynamicResource ShowRxButtonBorder}"
+                                                Margin="5,2,0,0"
+                                                MinWidth="99"
+                                                Height="28"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Bottom"
+                                                Command="{Binding ShowOrderCreationWindowCommand}"
+                                                Visibility="{Binding HasPrescriptionExtractData, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                         <StackPanel HorizontalAlignment="Right"
-                                                    VerticalAlignment="Bottom"
-                                                    Margin="0,0,0,0"
-                                                    Visibility="{Binding LastIteroZipFileId, Converter={StaticResource EmptyToCollapsedConverter}}"
-                                                    d:Visibility="Visible">
-                                            <TextBlock Text="Last iTero Zip file ID"
-                                                       Foreground="{DynamicResource RxMakerLabelForeground}"
-                                                       FontSize="11" />
-                                            <TextBlock Text="{Binding LastIteroZipFileId, UpdateSourceTrigger=PropertyChanged }"
-                                                       d:Text="164106600"
-                                                       HorizontalAlignment="Center"
-                                                       FontSize="20"
-                                                       Foreground="{DynamicResource LastIteroIDTextColor}"
-                                                       Margin="0,-6,0,0" />
-                                        </StackPanel>
+                                                    VerticalAlignment="Bottom">
+                                            <StackPanel HorizontalAlignment="Right"
+                                                        Margin="0,0,0,0"
+                                                        Visibility="{Binding LastIteroZipFileId, Converter={StaticResource EmptyToCollapsedConverter}}"
+                                                        d:Visibility="Visible">
+                                                <TextBlock Text="Last iTero Zip file ID"
+                                                           Foreground="{DynamicResource RxMakerLabelForeground}"
+                                                           FontSize="11" />
+                                                <TextBlock Text="{Binding LastIteroZipFileId, UpdateSourceTrigger=PropertyChanged }"
+                                                           d:Text="164106600"
+                                                           HorizontalAlignment="Center"
+                                                           FontSize="20"
+                                                           Foreground="{DynamicResource LastIteroIDTextColor}"
+                                                           Margin="0,-6,0,0" />
+                                            </StackPanel>
 
-                                        <StackPanel HorizontalAlignment="Center"
-                                                    VerticalAlignment="Bottom"
-                                                    Cursor="Hand"
-                                                    Orientation="Horizontal"
-                                                    d:Visibility="Visible"
-                                                    Visibility="{Binding PmFilesCountIniTeroFolder, Converter={StaticResource ZeroToCollapsedConverter}}">
-                                            <i:Interaction.Triggers>
-                                                <i:EventTrigger EventName="MouseDown">
-                                                    <i:InvokeCommandAction Command="{Binding OpeniTeroExportFolderCommand}" />
-                                                </i:EventTrigger>
-                                            </i:Interaction.Triggers>
-                                            <TextBlock Text="Files in iTero Export Folder"
-                                                       Foreground="{DynamicResource RxMakerLabelForeground}"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,5,0"
-                                                       FontSize="11" />
-                                            <TextBlock Text="{Binding PmFilesCountIniTeroFolder}"
-                                                       d:Text="3"
-                                                       HorizontalAlignment="Right"
-                                                       VerticalAlignment="Center"
-                                                       FontSize="14"
-                                                       Foreground="{DynamicResource IteroFilesCount}"
-                                                       Margin="0,0,0,0" />
+                                            <StackPanel HorizontalAlignment="Center"
+                                                        VerticalAlignment="Bottom"
+                                                        Cursor="Hand"
+                                                        Orientation="Horizontal"
+                                                        d:Visibility="Visible"
+                                                        Visibility="{Binding PmFilesCountIniTeroFolder, Converter={StaticResource ZeroToCollapsedConverter}}">
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="MouseDown">
+                                                        <i:InvokeCommandAction Command="{Binding OpeniTeroExportFolderCommand}" />
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                                <TextBlock Text="Files in iTero Export Folder"
+                                                           Foreground="{DynamicResource RxMakerLabelForeground}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,5,0"
+                                                           FontSize="11" />
+                                                <TextBlock Text="{Binding PmFilesCountIniTeroFolder}"
+                                                           d:Text="3"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="14"
+                                                           Foreground="{DynamicResource IteroFilesCount}"
+                                                           Margin="0,0,0,0" />
+                                            </StackPanel>
                                         </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Grid.Column="2"
+                                                Margin="0,4,120,0"
+                                                VerticalAlignment="Bottom"
+                                                HorizontalAlignment="Right">
+                                        <Button Content="Extracted Info"
+                                                FontSize="11"
+                                                Width="118"
+                                                Style="{StaticResource RxMakerToolbarButton}"
+                                                Command="{Binding ShowPrescriptionExtractPreviewCommand}"
+                                                ToolTip="Show floating window with latest PDF field extraction" />
+                                        <Button Content="Previous Numbers"
+                                                FontSize="11"
+                                                Width="118"
+                                                Margin="0,4,0,0"
+                                                Style="{StaticResource RxMakerToolbarButton}"
+                                                Command="{Binding ShowPrescriptionPreviousNumbersCommand}"
+                                                ToolTip="Today's saved pan numbers — reload for editing" />
+                                        <Button Content="Reopen PDF"
+                                                FontSize="11"
+                                                Width="118"
+                                                Margin="0,4,0,0"
+                                                Style="{StaticResource RxMakerToolbarButton}"
+                                                Command="{Binding ReopenLastPrescriptionPdfCommand}"
+                                                IsEnabled="{Binding CanReopenLastPrescriptionPdf}"
+                                                ToolTip="Re-process the last incoming PDF (after changing pan number or stamp position)" />
                                     </StackPanel>
+
                                     <StackPanel Grid.Column="2"
                                                 Margin="42,0,4,0"
                                                 VerticalAlignment="Top"
@@ -2398,18 +2441,15 @@
 
 
                                         <Button Content="Show Rx"
+                                                Style="{StaticResource RxMakerCompactColoredButton}"
                                                 Background="{DynamicResource ShowRxButtonColor}"
                                                 Foreground="{DynamicResource ShowRxButtonForeground}"
                                                 BorderBrush="{DynamicResource ShowRxButtonBorder}"
-                                                BorderThickness="1"
-                                                Padding="14,6"
-                                                FontWeight="SemiBold"
-                                                Grid.Column="0"
-                                                Grid.RowSpan="2"
-                                                Margin="0,6,0,0"
-                                                MinWidth="100"
+                                                Margin="3,2,0,0"
+                                                MinWidth="99"
                                                 HorizontalAlignment="Center"
-                                                Command="{Binding ShowPrescriptionPreviewPanelCommand}" />
+                                                Command="{Binding ShowPrescriptionPreviewPanelCommand}"
+                                                Visibility="{Binding PmSavedPrescription, Converter={StaticResource NullToCollapsedVisibilityConverter}}" />
 
                                     </StackPanel>
                                 </Grid>
@@ -2420,7 +2460,7 @@
                                   Grid.RowSpan="6"
                                   Margin="4,0,0,0">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="24" />
+                                    <RowDefinition Height="0" />
                                     <RowDefinition Height="auto" />
                                     <RowDefinition />
                                 </Grid.RowDefinitions>
@@ -2492,13 +2532,19 @@
                                                 <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
                                             <Button Content="Ignore"
-                                                    Height="30"
+                                                    Style="{StaticResource RxMakerCompactColoredButton}"
+                                                    Background="{DynamicResource GrabANumberButtonColor}"
+                                                    Foreground="{DynamicResource LightTextColor}"
+                                                    BorderBrush="{DynamicResource GrabANumberButtonColor}"
                                                     MinWidth="80"
                                                     Command="{Binding HitIgnoreInconsistencyOrderIDCommand}" />
                                             <Button Content="Cancel"
-                                                    Height="30"
-                                                    MinWidth="60"
+                                                    Style="{StaticResource RxMakerCompactColoredButton}"
+                                                    Background="{DynamicResource SchemeColor_C6696F}"
+                                                    Foreground="{DynamicResource LightTextColor}"
+                                                    BorderBrush="{DynamicResource SchemeColor_C6696F}"
                                                     Grid.Column="2"
+                                                    MinWidth="60"
                                                     Command="{Binding CancelIgnoreInconsistencyOrderIDCommand}" />
                                         </Grid>
                                     </StackPanel>
@@ -2514,7 +2560,7 @@
                                     Background="{DynamicResource RxMakerPanelBackground}">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="24" />
+                                        <RowDefinition Height="0" />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Border BorderBrush="{DynamicResource RxMakerPanelBorder}"
@@ -2528,15 +2574,42 @@
                                                    FontWeight="SemiBold" />
                                     </Border>
 
-                                    <ListView Style="{StaticResource LvListViewPrescriptionMakerEvents}"
-                                              Grid.Row="1"
-                                              Background="{DynamicResource RxMakerOrdersListBackground}"
-                                              BorderThickness="0"
-                                              AlternationCount="2"
-                                              FontSize="13"
-                                              Margin="4"
-                                              ItemContainerStyle="{StaticResource LvItemPrescriptionMakerEventsList}"
-                                              ItemsSource="{Binding PrescriptionMakerEventsList}" />
+                                    <Grid Grid.Row="1">
+                                        <ListView Style="{StaticResource LvListViewPrescriptionMakerEvents}"
+                                                  Background="{DynamicResource RxMakerOrdersListBackground}"
+                                                  BorderThickness="0"
+                                                  AlternationCount="2"
+                                                  FontSize="13"
+                                                  Margin="4"
+                                                  ItemContainerStyle="{StaticResource LvItemPrescriptionMakerEventsList}"
+                                                  ItemsSource="{Binding PrescriptionMakerEventsList}" />
+
+                                        <Grid x:Name="prescriptionEventsLoadingOverlay"
+                                              Panel.ZIndex="10"
+                                              IsHitTestVisible="True"
+                                              Cursor="Hand"
+                                              PreviewMouseLeftButtonDown="PrescriptionEventsLoadingOverlay_PreviewMouseLeftButtonDown"
+                                              Visibility="{Binding ProcessingDigiPrescriptionNow}">
+                                            <Border>
+                                                <Border.Background>
+                                                    <RadialGradientBrush GradientOrigin="0.5,0.42"
+                                                                           Center="0.5,0.42"
+                                                                           RadiusX="0.85"
+                                                                           RadiusY="0.85">
+                                                        <GradientStop Color="#00101828"
+                                                                      Offset="0" />
+                                                        <GradientStop Color="#CC0B1220"
+                                                                      Offset="0.55" />
+                                                        <GradientStop Color="#E610172A"
+                                                                      Offset="1" />
+                                                    </RadialGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <uc:InfinityCometLoader x:Name="prescriptionEventsCometLoader"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -2559,7 +2632,7 @@
 
 
                     <!--#region  ACCOUNT INFOS -->
-                    <TabItem Header="Account Infos"
+                    <TabItem Header="Passwords"
                              IsTabStop="False"
                              Visibility="{Binding CbSettingModuleAccountInfos, Converter={StaticResource BoolToVisibilityConverter}}"
                              d:Visibility="Visible"
@@ -2580,6 +2653,24 @@
                     </TabItem>
                     <!--#endregion KNOWLEDGE BASE -->
 
+                    <!--#region USEFUL WEBSITES -->
+                    <TabItem Header="Useful websites"
+                             IsTabStop="False"
+                             x:Name="usefulWebsitesTab"
+                             Style="{StaticResource hiddenTabsTabControlForMainTabControlTabItemStyle}">
+                        <localView:UsefulWebsitesTabPanel x:Name="usefulWebsitesPanel" />
+                    </TabItem>
+                    <!--#endregion USEFUL WEBSITES -->
+
+                    <!--#region SCAN BODY GALLERY -->
+                    <TabItem Header="Scan Body Gallery"
+                             IsTabStop="False"
+                             x:Name="scanBodyGalleryTab"
+                             Style="{StaticResource hiddenTabsTabControlForMainTabControlTabItemStyle}">
+                        <localView:ScanBodyGalleryTabPanel x:Name="scanBodyGalleryPanel" />
+                    </TabItem>
+                    <!--#endregion SCAN BODY GALLERY -->
+
 
                     <!--#region  LABNEXT TAB -->
                     <TabItem Header="Labnext"
@@ -2589,13 +2680,121 @@
                              x:Name="tabLabnext"
                              Panel.ZIndex="0"
                              Style="{StaticResource hiddenTabsTabControlForMainTabControlTabItemStyle}">
+                        <TabItem.Resources>
+                            <Style x:Key="LabnextToolbarButton"
+                                   TargetType="Button">
+                                <Setter Property="Height"
+                                        Value="22" />
+                                <Setter Property="MinWidth"
+                                        Value="72" />
+                                <Setter Property="Padding"
+                                        Value="10,0" />
+                                <Setter Property="Margin"
+                                        Value="4,0,0,0" />
+                                <Setter Property="Cursor"
+                                        Value="Hand" />
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource ImmersiveTextPrimary}" />
+                                <Setter Property="FontSize"
+                                        Value="11" />
+                                <Setter Property="FontWeight"
+                                        Value="SemiBold" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="Btn"
+                                                    CornerRadius="6"
+                                                    Background="{DynamicResource ImmersiveAccentBlueLight}"
+                                                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                                                    BorderThickness="1"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver"
+                                                         Value="True">
+                                                    <Setter TargetName="Btn"
+                                                            Property="Background"
+                                                            Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                                    <Setter TargetName="Btn"
+                                                            Property="BorderBrush"
+                                                            Value="{StaticResource ImmersiveFocusRing}" />
+                                                    <Setter Property="Foreground"
+                                                            Value="{StaticResource ImmersiveAccentBlue}" />
+                                                </Trigger>
+                                                <Trigger Property="IsPressed"
+                                                         Value="True">
+                                                    <Setter TargetName="Btn"
+                                                            Property="Background"
+                                                            Value="{StaticResource ImmersiveFilterButtonHoverGradientEnd}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+
+                            <Style x:Key="LabnextToolbarButtonAccent"
+                                   TargetType="Button"
+                                   BasedOn="{StaticResource LabnextToolbarButton}">
+                                <Setter Property="Foreground"
+                                        Value="#FF1E293B" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="Btn"
+                                                    CornerRadius="6"
+                                                    BorderThickness="1"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0"
+                                                                         EndPoint="1,1">
+                                                        <GradientStop Color="#FFFDE047"
+                                                                      Offset="0" />
+                                                        <GradientStop Color="#FFFBBF24"
+                                                                      Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <Border.BorderBrush>
+                                                    <LinearGradientBrush StartPoint="0,0"
+                                                                         EndPoint="1,0">
+                                                        <GradientStop Color="#88FDE047"
+                                                                      Offset="0" />
+                                                        <GradientStop Color="#8838BDF8"
+                                                                      Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Border.BorderBrush>
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver"
+                                                         Value="True">
+                                                    <Setter TargetName="Btn"
+                                                            Property="Opacity"
+                                                            Value="0.92" />
+                                                </Trigger>
+                                                <Trigger Property="IsPressed"
+                                                         Value="True">
+                                                    <Setter TargetName="Btn"
+                                                            Property="Opacity"
+                                                            Value="0.82" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </TabItem.Resources>
                         <Grid x:Name="LabnextTabPanel"
-                              Panel.ZIndex="0">
+                              Panel.ZIndex="0"
+                              Background="Transparent">
 
                             <Grid Panel.ZIndex="0"
                                   Margin="0,0,0,0"
                                   MinWidth="790"
-                                  Background="{DynamicResource WhiteBackground}"
+                                  Background="Transparent"
                                   x:Name="LabnextView">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="0" />
@@ -2604,29 +2803,31 @@
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
-                                    <RowDefinition Height="19" />
+                                    <RowDefinition Height="28" />
                                 </Grid.RowDefinitions>
                                 <wv2:WebView2 CoreWebView2InitializationCompleted="WebviewLabnext_CoreWebView2InitializationCompleted"
                                               ContentLoading="WebviewLabnext_ContentLoading"
+                                              NavigationStarting="WebviewLabnext_NavigationStarting"
                                               Name="webviewLabnext"
-                                              Panel.ZIndex="-1"
+                                              Panel.ZIndex="0"
                                               d:Visibility="Hidden"
-                                              Visibility="{Binding LabnextWebviewIsLookingUpPanNumber, Converter={StaticResource BoolToInverseVisibilityConverter}}"
+                                              Visibility="{Binding LabnextWebViewContentVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                               Grid.Column="0"
                                               Grid.ColumnSpan="3" />
                                 <StackPanel HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Panel.ZIndex="1"
                                             Grid.Column="1"
-                                            Grid.ColumnSpan="2">
+                                            Grid.ColumnSpan="2"
+                                            IsHitTestVisible="False"
+                                            Visibility="{Binding LabnextWebViewShowLoader, Converter={StaticResource BoolToVisibilityConverter}}">
 
-                                    <Image gif:ImageBehavior.AnimatedSource="/Images/Other/loading2.gif"
-                                           Width="128" />
+                                    <uc:ColorfulLoader HorizontalAlignment="Center" />
                                     <TextBlock Text="Please wait.."
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
-                                               Foreground="{DynamicResource BlackColor}"
-                                               Margin="0,-20,0,0"
+                                               Foreground="{DynamicResource TabLegacyForegroundSelected}"
+                                               Margin="0,10,0,0"
                                                FontSize="16" />
 
                                 </StackPanel>
@@ -2641,7 +2842,7 @@
 
                                     <TextBlock Text="{Binding LabNextWebViewStatusText}"
                                                d:Text="Status text"
-                                               Foreground="{DynamicResource MessageBoxSubtitleForeground}"
+                                               Foreground="{DynamicResource DialogMutedForeground}"
                                                FontWeight="Thin"
                                                VerticalAlignment="Center"
                                                FontSize="11"
@@ -2652,7 +2853,7 @@
                                                 Grid.Column="1">
                                         <CheckBox Content="Keep user logged in"
                                                   Foreground="{DynamicResource GreenColor}"
-                                                  VerticalAlignment="Top"
+                                                  VerticalAlignment="Center"
                                                   HorizontalAlignment="Left"
                                                   Cursor="Hand"
                                                   IsChecked="{Binding CbSettingKeepUserLoggedInLabnext, Mode=TwoWay}"
@@ -2660,32 +2861,17 @@
                                                   Command="{Binding CbSettingKeepUserLoggedInLabnextCommand}"
                                                   Margin="0,0,16,0" />
                                         <Button Content="Home"
-                                                Width="80"
-                                                Height="16"
+                                                Style="{StaticResource LabnextToolbarButton}"
                                                 VerticalAlignment="Center"
-                                                Foreground="{DynamicResource BlackColor}"
-                                                FontSize="10"
-                                                Background="{DynamicResource NamedLightGreen}"
-                                                Command="{Binding GoHomeOnLabnextWebViewCommand}"
-                                                Margin="0,0" />
-                                        <Button Content="⤾ Go back"
-                                                Width="80"
-                                                Height="16"
+                                                Command="{Binding GoHomeOnLabnextWebViewCommand}" />
+                                        <Button Content="Go back"
+                                                Style="{StaticResource LabnextToolbarButton}"
                                                 VerticalAlignment="Center"
-                                                Foreground="{DynamicResource BlackColor}"
-                                                FontSize="10"
-                                                Background="{DynamicResource NamedLightGreen}"
-                                                Command="{Binding GoBackOnLabnextWebViewCommand}"
-                                                Margin="10,0,2,0" />
-                                        <Button Content="↺ Reload"
-                                                Width="80"
-                                                Height="16"
+                                                Command="{Binding GoBackOnLabnextWebViewCommand}" />
+                                        <Button Content="Reload"
+                                                Style="{StaticResource LabnextToolbarButtonAccent}"
                                                 VerticalAlignment="Center"
-                                                Foreground="{DynamicResource BlackColor}"
-                                                FontSize="10"
-                                                Background="{DynamicResource NamedLightYellow}"
-                                                Command="{Binding ReloadLabnextWebViewCommand}"
-                                                Margin="10,0,2,0" />
+                                                Command="{Binding ReloadLabnextWebViewCommand}" />
                                     </StackPanel>
                                 </Grid>
                             </Grid>
@@ -2778,7 +2964,7 @@
                                                             Value="{StaticResource ImmersiveFocusRing}" />
                                                     <Setter TargetName="Shell"
                                                             Property="Background"
-                                                            Value="{StaticResource WhiteBackground}" />
+                                                            Value="{StaticResource ImmersiveFilterButtonHoverGradientEnd}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -2833,7 +3019,7 @@
                                 </Ellipse>
                             </Grid>
 
-                            <Grid Margin="12,10,12,10">
+                            <Grid Margin="0,0,0,0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
@@ -2989,7 +3175,8 @@
                                                     Background="{DynamicResource ImmersiveGlassBackground}"
                                                     BorderBrush="{DynamicResource ImmersiveGlassBorder}"
                                                     BorderThickness="1"
-                                                    Padding="6,8">
+                                                    Padding="6,8"
+                                                    Margin="0,0,4,0">
                                                 <Grid>
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="*" />
@@ -3017,18 +3204,20 @@
                                                             </i:EventTrigger>
                                                         </i:Interaction.Triggers>
                                                         </TextBlock>
-                                                        <ListView Width="100"
-                                                                  x:Name="listviewPendingDigiNumbers"
+                                                        <ListView x:Name="listviewPendingDigiNumbers"
                                                                   Margin="0"
+                                                                  HorizontalAlignment="Stretch"
+                                                                  HorizontalContentAlignment="Stretch"
                                                                   Background="{DynamicResource TransparentBrush}"
                                                                   BorderThickness="0"
                                                                   SelectionMode="Single"
                                                                   DockPanel.Dock="Top"
                                                                   ItemsSource="{Binding PendingDigiNumbersWaitingToCollect}"
-                                                                  SelectedItem="{Binding SelectedPendingDigiNumber, Mode=TwoWay}">
+                                                                  SelectedItem="{Binding SelectedPendingDigiNumber, Mode=TwoWay}"
+                                                                  ItemContainerStyle="{StaticResource LvItemPendingDigiCollect}">
                                                             <ListView.View>
                                                                 <GridView ColumnHeaderContainerStyle="{StaticResource HiddenHeaderStyle}">
-                                                                    <GridViewColumn Width="90"
+                                                                    <GridViewColumn Width="86"
                                                                                     DisplayMemberBinding="{Binding}" />
                                                                 </GridView>
                                                             </ListView.View>
@@ -3047,7 +3236,7 @@
                                         </Grid>
 
                                         <Border Grid.Row="1"
-                                                Margin="0,8,0,0"
+                                                Margin="0,8,4,4"
                                                 CornerRadius="8"
                                                 Background="{DynamicResource ImmersiveGlassBackground}"
                                                 BorderBrush="{DynamicResource ImmersiveGlassBorder}"
@@ -3138,7 +3327,8 @@
                              x:Name="pendingDigiCasesTab"
                              IsTabStop="False"
                              Style="{StaticResource hiddenTabsTabControlForMainTabControlTabItemStyle}">
-                        <Grid Margin="5">
+                        <Grid Margin="0"
+                              Background="{DynamicResource ClassicWindowBackgroundBrush}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="auto" />
                                 <RowDefinition />
@@ -3150,25 +3340,29 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Row="0"
-                                        Grid.Column="0"
-                                        Grid.ColumnSpan="2"
-                                        Visibility="{Binding CbSettingModulePendingDigitals, Converter={StaticResource BoolToVisibilityConverter}}"
-                                        d:Visibility="Visible">
+                            <Border Grid.Row="0"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                                    BorderThickness="0,0,0,1"
+                                    Background="{DynamicResource ImmersiveGlassBackground}"
+                                    Padding="14,10"
+                                    Visibility="{Binding CbSettingModulePendingDigitals, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    d:Visibility="Visible">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding PendingDigiCasesReplacementName}"
                                                d:Text="Pending Digitals"
-                                               FontSize="20"
-                                               Foreground="{DynamicResource BlackColor}"
-                                               FontWeight="Thin" />
+                                               FontSize="16"
+                                               Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                               FontWeight="SemiBold" />
                                     <TextBlock Text="from CasePoster (In-House)"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource SchemeColor_015D78}"
-                                               FontWeight="Thin"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource ImmersivePendingDigiAccent}"
+                                               FontWeight="Normal"
                                                VerticalAlignment="Center"
-                                               Margin="6,3,0,0" />
+                                               Margin="8,2,0,0" />
                                 </StackPanel>
-                            </StackPanel>
+                            </Border>
 
 
 
@@ -3182,17 +3376,20 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Text="Waiting for collect"
-                                           FontSize="14"
-                                           FontWeight="Thin"
-                                           Foreground="{DynamicResource BlackColor}"
-                                           Margin="0,10,0,0" />
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}"
+                                           Margin="10,12,0,6" />
 
                                 <ListView Grid.Row="1"
-                                          Background="{DynamicResource VitaButtonForegroundMid}"
-                                          Foreground="{DynamicResource LightTextColor}"
+                                          Margin="6,0,4,6"
+                                          Background="{DynamicResource TransparentBrush}"
+                                          Foreground="{DynamicResource ImmersiveTextPrimary}"
                                           FontSize="14"
                                           BorderThickness="1"
-                                          ItemsSource="{Binding PendingDigiNumbersWaitingToCollect}" />
+                                          BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                                          ItemsSource="{Binding PendingDigiNumbersWaitingToCollect}"
+                                          ItemContainerStyle="{StaticResource LvItemPendingDigiCollect}" />
                             </Grid>
 
                             <Grid Grid.Row="1"
@@ -3207,22 +3404,25 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Text="All times numbers in detail"
-                                           FontSize="14"
+                                           FontSize="12"
                                            Grid.Column="2"
-                                           FontWeight="Thin"
-                                           Foreground="{DynamicResource BlackColor}"
-                                           Margin="0,10,0,0" />
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}"
+                                           Margin="10,12,0,6" />
 
                                 <Border BorderThickness="1"
-                                        BorderBrush="{DynamicResource EslScrollbarThumb}"
+                                        BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                                        CornerRadius="8"
                                         Grid.Row="1"
                                         Grid.Column="2"
-                                        Grid.ColumnSpan="2">
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,0,10,6">
 
                                     <ListView Style="{StaticResource LvPendingDigitalCases}"
-                                              Foreground="{DynamicResource BlackColor}"
+                                              Foreground="{DynamicResource ImmersiveTextPrimary}"
                                               FontSize="12"
                                               BorderThickness="0"
+                                              Padding="4"
                                               ItemsSource="{Binding PendingDigiNumbersWaitingToProcess}"
                                               ItemContainerStyle="{StaticResource LvItemPendingDigitalCases}"
                                               AlternationCount="2">
@@ -3234,20 +3434,22 @@
                                                 <GridView.ColumnHeaderContainerStyle>
                                                     <Style TargetType="{x:Type GridViewColumnHeader}">
                                                         <Setter Property="Foreground"
-                                                                Value="{DynamicResource LightTextColor}" />
+                                                                Value="{DynamicResource ImmersiveTextMuted}" />
                                                         <Setter Property="Background"
-                                                                Value="{DynamicResource LightGrayBorderAndShadowColor}" />
+                                                                Value="{DynamicResource ImmersiveGlassBackground}" />
                                                         <Setter Property="BorderBrush"
-                                                                Value="{DynamicResource LightGrayBorderAndShadowColor}" />
+                                                                Value="{DynamicResource ImmersiveGlassBorder}" />
                                                         <Setter Property="FontWeight"
-                                                                Value="Normal" />
+                                                                Value="SemiBold" />
+                                                        <Setter Property="FontSize"
+                                                                Value="11" />
                                                         <Style.Triggers>
                                                             <Trigger Property="IsMouseOver"
                                                                      Value="True">
                                                                 <Setter Property="Foreground"
-                                                                        Value="{StaticResource LightTextColor}" />
+                                                                        Value="{StaticResource ImmersiveTextPrimary}" />
                                                                 <Setter Property="Background"
-                                                                        Value="{StaticResource VeryLightGrayColor}" />
+                                                                        Value="{StaticResource ImmersiveFilterButtonHoverGradientStart}" />
                                                             </Trigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -3328,21 +3530,21 @@
 
                             <StackPanel Grid.Row="2"
                                         Grid.Column="0"
-                                        Margin="0,20,0,6"
+                                        Margin="10,16,0,6"
                                         Grid.ColumnSpan="2"
                                         Visibility="{Binding TotalNewDigiCaseWithoutInHouseCases, Converter={StaticResource ZeroToCollapsedConverter}}"
                                         d:Visibility="Visible">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Pending Digitals"
-                                               FontSize="20"
-                                               Foreground="{DynamicResource BlackColor}"
-                                               FontWeight="Thin" />
+                                               FontSize="16"
+                                               Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                               FontWeight="SemiBold" />
                                     <TextBlock Text="from Dental Offices"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource GreenColor}"
-                                               FontWeight="Thin"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource ImmersiveSuccessText}"
+                                               FontWeight="Normal"
                                                VerticalAlignment="Center"
-                                               Margin="6,3,0,0" />
+                                               Margin="8,2,0,0" />
                                 </StackPanel>
 
                             </StackPanel>
@@ -3378,27 +3580,36 @@
                                            Margin="4,0,0,0" />
                             </StackPanel>
                         </TabItem.Header>
-                        <Grid>
+                        <Grid Background="{DynamicResource ClassicWindowBackgroundBrush}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="auto" />
                                     <RowDefinition />
                                 </Grid.RowDefinitions>
 
-                                <Border BorderBrush="{DynamicResource VitaButtonBorderLight}"
+                                <Border Grid.Row="0"
+                                        BorderBrush="{DynamicResource ImmersiveGlassBorder}"
                                         BorderThickness="0,0,0,1"
-                                        Background="{DynamicResource PrimaryDarkColor}">
-                                    <TextBlock Text="Possible Duplicate Use of Pan numbers"
-                                               Padding="5"
-                                               Foreground="{DynamicResource MessageBoxSubtitleForeground}"
-                                               FontSize="15" />
+                                        Background="{DynamicResource ImmersiveGlassBackground}"
+                                        Padding="14,10">
+                                    <StackPanel>
+                                        <TextBlock Text="Possible duplicate use of pan numbers"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                                        <TextBlock Text="Review matching orders that share the same pan number."
+                                                   FontSize="11"
+                                                   Margin="0,4,0,0"
+                                                   Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                    </StackPanel>
                                 </Border>
 
                                 <ListView Style="{StaticResource LvListViewDuplicates}"
                                           ItemsSource="{Binding PanNrDuplicatesList}"
                                           ItemContainerStyle="{StaticResource LvItemDuplicates}"
-                                          Background="{DynamicResource SchemeColor_4C494F}"
+                                          Background="{DynamicResource TransparentBrush}"
                                           BorderThickness="0"
+                                          Padding="10,6,10,10"
                                           Grid.Row="1"
                                           ScrollViewer.HorizontalScrollBarVisibility="Auto" />
                             </Grid>
@@ -3429,23 +3640,42 @@
                                            Margin="4,0,0,0" />
                             </StackPanel>
                         </TabItem.Header>
-                        <Grid>
-                            <ListView Style="{StaticResource LvListViewIssues}"
+                        <Grid Background="{DynamicResource ClassicWindowBackgroundBrush}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0"
+                                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                                    BorderThickness="0,0,0,1"
+                                    Background="{DynamicResource ImmersiveGlassBackground}"
+                                    Padding="14,10">
+                                <StackPanel>
+                                    <TextBlock Text="Sent-out order issues"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                                    <TextBlock Text="Double-click an order to open it in search."
+                                               FontSize="11"
+                                               Margin="0,4,0,0"
+                                               Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                </StackPanel>
+                            </Border>
+
+                            <ListView Grid.Row="1"
+                                      Style="{StaticResource LvListViewIssues}"
                                       ItemsSource="{Binding OrderIssuesList}"
                                       ItemContainerStyle="{StaticResource LvItemIssues}"
                                       SelectedItem="{Binding SelectedOrderIssue}"
-                                      Background="{DynamicResource VitaButtonBackgroundDark}"
+                                      Background="{DynamicResource TransparentBrush}"
                                       BorderThickness="0"
-                                      ScrollViewer.HorizontalScrollBarVisibility="Hidden">
-                                <ListView.View>
-                                    <GridView AllowsColumnReorder="False"
-                                              ColumnHeaderContainerStyle="{StaticResource HiddenHeaderStyle}">
-                                        <GridViewColumn x:Name="lvIssuesOrderID" />
-                                        <GridViewColumn x:Name="lvIssuesSkipReason" />
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                            <TextBlock Text="Nothing here yet.."
+                                      Padding="10,6,10,10"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto" />
+
+                            <TextBlock Grid.Row="1"
+                                       Text="Nothing here yet.."
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center"
                                        Foreground="{DynamicResource EmptyPansBorder}"
@@ -3458,12 +3688,11 @@
                     <!--#region PAYMENTS -->
                     <TabItem IsTabStop="False"
                              x:Name="paymentsTab"
-                             Foreground="{DynamicResource BlackColor}"
+                             Foreground="{DynamicResource ImmersiveTextPrimary}"
                              Header="Payments"
-                             Loaded="PaymentsTab_Loaded"
                              Style="{StaticResource hiddenTabsTabControlForMainTabControlTabItemStyle}">
                         <TabControl Grid.Row="1"
-                                    BorderThickness="0,1,1,0"
+                                    BorderThickness="0"
                                     Margin="0"
                                     x:Name="paymentsTabControl"
                                     Style="{StaticResource paymentsTabControl}"
@@ -3472,7 +3701,7 @@
 
                             <TabItem Header="Summary"
                                      Style="{StaticResource paymentsTabItem}">
-                                <Grid>
+                                <Grid Background="{DynamicResource ClassicWindowBackgroundBrush}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="auto" />
                                         <RowDefinition />
@@ -3483,12 +3712,12 @@
                                         <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Row="0"
-                                                Margin="10">
+                                                Margin="14,12">
                                         <TextBlock Text="Designer Payout Info"
-                                                   FontSize="24"
-                                                   FontWeight="Thin"
-                                                   Margin="0,0,0,10"
-                                                   Foreground="{DynamicResource BlackColor}" />
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,8"
+                                                   Foreground="{DynamicResource ImmersiveTextPrimary}" />
 
                                         <Grid>
                                             <Grid.RowDefinitions>
@@ -3502,9 +3731,9 @@
                                             <TextBlock Text="Issues waiting for resolution:"
                                                        Margin="0,0,5,0"
                                                        Grid.Column="0"
-                                                       FontSize="16"
+                                                       FontSize="13"
                                                        FontWeight="Normal"
-                                                       Foreground="{DynamicResource BlackColor}"
+                                                       Foreground="{DynamicResource ImmersiveTextMuted}"
                                                        VerticalAlignment="Center"
                                                        d:Visibility="Visible"
                                                        Visibility="{Binding PaymentIssueCount, Converter={StaticResource ZeroToCollapsedConverter}}" />
@@ -3512,8 +3741,8 @@
                                                        d:Text="83"
                                                        Grid.Column="1"
                                                        Grid.Row="0"
-                                                       FontSize="20"
-                                                       FontWeight="Normal"
+                                                       FontSize="18"
+                                                       FontWeight="SemiBold"
                                                        VerticalAlignment="Center"
                                                        d:Visibility="Visible"
                                                        Visibility="{Binding PaymentIssueCount, Converter={StaticResource ZeroToCollapsedConverter}}"
@@ -3545,10 +3774,10 @@
                                                     Visibility="{Binding WrongfullyPaidCasesList.Count, Converter={StaticResource ZeroToCollapsedConverter}}">
 
                                             <TextBlock Text="Summary "
-                                                       FontSize="20"
-                                                       FontWeight="Thin"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
                                                        Margin="5,0,0,0"
-                                                       Foreground="{DynamicResource BlackColor}" />
+                                                       Foreground="{DynamicResource ImmersiveTextPrimary}" />
                                         </StackPanel>
                                         <ListView Style="{StaticResource LvListViewWrongfulPaymentsSummary}"
                                                   Grid.Row="1"
@@ -3565,11 +3794,11 @@
 
 
                                         <TextBlock Text="Missing units "
-                                                   FontSize="20"
-                                                   FontWeight="Thin"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
                                                    Margin="5,10"
                                                    Grid.Row="2"
-                                                   Foreground="{DynamicResource BlackColor}" />
+                                                   Foreground="{DynamicResource ImmersiveTextPrimary}" />
 
                                         <ListView Style="{StaticResource LvListViewWrongfulPaymentsUnitsSummary}"
                                                   Grid.Row="3"
@@ -3584,11 +3813,11 @@
                                                   Visibility="{Binding WrongfullyPaidCasesList.Count, Converter={StaticResource ZeroToCollapsedConverter}}" />
 
                                         <TextBlock Text="Total loss "
-                                                   FontSize="20"
-                                                   FontWeight="Thin"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
                                                    Margin="5,10,5,5"
                                                    Grid.Row="4"
-                                                   Foreground="{DynamicResource BlackColor}" />
+                                                   Foreground="{DynamicResource ImmersiveTextPrimary}" />
 
                                         <ListView Style="{StaticResource LvListViewWrongfulPaymentsTotalLoss}"
                                                   Grid.Row="5"
@@ -3613,7 +3842,8 @@
                                 <Grid Grid.Row="0"
                                       Grid.RowSpan="2"
                                       Grid.Column="1"
-                                      Margin="40,0"
+                                      Margin="14,12"
+                                      Background="{DynamicResource ClassicWindowBackgroundBrush}"
                                       d:Visibility="Visible"
                                       Visibility="{Binding PaidToWrongPersonOrdersList.Count, Converter={StaticResource ZeroToCollapsedConverter}}">
                                     <Grid.RowDefinitions>
@@ -3621,24 +3851,25 @@
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <StackPanel Orientation="Horizontal"
-                                                Margin="0,15,0,10">
+                                                Margin="0,0,0,10">
 
                                         <TextBlock Text="Cases paid to wrong designer "
-                                                   FontSize="20"
-                                                   FontWeight="Thin"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
                                                    Margin="5,0,0,0"
-                                                   Foreground="{DynamicResource BlackColor}" />
+                                                   Foreground="{DynamicResource ImmersiveTextPrimary}" />
                                         <TextBlock Text="{Binding PaidToWrongPersonOrdersList.Count}"
                                                    d:Text="18"
                                                    Foreground="{DynamicResource RedColor}"
-                                                   FontSize="20"
-                                                   FontWeight="Normal" />
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold" />
                                     </StackPanel>
                                     <ListView Style="{StaticResource LvListViewCasesPaidForWrongDesigner}"
                                               Grid.Row="1"
                                               HorizontalAlignment="Stretch"
                                               BorderBrush="{DynamicResource TransparentBrush}"
                                               BorderThickness="0"
+                                              Padding="0,0,10,10"
                                               SelectionMode="Single"
                                               Background="{DynamicResource TransparentBrush}"
                                               ItemContainerStyle="{StaticResource LvItemCasesPaidForWrongDesignerList}"
@@ -4292,24 +4523,24 @@
                             <!--#region PAYMENTS Order lists -->
                             <TabItem Header="Order lists"
                                      Style="{StaticResource paymentsTabItem}">
-                                <Border Background="{DynamicResource WindowBackgroundBrush}">
-                                    <Grid Margin="10">
+                                <Border Background="{DynamicResource ClassicWindowBackgroundBrush}">
+                                    <Grid Margin="14,12">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="auto" />
                                             <RowDefinition />
                                         </Grid.RowDefinitions>
 
                                         <TextBlock Text="Designer Order Lists"
-                                                   FontSize="24"
-                                                   FontWeight="Thin"
-                                                   Foreground="{DynamicResource BlackColor}"
-                                                   Margin="5,5,0,15" />
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                                   Margin="5,0,0,12" />
 
                                         <!-- Dynamic TabControl for Designers -->
                                         <TabControl Grid.Row="1"
                                                     BorderThickness="1"
-                                                    BorderBrush="{DynamicResource EslScrollbarThumb}"
-                                                    Background="{DynamicResource WhiteBackground}"
+                                                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                                                    Background="{DynamicResource ImmersiveGlassBackground}"
                                                     x:Name="orderListsTabControl"
                                                     ItemsSource="{Binding PaymentOrderListDesigners}"
                                                     SelectedItem="{Binding SelectedPaymentDesigner}"
@@ -5656,8 +5887,9 @@
 
                                                 <Button Content="Go to settings"
                                                         Grid.Row="6"
-                                                        Height="24"
+                                                        Height="26"
                                                         Margin="0,30,0,0"
+                                                        Style="{StaticResource SettingsPrimaryButton}"
                                                         Click="SettingsButton_Click" />
 
 
@@ -5720,6 +5952,7 @@
                                         <TabControl x:Name="settingsTabControl"
                                                     Style="{StaticResource settingsSideTabControl}"
                                                     Background="{DynamicResource TransparentBrush}"
+                                                    Foreground="{DynamicResource LightTextColor}"
                                                     BorderThickness="0"
                                                     Margin="0"
                                                     TabStripPlacement="Left">
@@ -5745,6 +5978,22 @@
                                                                   Style="{StaticResource CircleCheckBox}"
                                                                   Command="{Binding CbSettingGlassyEffectCommand}"
                                                                   Margin="0,6,5,0" />
+
+                                                        <DockPanel Margin="0,10,0,0">
+                                                            <ToggleButton DockPanel.Dock="Right"
+                                                                          Style="{StaticResource IosToggleSwitch}"
+                                                                          IsChecked="{Binding CbSettingDcmHighQualityRendering, Mode=TwoWay}"
+                                                                          Command="{Binding CbSettingDcmHighQualityRenderingCommand}"
+                                                                          VerticalAlignment="Center" />
+                                                            <TextBlock Text="High quality rendering"
+                                                                       Foreground="{DynamicResource LightTextColor}"
+                                                                       VerticalAlignment="Center" />
+                                                        </DockPanel>
+                                                        <TextBlock Text="Full lighting, transparency, and clipping for the 3D viewer. Turn off for faster rotation on remote sessions."
+                                                                   Foreground="{DynamicResource EslScrollbarThumb}"
+                                                                   FontSize="10"
+                                                                   Margin="0,4,60,0"
+                                                                   TextWrapping="Wrap" />
 
                                                         <StackPanel Orientation="Horizontal">
                                                             <CheckBox Content="Start app minimized"
@@ -5813,37 +6062,9 @@
                                                         <Button Content="Test watch list notification"
                                                                 Command="{Binding TestWatchListNotificationCommand}"
                                                                 Margin="6,16,0,0"
-                                                                Padding="12,6"
                                                                 HorizontalAlignment="Left"
-                                                                Cursor="Hand"
-                                                                ToolTip="Shows a sample sliding notification (top-right)">
-                                                            <Button.Style>
-                                                                <Style TargetType="Button">
-                                                                    <Setter Property="Background"
-                                                                            Value="{DynamicResource PrimaryDarkColor}" />
-                                                                    <Setter Property="Foreground"
-                                                                            Value="{DynamicResource LightTextColor}" />
-                                                                    <Setter Property="BorderBrush"
-                                                                            Value="{DynamicResource DarkGrayBorderAndShadowColor}" />
-                                                                    <Setter Property="BorderThickness"
-                                                                            Value="1" />
-                                                                    <Setter Property="Template">
-                                                                        <Setter.Value>
-                                                                            <ControlTemplate TargetType="Button">
-                                                                                <Border Background="{TemplateBinding Background}"
-                                                                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                                                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                                                                        CornerRadius="6"
-                                                                                        Padding="{TemplateBinding Padding}">
-                                                                                    <ContentPresenter HorizontalAlignment="Center"
-                                                                                                      VerticalAlignment="Center" />
-                                                                                </Border>
-                                                                            </ControlTemplate>
-                                                                        </Setter.Value>
-                                                                    </Setter>
-                                                                </Style>
-                                                            </Button.Style>
-                                                        </Button>
+                                                                Style="{StaticResource SettingsPrimaryButton}"
+                                                                ToolTip="Shows a sample sliding notification (top-right)" />
                                                     </StackPanel>
                                                 </Grid>
                                             </TabItem>
@@ -5882,28 +6103,28 @@
                                                              Margin="0,0,2,0"
                                                              ItemsSource="{Binding CustomerSuggestionsCusNamesList}"
                                                              SelectedItem="{Binding SelectedCustomerName}"
-                                                             Foreground="{DynamicResource LightTextColor}"
                                                              MinWidth="150"
-                                                             Background="{DynamicResource DarkGrayBorderAndShadowColor}" />
+                                                             Style="{StaticResource SettingsListBox}" />
 
                                                     <ListBox Grid.Row="1"
                                                              Grid.Column="1"
                                                              Margin="2,0,4,0"
                                                              ItemsSource="{Binding CustomerSuggestionsReplacementsList}"
                                                              SelectedItem="{Binding SelectedCustomerSuggestion}"
-                                                             Foreground="{DynamicResource LightTextColor}"
                                                              MinWidth="150"
-                                                             Background="{DynamicResource DarkGrayBorderAndShadowColor}" />
+                                                             Style="{StaticResource SettingsListBox}" />
 
                                                     <Button Content="Delete customer"
                                                             Grid.Row="2"
                                                             Margin="0,5,3,5"
+                                                            Style="{StaticResource SettingsPrimaryButton}"
                                                             Command="{Binding DeleteCSCustomerCommand}" />
 
                                                     <Button Content="Delete suggestion"
                                                             Grid.Row="2"
                                                             Grid.Column="1"
                                                             Margin="3,5,4,5"
+                                                            Style="{StaticResource SettingsPrimaryButton}"
                                                             Command="{Binding DeleteCSSuggestionCommand}" />
 
 
@@ -5936,6 +6157,7 @@
                                                                 Width="200"
                                                                 Margin="0,10"
                                                                 HorizontalAlignment="Left"
+                                                                Style="{StaticResource SettingsPrimaryButton}"
                                                                 Command="{Binding AddNewCustomerSuggestionCommand}" />
                                                     </StackPanel>
                                                 </Grid>
@@ -5967,9 +6189,8 @@
                                                              Margin="0,0,2,0"
                                                              ItemsSource="{Binding CommentRulesList}"
                                                              SelectedItem="{Binding SelectedCommentRule}"
-                                                             Foreground="{DynamicResource LightTextColor}"
                                                              MinWidth="150"
-                                                             Background="{DynamicResource DarkGrayBorderAndShadowColor}">
+                                                             Style="{StaticResource SettingsListBox}">
                                                         <ListBox.ItemContainerStyle>
                                                             <Style TargetType="{x:Type ListBoxItem}">
                                                                 <Setter Property="Background"
@@ -6024,6 +6245,7 @@
                                                     <Button Content="Delete selected rule"
                                                             Grid.Row="2"
                                                             Margin="0,5,3,5"
+                                                            Style="{StaticResource SettingsPrimaryButton}"
                                                             Visibility="{Binding SelectedCommentRule.Customer, Converter={StaticResource EmptyToCollapsedConverter}}"
                                                             Command="{Binding DeleteSelectedCommentRuleCommand}" />
 
@@ -6155,6 +6377,7 @@
                                                                 Width="200"
                                                                 Margin="0,10"
                                                                 HorizontalAlignment="Left"
+                                                                Style="{StaticResource SettingsPrimaryButton}"
                                                                 Command="{Binding AddNewCommentRuleCommand}" />
 
                                                         <StackPanel Orientation="Horizontal"
@@ -6274,32 +6497,44 @@
                                                      x:Name="debugTab"
                                                      Style="{StaticResource settingsSideTabItem}">
                                                 <Grid>
-                                                    <StackPanel Orientation="Horizontal"
-                                                                Margin="10,0,0,0"
-                                                                Height="40"
+                                                    <StackPanel Margin="10,0,10,0"
                                                                 VerticalAlignment="Top">
-                                                        <TextBlock Text="Messages"
-                                                                   FontSize="26"
-                                                                   FontWeight="Thin" />
-                                                        <core:OutlinedTextBlock Stroke="{DynamicResource MessageBoxSubtitleForeground}"
-                                                                                StrokePosition="Outside"
-                                                                                VerticalAlignment="Center"
-                                                                                FontSize="22"
-                                                                                FontWeight="SemiBold"
-                                                                                Fill="{DynamicResource SchemeColor_FF809D}"
-                                                                                StrokeThickness="1"
-                                                                                ToolTip="Debug Messages"
-                                                                                Text="{Binding DebugMessages.Count}"
-                                                                                Visibility="{Binding DebugMessages.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
-                                                                                d:Visibility="Visible"
-                                                                                d:Text="17"
-                                                                                Margin="10, 0" />
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    Height="40">
+                                                            <TextBlock Text="Messages"
+                                                                       FontSize="26"
+                                                                       FontWeight="Thin" />
+                                                            <core:OutlinedTextBlock Stroke="{DynamicResource MessageBoxSubtitleForeground}"
+                                                                                    StrokePosition="Outside"
+                                                                                    VerticalAlignment="Center"
+                                                                                    FontSize="22"
+                                                                                    FontWeight="SemiBold"
+                                                                                    Fill="{DynamicResource SchemeColor_FF809D}"
+                                                                                    StrokeThickness="1"
+                                                                                    ToolTip="Debug Messages"
+                                                                                    Text="{Binding DebugMessages.Count}"
+                                                                                    Visibility="{Binding DebugMessages.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
+                                                                                    d:Visibility="Visible"
+                                                                                    d:Text="17"
+                                                                                    Margin="10, 0" />
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding PerfDiagLogPath, StringFormat='Perf log: {0}'}"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource ImmersiveTextMuted}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,0,0,4" />
+                                                        <TextBlock Text="Stalls/freezes also mirror here. Full trace: startup.log + perf.log in %ProgramData%\Stats_Client\"
+                                                                   FontSize="10"
+                                                                   Foreground="{DynamicResource ImmersiveTextMuted}"
+                                                                   TextWrapping="Wrap"
+                                                                   Opacity="0.85"
+                                                                   Margin="0,0,0,6" />
                                                     </StackPanel>
                                                     <ListView ItemsSource="{Binding DebugMessages}"
                                                               Background="{DynamicResource TransparentBrush}"
                                                               Padding="6"
                                                               ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                                                              Margin="0,38,0,0"
+                                                              Margin="0,88,0,0"
                                                               IsTabStop="True"
                                                               BorderThickness="0"
                                                               x:Name="debugMessageListView"
@@ -6352,7 +6587,7 @@
                                                                    FontSize="26"
                                                                    FontWeight="Thin" />
 
-                                                        <CheckBox Content="Account Infos"
+                                                        <CheckBox Content="Passwords"
                                                                   Foreground="{DynamicResource NamedLightYellow}"
                                                                   VerticalAlignment="Top"
                                                                   HorizontalAlignment="Left"
@@ -6621,10 +6856,7 @@
                                                                                Margin="0,0,0,7" />
                                                                     <StackPanel Orientation="Horizontal">
                                                                         <ListBox ItemsSource="{Binding PmSendToList}"
-                                                                                 Background="{DynamicResource TabLegacyForegroundDisabled}"
-                                                                                 BorderBrush="{DynamicResource LightTextColor}"
-                                                                                 BorderThickness="1"
-                                                                                 Foreground="{DynamicResource LightTextColor}"
+                                                                                 Style="{StaticResource SettingsListBox}"
                                                                                  Width="200"
                                                                                  MinHeight="60"
                                                                                  MaxHeight="200"
@@ -6632,19 +6864,21 @@
                                                                                  Margin="0,0,6,0" />
                                                                         <DockPanel LastChildFill="False">
                                                                             <TextBox Width="100"
-                                                                                     Background="{DynamicResource TabLegacyForegroundDisabled}"
-                                                                                     BorderBrush="{DynamicResource LightTextColor}"
+                                                                                     Background="{DynamicResource SettingsInputBackground}"
+                                                                                     BorderBrush="{DynamicResource SettingsPanelBorder}"
                                                                                      BorderThickness="1"
                                                                                      Foreground="{DynamicResource LightTextColor}"
                                                                                      Text="{Binding PmNewSentToName, UpdateSourceTrigger=PropertyChanged}"
                                                                                      DockPanel.Dock="Top" />
                                                                             <Button Content="Remove"
                                                                                     DockPanel.Dock="Bottom"
+                                                                                    Style="{StaticResource SettingsPrimaryButton}"
                                                                                     Command="{Binding PmRemoveFromSentToListCommand}"
                                                                                     Visibility="{Binding PmSelectedSendToEntry, Converter={StaticResource EmptyToHiddenConverter}}"
                                                                                     d:Visibility="Visible" />
                                                                             <Button Content="Add"
                                                                                     DockPanel.Dock="Bottom"
+                                                                                    Style="{StaticResource SettingsPrimaryButton}"
                                                                                     Command="{Binding PmAddToSentToListCommand}"
                                                                                     Margin="0,0,0,4" />
                                                                         </DockPanel>
@@ -6721,6 +6955,7 @@
                                                         <Button Content="Save to Stats database"
                                                                 Width="200"
                                                                 HorizontalAlignment="Left"
+                                                                Style="{StaticResource SettingsPrimaryButton}"
                                                                 Command="{Binding SaveEncodeIdentifierSettingsCommand}"
                                                                 Margin="0,4,0,0" />
                                                     </StackPanel>
@@ -6746,8 +6981,8 @@
                                                                FontSize="16"
                                                                Padding="20,0"
                                                                VerticalAlignment="Center"
-                                                               Background="{DynamicResource WhiteBackground}"
-                                                               Foreground="{DynamicResource PurpleColor}"
+                                                               Background="{DynamicResource SettingsInputBackground}"
+                                                               Foreground="{DynamicResource LightTextColor}"
                                                                HorizontalAlignment="Left" />
                                                     <TextBlock Text="This ID was set on the server"
                                                                FontSize="10"
@@ -6756,12 +6991,14 @@
 
                                                     <Button Content="Register Application"
                                                             Width="150"
+                                                            Style="{StaticResource SettingsPrimaryButton}"
                                                             Command="{Binding RegisterApplicationCommand}"
                                                             HorizontalAlignment="Left"
                                                             Margin="0,20,0,20" />
 
                                                     <Button Content="Lookup case"
                                                             Width="150"
+                                                            Style="{StaticResource SettingsPrimaryButton}"
                                                             Command="{Binding GetCaseInfoByLabnextIDCommand}"
                                                             HorizontalAlignment="Left"
                                                             Margin="0,20,0,20" />
@@ -7156,151 +7393,293 @@
                 <Border Grid.Row="1"
                         Grid.Column="1"
                         VerticalAlignment="Bottom"
-                        HorizontalAlignment="Left"
-                        Margin="1120,0,0,34"
-                        BorderThickness="0.85"
-                        BorderBrush="{DynamicResource VeryLightGrayColor}"
-                        Background="{DynamicResource PrimaryColor}"
-                        CornerRadius="10"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,28,42"
+                        MinWidth="440"
+                        MaxWidth="560"
                         Panel.ZIndex="1460"
                         Visibility="{Binding FsCopyPanelShows, Converter={StaticResource BoolToVisibilityConverter}}"
-                        d:Visibility="Hidden">
-                    <Border.BitmapEffect>
-                        <DropShadowBitmapEffect Color="{DynamicResource BlackColor_Cl}"
-                                                Direction="270"
-                                                ShadowDepth="3"
-                                                Opacity="0.55"
-                                                Softness="2" />
-                    </Border.BitmapEffect>
-                    <Grid Grid.Row="1"
-                          MinWidth="300"
-                          MaxWidth="700"
-                          MaxHeight="420"
-                          Height="80"
-                          Panel.ZIndex="400"
-                          Margin="10,5"
-                          VerticalAlignment="Bottom"
-                          HorizontalAlignment="Left">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition Width="25" />
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
+                        d:Visibility="Visible"
+                        Background="{DynamicResource FsCopyPanelBackground}"
+                        BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                        BorderThickness="1"
+                        CornerRadius="14">
+                    <Border.Effect>
+                        <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                          BlurRadius="24"
+                                          ShadowDepth="0"
+                                          Opacity="0.85" />
+                    </Border.Effect>
+
+                    <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition />
-                            <RowDefinition />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="╳"
-                                   Grid.Column="3"
-                                   Cursor="Hand"
-                                   FontSize="10"
-                                   HorizontalAlignment="Right"
-                                   Margin="-20,3,4,0">
-                         <i:Interaction.Triggers>
-                             <i:EventTrigger EventName="MouseDown">
-                                 <i:InvokeCommandAction Command="{Binding FsHideNotificationCommand}" />
-                             </i:EventTrigger>
-                         </i:Interaction.Triggers>
-                        </TextBlock>
+                        <!-- Header -->
+                        <Border Grid.Row="0"
+                                Background="{DynamicResource FsCopyPanelHeaderBackground}"
+                                CornerRadius="14,14,0,0"
+                                Padding="14,11"
+                                BorderBrush="{DynamicResource ImmersiveInputBorder}"
+                                BorderThickness="0,0,0,1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Horizontal"
-                                    Grid.Column="0"
-                                    Grid.ColumnSpan="3">
-                            <TextBlock Text="Selected:"
-                                       Margin="0,3,0,0" />
-                            <Image Source="/Images/folder.png"
-                                   Width="20"
-                                   Height="20"
-                                   Margin="0,1,0,0"
-                                   VerticalAlignment="Top" />
-                            <TextBlock Text="{Binding FsSelectedFolderObject.FolderName}"
-                                       d:Text="Example Folder "
-                                       Foreground="BlueViolet"
-                                       TextTrimming="CharacterEllipsis"
-                                       FontWeight="SemiBold"
-                                       FontSize="16"
-                                       Cursor="Hand"
-                                       ToolTip="Click here to open up folder"
-                                       Margin="2,0,20,0">
-                             <i:Interaction.Triggers>
-                                 <i:EventTrigger EventName="MouseDown">
-                                     <i:InvokeCommandAction Command="{Binding FsOpenFolderCommand}"
-                                                            CommandParameter="{Binding FsSelectedFolderObject.Path}" />
-                                 </i:EventTrigger>
-                             </i:Interaction.Triggers>
-                            </TextBlock>
-                        </StackPanel>
-
-                        <TextBlock Text="Copy over with number:"
-                                   Grid.Row="0"
-                                   Grid.Column="0"
-                                   Visibility="{Binding SelectedPendingDigiNumber, Converter={StaticResource EmptyToHiddenConverter}}"
-                                   d:Visibility="Visible"
-                                   VerticalAlignment="Bottom" />
-                        <Button FontSize="25"
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                BorderBrush="{DynamicResource BlackColor}"
-                                Visibility="{Binding SelectedPendingDigiNumber, Converter={StaticResource EmptyToHiddenConverter}}"
-                                d:Visibility="Visible"
-                                Command="{Binding FsCopyFolderOverCommand}"
-                                CommandParameter="{Binding SelectedPendingDigiNumber}"
-                                Margin="0,4">
-                            <StackPanel Orientation="Horizontal"
-                                        Margin="-20,0,0,0">
-                                <Image Source="\Images\ToolBar\stcopy.png"
-                                       Width="30"
-                                       Height="20" />
-                                <TextBlock Text="{Binding SelectedPendingDigiNumber}"
-                                           d:Text="125"
-                                           Margin="0,-3,0,0" />
-                            </StackPanel>
-                        </Button>
-
-                        <TextBlock Text="or"
-                                   Grid.Row="1"
-                                   Grid.Column="1"
-                                   Visibility="{Binding SelectedPendingDigiNumber, Converter={StaticResource EmptyToHiddenConverter}}"
-                                   d:Visibility="Visible"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Right" />
-
-
-                        <TextBlock Text="Giva a number:"
-                                   Grid.Row="0"
-                                   Grid.Column="2"
-                                   Margin="12,0,0,0"
-                                   VerticalAlignment="Bottom" />
-                        <StackPanel Orientation="Horizontal"
-                                    HorizontalAlignment="Left"
-                                    Margin="14,0,0,0"
-                                    Grid.Row="1"
-                                    Grid.Column="2">
-                            <TextBox Width="80"
-                                     FontSize="22"
-                                     Text="{Binding FsCustomNumber, Mode=TwoWay}"
-                                     d:Text="4004"
-                                     HorizontalContentAlignment="Center"
-                                     Height="32"
-                                     Margin="0,0,0,0" />
-
-
-                            <Button Margin="4,4,0,4"
-                                    Command="{Binding FsCopyFolderOverCommand}"
-                                    CommandParameter="{Binding FsCustomNumber}"
-                                    Width="40">
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,0,0,0">
-                                    <Image Source="\Images\ToolBar\stcopy.png"
-                                           Width="20"
-                                           Height="20" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Width="34"
+                                            Height="34"
+                                            CornerRadius="9"
+                                            Background="{DynamicResource ImmersiveInputBackground}"
+                                            BorderBrush="{DynamicResource ImmersiveInputBorder}"
+                                            BorderThickness="1">
+                                        <Image Source="/Images/folder.png"
+                                               Width="18"
+                                               Height="18"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Margin="10,0,8,0"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Selected folder"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                        <TextBlock Text="{Binding FsSelectedFolderObject.FolderName}"
+                                                   d:Text="Lisa Montrose - 06-01-2026 05:49 PM"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxWidth="360"
+                                                   Cursor="Hand"
+                                                   ToolTip="Click to open folder">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver"
+                                                                 Value="True">
+                                                            <Setter Property="Foreground"
+                                                                    Value="{StaticResource ImmersiveAccentBlue}" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="MouseDown">
+                                                    <i:InvokeCommandAction Command="{Binding FsOpenFolderCommand}"
+                                                                           CommandParameter="{Binding FsSelectedFolderObject.Path}" />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </TextBlock>
+                                    </StackPanel>
                                 </StackPanel>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
 
+                                <Button Grid.Column="1"
+                                        Width="30"
+                                        Height="30"
+                                        Padding="0"
+                                        Cursor="Hand"
+                                        ToolTip="Close"
+                                        Command="{Binding FsHideNotificationCommand}"
+                                        Background="Transparent"
+                                        BorderThickness="0">
+                                    <TextBlock Text="✕"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Copy actions -->
+                        <Grid Grid.Row="1"
+                              Margin="14,12,14,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"
+                                                  MinWidth="150" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*"
+                                                  MinWidth="170" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Pending pan -->
+                            <Border Grid.Column="0"
+                                    Padding="12,10"
+                                    CornerRadius="10"
+                                    Background="{DynamicResource FsCopyPanelHighlightCardBackground}"
+                                    BorderBrush="{DynamicResource ImmersiveAccentBlueBorder}"
+                                    BorderThickness="1"
+                                    Visibility="{Binding SelectedPendingDigiNumber, Converter={StaticResource EmptyToHiddenConverter}}"
+                                    d:Visibility="Visible">
+                                <StackPanel>
+                                    <TextBlock Text="Use pending pan"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                               Margin="0,0,0,8" />
+                                    <Button Height="40"
+                                            Padding="10,0"
+                                            Cursor="Hand"
+                                            Command="{Binding FsCopyFolderOverCommand}"
+                                            CommandParameter="{Binding SelectedPendingDigiNumber}"
+                                            Background="{DynamicResource FsCopyPanelPendingButtonBackground}"
+                                            BorderBrush="{DynamicResource ImmersiveAccentBlue}"
+                                            BorderThickness="1">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Shell"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="8"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver"
+                                                             Value="True">
+                                                        <Setter TargetName="Shell"
+                                                                Property="Background"
+                                                                Value="{StaticResource FsCopyPanelPendingButtonHoverBackground}" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="/Images/ToolBar/stcopy.png"
+                                                   Width="22"
+                                                   Height="22"
+                                                   Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding SelectedPendingDigiNumber}"
+                                                       d:Text="125"
+                                                       FontSize="22"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="OR"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource ImmersiveTextMuted}"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0"
+                                       Visibility="{Binding SelectedPendingDigiNumber, Converter={StaticResource EmptyToHiddenConverter}}"
+                                       d:Visibility="Visible" />
+
+                            <!-- Custom pan -->
+                            <Border Grid.Column="2"
+                                    Padding="12,10"
+                                    CornerRadius="10"
+                                    Background="{DynamicResource ImmersiveInputBackground}"
+                                    BorderBrush="{DynamicResource ImmersiveInputBorder}"
+                                    BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="Enter pan number"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                               Margin="0,0,0,8" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0"
+                                                 FontSize="27"
+                                                 FontWeight="SemiBold"
+                                                 Text="{Binding FsCustomNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 d:Text="4004"
+                                                 Height="40"
+                                                 Padding="10,0"
+                                                 HorizontalContentAlignment="Center"
+                                                 VerticalContentAlignment="Center"
+                                                 Background="{DynamicResource FsCopyPanelBackground}"
+                                                 Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                                 BorderBrush="{DynamicResource ImmersiveInputBorder}"
+                                                 BorderThickness="1"
+                                                 CaretBrush="{DynamicResource ImmersiveTextPrimary}">
+                                            <TextBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius"
+                                                            Value="8,0,0,8" />
+                                                </Style>
+                                            </TextBox.Resources>
+                                        </TextBox>
+                                        <Button Grid.Column="1"
+                                                Width="44"
+                                                Height="40"
+                                                Margin="-1,0,0,0"
+                                                Cursor="Hand"
+                                                Command="{Binding FsCopyFolderOverCommand}"
+                                                CommandParameter="{Binding FsCustomNumber}"
+                                                Background="{DynamicResource FsCopyPanelActionButtonBackground}"
+                                                BorderBrush="{DynamicResource FsCopyPanelActionButtonBorder}"
+                                                BorderThickness="1">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="Shell"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="0,8,8,0">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver"
+                                                                 Value="True">
+                                                            <Setter TargetName="Shell"
+                                                                    Property="Background"
+                                                                    Value="{StaticResource FsCopyPanelActionButtonHoverBackground}" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                            <Image Source="/Images/ToolBar/stcopy.png"
+                                                   Width="22"
+                                                   Height="22" />
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Destination hint -->
+                        <Border Grid.Row="2"
+                                Margin="14,0,14,12"
+                                Padding="10,7"
+                                CornerRadius="8"
+                                Background="{DynamicResource FsCopyPanelFooterBackground}"
+                                BorderBrush="{DynamicResource ImmersiveInputBorder}"
+                                BorderThickness="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Copy to:"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding FsubscrTargetFolder}"
+                                           d:Text="C:\Cases\06-08\"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ImmersiveSuccessText}"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Border>
                 <!--#endregion Conrtrol panel for Copy-->
 
@@ -7689,7 +8068,7 @@
                                     </i:Interaction.Triggers>
                                 </core:OutlinedTextBlock>
                                 <TextBlock Text="Empty pan left"
-                                           Foreground="{DynamicResource InfobarCountLabelForeground}"
+                                           Foreground="{DynamicResource BlackColor}"
                                            FontSize="9"
                                            Margin="0,0,0,5" />
                             </StackPanel>
@@ -7723,7 +8102,7 @@
 
 
                             <TextBlock Text="Digi Prescriptions"
-                                       Foreground="{DynamicResource InfobarCountLabelForeground}"
+                                       Foreground="{DynamicResource BlackColor}"
                                        Visibility="{Binding DigiPrescriptionsTodayCount, Converter={StaticResource ZeroToCollapsedConverter}}"
                                        d:Visibility="Visible"
                                        FontSize="9"
@@ -7755,7 +8134,7 @@
                             </core:OutlinedTextBlock>
 
                             <TextBlock Text="Digi cases Today"
-                                       Foreground="{DynamicResource InfobarCountLabelForeground}"
+                                       Foreground="{DynamicResource BlackColor}"
                                        FontSize="9"
                                        Visibility="{Binding DigiCasesIn3ShapeTodayCount, Converter={StaticResource ZeroToCollapsedConverter}}"
                                        d:Visibility="Visible"
@@ -7841,7 +8220,7 @@
                                     Style="{StaticResource FooterModuleShortcutButton}">
                                 <Viewbox Width="30"
                                          Height="30">
-                                    <Image Source="/Images/database.png"
+                                    <Image Source="/Images/HomeButtons/accounts.png"
                                            Stretch="Uniform" />
                                 </Viewbox>
                             </Button>
@@ -8033,7 +8412,9 @@
                                         Visibility="{Binding LoadingPanelVisibility}"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"
+                                        d:Visibility="Hidden"
                                         IsHitTestVisible="False" />
         </Grid>
-    </Border>
+        </Border>
+    </Grid>
 </Window>

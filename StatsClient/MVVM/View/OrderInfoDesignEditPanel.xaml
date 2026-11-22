@@ -96,8 +96,8 @@
                                            OverridesDefaultStyle="True">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Ellipse Fill="{DynamicResource PrimaryDarkColor}"
-                                                         Stroke="{DynamicResource GlassPanelBorder}"
+                                                <Ellipse Fill="{DynamicResource ImmersiveAccentBlueLight}"
+                                                         Stroke="{DynamicResource ImmersiveAccentBlueBorder}"
                                                          StrokeThickness="1" />
                                             </ControlTemplate>
                                         </Thumb.Template>
@@ -109,26 +109,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="DesignEditToolButton"
-               TargetType="Button">
-            <Setter Property="Width" Value="36" />
-            <Setter Property="Height" Value="36" />
-            <Setter Property="Padding" Value="4" />
-            <Setter Property="Margin" Value="0,0,4,0" />
-            <Setter Property="Background" Value="{DynamicResource PrimaryDarkColor}" />
-            <Setter Property="Foreground" Value="{DynamicResource BlackColor}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource GlassPanelBorder}" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
-        <Style x:Key="DesignEditActionButton"
-               TargetType="Button">
-            <Setter Property="Padding" Value="6,4" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Background" Value="{DynamicResource PrimaryDarkColor}" />
-            <Setter Property="Foreground" Value="{DynamicResource BlackColor}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource GlassPanelBorder}" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
+        <Style x:Key="DesignEditSculptToolButton"
+               TargetType="Button"
+               BasedOn="{StaticResource OrderInfoDesignEditToolButton}" />
     </UserControl.Resources>
 
     <Border Background="{DynamicResource GlassPanelBackground}"
@@ -157,35 +140,95 @@
                             Margin="0,0,0,10">
                     <UniformGrid Columns="4"
                                  Margin="0,0,0,8">
-                        <Button Style="{StaticResource DesignEditToolButton}"
-                                Command="{Binding SelectSculptToolCommand}"
+                        <Button Command="{Binding SelectSculptToolCommand}"
                                 CommandParameter="Add"
                                 ToolTip="Add">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource DesignEditSculptToolButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SculptToolName}"
+                                                     Value="Add">
+                                            <Setter Property="Background"
+                                                    Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="{StaticResource ImmersiveAccentBlue}" />
+                                            <Setter Property="BorderThickness"
+                                                    Value="1.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <Image Source="/DcmViewer/Images/add.png"
                                    Width="20"
                                    Height="20" />
                         </Button>
-                        <Button Style="{StaticResource DesignEditToolButton}"
-                                Command="{Binding SelectSculptToolCommand}"
+                        <Button Command="{Binding SelectSculptToolCommand}"
                                 CommandParameter="Remove"
                                 ToolTip="Remove">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource DesignEditSculptToolButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SculptToolName}"
+                                                     Value="Remove">
+                                            <Setter Property="Background"
+                                                    Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="{StaticResource ImmersiveAccentBlue}" />
+                                            <Setter Property="BorderThickness"
+                                                    Value="1.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <Image Source="/DcmViewer/Images/remove.png"
                                    Width="20"
                                    Height="20" />
                         </Button>
-                        <Button Style="{StaticResource DesignEditToolButton}"
-                                Command="{Binding SelectSculptToolCommand}"
+                        <Button Command="{Binding SelectSculptToolCommand}"
                                 CommandParameter="Smooth"
                                 ToolTip="Smooth">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource DesignEditSculptToolButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SculptToolName}"
+                                                     Value="Smooth">
+                                            <Setter Property="Background"
+                                                    Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="{StaticResource ImmersiveAccentBlue}" />
+                                            <Setter Property="BorderThickness"
+                                                    Value="1.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <Image Source="/DcmViewer/Images/smooth.png"
                                    Width="20"
                                    Height="20" />
                         </Button>
-                        <Button Style="{StaticResource DesignEditToolButton}"
-                                Command="{Binding SelectSculptToolCommand}"
+                        <Button Command="{Binding SelectSculptToolCommand}"
                                 CommandParameter="Grab"
                                 Margin="0"
                                 ToolTip="Grab">
+                            <Button.Style>
+                                <Style TargetType="Button"
+                                       BasedOn="{StaticResource DesignEditSculptToolButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SculptToolName}"
+                                                     Value="Grab">
+                                            <Setter Property="Background"
+                                                    Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                            <Setter Property="BorderBrush"
+                                                    Value="{StaticResource ImmersiveAccentBlue}" />
+                                            <Setter Property="BorderThickness"
+                                                    Value="1.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <Image Source="/DcmViewer/Images/grab_move.png"
                                    Width="20"
                                    Height="20" />
@@ -236,9 +279,25 @@
                                Foreground="{DynamicResource GlassPanelSectionTitleForeground}"
                                Margin="0,0,0,6" />
                     <Button Content="Cut plane tool"
-                            Style="{StaticResource DesignEditActionButton}"
                             Command="{Binding ToggleCutPlaneModeCommand}"
-                            Margin="0,0,0,6" />
+                            Margin="0,0,0,6">
+                        <Button.Style>
+                            <Style TargetType="Button"
+                                   BasedOn="{StaticResource OrderInfoDesignEditButton}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCutPlaneMode}"
+                                                 Value="True">
+                                        <Setter Property="Background"
+                                                Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                        <Setter Property="BorderBrush"
+                                                Value="{StaticResource ImmersiveAccentBlue}" />
+                                        <Setter Property="FontWeight"
+                                                Value="SemiBold" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     <Slider Style="{StaticResource DesignEditOffsetSlider}"
                             Minimum="-1"
                             Maximum="1"
@@ -249,18 +308,18 @@
                     <UniformGrid Columns="2"
                                  Margin="0,0,0,10">
                         <Button Content="Flip side"
-                                Style="{StaticResource DesignEditActionButton}"
+                                Style="{StaticResource OrderInfoDesignEditButton}"
                                 Command="{Binding FlipCutPlaneSideCommand}"
                                 Margin="0,0,4,0" />
                         <Button Content="Apply cut"
-                                Style="{StaticResource DesignEditActionButton}"
+                                Style="{StaticResource OrderInfoDesignEditAccentButton}"
                                 Command="{Binding ApplyCutPlaneCommand}"
                                 Margin="0"
                                 FontWeight="SemiBold" />
                     </UniformGrid>
 
                     <Button Content="Save STL"
-                            Style="{StaticResource DesignEditActionButton}"
+                            Style="{StaticResource OrderInfoDesignEditAccentButton}"
                             Command="{Binding SaveDesignEditStlCommand}"
                             FontWeight="SemiBold"
                             ToolTip="StatsDesignEdit/Exports — DCM untouched." />

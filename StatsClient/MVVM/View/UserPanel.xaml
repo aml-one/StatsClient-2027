@@ -85,246 +85,182 @@
     <Grid Margin="2,0,2,0">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="66" />
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
             <RowDefinition />
-            <RowDefinition Height="23" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
                 Grid.Column="1"
-                BorderThickness="0"
+                BorderBrush="{DynamicResource SentOutCasesAccordionStripBorder}"
+                BorderThickness="1"
                 CornerRadius="8"
                 Margin="0,4,0,0"
-                Background="{DynamicResource SchemeColor_ECECEC}">
+                Background="{DynamicResource SentOutCasesStatsPanelBackground}">
             <Border.Effect>
                 <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
-                                  BlurRadius="12"
-                                  ShadowDepth="3"
-                                  Opacity="0.2"
+                                  BlurRadius="8"
+                                  ShadowDepth="2"
+                                  Opacity="0.12"
                                   Direction="270" />
             </Border.Effect>
 
-            <Grid ClipToBounds="True">
+            <Grid ClipToBounds="True"
+                  Margin="4,3">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="0.75*" />
-                    <ColumnDefinition Width="0.75*" />
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="0.75*" />
-                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="auto" />
-                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
+                <StackPanel Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.RowSpan="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0"
+                            Visibility="{Binding TotalUnitsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}">
+                    <Image Source="/Images/SentOutCases/models.png"
+                           Width="38"
+                           Height="38"
+                           Opacity="0.75"
+                           Margin="0,0,5,0"
+                           VerticalAlignment="Center" />
+                    <StackPanel VerticalAlignment="Center">
+                        <core:OutlinedTextBlock Text="{Binding TotalUnitsFinal}"
+                                                Stroke="{DynamicResource RxMakerPanelBorder}"
+                                                StrokePosition="Outside"
+                                                FontSize="34"
+                                                FontWeight="SemiBold"
+                                                Fill="{DynamicResource SentOutCasesUnitsAccent}"
+                                                StrokeThickness="1" />
+                        <Label Content="Total Units"
+                               Padding="0"
+                               Margin="0,-1,0,0"
+                               FontSize="9"
+                               Foreground="{DynamicResource SentOutCasesUnitsAccent}" />
+                    </StackPanel>
+                </StackPanel>
 
-                <Image Source="/Images/SentOutCases/models.png"
-                       Width="50"
-                       Height="50"
-                       Opacity="0.7"
-                       Grid.Column="0"
-                       Grid.RowSpan="2"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Visibility="{Binding TotalUnitsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                       Margin="-65,0,0,0">
-                    <Image.Effect>
-                        <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
-                                          BlurRadius="10"
-                                          ShadowDepth="2"
-                                          Opacity="0.2"
-                                          Direction="270" />
-                    </Image.Effect>
-                </Image>
+                <StackPanel Grid.Row="0"
+                            Grid.Column="1"
+                            Grid.RowSpan="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0"
+                            Visibility="{Binding TotalCrownsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}">
+                    <Image Source="/Images/SentOutCases/crown.png"
+                           Width="38"
+                           Height="38"
+                           Opacity="0.75"
+                           Margin="0,0,5,0"
+                           VerticalAlignment="Center" />
+                    <StackPanel VerticalAlignment="Center">
+                        <core:OutlinedTextBlock Text="{Binding TotalCrownsFinal}"
+                                                Stroke="{DynamicResource RxMakerPanelBorder}"
+                                                StrokePosition="Outside"
+                                                FontSize="34"
+                                                FontWeight="SemiBold"
+                                                Fill="{DynamicResource SentOutCasesCrownsAccent}"
+                                                StrokeThickness="1" />
+                        <Label Content="Crowns"
+                               Padding="0"
+                               Margin="0,-1,0,0"
+                               FontSize="9"
+                               Foreground="{DynamicResource SentOutCasesCrownsAccent}" />
+                    </StackPanel>
+                </StackPanel>
 
+                <StackPanel Grid.Row="0"
+                            Grid.Column="2"
+                            Grid.RowSpan="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0"
+                            Visibility="{Binding TotalAbutmentsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}">
+                    <Image Source="/Images/SentOutCases/abutment.png"
+                           Width="38"
+                           Height="38"
+                           Opacity="0.75"
+                           Margin="0,0,5,0"
+                           VerticalAlignment="Center" />
+                    <StackPanel VerticalAlignment="Center">
+                        <core:OutlinedTextBlock Text="{Binding TotalAbutmentsFinal}"
+                                                Stroke="{DynamicResource RxMakerPanelBorder}"
+                                                StrokePosition="Outside"
+                                                FontSize="34"
+                                                FontWeight="SemiBold"
+                                                Fill="{DynamicResource SentOutCasesAbutmentsAccent}"
+                                                StrokeThickness="1" />
+                        <Label Content="Abutments"
+                               Padding="0"
+                               Margin="0,-1,0,0"
+                               FontSize="9"
+                               Foreground="{DynamicResource SentOutCasesAbutmentsAccent}" />
+                    </StackPanel>
+                </StackPanel>
 
-                <core:OutlinedTextBlock Text="{Binding TotalUnitsFinal}"
-                                        Grid.Column="0"
-                                        Stroke="{DynamicResource FilterButtonForeground}"
-                                        StrokePosition="Outside"
-                                        FontSize="40"
-                                        FontWeight="SemiBold"
-                                        Fill="{DynamicResource PaymentStatusPaidColor}"
-                                        StrokeThickness="1"
-                                        HorizontalAlignment="Center"
-                                        Visibility="{Binding TotalUnitsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                                        Margin="3,-8,3,0" />
-                <d:Label Grid.Column="0"
-                         Content="13"
-                         Foreground="{DynamicResource PaymentStatusPaidColor}"
-                         FontSize="40"
-                         HorizontalAlignment="Center"
-                         Margin="3,-8,3,-8" />
-                <Label Content="Total Units"
-                       Grid.Row="1"
-                       Grid.Column="0"
-                       Margin="0,-8,0,0"
-                       FontSize="10"
-                       Foreground="{DynamicResource PaymentStatusPaidColor}"
-                       Visibility="{Binding TotalUnitsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                       HorizontalAlignment="Center" />
-
-
-                <Image Source="/Images/SentOutCases/crown.png"
-                       Width="40"
-                       Height="40"
-                       Opacity="0.7"
-                       Grid.Column="1"
-                       Grid.RowSpan="2"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Visibility="{Binding TotalCrownsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                       Margin="-50,0,0,0">
-                    <Image.Effect>
-                        <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
-                                          BlurRadius="10"
-                                          ShadowDepth="2"
-                                          Opacity="0.2"
-                                          Direction="270" />
-                    </Image.Effect>
-                </Image>
-                <core:OutlinedTextBlock Text="{Binding TotalCrownsFinal}"
-                                        Grid.Column="1"
-                                        Stroke="{DynamicResource FilterButtonForeground}"
-                                        StrokePosition="Outside"
-                                        FontSize="30"
-                                        FontWeight="SemiBold"
-                                        Fill="{DynamicResource SchemeColor_3498DB}"
-                                        HorizontalAlignment="Center"
-                                        StrokeThickness="1"
-                                        Visibility="{Binding TotalCrownsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                                        Margin="3" />
-                <d:Label Grid.Column="1"
-                         Content="13"
-                         Foreground="{DynamicResource SchemeColor_3498DB}"
-                         FontSize="30"
-                         HorizontalAlignment="Center"
-                         Margin="3,-1,3,-8" />
-
-                <Label Content="Crowns"
-                       Grid.Row="1"
-                       Grid.Column="1"
-                       Margin="0,-8,0,0"
-                       FontSize="10"
-                       Foreground="{DynamicResource SchemeColor_3498DB}"
-                       Visibility="{Binding TotalCrownsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                       HorizontalAlignment="Center" />
-
-                <Image Source="/Images/SentOutCases/abutment.png"
-                       Width="40"
-                       Height="40"
-                       Opacity="0.7"
-                       Grid.Column="2"
-                       Grid.RowSpan="2"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Visibility="{Binding TotalAbutmentsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                       Margin="-50,0,0,0">
-                    <Image.Effect>
-                        <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
-                                          BlurRadius="10"
-                                          ShadowDepth="2"
-                                          Opacity="0.2"
-                                          Direction="270" />
-                    </Image.Effect>
-                </Image>
-                <core:OutlinedTextBlock Text="{Binding TotalAbutmentsFinal}"
-                                        Grid.Column="2"
-                                        Stroke="{DynamicResource FilterButtonForeground}"
-                                        StrokePosition="Outside"
-                                        FontSize="30"
-                                        FontWeight="SemiBold"
-                                        Fill="{DynamicResource SchemeColor_9B59B6}"
-                                        StrokeThickness="1"
-                                        HorizontalAlignment="Center"
-                                        Visibility="{Binding TotalAbutmentsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                                        Margin="3" />
-                <d:Label Grid.Column="2"
-                         Content="13"
-                         Foreground="{DynamicResource SchemeColor_9B59B6}"
-                         FontSize="30"
-                         HorizontalAlignment="Center"
-                         Margin="3,-1,3,-8" />
-
-                <Label Content="Abutments"
-                       Grid.Row="1"
-                       Grid.Column="2"
-                       Margin="0,-8,0,0"
-                       FontSize="10"
-                       Foreground="{DynamicResource SchemeColor_9B59B6}"
-                       Visibility="{Binding TotalAbutmentsFinal, Converter={StaticResource ZeroToCollapsedVisibilityConverter}}"
-                       HorizontalAlignment="Center" />
-
-                <Image Source="/Images/SentOutCases/i33.png"
-                       Width="50"
-                       Height="50"
-                       Opacity="0.7"
-                       Grid.Column="3"
-                       Grid.RowSpan="2"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Margin="-65,0,0,0">
-                    <Image.Effect>
-                        <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
-                                          BlurRadius="10"
-                                          ShadowDepth="2"
-                                          Opacity="0.2"
-                                          Direction="270" />
-                    </Image.Effect>
-                </Image>
-                <core:OutlinedTextBlock Text="{Binding TotalOrdersFinal}"
-                                        Grid.Column="3"
-                                        Stroke="{DynamicResource FilterButtonForeground}"
-                                        StrokePosition="Outside"
-                                        FontSize="40"
-                                        FontWeight="SemiBold"
-                                        Fill="{DynamicResource SchemeColor_16A085}"
-                                        StrokeThickness="1"
-                                        HorizontalAlignment="Center"
-                                        Margin="3,-8,3,0" />
-                <d:Label Grid.Column="3"
-                         Content="13"
-                         Foreground="{DynamicResource SchemeColor_16A085}"
-                         FontSize="40"
-                         HorizontalAlignment="Center"
-                         Margin="3,-10,3,-8" />
-
-                <Label Content="All Cases"
-                       Grid.Row="1"
-                       Grid.Column="3"
-                       Margin="0,-8,0,0"
-                       FontSize="10"
-                       Foreground="{DynamicResource SchemeColor_16A085}"
-                       HorizontalAlignment="Center" />
-
+                <StackPanel Grid.Row="0"
+                            Grid.Column="3"
+                            Grid.RowSpan="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0">
+                    <Image Source="/Images/SentOutCases/i33.png"
+                           Width="38"
+                           Height="38"
+                           Opacity="0.75"
+                           Margin="0,0,5,0"
+                           VerticalAlignment="Center" />
+                    <StackPanel VerticalAlignment="Center">
+                        <core:OutlinedTextBlock Text="{Binding TotalOrdersFinal}"
+                                                Stroke="{DynamicResource RxMakerPanelBorder}"
+                                                StrokePosition="Outside"
+                                                FontSize="34"
+                                                FontWeight="SemiBold"
+                                                Fill="{DynamicResource SentOutCasesOrdersAccent}"
+                                                StrokeThickness="1" />
+                        <Label Content="All Cases"
+                               Padding="0"
+                               Margin="0,-1,0,0"
+                               FontSize="9"
+                               Foreground="{DynamicResource SentOutCasesOrdersAccent}" />
+                    </StackPanel>
+                </StackPanel>
 
                 <Label Content="Leftover Units"
                        Grid.Row="0"
-                       Grid.Column="4"
-                       Margin="0,-6,0,0"
+                       Grid.Column="5"
+                       Margin="0,0,0,0"
                        FontSize="9"
-                       Foreground="{DynamicResource SchemeColor_E67E22}"
+                       Foreground="{DynamicResource SentOutCasesLeftoverAccent}"
                        Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top" />
 
-                <Grid Grid.Column="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0"
+                      Grid.RowSpan="2"
+                      Grid.Column="5"
+                      VerticalAlignment="Center"
+                      Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-
                     <StackPanel Orientation="Horizontal"
-                                Margin="4,7,-2,-8"
-                                Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}">
+                                Grid.Row="0"
+                                Margin="0,10,0,2">
                         <Image Source="/Images/SentOutCases/models.png"
                                Width="14"
                                Height="14"
@@ -332,90 +268,67 @@
                                Margin="0,0,2,0"
                                VerticalAlignment="Center" />
                         <core:OutlinedTextBlock Text="{Binding TotalUnitsLeftOverFinal}"
-                                                Grid.Column="0"
-                                                Grid.Row="0"
-                                                Stroke="{DynamicResource FilterButtonForeground}"
+                                                Stroke="{DynamicResource RxMakerPanelBorder}"
                                                 StrokePosition="Outside"
                                                 FontSize="16"
                                                 FontWeight="SemiBold"
-                                                Fill="{DynamicResource SchemeColor_E67E22}"
-                                                StrokeThickness="1"
-                                                HorizontalAlignment="Left" />
+                                                Fill="{DynamicResource SentOutCasesLeftoverAccent}"
+                                                StrokeThickness="1" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal"
-                                Grid.Column="0"
                                 Grid.Row="1"
-                                Margin="4,2,-2,-8"
-                                Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}">
+                                Margin="0,0,0,0">
                         <Image Source="/Images/SentOutCases/models.png"
                                Width="14"
                                Height="14"
                                Opacity="0.8"
-                               Margin="0,-5,2,0"
+                               Margin="0,0,2,0"
                                VerticalAlignment="Center" />
                         <core:OutlinedTextBlock Text="{Binding TotalUnitsTodayFinal}"
-                                                Stroke="{DynamicResource FilterButtonForeground}"
+                                                Stroke="{DynamicResource RxMakerPanelBorder}"
                                                 StrokePosition="Outside"
                                                 FontSize="16"
                                                 FontWeight="SemiBold"
-                                                Fill="{DynamicResource SchemeColor_F39C12}"
-                                                StrokeThickness="1"
-                                                HorizontalAlignment="Left" />
+                                                Fill="{DynamicResource SentOutCasesTodayAccent}"
+                                                StrokeThickness="1" />
                     </StackPanel>
-
-                    <d:Label Grid.Column="0"
-                             Grid.Row="0"
-                             Content="13"
-                             Foreground="{DynamicResource SchemeColor_E67E22}"
-                             FontSize="16"
-                             HorizontalAlignment="Left"
-                             Margin="12,2,-2,-8" />
-                    <d:Label Grid.Column="0"
-                             Grid.Row="1"
-                             Content="13"
-                             Foreground="{DynamicResource SchemeColor_F39C12}"
-                             FontSize="16"
-                             HorizontalAlignment="Left"
-                             Margin="12,-1,3,-8" />
                 </Grid>
 
                 <Label Content="Total Units Today"
                        Grid.Row="1"
-                       Grid.Column="4"
-                       Margin="0,-7,2,0"
+                       Grid.Column="5"
+                       Margin="0,2,2,0"
                        FontSize="9"
-                       Foreground="{DynamicResource SchemeColor_F39C12}"
+                       Foreground="{DynamicResource SentOutCasesTodayAccent}"
                        Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}"
-                       HorizontalAlignment="Left" />
-
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom" />
 
                 <Label Content="Leftover Cases"
                        Grid.Row="0"
-                       Grid.Column="5"
-                       Margin="0,-6,0,0"
+                       Grid.Column="6"
+                       Margin="8,0,0,0"
                        FontSize="9"
-                       Foreground="{DynamicResource PaymentStatusUnpaidColor}"
+                       Foreground="{DynamicResource SentOutCasesLeftoverAccent}"
                        Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top" />
 
-                <Grid Grid.Column="5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0"
+                      Grid.RowSpan="2"
+                      Grid.Column="6"
+                      VerticalAlignment="Center"
+                      Margin="8,0,0,0"
+                      Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-
                     <StackPanel Orientation="Horizontal"
-                                Grid.Column="0"
                                 Grid.Row="0"
-                                Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}"
-                                Margin="4,7,-2,-8">
+                                Margin="0,10,0,2">
                         <Image Source="/Images/SentOutCases/i33.png"
                                Width="16"
                                Height="16"
@@ -423,72 +336,53 @@
                                Margin="0,0,2,0"
                                VerticalAlignment="Center" />
                         <core:OutlinedTextBlock Text="{Binding TotalOrdersLeftOversFinal}"
-                                                Stroke="{DynamicResource FilterButtonForeground}"
+                                                Stroke="{DynamicResource RxMakerPanelBorder}"
                                                 StrokePosition="Outside"
                                                 FontSize="16"
                                                 FontWeight="SemiBold"
-                                                Fill="{DynamicResource PaymentStatusUnpaidColor}"
-                                                StrokeThickness="1"
-                                                HorizontalAlignment="Left" />
+                                                Fill="{DynamicResource SentOutCasesLeftoverAccent}"
+                                                StrokeThickness="1" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal"
-                                Grid.Column="0"
-                                Grid.Row="1"
-                                Visibility="{Binding TotalUnitsTodaySameAsAllTimeTotal}"
-                                Margin="4,2,2,-8">
+                                Grid.Row="1">
                         <Image Source="/Images/SentOutCases/i33.png"
                                Width="16"
                                Height="16"
                                Opacity="0.8"
-                               Margin="0,-5,2,0"
+                               Margin="0,0,2,0"
                                VerticalAlignment="Center" />
                         <core:OutlinedTextBlock Text="{Binding TotalOrdersTodayFinal}"
-                                                Stroke="{DynamicResource FilterButtonForeground}"
+                                                Stroke="{DynamicResource RxMakerPanelBorder}"
                                                 StrokePosition="Outside"
                                                 FontSize="16"
                                                 FontWeight="SemiBold"
-                                                Fill="{DynamicResource SchemeColor_F39C12}"
-                                                StrokeThickness="1"
-                                                HorizontalAlignment="Left" />
+                                                Fill="{DynamicResource SentOutCasesTodayAccent}"
+                                                StrokeThickness="1" />
                     </StackPanel>
-
-                    <d:Label Grid.Column="0"
-                             Grid.Row="0"
-                             Content="13"
-                             Foreground="{DynamicResource PaymentStatusUnpaidColor}"
-                             FontSize="16"
-                             HorizontalAlignment="Left"
-                             Margin="15,2,-2,-8" />
-                    <d:Label Grid.Column="0"
-                             Grid.Row="1"
-                             Content="13"
-                             Foreground="{DynamicResource SchemeColor_F39C12}"
-                             FontSize="16"
-                             HorizontalAlignment="Left"
-                             Margin="15,-2,3,-8" />
                 </Grid>
-
 
                 <Label Content="New Cases Today"
                        Grid.Row="1"
-                       Grid.Column="5"
-                       Margin="0,-7,2,0"
+                       Grid.Column="6"
+                       Margin="8,2,2,0"
                        FontSize="9"
-                       Foreground="{DynamicResource SchemeColor_F39C12}"
+                       Foreground="{DynamicResource SentOutCasesTodayAccent}"
                        Visibility="{Binding TotalOrdersTodaySameAsAllTimeTotal}"
-                       HorizontalAlignment="Left" />
-
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom" />
 
             </Grid>
         </Border>
 
 
         <Border Grid.Row="1"
-                Margin="0,4,0,3"
-                Background="{DynamicResource WhiteBackground}"
-                CornerRadius="6"
-                BorderThickness="0">
+                Margin="0,0,0,0"
+                Visibility="Collapsed"
+                Background="{DynamicResource SentOutCasesDesignerBarBackground}"
+                BorderBrush="{DynamicResource SentOutCasesAccordionStripBorder}"
+                BorderThickness="1"
+                CornerRadius="6">
             <Border.Effect>
                 <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
                                   BlurRadius="8"
@@ -502,12 +396,12 @@
                 <TextBlock Text="Designer:" 
                            FontWeight="Normal"
                            FontSize="10"
-                           Foreground="{DynamicResource SchemeColor_7F8C8D}"
+                           Foreground="{DynamicResource RxMakerLabelForeground}"
                            VerticalAlignment="Center"
                            Margin="0,0,6,0"/>
                 <TextBlock Text="{Binding DesignerName}" 
                            d:Text="Designer Name"
-                           Foreground="{DynamicResource PaymentStatusPaidColor}"
+                           Foreground="{DynamicResource SentOutCasesUnitsAccent}"
                            FontWeight="SemiBold"
                            VerticalAlignment="Center"
                            Margin="0,0,0,0"
@@ -516,7 +410,7 @@
         </Border>
 
         <Grid Grid.Row="2"
-              Background="{DynamicResource SchemeColor_F5F7FA}">
+              Background="{DynamicResource SentOutCasesListAreaBackground}">
 
             <core:OutlinedTextBlock Text="{Binding DesignerName}"
                                     Grid.Column="3"
@@ -524,7 +418,7 @@
                                     StrokePosition="Outside"
                                     FontSize="60"
                                     FontWeight="SemiBold"
-                                    Fill="{DynamicResource SchemeColor_ECF0F1}"
+                                    Fill="{DynamicResource SentOutCasesWatermarkForeground}"
                                     Opacity="0.4"
                                     Panel.ZIndex="2"
                                     StrokeThickness="1"
@@ -534,7 +428,7 @@
             <d:Label Grid.Column="3"
                      Content="Designer Name"
                      FontWeight="SemiBold"
-                     Foreground="{DynamicResource SchemeColor_ECF0F1}"
+                     Foreground="{DynamicResource SentOutCasesWatermarkForeground}"
                      Opacity="0.4"
                      FontSize="60"
                      Panel.ZIndex="2"
@@ -658,9 +552,10 @@
             </ListView.GroupStyle>
         </ListView>
 
-        <Border Background="{DynamicResource WhiteBackground}"
+        <Border Background="{DynamicResource SentOutCasesSearchBackground}"
                 Margin="0,0,0,3"
-                BorderThickness="0"
+                BorderBrush="{DynamicResource SentOutCasesAccordionStripBorder}"
+                BorderThickness="1"
                 CornerRadius="6"
                 Grid.Row="3">
             <Border.Effect>
@@ -680,7 +575,7 @@
 
 
                 <TextBlock Text="SEARCH"
-                           Foreground="{DynamicResource SchemeColor_7F8C8D}"
+                           Foreground="{DynamicResource RxMakerLabelForeground}"
                            FontSize="10"
                            FontWeight="SemiBold"
                            Padding="7,0"
@@ -690,6 +585,7 @@
                          Grid.Column="1"
                          BorderThickness="0"
                          Background="{DynamicResource TransparentBrush}"
+                         Foreground="{DynamicResource RxMakerInputForeground}"
                          Padding="4,0,0,0">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="KeyDown">
@@ -700,7 +596,7 @@
 
                 <TextBlock Text="╳"
                            Grid.Column="2"
-                           Foreground="{DynamicResource PaymentStatusUnpaidColor}"
+                           Foreground="{DynamicResource SentOutCasesLeftoverAccent}"
                            FontSize="10"
                            FontWeight="SemiBold"
                            Padding="10,0"

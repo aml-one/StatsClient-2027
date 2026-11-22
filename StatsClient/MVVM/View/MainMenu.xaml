@@ -3,77 +3,89 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:StatsClient.MVVM.View"
-             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:viewmodel="clr-namespace:StatsClient.MVVM.ViewModel"
+             xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
              mc:Ignorable="d"
-             Foreground="{DynamicResource BlackColor}"
-             d:Width="250">
+             d:DesignWidth="300"
+             d:DesignHeight="420"
+             Visibility="Collapsed">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            
-            <Style x:Key="HiddenHeaderStyle"
-                    TargetType="{x:Type GridViewColumnHeader}">
-                <Setter Property="Visibility"
-                        Value="Collapsed" />
-            </Style>
-        </ResourceDictionary>
-    </UserControl.Resources>
-    
-    <UserControl.DataContext>
-        <viewmodel:MainMenuViewModel />
-    </UserControl.DataContext>
+    <Grid x:Name="menuRoot">
+        <Grid.Resources>
+            <converter:EmptyToCollapsedConverter x:Key="EmptyToCollapsedConverter" />
+        </Grid.Resources>
+        <Grid.DataContext>
+            <viewmodel:MainMenuViewModel />
+        </Grid.DataContext>
 
-    <Border BorderThickness="1"
-            Background="{DynamicResource PopupSurfaceBackground}"
-            BorderBrush="{DynamicResource ImmersiveGlassBorder}"
-            CornerRadius="8"
-            Padding="8,6">
-        <Border.Effect>
-            <DropShadowEffect Color="{DynamicResource PopupShadowColor}"
-                              Direction="270"
-                              ShadowDepth="3"
-                              BlurRadius="12"
-                              Opacity="0.25" />
-        </Border.Effect>
-        <Grid Margin="4,2">
-            <ListView
-                                      Style="{StaticResource LvListViewMainMenu}" ItemsSource="{Binding MenuItems}"
-                      SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
-                      ItemContainerStyle="{StaticResource LvItemMainMenu}"
-                      AlternationCount="2"
-                      Background="{DynamicResource TransparentBrush}"
-                      Foreground="{DynamicResource LvItemMainMenu_PrimaryForeground}"
-                      x:Name="mainMenuListView"
-                      BorderThickness="0">
-                <ListView.View>
+        <Border MinWidth="260"
+                MaxWidth="320"
+                Margin="0,0,0,8"
+                CornerRadius="10"
+                Padding="8,8,8,6"
+                Background="{DynamicResource FilterSectionCardBackground}"
+                BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                BorderThickness="1">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,6">
+                    <Image DockPanel.Dock="Right"
+                           Source="{DynamicResource HomeSettingsButtonImage}"
+                           Width="16"
+                           Height="16"
+                           Margin="0,0,2,0"
+                           VerticalAlignment="Center"
+                           Cursor="Hand"
+                           ToolTip="Settings">
+                        <Image.InputBindings>
+                            <MouseBinding Gesture="LeftClick"
+                                          Command="{Binding RunMenuItemCommand}"
+                                          CommandParameter="{Binding SettingsMenuItem}" />
+                        </Image.InputBindings>
+                    </Image>
+                    <TextBlock Text="Stats 2027"
+                               Style="{StaticResource FilterSectionHeaderText}"
+                               Margin="0" />
+                </DockPanel>
 
-                    <GridView ColumnHeaderContainerStyle="{StaticResource HiddenHeaderStyle}">
-                        <GridViewColumn x:Name="mainMenuItemIcon"
-                                        Width="20"/>
-                        <GridViewColumn x:Name="mainMenuItemText"
-                                        DisplayMemberBinding="{Binding .}"
-                                        Width="170" />
-                    </GridView>
-                </ListView.View>
-            </ListView>
-
-
-            <TextBox Height="0"
-                     Width="0"
-                     Margin="0,0,0,0"
-                     VerticalAlignment="Top"
-                     x:Name="focusedTextBox">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="LostKeyboardFocus">
-                        <i:InvokeCommandAction Command="{Binding CloseMainMenuCommand}" />
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </TextBox>
-        </Grid>
-    </Border>
+                <ItemsControl ItemsSource="{Binding MenuTileItems}"
+                              Tag="{Binding RunMenuItemCommand}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Style="{StaticResource ImmersiveFilterButton}"
+                                    Margin="0,0,0,3"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid Width="18"
+                                          Height="18"
+                                          Margin="0,0,8,0">
+                                        <Image Source="{Binding Icon}"
+                                               Width="18"
+                                               Height="18"
+                                               Stretch="Uniform"
+                                               Visibility="{Binding Icon, Converter={StaticResource EmptyToCollapsedConverter}}" />
+                                        <TextBlock Text="{Binding IconGlyph}"
+                                                   FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="16"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource ImmersiveTextSecondary}"
+                                                   Visibility="{Binding IconGlyph, Converter={StaticResource EmptyToCollapsedConverter}}" />
+                                    </Grid>
+                                    <TextBlock Text="{Binding Header}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </Grid>
 </UserControl>

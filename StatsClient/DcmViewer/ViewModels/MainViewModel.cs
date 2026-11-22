@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -18,6 +19,7 @@ using HelixToolkit.SharpDX;
 using HelixToolkit.Wpf.SharpDX;
 using Microsoft.Win32;
 using static StatsClient.MVVM.Core.LocalSettingsDB;
+using SharpDxMeshGeometry3D = HelixToolkit.SharpDX.MeshGeometry3D;
 
 namespace DCMViewer.ViewModels;
 
@@ -36,13 +38,14 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
     private const double SatinSpecularShininess = 90.0;
     private const double MatteSpecularShininess = 30.0;
 
-    private static readonly Color AmbientLightColor = Color.FromRgb(30, 30, 30);
+    private static readonly Color AmbientLightColor = Color.FromRgb(56, 56, 56);
     private static readonly Color KeyLightColor = Color.FromRgb(92, 92, 92);
-    private static readonly Color FillLightColor = Color.FromRgb(72, 72, 72);
-    private static readonly Color RimLightColor = Color.FromRgb(46, 46, 46);
+    private static readonly Color FillLightColor = Color.FromRgb(58, 58, 58);
 
-    /// <summary>Weak opposite-side key to keep concave scan areas from going pure black.</summary>
-    private const double BackFillLightStrength = 0.275;
+    /// <summary>Weak opposite-side fill so scan backsides are not pure black.</summary>
+    private const double BackFillLightStrength = 0.20;
+    private const double ReducedModeAmbientScale = 0.22;
+    private const double ReducedModeFillScale = 0.32;
 
     private readonly DcmParser _parser;
     private readonly RelayCommand _openFileCommand;
@@ -66,9 +69,9 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
     private readonly DirectionalLight3D _keyLight = new();
     private readonly DirectionalLight3D _fillLight = new();
     private readonly DirectionalLight3D _rimLight = new();
-    private readonly DirectionalLight3D _backFillLight = new();
     private readonly ObservableElement3DCollection _sceneItems = new();
     private bool _lightsAdded;
+    private bool _useReducedLightRig;
 
     private Point3D _cameraPosition = new(0, 0, 500);
     private Vector3D _cameraLookDirection = new(0, 0, -500);
@@ -434,6 +437,9 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 
     public string FinishLabel => _isMatteFinish ? "Matte" : "Satin";
 
+    /// <summary>Satin (polished) finish — default on; matte turns the toggle off visually.</summary>
+    public bool IsFinishToggleActive => !_isMatteFinish;
+
     public bool IsSectionMode
     {
         get => _isSectionMode;
@@ -699,20 +705,24 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
     public void UpdateLightRigFromCamera(Vector3D lookDirection, Vector3D upDirection)
     {
         var look = NormalizeDirection(lookDirection);
-        var up = NormalizeDirection(upDirection);
 
-        var right = Vector3D.CrossProduct(look, up);
-        if (right.LengthSquared < 1e-9)
-        {
-            right = new Vector3D(1, 0, 0);
-        }
-        right.Normalize();
-
-        // Camera-following rig: primary light from viewer plus weaker fill/rim offsets.
+        // Headlamp from the camera plus a weak opposite-side fill to avoid black backsides.
         _keyLight.Direction = look;
-        _fillLight.Direction = NormalizeDirection(look + (up * 0.38) - (right * 0.26));
-        _rimLight.Direction = NormalizeDirection(look - (up * 0.55) + (right * 0.33));
-        _backFillLight.Direction = NormalizeDirection(-look);
+        if (_useReducedLightRig)
+        {
+            _fillLight.Direction = look;
+            return;
+        }
+
+        _fillLight.Direction = look;
+        _rimLight.Direction = NormalizeDirection(-look);
+    }
+
+    public void ApplyLightRigQualityMode(bool highQuality)
+    {
+        _useReducedLightRig = !highQuality;
+        ApplyLightingStrength();
+        UpdateLightRigFromCamera(_cameraLookDirection, _cameraUpDirection);
     }
 
     public async Task LoadFilesAsync(IEnumerable<string> filePaths, bool clearExisting, CancellationToken cancellationToken = default)
@@ -778,93 +788,89 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 
             var loadedNow = 0;
             var failedNow = 0;
-            var processedNow = 0;
-            var totalFiles = normalizedPaths.Count;
+            var skippedNow = 0;
+            var loadRequests = BuildMeshFileLoadRequests(normalizedPaths, clearExisting, ref skippedNow);
+            var totalProgressSteps = Math.Max(1, normalizedPaths.Count);
 
-            foreach (var filePath in normalizedPaths)
+            if (loadRequests.Count == 0)
             {
+                await WpfUiThread.RunAsync(() =>
+                {
+                    LoadProgress = 1;
+                    StatusText = skippedNow > 0
+                        ? $"No new files loaded. Loaded files: {_loadedFiles.Count:N0}"
+                        : "No files selected.";
+                });
+            }
+            else
+            {
+                // Parse scan meshes first so the viewport can show arches before CAD/restorations finish.
+                var scanRequests = loadRequests
+                    .Where(r => r.FilePath.Contains(@"\Scans\", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                var otherRequests = loadRequests
+                    .Where(r => !r.FilePath.Contains(@"\Scans\", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var progressOffset = skippedNow;
+                if (scanRequests.Count > 0)
+                {
+                    var scanOutcomes = await ParseMeshFilesInParallelAsync(
+                        scanRequests,
+                        totalProgressSteps,
+                        progressOffset,
+                        cancellationToken).ConfigureAwait(false);
+                    progressOffset += scanRequests.Count;
+
+                    await WpfUiThread.RunAsync(() =>
+                    {
+                        IntegrateParsedOutcomes(scanOutcomes, ref loadedNow, ref failedNow);
+                        RebuildSceneItems();
+                        FrameCameraToBounds(GetVisibleBounds());
+                    });
+                }
+
                 cancellationToken.ThrowIfCancellationRequested();
-                processedNow++;
-                if (!File.Exists(filePath))
+
+                if (otherRequests.Count > 0)
                 {
-                    LoadProgress = (double)processedNow / totalFiles;
-                    continue;
-                }
-
-                if (_loadedFiles.Any(item => item.FilePath.Equals(filePath, StringComparison.OrdinalIgnoreCase)))
-                {
-                    LoadProgress = (double)processedNow / totalFiles;
-                    continue;
-                }
-
-                var fallbackCategory = ResolveMeshCategory(filePath, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
-                var sceneTransformKind = ResolveSceneTransformKind(filePath, fallbackCategory);
-
-                try
-                {
-                    var decodeMode = ResolveCoordinateDecodingMode(filePath);
-
-                    var parsed = await Task.Run(
-                        () => _parser.ParseFile(
-                            filePath,
-                            decodeMode,
-                            applySceneTransform: sceneTransformKind != SceneTransformKind.None,
-                            sceneTransformKind: sceneTransformKind),
+                    var otherOutcomes = await ParseMeshFilesInParallelAsync(
+                        otherRequests,
+                        totalProgressSteps,
+                        progressOffset,
                         cancellationToken).ConfigureAwait(false);
 
-                    cancellationToken.ThrowIfCancellationRequested();
-
                     await WpfUiThread.RunAsync(() =>
                     {
-                        IntegrateParsedFileOnUiThread(filePath, parsed, fallbackCategory, ref loadedNow);
-                        LoadProgress = (double)processedNow / totalFiles;
+                        IntegrateParsedOutcomes(otherOutcomes, ref loadedNow, ref failedNow);
+                        LoadProgress = 1;
+                        RebuildSceneItems();
+                        FrameCameraToBounds(GetVisibleBounds());
+
+                        var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
+                        var visibleTriangleCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.TriangleCount);
+
+                        if (loadedNow == 0 && failedNow == 0)
+                        {
+                            StatusText = $"No new files loaded. Loaded files: {_loadedFiles.Count:N0}";
+                        }
+                        else
+                        {
+                            StatusText = $"Loaded {loadedNow:N0} file(s) | Failed: {failedNow:N0} | Visible files: {_loadedFiles.Count(item => item.IsVisible):N0} | Vertices: {visibleVertexCount:N0} | Triangles: {visibleTriangleCount:N0}";
+                        }
                     });
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    var isPackageLocked = ex.Message.Contains("encrypted", StringComparison.OrdinalIgnoreCase)
-                        || ex.Message.Contains("3shape", StringComparison.OrdinalIgnoreCase)
-                        || ex.Message.Contains("proprietary encryption", StringComparison.OrdinalIgnoreCase);
-                    var failedFile = LoadedMeshItemViewModel.CreateFailed(
-                        filePath,
-                        ex.Message,
-                        fallbackCategory,
-                        ResolveScanArch(filePath),
-                        isPackageLocked: isPackageLocked,
-                        isEncrypted: isPackageLocked);
-                    await WpfUiThread.RunAsync(() =>
-                    {
-                        _loadedFiles.Add(failedFile);
-                        failedNow++;
-                        LoadProgress = (double)processedNow / totalFiles;
-                    });
-                }
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await WpfUiThread.RunAsync(() =>
-            {
-                LoadProgress = 1;
-                RebuildSceneItems();
-                FrameCameraToBounds(GetVisibleBounds());
-
-                var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
-                var visibleTriangleCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.TriangleCount);
-
-                if (loadedNow == 0 && failedNow == 0)
-                {
-                    StatusText = $"No new files loaded. Loaded files: {_loadedFiles.Count:N0}";
                 }
                 else
                 {
-                    StatusText = $"Loaded {loadedNow:N0} file(s) | Failed: {failedNow:N0} | Visible files: {_loadedFiles.Count(item => item.IsVisible):N0} | Vertices: {visibleVertexCount:N0} | Triangles: {visibleTriangleCount:N0}";
+                    await WpfUiThread.RunAsync(() =>
+                    {
+                        LoadProgress = 1;
+                        var visibleVertexCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.VertexCount);
+                        var visibleTriangleCount = _loadedFiles.Where(item => item.IsVisible).Sum(item => item.TriangleCount);
+                        StatusText = $"Loaded {loadedNow:N0} file(s) | Failed: {failedNow:N0} | Visible files: {_loadedFiles.Count(item => item.IsVisible):N0} | Vertices: {visibleVertexCount:N0} | Triangles: {visibleTriangleCount:N0}";
+                    });
                 }
-            });
+            }
         }
         catch (OperationCanceledException)
         {
@@ -884,16 +890,160 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private sealed record MeshFileLoadRequest(string FilePath, MeshCategory FallbackCategory);
+
+    private sealed class MeshFileParseOutcome
+    {
+        public required string FilePath { get; init; }
+        public MeshCategory FallbackCategory { get; init; }
+        public ParsedMeshData? Parsed { get; init; }
+        public SharpDxMeshGeometry3D? Geometry { get; init; }
+        public string? ErrorMessage { get; init; }
+        public bool IsPackageLocked { get; init; }
+    }
+
+    private List<MeshFileLoadRequest> BuildMeshFileLoadRequests(
+        IReadOnlyList<string> normalizedPaths,
+        bool clearExisting,
+        ref int skippedCount)
+    {
+        var requests = new List<MeshFileLoadRequest>(normalizedPaths.Count);
+        foreach (var filePath in normalizedPaths)
+        {
+            if (!File.Exists(filePath))
+            {
+                skippedCount++;
+                continue;
+            }
+
+            if (!clearExisting &&
+                _loadedFiles.Any(item => item.FilePath.Equals(filePath, StringComparison.OrdinalIgnoreCase)))
+            {
+                skippedCount++;
+                continue;
+            }
+
+            var fallbackCategory = ResolveMeshCategory(
+                filePath,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+            requests.Add(new MeshFileLoadRequest(filePath, fallbackCategory));
+        }
+
+        return requests;
+    }
+
+    private async Task<IReadOnlyList<MeshFileParseOutcome>> ParseMeshFilesInParallelAsync(
+        IReadOnlyList<MeshFileLoadRequest> requests,
+        int totalProgressSteps,
+        int progressStepOffset,
+        CancellationToken cancellationToken)
+    {
+        if (requests.Count == 0)
+        {
+            return Array.Empty<MeshFileParseOutcome>();
+        }
+
+        var outcomes = new MeshFileParseOutcome[requests.Count];
+        var completed = 0;
+        var parallelism = Math.Max(1, Environment.ProcessorCount - 1);
+
+        await Parallel.ForEachAsync(
+            Enumerable.Range(0, requests.Count),
+            new ParallelOptions
+            {
+                MaxDegreeOfParallelism = parallelism,
+                CancellationToken = cancellationToken
+            },
+            (index, _) =>
+            {
+                outcomes[index] = ParseMeshFileForLoad(requests[index]);
+                var done = Interlocked.Increment(ref completed);
+                var progress = (double)(progressStepOffset + done) / totalProgressSteps;
+                UiDispatcher?.BeginInvoke(
+                    () => LoadProgress = progress,
+                    DispatcherPriority.Background);
+                return ValueTask.CompletedTask;
+            }).ConfigureAwait(false);
+
+        return outcomes;
+    }
+
+    private static MeshFileParseOutcome ParseMeshFileForLoad(MeshFileLoadRequest request)
+    {
+        var filePath = request.FilePath;
+        try
+        {
+            var sceneTransformKind = ResolveSceneTransformKind(filePath, request.FallbackCategory);
+            var parser = new DcmParser();
+            var parsed = parser.ParseFile(
+                filePath,
+                ResolveCoordinateDecodingMode(filePath),
+                applySceneTransform: sceneTransformKind != SceneTransformKind.None,
+                sceneTransformKind: sceneTransformKind);
+            var geometry = SharpDxMeshFactory.CreateGeometry(parsed.Mesh);
+            return new MeshFileParseOutcome
+            {
+                FilePath = filePath,
+                FallbackCategory = request.FallbackCategory,
+                Parsed = parsed,
+                Geometry = geometry
+            };
+        }
+        catch (Exception ex)
+        {
+            var isPackageLocked = ex.Message.Contains("encrypted", StringComparison.OrdinalIgnoreCase)
+                || ex.Message.Contains("3shape", StringComparison.OrdinalIgnoreCase)
+                || ex.Message.Contains("proprietary encryption", StringComparison.OrdinalIgnoreCase);
+            return new MeshFileParseOutcome
+            {
+                FilePath = filePath,
+                FallbackCategory = request.FallbackCategory,
+                ErrorMessage = ex.Message,
+                IsPackageLocked = isPackageLocked
+            };
+        }
+    }
+
+    private void IntegrateParsedOutcomes(
+        IReadOnlyList<MeshFileParseOutcome> outcomes,
+        ref int loadedNow,
+        ref int failedNow)
+    {
+        foreach (var outcome in outcomes)
+        {
+            if (outcome.Parsed is not null && outcome.Geometry is not null)
+            {
+                IntegrateParsedFileOnUiThread(
+                    outcome.FilePath,
+                    outcome.Parsed,
+                    outcome.FallbackCategory,
+                    outcome.Geometry,
+                    ref loadedNow);
+                continue;
+            }
+
+            var failedFile = LoadedMeshItemViewModel.CreateFailed(
+                outcome.FilePath,
+                outcome.ErrorMessage ?? "Unknown load error.",
+                outcome.FallbackCategory,
+                ResolveScanArch(outcome.FilePath),
+                isPackageLocked: outcome.IsPackageLocked,
+                isEncrypted: outcome.IsPackageLocked);
+            _loadedFiles.Add(failedFile);
+            failedNow++;
+        }
+    }
+
     private void IntegrateParsedFileOnUiThread(
         string filePath,
         ParsedMeshData parsed,
         MeshCategory fallbackCategory,
+        SharpDxMeshGeometry3D geometry,
         ref int loadedNow)
     {
         var category = ResolveMeshCategory(filePath, parsed.Properties);
         var (palette, textureName) = ResolveMaterialPalette(filePath, parsed.Properties, category);
 
-        var geometry = SharpDxMeshFactory.CreateGeometry(parsed.Mesh);
         var meshModel = new MeshGeometryModel3D
         {
             Geometry = geometry
@@ -931,6 +1081,16 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         loadedFile.PropertyChanged += LoadedFileOnPropertyChanged;
         _loadedFiles.Add(loadedFile);
         loadedNow++;
+    }
+
+    private void IntegrateParsedFileOnUiThread(
+        string filePath,
+        ParsedMeshData parsed,
+        MeshCategory fallbackCategory,
+        ref int loadedNow)
+    {
+        var geometry = SharpDxMeshFactory.CreateGeometry(parsed.Mesh);
+        IntegrateParsedFileOnUiThread(filePath, parsed, fallbackCategory, geometry, ref loadedNow);
     }
 
     public bool UnloadFile(string filePath)
@@ -1300,11 +1460,12 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ToggleFinish()
+    private async void ToggleFinish()
     {
         _isMatteFinish = !_isMatteFinish;
-        ApplyFinishProfile();
         OnPropertyChanged(nameof(FinishLabel));
+        OnPropertyChanged(nameof(IsFinishToggleActive));
+        await ApplyFinishProfileAsync();
     }
 
     private void ToggleSectionMode()
@@ -1326,11 +1487,11 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ToggleModelScanMaterial()
+    private async void ToggleModelScanMaterial()
     {
         _useStoneForModelScans = !_useStoneForModelScans;
-        ApplyModelScanMaterialPalette();
         OnPropertyChanged(nameof(ModelScanMaterialToggleTooltip));
+        await ApplyModelScanMaterialPaletteAsync();
     }
 
     private void ToggleRestorationGroupExpanded()
@@ -1408,32 +1569,30 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         MeasureEndSection = null;
     }
 
-    private void ApplyModelScanMaterialPalette()
+    private Task ApplyModelScanMaterialPaletteAsync()
     {
         var scanPaletteName = _useStoneForModelScans ? "Stone" : "Model";
         var scanPalette = MaterialLibrary.Get(scanPaletteName);
         var intensity = GetSpecularIntensity();
         var shininess = GetSpecularShininess();
+        var scanFiles = _loadedFiles
+            .Where(file => !file.IsLoadFailed && file.Category == MeshCategory.Scan)
+            .ToList();
 
-        foreach (var loadedFile in _loadedFiles)
+        return ApplyMaterialUpdatesAsync(scanFiles, file =>
         {
-            if (loadedFile.IsLoadFailed || loadedFile.Category != MeshCategory.Scan)
+            if (PrepScanMaterialRules.IsPreopScan(file.FilePath))
             {
-                continue;
+                file.SetMaterialPalette(MaterialLibrary.Get(PrepScanMaterialRules.TextureName), PrepScanMaterialRules.TextureName);
+            }
+            else
+            {
+                file.SetMaterialPalette(scanPalette, scanPaletteName);
             }
 
-            if (PrepScanMaterialRules.IsPreopScan(loadedFile.FilePath))
-            {
-                loadedFile.SetMaterialPalette(MaterialLibrary.Get(PrepScanMaterialRules.TextureName), PrepScanMaterialRules.TextureName);
-                loadedFile.SetSpecularIntensity(intensity);
-                loadedFile.SetSpecularShininess(shininess);
-                continue;
-            }
-
-            loadedFile.SetMaterialPalette(scanPalette, scanPaletteName);
-            loadedFile.SetSpecularIntensity(intensity);
-            loadedFile.SetSpecularShininess(shininess);
-        }
+            file.SetSpecularIntensity(intensity);
+            file.SetSpecularShininess(shininess);
+        });
     }
 
     internal void RebuildSceneItemsPublic() => RebuildSceneItems();
@@ -1449,7 +1608,6 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         _sceneItems.Clear();
         _lightsAdded = false;
         EnsureLightsInScene();
-        UpdateLightRigFromCamera(_cameraLookDirection, _cameraUpDirection);
 
         var meshes = _loadedFiles.Where(i => !i.IsLoadFailed).ToList();
         foreach (var item in meshes)
@@ -1478,16 +1636,15 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         _sceneItems.Add(_keyLight);
         _sceneItems.Add(_fillLight);
         _sceneItems.Add(_rimLight);
-        _sceneItems.Add(_backFillLight);
         _lightsAdded = true;
     }
 
     private void InitializeLightRig()
     {
-        _keyLight.Direction = NormalizeDirection(new Vector3D(0, 0, -1));
-        _fillLight.Direction = NormalizeDirection(new Vector3D(-0.26, 0.38, -1));
-        _rimLight.Direction = NormalizeDirection(new Vector3D(0.33, -0.55, -1));
-        _backFillLight.Direction = NormalizeDirection(new Vector3D(0, 0, 1));
+        var defaultLook = NormalizeDirection(new Vector3D(0, 0, -1));
+        _keyLight.Direction = defaultLook;
+        _fillLight.Direction = defaultLook;
+        _rimLight.Direction = NormalizeDirection(-defaultLook);
     }
 
     public void ApplySectionPlane(Point3D planePoint, Vector3D planeNormal, bool enabled)
@@ -1517,22 +1674,58 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 
     private void ApplyLightingStrength()
     {
+        if (_useReducedLightRig)
+        {
+            // Keep ambient low so the camera-aligned key light reads as a headlamp.
+            _ambientLight.Color = ScaleColor(AmbientLightColor, _lightingStrength * ReducedModeAmbientScale);
+            _keyLight.Color = ScaleColor(KeyLightColor, _lightingStrength);
+            _fillLight.Color = ScaleColor(FillLightColor, _lightingStrength * ReducedModeFillScale);
+            _rimLight.Color = ScaleColor(KeyLightColor, 0);
+            return;
+        }
+
         _ambientLight.Color = ScaleColor(AmbientLightColor, _lightingStrength);
         _keyLight.Color = ScaleColor(KeyLightColor, _lightingStrength);
         _fillLight.Color = ScaleColor(FillLightColor, _lightingStrength);
-        _rimLight.Color = ScaleColor(RimLightColor, _lightingStrength);
-        _backFillLight.Color = ScaleColor(KeyLightColor, _lightingStrength * BackFillLightStrength);
+        _rimLight.Color = ScaleColor(KeyLightColor, _lightingStrength * BackFillLightStrength);
     }
 
-    private void ApplyFinishProfile()
+    private Task ApplyFinishProfileAsync()
     {
         var intensity = GetSpecularIntensity();
         var shininess = GetSpecularShininess();
-        foreach (var loadedFile in _loadedFiles)
+        return ApplyMaterialUpdatesAsync(_loadedFiles, loadedFile =>
         {
             loadedFile.SetSpecularIntensity(intensity);
             loadedFile.SetSpecularShininess(shininess);
+        });
+    }
+
+    private static async Task ApplyMaterialUpdatesAsync(
+        IReadOnlyList<LoadedMeshItemViewModel> files,
+        Action<LoadedMeshItemViewModel> update)
+    {
+        if (files.Count == 0)
+        {
+            return;
         }
+
+        foreach (var loadedFile in files)
+        {
+            var dispatcher = loadedFile.Model.Dispatcher;
+            await dispatcher.InvokeAsync(() => update(loadedFile));
+        }
+    }
+
+    internal void SetUseStoneForModelScans(bool useStone)
+    {
+        if (_useStoneForModelScans == useStone)
+        {
+            return;
+        }
+
+        _useStoneForModelScans = useStone;
+        OnPropertyChanged(nameof(ModelScanMaterialToggleTooltip));
     }
 
     private double GetSpecularIntensity() => _isMatteFinish ? MatteSpecularIntensity : SatinSpecularIntensity;

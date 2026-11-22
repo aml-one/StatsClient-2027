@@ -1,0 +1,347 @@
+<UserControl x:Class="StatsClient.UserControls.IteroZipCelebrationOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignWidth="900"
+             d:DesignHeight="600"
+             Background="Transparent"
+             ClipToBounds="True"
+             Visibility="Collapsed"
+             MouseDown="Overlay_MouseDown">
+    <UserControl.Resources>
+        <Storyboard x:Key="EntranceStoryboard">
+            <DoubleAnimation Storyboard.TargetName="Backdrop"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0"
+                             To="1"
+                             Duration="0:0:0.35">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="CardScale"
+                             Storyboard.TargetProperty="ScaleX"
+                             From="0.45"
+                             To="1"
+                             Duration="0:0:0.65">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase EasingMode="EaseOut"
+                              Amplitude="0.55" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="CardScale"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="0.45"
+                             To="1"
+                             Duration="0:0:0.65">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase EasingMode="EaseOut"
+                              Amplitude="0.55" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="CardContent"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0"
+                             To="1"
+                             BeginTime="0:0:0.12"
+                             Duration="0:0:0.35" />
+            <DoubleAnimation Storyboard.TargetName="ZipIconRotate"
+                             Storyboard.TargetProperty="Angle"
+                             From="-18"
+                             To="0"
+                             BeginTime="0:0:0.08"
+                             Duration="0:0:0.55">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase EasingMode="EaseOut"
+                              Amplitude="0.7" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Key="RippleLoopStoryboard"
+                    RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="RippleRing1"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                             From="0.55"
+                             To="1.35"
+                             Duration="0:0:1.2" />
+            <DoubleAnimation Storyboard.TargetName="RippleRing1"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                             From="0.55"
+                             To="1.35"
+                             Duration="0:0:1.2" />
+            <DoubleAnimation Storyboard.TargetName="RippleRing1"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.65"
+                             To="0"
+                             Duration="0:0:1.2" />
+            <DoubleAnimation Storyboard.TargetName="RippleRing2"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                             From="0.55"
+                             To="1.35"
+                             BeginTime="0:0:0.4"
+                             Duration="0:0:1.2" />
+            <DoubleAnimation Storyboard.TargetName="RippleRing2"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                             From="0.55"
+                             To="1.35"
+                             BeginTime="0:0:0.4"
+                             Duration="0:0:1.2" />
+            <DoubleAnimation Storyboard.TargetName="RippleRing2"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.55"
+                             To="0"
+                             BeginTime="0:0:0.4"
+                             Duration="0:0:1.2" />
+        </Storyboard>
+
+        <Storyboard x:Key="ExitStoryboard"
+                    Completed="ExitStoryboard_Completed">
+            <DoubleAnimation Storyboard.TargetName="Backdrop"
+                             Storyboard.TargetProperty="Opacity"
+                             To="0"
+                             Duration="0:0:0.28">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseIn" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="CardScale"
+                             Storyboard.TargetProperty="ScaleX"
+                             To="0.82"
+                             Duration="0:0:0.28">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseIn" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="CardScale"
+                             Storyboard.TargetProperty="ScaleY"
+                             To="0.82"
+                             Duration="0:0:0.28">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseIn" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="CardContent"
+                             Storyboard.TargetProperty="Opacity"
+                             To="0"
+                             Duration="0:0:0.22" />
+        </Storyboard>
+
+        <Storyboard x:Key="ZipPulseStoryboard"
+                    RepeatBehavior="Forever"
+                    AutoReverse="True">
+            <DoubleAnimation Storyboard.TargetName="ZipGlow"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.35"
+                             To="0.85"
+                             Duration="0:0:1.1">
+                <DoubleAnimation.EasingFunction>
+                    <SineEase EasingMode="EaseInOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="ZipIconScale"
+                             Storyboard.TargetProperty="ScaleX"
+                             From="1"
+                             To="1.06"
+                             Duration="0:0:1.1">
+                <DoubleAnimation.EasingFunction>
+                    <SineEase EasingMode="EaseInOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="ZipIconScale"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="1"
+                             To="1.06"
+                             Duration="0:0:1.1">
+                <DoubleAnimation.EasingFunction>
+                    <SineEase EasingMode="EaseInOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </UserControl.Resources>
+
+    <Grid x:Name="Root">
+        <Border x:Name="Backdrop"
+                Opacity="0">
+            <Border.Background>
+                <RadialGradientBrush GradientOrigin="0.5,0.42"
+                                   Center="0.5,0.42"
+                                   RadiusX="0.85"
+                                   RadiusY="0.85">
+                    <GradientStop Color="#00101828"
+                                  Offset="0" />
+                    <GradientStop Color="#CC0B1220"
+                                  Offset="0.55" />
+                    <GradientStop Color="#E610172A"
+                                  Offset="1" />
+                </RadialGradientBrush>
+            </Border.Background>
+        </Border>
+
+        <Viewbox Stretch="Uniform"
+                 MaxWidth="420"
+                 MaxHeight="420"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center">
+            <Grid Width="360"
+                  Height="360">
+                <Ellipse x:Name="RippleRing1"
+                         Width="300"
+                         Height="300"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Stroke="#6638BDF8"
+                         StrokeThickness="2.5"
+                         Opacity="0"
+                         RenderTransformOrigin="0.5,0.5">
+                    <Ellipse.RenderTransform>
+                        <ScaleTransform ScaleX="0.55"
+                                        ScaleY="0.55" />
+                    </Ellipse.RenderTransform>
+                </Ellipse>
+                <Ellipse x:Name="RippleRing2"
+                         Width="300"
+                         Height="300"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Stroke="#664ADE80"
+                         StrokeThickness="2"
+                         Opacity="0"
+                         RenderTransformOrigin="0.5,0.5">
+                    <Ellipse.RenderTransform>
+                        <ScaleTransform ScaleX="0.55"
+                                        ScaleY="0.55" />
+                    </Ellipse.RenderTransform>
+                </Ellipse>
+
+                <Border x:Name="CelebrationCard"
+                        Width="320"
+                        Height="320"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        CornerRadius="22"
+                        BorderThickness="1"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform x:Name="CardScale"
+                                        ScaleX="0.45"
+                                        ScaleY="0.45" />
+                    </Border.RenderTransform>
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0"
+                                           EndPoint="1,1">
+                            <GradientStop Color="#F21E293B"
+                                          Offset="0" />
+                            <GradientStop Color="#F2111827"
+                                          Offset="0.55" />
+                            <GradientStop Color="#F20F172A"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0"
+                                           EndPoint="1,1">
+                            <GradientStop Color="#AA38BDF8"
+                                          Offset="0" />
+                            <GradientStop Color="#554ADE80"
+                                          Offset="0.5" />
+                            <GradientStop Color="#AA818CF8"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.BorderBrush>
+                    <Border.Effect>
+                        <DropShadowEffect Color="#AA38BDF8"
+                                          BlurRadius="28"
+                                          ShadowDepth="0"
+                                          Opacity="0.55" />
+                    </Border.Effect>
+
+                    <Grid x:Name="CardContent"
+                          Opacity="0">
+                        <Canvas x:Name="ParticleCanvas"
+                                Width="320"
+                                Height="320"
+                                ClipToBounds="False"
+                                IsHitTestVisible="False" />
+
+                        <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <Grid Width="140"
+                                  Height="140"
+                                  Margin="0,0,0,8">
+                                <Ellipse x:Name="ZipGlow"
+                                         Width="132"
+                                         Height="132"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Opacity="0.35">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush GradientOrigin="0.5,0.5"
+                                                             Center="0.5,0.5"
+                                                             RadiusX="0.5"
+                                                             RadiusY="0.5">
+                                            <GradientStop Color="#8038BDF8"
+                                                          Offset="0" />
+                                            <GradientStop Color="#004ADE80"
+                                                          Offset="1" />
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                <Image x:Name="ZipIcon"
+                                       Source="/Images/Other/zip.png"
+                                       Width="96"
+                                       Height="96"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <TransformGroup>
+                                            <RotateTransform x:Name="ZipIconRotate"
+                                                             Angle="-18" />
+                                            <ScaleTransform x:Name="ZipIconScale"
+                                                            ScaleX="1"
+                                                            ScaleY="1" />
+                                        </TransformGroup>
+                                    </Image.RenderTransform>
+                                </Image>
+                            </Grid>
+
+                            <TextBlock Text="iTero Export Received"
+                                       FontSize="21"
+                                       FontWeight="Bold"
+                                       Foreground="#F8FAFC"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center" />
+                            <TextBlock Text="New case placed in export folder"
+                                       FontSize="12"
+                                       Foreground="#94A3B8"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"
+                                       TextAlignment="Center" />
+                            <Border Margin="0,14,0,0"
+                                    Padding="14,6"
+                                    CornerRadius="10"
+                                    HorizontalAlignment="Center"
+                                    Background="#331E293B"
+                                    BorderBrush="#5538BDF8"
+                                    BorderThickness="1">
+                                <TextBlock Text="{Binding LastIteroZipFileId, TargetNullValue=--}"
+                                           FontSize="17"
+                                           FontWeight="SemiBold"
+                                           Foreground="#7DD3FC"
+                                           HorizontalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Click anywhere to dismiss"
+                                       FontSize="10"
+                                       Foreground="#64748B"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,16,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Viewbox>
+    </Grid>
+</UserControl>

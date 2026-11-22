@@ -184,7 +184,7 @@ namespace StatsClient.MVVM.Core
             {
                 using var session = OpenConnection();
 
-                string sql = @$"INSERT INTO main.PMEvents (EventStr, Color, Date, OrderBy) VALUES ('{eventStr}', '{eventColor}', '{DateTime.Now:yyyy-MM-dd}', '{DateTime.Now:yyyyMMddHHmmss}');";
+                string sql = @$"INSERT OR REPLACE INTO main.PMEvents (EventStr, Color, Date, OrderBy) VALUES ('{eventStr}', '{eventColor}', '{DateTime.Now:yyyy-MM-dd}', '{DateTime.Now:yyyyMMddHHmmss}');";
 
                 SQLiteCommand command = new(sql, session.Connection);
                 command.ExecuteNonQuery();

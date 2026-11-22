@@ -61,7 +61,7 @@ namespace StatsClient.MVVM.View
         private void HandleEsc(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
-                Hide();
+                SmartOrderNames2ViewModel.StaticInstance.CloseWindowCommand.Execute(null);
         }
 
         private void RenameButton_GotFocus(object sender, RoutedEventArgs e)

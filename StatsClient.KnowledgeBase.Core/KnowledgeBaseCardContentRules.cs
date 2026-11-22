@@ -6,6 +6,7 @@ public static class KnowledgeBaseCardContentRules
         string? title,
         string? bodyText,
         int? categoryId,
+        string? categoryName,
         IEnumerable<string>? tags,
         IEnumerable<KnowledgeBaseCardLink>? links,
         IEnumerable<KnowledgeBaseCardImage>? images)
@@ -16,6 +17,11 @@ public static class KnowledgeBaseCardContentRules
         }
 
         if (!string.IsNullOrWhiteSpace(bodyText))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(categoryName))
         {
             return false;
         }
@@ -48,6 +54,7 @@ public static class KnowledgeBaseCardContentRules
             request.Title,
             request.BodyText,
             request.CategoryId,
+            request.CategoryName,
             request.Tags,
             request.Links,
             request.Images);
@@ -57,6 +64,7 @@ public static class KnowledgeBaseCardContentRules
             detail.Title,
             detail.BodyText,
             detail.CategoryId,
+            detail.CategoryName,
             detail.Tags,
             detail.Links,
             detail.Images);

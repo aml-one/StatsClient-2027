@@ -11,6 +11,7 @@
     <UserControl.Resources>
         <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converter:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
+        <converter:StringToWebView2SourceConverter x:Key="StringToWebView2SourceConverter" />
 
         <Style x:Key="ServerLogSidebarTab" TargetType="TabItem">
             <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextMuted}" />
@@ -359,7 +360,7 @@
 
                             <wv2:WebView2 Grid.Row="1"
                                           x:Name="webview"
-                                          Source="{Binding ServerLogUrl}"
+                                          Source="{Binding ServerLogUrl, Converter={StaticResource StringToWebView2SourceConverter}}"
                                           Cursor="Arrow"
                                           MouseWheel="Webview_MouseWheel"
                                           CoreWebView2InitializationCompleted="Webview_CoreWebView2InitializationCompleted" />

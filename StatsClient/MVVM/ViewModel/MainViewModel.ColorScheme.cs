@@ -33,6 +33,7 @@ public partial class MainViewModel
         Core.ColorSchemeManager.ApplySavedFromLocalSettings();
         CbSettingColorScheme = Core.ColorSchemeManager.CurrentScheme;
         ApplyActiveColorSchemeToWindowBackground();
+        ApplyLabnextHostStyleForCurrentScheme();
     }
 
     private void ColorSchemeSelectionChangedMethod()
@@ -43,6 +44,20 @@ public partial class MainViewModel
         Core.ColorSchemeManager.Apply(scheme);
         Core.ColorSchemeManager.RemoveLegacySchemeOverrides();
         ApplyActiveColorSchemeToWindowBackground();
+        ApplyLabnextHostStyleForCurrentScheme();
+    }
+
+    private void ApplyLabnextHostStyleForCurrentScheme()
+    {
+        if (!IsMainWindowReady)
+            return;
+
+        _MainWindow.UpdateLabnextChromeForColorScheme();
+
+        if (!_MainWindow.webviewLabnext.IsInitialized || _MainWindow.webviewLabnext.CoreWebView2 is null)
+            return;
+
+        _ = _MainWindow.ApplyLabnextHostStyleForCurrentSchemeAsync();
     }
 
     private void ApplyActiveColorSchemeToWindowBackground()

@@ -1,0 +1,71 @@
+﻿Prescription Summary Report
+Generated: 2026-06-11 08:36:20
+========================================================================
+
+File: ASCONNECT\treatment-report.pdf
+System: ASConnect
+Order ID: 260610056039260336128
+Doctor: Jennifer Maras
+Patient: Mary Hayes
+Shade: B1
+Teeth: 19
+Comments / Notes: (empty)
+------------------------------------------------------------------------
+
+File: DEXIS\73fbfcb7-3683-41aa-84e2-fafd85a5e431.pdf
+System: Dexis
+Order ID: OFE-6762
+Doctor: Edy Guerra
+Patient: Smantha De Las Traviesas
+Shade: 1M2
+Teeth: 4
+Comments / Notes: NAME : SAMATHA DE LAS TRAVIESAS, DR GUERRA , FLAGLER , SHADE 1M2,  #4 CROWN NO OCLUSION
+------------------------------------------------------------------------
+
+File: DSCORE\Dentsply Sirona.pdf
+System: DS Core
+Order Number: 1AABJEY4
+Doctor: Duanne Jones
+Patient: Gvaune Amory
+Shade: A2
+Teeth: 8,9
+Comments / Notes: Dr Duanne Jones wrote at 06/09/2026, 10:58:42 EDT:
+Please place ink under crown on tooth #8 to avoid traslucent on necrotic prep
+------------------------------------------------------------------------
+
+File: IS3D\Case details-Shining 3D Dental Cloud.pdf
+System: Shining 3D
+Doctor: Montefalco
+Patient: Francisco F Lopera
+Shade: A2
+Teeth: 29,30
+Comments / Notes: Shade:A2 RUSH Please fabricate full zirconia crown #29 and #30. Thank you !!!
+------------------------------------------------------------------------
+
+File: ITERO\Viewer · My iTero.pdf
+System: iTero
+Order: 309293566
+Doctor: Long, W. Roger
+Patient: Potts, Thelma
+Shade: A2
+Teeth: 14
+Comments / Notes: (empty)
+------------------------------------------------------------------------
+
+File: MEDIT\John Sandler, Dr. B Davidson's Case_6 20 2026 1 00 PM_Case Information.pdf
+System: Medit Link
+Doctor: (empty)
+Patient: (empty)
+Shade: A3
+Teeth: 3
+Comments / Notes: (empty)
+------------------------------------------------------------------------
+
+File: TRIOS\529118700_20260608_1326_42_651.pdf
+System: TRIOS
+Doctor: Advanced Dental Group
+Patient: Michael Burleigh
+Shade: 2M1/2M2
+Teeth: 5,6,12,13,30
+Comments / Notes: Please fabricate EMAX crowns for #6, 8, 10 and 11. Please use zirconia monolithic for #5, 12, 13 and 30. Broad contacts and light occulusion. SHADE 2M1/2M2 Thank You Dr. Marx
+------------------------------------------------------------------------

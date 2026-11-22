@@ -47,6 +47,7 @@ public partial class OrderRenameWindow : Window, INotifyPropertyChanged
         else
             OrderRenameViewModel.Instance.PatientName = ThreeShapeObject.Patient_LastName!;
 
+        OrderRenameViewModel.Instance.ResetRenameOutcome();
         OrderRenameViewModel.Instance.OrderID = ThreeShapeObject.IntOrderID!;
         OrderRenameViewModel.Instance.OrderIDBeforeChange = ThreeShapeObject.IntOrderID!;
         OrderRenameViewModel.Instance.ShowResetButton = Visibility.Collapsed;

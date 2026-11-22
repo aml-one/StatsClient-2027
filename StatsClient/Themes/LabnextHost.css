@@ -1,0 +1,405 @@
+/*
+ * StatsClient Labnext host stylesheet (Dark scheme only)
+ * Scoped under .stats-client-labnext-dark — page canvas is transparent.
+ */
+
+:root {
+  /* TabLegacyBackground — same blue as Stats menu / Labnext .menu.navbar */
+  --sc-nav-surface: #53667B;
+  --sc-header-surface: #53667B;
+  --sc-scrollbar-track: rgba(65, 83, 102, 0.45);
+  --sc-scrollbar-thumb: #64748B;
+  --sc-scrollbar-thumb-hover: #94A3B8;
+  --sc-home-yellow: #F0C03A;
+  --sc-logo-red: #FF1D06;
+  --sc-tile-dark: rgba(45, 58, 75, 0.96);
+  --sc-widget-body: rgba(56, 72, 90, 0.88);
+  --sc-input: #334155;
+  --sc-search-bg: #94A3B8;
+  --sc-search-text: #0F172A;
+  --sc-text: #E2E8F0;
+  --sc-text-light: #F1F5F9;
+  --sc-muted: #94A3B8;
+  --sc-border: #4F6380;
+  --sc-accent: #38BDF8;
+  --sc-link: #7DD3FC;
+  --sc-link-hover: #BAE6FD;
+  --sc-btn-primary: #0EA5E9;
+  --sc-btn-primary-border: #0284C7;
+  --sc-panel-alt: #47586B;
+  --sc-tab-selected: #5F738A;
+  --sc-success: #04C100;
+  --sc-danger: #FF1D06;
+}
+
+/* Prevent white flash before full rules load */
+html.stats-client-labnext-dark,
+body.stats-client-labnext-dark,
+html.stats-client-labnext-dark body {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--sc-text) !important;
+}
+
+/* ---- Page canvas: fully transparent ---- */
+.stats-client-labnext-dark body,
+.stats-client-labnext-dark body > div,
+.stats-client-labnext-dark body > section,
+.stats-client-labnext-dark body > main,
+.stats-client-labnext-dark #app,
+.stats-client-labnext-dark #root,
+.stats-client-labnext-dark #content,
+.stats-client-labnext-dark #main,
+.stats-client-labnext-dark #main-content,
+.stats-client-labnext-dark .page,
+.stats-client-labnext-dark .page-wrapper,
+.stats-client-labnext-dark .main-wrapper,
+.stats-client-labnext-dark .layout,
+.stats-client-labnext-dark .layout-wrapper,
+.stats-client-labnext-dark .wrapper,
+.stats-client-labnext-dark .container-fluid,
+.stats-client-labnext-dark .container,
+.stats-client-labnext-dark main,
+.stats-client-labnext-dark [role="main"],
+.stats-client-labnext-dark .content,
+.stats-client-labnext-dark .page-content,
+.stats-client-labnext-dark .dashboard,
+.stats-client-labnext-dark .dashboard-content,
+.stats-client-labnext-dark .workspace,
+.stats-client-labnext-dark .app-content,
+.stats-client-labnext-dark .content-wrapper,
+.stats-client-labnext-dark .main-content,
+.stats-client-labnext-dark [class*="content-area"],
+.stats-client-labnext-dark [class*="ContentArea"],
+.stats-client-labnext-dark [class*="dashboard"],
+.stats-client-labnext-dark [class*="Dashboard"],
+.stats-client-labnext-dark [class*="workspace"],
+.stats-client-labnext-dark [class*="Workspace"],
+.stats-client-labnext-dark .page-header,
+.stats-client-labnext-dark .welcome,
+.stats-client-labnext-dark .sub-header,
+.stats-client-labnext-dark .subheader,
+.stats-client-labnext-dark [class*="welcome"],
+.stats-client-labnext-dark [class*="Welcome"],
+.stats-client-labnext-dark section,
+.stats-client-labnext-dark article,
+.stats-client-labnext-dark .row,
+.stats-client-labnext-dark [class*="row"],
+.stats-client-labnext-dark .col,
+.stats-client-labnext-dark [class*="col-"],
+.stats-client-labnext-dark #wrapper,
+.stats-client-labnext-dark .wrapper-content {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: var(--sc-text) !important;
+}
+
+.stats-client-labnext-dark h1,
+.stats-client-labnext-dark h2,
+.stats-client-labnext-dark h3,
+.stats-client-labnext-dark .page-title,
+.stats-client-labnext-dark [class*="page-title"] {
+  color: var(--sc-text-light) !important;
+}
+
+/* ---- Nav chrome (#global_nav, .menu.navbar) ---- */
+.stats-client-labnext-dark #global_nav,
+.stats-client-labnext-dark .menu.navbar,
+.stats-client-labnext-dark nav.menu,
+.stats-client-labnext-dark nav,
+.stats-client-labnext-dark .navbar,
+.stats-client-labnext-dark .navbar-default,
+.stats-client-labnext-dark .navbar-static-top,
+.stats-client-labnext-dark .navbar-collapse,
+.stats-client-labnext-dark .navbar-nav,
+.stats-client-labnext-dark .navbar-nav > li,
+.stats-client-labnext-dark .top-nav,
+.stats-client-labnext-dark [class*="top-nav"],
+.stats-client-labnext-dark [class*="TopNav"],
+.stats-client-labnext-dark [class*="main-nav"],
+.stats-client-labnext-dark [class*="MainNav"],
+.stats-client-labnext-dark [class*="nav-bar"],
+.stats-client-labnext-dark [class*="NavBar"] {
+  background-color: var(--sc-nav-surface) !important;
+  background-image: none !important;
+  border-color: var(--sc-border) !important;
+}
+
+/* ---- Top-right utility links (Help, LAB ADMIN) — transparent ---- */
+.stats-client-labnext-dark #utility_nav,
+.stats-client-labnext-dark [class*="utility"],
+.stats-client-labnext-dark [class*="Utility"],
+.stats-client-labnext-dark header .pull-right,
+.stats-client-labnext-dark header .navbar-right,
+.stats-client-labnext-dark [class*="top-link"],
+.stats-client-labnext-dark [class*="TopLink"],
+.stats-client-labnext-dark [class*="account-nav"],
+.stats-client-labnext-dark [class*="AccountNav"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+}
+
+/* Hide lab-specific logo beside Labnext brand */
+.stats-client-labnext-dark img[src*="/lab/default/logo"] {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.stats-client-labnext-dark .navbar-default .navbar-nav > li > a,
+.stats-client-labnext-dark .navbar .nav > li > a {
+  color: var(--sc-text) !important;
+}
+
+.stats-client-labnext-dark .navbar-default .navbar-nav > li > a:hover,
+.stats-client-labnext-dark .navbar .nav > li > a:hover {
+  color: var(--sc-accent) !important;
+}
+
+/* ---- Logo (always transparent — show WPF grid through) ---- */
+.stats-client-labnext-dark .navbar-brand,
+.stats-client-labnext-dark .navbar-header,
+.stats-client-labnext-dark .brand,
+.stats-client-labnext-dark .logo,
+.stats-client-labnext-dark [class*="logo"],
+.stats-client-labnext-dark [class*="Logo"],
+.stats-client-labnext-dark [class*="brand"],
+.stats-client-labnext-dark [class*="Brand"],
+.stats-client-labnext-dark a:has(.stats-labnext-logo-host),
+.stats-client-labnext-dark .navbar-brand a {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.stats-client-labnext-dark .stats-labnext-logo-host {
+  background: transparent !important;
+  background-color: transparent !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+  line-height: 0 !important;
+}
+
+.stats-client-labnext-dark .stats-labnext-logo-host svg {
+  display: block !important;
+  height: 36px !important;
+  width: auto !important;
+  max-width: 180px !important;
+}
+
+.stats-client-labnext-dark .stats-labnext-logo-host .st1 {
+  fill: var(--sc-home-yellow) !important;
+}
+
+.stats-client-labnext-dark .stats-labnext-logo-host .st0 {
+  fill: var(--sc-logo-red) !important;
+}
+
+/* ---- Widget shells (Events, At a Glance, Alerts) ---- */
+.stats-client-labnext-dark [class*="widget"],
+.stats-client-labnext-dark [class*="Widget"],
+.stats-client-labnext-dark [class*="activity"],
+.stats-client-labnext-dark [class*="Activity"],
+.stats-client-labnext-dark [class*="alert"],
+.stats-client-labnext-dark [class*="Alert"],
+.stats-client-labnext-dark .box,
+.stats-client-labnext-dark .box-solid,
+.stats-client-labnext-dark .panel {
+  background-color: var(--sc-widget-body) !important;
+  border-color: var(--sc-border) !important;
+  color: var(--sc-text) !important;
+}
+
+.stats-client-labnext-dark [class*="widget"] [class*="body"],
+.stats-client-labnext-dark [class*="Widget"] [class*="body"],
+.stats-client-labnext-dark [class*="activity"] [class*="body"],
+.stats-client-labnext-dark [class*="Activity"] [class*="body"],
+.stats-client-labnext-dark [class*="alert"] [class*="body"],
+.stats-client-labnext-dark [class*="Alert"] [class*="body"] {
+  background-color: var(--sc-widget-body) !important;
+  color: var(--sc-text) !important;
+}
+
+.stats-client-labnext-dark [class*="widget"] [class*="header"],
+.stats-client-labnext-dark [class*="Widget"] [class*="Header"],
+.stats-client-labnext-dark [class*="widget-header"],
+.stats-client-labnext-dark .box-header,
+.stats-client-labnext-dark .panel-heading,
+.stats-client-labnext-dark .card-header,
+.stats-client-labnext-dark [class*="widget"] > h1,
+.stats-client-labnext-dark [class*="widget"] > h2,
+.stats-client-labnext-dark [class*="widget"] > h3,
+.stats-client-labnext-dark [class*="widget"] > .title,
+.stats-client-labnext-dark [class*="widget"] [class*="title"] {
+  background-color: var(--sc-nav-surface) !important;
+  color: var(--sc-text-light) !important;
+  border-color: var(--sc-border) !important;
+}
+
+/* At a Glance + stat tiles */
+.stats-client-labnext-dark [class*="glance"],
+.stats-client-labnext-dark [class*="Glance"],
+.stats-client-labnext-dark [class*="widget"] [class*="body"],
+.stats-client-labnext-dark [class*="widget"] [class*="content"],
+.stats-client-labnext-dark .panel-body,
+.stats-client-labnext-dark .info-box,
+.stats-client-labnext-dark .small-box,
+.stats-client-labnext-dark .tile,
+.stats-client-labnext-dark .stat-box,
+.stats-client-labnext-dark [class*="stat"],
+.stats-client-labnext-dark [class*="Stat"] {
+  background-color: var(--sc-tile-dark) !important;
+  color: var(--sc-text) !important;
+  border-color: var(--sc-border) !important;
+}
+
+.stats-client-labnext-dark [class*="glance"] > *,
+.stats-client-labnext-dark [class*="Glance"] > *,
+.stats-client-labnext-dark [class*="glance"] td,
+.stats-client-labnext-dark [class*="Glance"] td,
+.stats-client-labnext-dark [class*="glance"] th,
+.stats-client-labnext-dark [class*="widget"] table td,
+.stats-client-labnext-dark [class*="widget"] table th,
+.stats-client-labnext-dark .info-box-content {
+  background-color: var(--sc-tile-dark) !important;
+  color: var(--sc-text) !important;
+}
+
+.stats-client-labnext-dark [class*="widget"] h1,
+.stats-client-labnext-dark [class*="widget"] h2,
+.stats-client-labnext-dark [class*="widget"] h3,
+.stats-client-labnext-dark [class*="glance"] h1,
+.stats-client-labnext-dark [class*="glance"] h2,
+.stats-client-labnext-dark [class*="glance"] h3,
+.stats-client-labnext-dark [class*="glance"] .number,
+.stats-client-labnext-dark [class*="glance"] .value,
+.stats-client-labnext-dark .info-box-number,
+.stats-client-labnext-dark strong,
+.stats-client-labnext-dark b {
+  color: var(--sc-text-light) !important;
+}
+
+/* ---- Tables / lists ---- */
+.stats-client-labnext-dark .table,
+.stats-client-labnext-dark table,
+.stats-client-labnext-dark thead,
+.stats-client-labnext-dark tbody,
+.stats-client-labnext-dark tr,
+.stats-client-labnext-dark td,
+.stats-client-labnext-dark th {
+  background-color: var(--sc-widget-body) !important;
+  color: var(--sc-text) !important;
+  border-color: var(--sc-border) !important;
+}
+
+.stats-client-labnext-dark .table > thead > tr > th {
+  background-color: var(--sc-header-surface) !important;
+  color: var(--sc-text-light) !important;
+}
+
+.stats-client-labnext-dark .list-group-item,
+.stats-client-labnext-dark .dropdown-menu,
+.stats-client-labnext-dark .dropdown-menu > li > a {
+  background-color: var(--sc-widget-body) !important;
+  color: var(--sc-text) !important;
+}
+
+/* ---- Tabs ---- */
+.stats-client-labnext-dark .nav-pills > li > a,
+.stats-client-labnext-dark .nav-tabs > li > a {
+  background-color: var(--sc-panel-alt) !important;
+  color: var(--sc-muted) !important;
+}
+
+.stats-client-labnext-dark .nav-pills > li.active > a,
+.stats-client-labnext-dark .nav-tabs > li.active > a {
+  background-color: var(--sc-tab-selected) !important;
+  color: var(--sc-text-light) !important;
+}
+
+/* ---- Forms (search lighter) ---- */
+.stats-client-labnext-dark input,
+.stats-client-labnext-dark textarea,
+.stats-client-labnext-dark select,
+.stats-client-labnext-dark .form-control {
+  background-color: var(--sc-input) !important;
+  color: var(--sc-text) !important;
+  border-color: var(--sc-border) !important;
+}
+
+.stats-client-labnext-dark .navbar-form .form-control,
+.stats-client-labnext-dark input[type="search"],
+.stats-client-labnext-dark [class*="search"] input,
+.stats-client-labnext-dark #search {
+  background-color: var(--sc-search-bg) !important;
+  color: var(--sc-search-text) !important;
+  border-color: #CBD5E1 !important;
+}
+
+/* ---- Buttons ---- */
+.stats-client-labnext-dark .btn-primary,
+.stats-client-labnext-dark button[type="submit"] {
+  background-color: var(--sc-btn-primary) !important;
+  border-color: var(--sc-btn-primary-border) !important;
+  color: #F8FAFC !important;
+}
+
+.stats-client-labnext-dark a,
+.stats-client-labnext-dark a:visited {
+  color: var(--sc-link) !important;
+}
+
+.stats-client-labnext-dark a:hover {
+  color: var(--sc-link-hover) !important;
+}
+
+/* ---- Case detail ---- */
+.stats-client-labnext-dark #patient_add_content {
+  color: var(--sc-home-yellow) !important;
+}
+
+.stats-client-labnext-dark dl,
+.stats-client-labnext-dark dt {
+  color: var(--sc-muted) !important;
+}
+
+.stats-client-labnext-dark dd {
+  color: var(--sc-text) !important;
+}
+
+/* ---- Scrollbars (match Stats dark slate palette) ---- */
+.stats-client-labnext-dark,
+.stats-client-labnext-dark * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sc-scrollbar-thumb) var(--sc-scrollbar-track);
+}
+
+.stats-client-labnext-dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.stats-client-labnext-dark ::-webkit-scrollbar-track {
+  background: var(--sc-scrollbar-track);
+}
+
+.stats-client-labnext-dark ::-webkit-scrollbar-thumb {
+  background: var(--sc-scrollbar-thumb);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.stats-client-labnext-dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--sc-scrollbar-thumb-hover);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.stats-client-labnext-dark ::-webkit-scrollbar-corner {
+  background: var(--sc-scrollbar-track);
+}

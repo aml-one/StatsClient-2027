@@ -20,24 +20,72 @@ public partial class WatchListNotificationCard : UserControl
     public WatchListNotificationCard()
     {
         InitializeComponent();
+        CardContentGrid.SizeChanged += (_, _) => UpdateCardContentClip();
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         MouseLeftButtonUp += (_, _) => BeginDismiss();
+    }
+
+    private void UpdateCardContentClip()
+    {
+        if (CardContentGrid.ActualWidth <= 0 || CardContentGrid.ActualHeight <= 0)
+            return;
+
+        CardContentGrid.Clip = new RectangleGeometry(
+            new Rect(0, 0, CardContentGrid.ActualWidth, CardContentGrid.ActualHeight),
+            10,
+            10);
     }
 
     public void Apply(WatchListStatusChange change)
     {
         _appearedUtc = DateTime.UtcNow;
         TitleText.Text = change.Title;
-        OrderIdText.Text = string.IsNullOrWhiteSpace(change.PanNumber)
-            ? change.IntOrderID
-            : $"{change.IntOrderID}  ·  Pan {change.PanNumber}";
-        MessageText.Text = change.Message;
+        OrderIdText.Text = change.IntOrderID;
+
+        if (!string.IsNullOrWhiteSpace(change.StatusDetail))
+        {
+            MessageText.Text = change.StatusDetail;
+            MessageText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8")!);
+
+            if (!string.IsNullOrWhiteSpace(change.PatientName))
+            {
+                PatientNameText.Text = change.PatientName;
+                PatientNameText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PatientNameText.Text = string.Empty;
+                PatientNameText.Visibility = Visibility.Collapsed;
+            }
+        }
+        else
+        {
+            MessageText.Text = change.Message;
+            MessageText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E2E8F0")!);
+            PatientNameText.Text = string.Empty;
+            PatientNameText.Visibility = Visibility.Collapsed;
+        }
+
         UpdateAgeText();
 
         var accent = (Color)ColorConverter.ConvertFromString(change.AccentColor)!;
         AccentBar.Fill = new SolidColorBrush(accent);
         PulseBrush.Color = accent;
+
+        if (string.IsNullOrWhiteSpace(change.PanNumber))
+        {
+            PanNumberText.Visibility = Visibility.Collapsed;
+            PanNumberText.Text = string.Empty;
+            MessageText.Margin = new Thickness(0, 0, 0, 0);
+        }
+        else
+        {
+            PanNumberText.Text = change.PanNumber.Trim();
+            PanNumberText.Foreground = new SolidColorBrush(Color.FromArgb(0x66, accent.R, accent.G, accent.B));
+            PanNumberText.Visibility = Visibility.Visible;
+            MessageText.Margin = new Thickness(0, 0, 52, 0);
+        }
     }
 
     public void PlaySlideIn()
@@ -62,6 +110,7 @@ public partial class WatchListNotificationCard : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        UpdateCardContentClip();
         StartAgeTimer();
         PlaySlideIn();
     }

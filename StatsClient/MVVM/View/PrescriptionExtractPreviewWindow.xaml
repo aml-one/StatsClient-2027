@@ -1,0 +1,136 @@
+<Window x:Class="StatsClient.MVVM.View.PrescriptionExtractPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PDF extract preview"
+        Height="320"
+        Width="360"
+        MinHeight="280"
+        MinWidth="300"
+        MaxWidth="520"
+        ResizeMode="CanResizeWithGrip"
+        WindowStyle="None"
+        ShowInTaskbar="False"
+        WindowStartupLocation="Manual"
+        FontFamily="Segoe UI"
+        Background="{DynamicResource TransparentBrush}">
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="4"
+                      CaptionHeight="0" />
+    </WindowChrome.WindowChrome>
+
+    <Border CornerRadius="8"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+            Background="{DynamicResource ClassicWindowBackgroundBrush}"
+            ClipToBounds="True">
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource ImmersiveGlassBackground}"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="6,6,0,0"
+                    Padding="10,8"
+                    Margin="-10,-10,-10,8"
+                    PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown">
+                <Grid>
+                    <TextBlock Text="PDF field extract"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ImmersiveTextPrimary}"
+                               VerticalAlignment="Center" />
+                    <TextBlock x:Name="CloseButton"
+                               Text="╳"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               FontSize="14"
+                               Cursor="Hand"
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+                               ToolTip="Close"
+                               PreviewMouseLeftButtonDown="CloseButton_PreviewMouseLeftButtonDown" />
+                </Grid>
+            </Border>
+
+            <TextBlock Grid.Row="1"
+                       Text="Latest extraction from incoming prescription PDF"
+                       FontSize="10"
+                       Foreground="{DynamicResource ImmersiveTextMuted}"
+                       Margin="0,0,0,8"
+                       TextWrapping="Wrap" />
+
+            <DataGrid Grid.Row="2"
+                      x:Name="ExtractGrid"
+                      ItemsSource="{Binding Rows}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      CanUserReorderColumns="False"
+                      CanUserResizeRows="False"
+                      CanUserSortColumns="False"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="{DynamicResource ImmersiveGlassBorder}"
+                      BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                      BorderThickness="1"
+                      Background="{DynamicResource ImmersiveGlassBackground}"
+                      RowBackground="{DynamicResource TransparentBrush}"
+                      AlternatingRowBackground="#22334155"
+                      Foreground="{DynamicResource ImmersiveTextPrimary}"
+                      FontSize="12"
+                      SelectionMode="Single"
+                      SelectionUnit="FullRow">
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background"
+                                Value="{DynamicResource ImmersiveFilterButtonHoverGradientStart}" />
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource ImmersiveTextPrimary}" />
+                        <Setter Property="FontWeight"
+                                Value="SemiBold" />
+                        <Setter Property="FontSize"
+                                Value="11" />
+                        <Setter Property="Padding"
+                                Value="8,6" />
+                        <Setter Property="BorderBrush"
+                                Value="{DynamicResource ImmersiveGlassBorder}" />
+                        <Setter Property="BorderThickness"
+                                Value="0,0,1,1" />
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness"
+                                Value="0" />
+                        <Setter Property="Padding"
+                                Value="8,4" />
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource ImmersiveTextPrimary}" />
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected"
+                                     Value="True">
+                                <Setter Property="Background"
+                                        Value="{StaticResource ImmersiveFilterButtonHoverGradientStart}" />
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource ImmersiveTextPrimary}" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.CellStyle>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Field"
+                                        Binding="{Binding Field}"
+                                        Width="130" />
+                    <DataGridTextColumn Header="Value"
+                                        Binding="{Binding Value}"
+                                        Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Border>
+</Window>

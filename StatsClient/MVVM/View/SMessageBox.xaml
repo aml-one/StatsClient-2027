@@ -10,12 +10,11 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="Stats Client"
-        Height="150"
-        Width="400"
-        MinHeight="150"
+        Width="460"
+        MinHeight="100"
         MinWidth="400"
-        MaxWidth="800"
-        WindowStartupLocation="CenterOwner"
+        MaxWidth="640"
+        WindowStartupLocation="Manual"
         ResizeMode="NoResize"
         WindowStyle="None"
         WindowState="Normal"
@@ -112,7 +111,7 @@
                      Width="4000"
                      Height="80"
                      Panel.ZIndex="1"
-                     Opacity="0.28"
+                     Opacity="0.68"
                      Margin="-50,0"
                      RenderTransformOrigin="0.5, 0.5">
                 <Ellipse.RenderTransform>
@@ -161,14 +160,15 @@
                            Margin="-80,-40,0,-80" />
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition  Height="26" />
-                            <RowDefinition />
-                            <RowDefinition Height="50" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
 
 
                         <Border Grid.Row="0"
+                                MinHeight="26"
                                 Background="{DynamicResource TransparentBrush}"
                                 BorderBrush="{DynamicResource MessageBoxTitleBorder}"
                                 CornerRadius="8,8,0,0"
@@ -221,16 +221,18 @@
                                        d:Visibility="Visible"
                                        FontFamily="Arial" />
 
-                            <core:OutlinedTextBlock Stroke="{DynamicResource MessageBoxHintForeground}"
+                            <core:OutlinedTextBlock x:Name="MessageBodyText"
+                                                    Stroke="{DynamicResource MessageBoxHintForeground}"
                                                     StrokePosition="Outside"
                                                     FontSize="15"
                                                     FontFamily="Arial"
-                                                    VerticalAlignment="Center"
+                                                    VerticalAlignment="Top"
+                                                    HorizontalAlignment="Stretch"
                                                     TextWrapping="Wrap"
                                                     FontWeight="Normal"
                                                     Fill="{DynamicResource MessageBoxBodyFill}"
                                                     StrokeThickness="0.35"
-                                                    Margin="26,4,6,4"
+                                                    Margin="26,8,12,8"
                                                     Grid.Column="1"
                                                     Text="{Binding SMessageBody}" />
                         </Grid>
@@ -238,8 +240,7 @@
 
 
                         <Grid Grid.Row="2"
-                              Margin="4,0"
-                              Height="34"
+                              Margin="4,0,4,8"
                               VerticalAlignment="Top">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition />

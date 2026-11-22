@@ -4,6 +4,7 @@ using System.Windows;
 using StatsClient.KnowledgeBase.Core;
 using StatsClient.MVVM.Core;
 using StatsClient.MVVM.Core.KnowledgeBase;
+using StatsClient.MVVM.Core.ScanBodyGallery;
 using StatsClient.MVVM.View;
 using static StatsClient.MVVM.Core.DatabaseConnection;
 using static StatsClient.MVVM.Core.LocalSettingsDB;
@@ -55,6 +56,30 @@ public sealed class KnowledgeBaseCardListItem : ObservableObject
     public byte[]? ThumbnailData { get; init; }
     public string TagsDisplay { get; init; } = string.Empty;
     public DateTime ModifiedUtc { get; init; }
+
+    private bool isSelected;
+    public bool IsSelected
+    {
+        get => isSelected;
+        set
+        {
+            if (isSelected == value)
+            {
+                return;
+            }
+
+            isSelected = value;
+            RaisePropertyChanged(nameof(IsSelected));
+        }
+    }
+}
+
+public sealed class KnowledgeBaseLinkedScanBodyImageItem
+{
+    public int EntryId { get; init; }
+    public int ImageId { get; init; }
+    public string ScanBodyTitle { get; init; } = string.Empty;
+    public byte[]? ThumbnailData { get; init; }
 }
 
 public sealed class KnowledgeBaseTagFilterItem : ObservableObject
@@ -120,8 +145,12 @@ public partial class MainViewModel
     public RelayCommand KnowledgeBasePreviewBackupCommand { get; set; } = null!;
     public RelayCommand KnowledgeBaseRestoreBackupCommand { get; set; } = null!;
     public RelayCommand KnowledgeBaseSearchByImageCommand { get; set; } = null!;
+    public RelayCommand KnowledgeBaseOpenVisionMatchCommand { get; set; } = null!;
+    public RelayCommand KnowledgeBaseHideLinkedScanBodyImagesCommand { get; set; } = null!;
+    public RelayCommand KnowledgeBaseShowLinkedScanBodyImagesCommand { get; set; } = null!;
 
     public ObservableCollection<KnowledgeBaseCardListItem> KnowledgeBaseCards { get; } = [];
+    public ObservableCollection<KnowledgeBaseLinkedScanBodyImageItem> KnowledgeBaseLinkedScanBodyImages { get; } = [];
     public ObservableCollection<KnowledgeBaseCategory> KnowledgeBaseCategories { get; } = [];
     public ObservableCollection<KnowledgeBaseCategory> KnowledgeBaseEditorCategories { get; } = [];
     public ObservableCollection<KnowledgeBaseTagFilterItem> KnowledgeBaseTagFilters { get; } = [];
@@ -171,6 +200,7 @@ public partial class MainViewModel
         {
             knowledgeBaseSearchText = value;
             RaisePropertyChanged(nameof(KnowledgeBaseSearchText));
+            NotifyKnowledgeBaseFiltersActiveChanged();
             _ = RefreshKnowledgeBaseCardsAsync();
         }
     }
@@ -183,9 +213,16 @@ public partial class MainViewModel
         {
             knowledgeBaseFilterCategory = value;
             RaisePropertyChanged(nameof(KnowledgeBaseFilterCategory));
+            NotifyKnowledgeBaseFiltersActiveChanged();
             _ = RefreshKnowledgeBaseCardsAsync();
         }
     }
+
+    public bool KnowledgeBaseFiltersActive =>
+        !string.IsNullOrWhiteSpace(KnowledgeBaseSearchText)
+        || (KnowledgeBaseFilterCategory?.CategoryId ?? 0) != 0
+        || KnowledgeBaseTagFilters.Any(t => t.IsSelected)
+        || KnowledgeBaseSearchImageBytes is { Length: > 0 };
 
     private string knowledgeBaseEditorCategoryName = string.Empty;
     public string KnowledgeBaseEditorCategoryName
@@ -254,6 +291,7 @@ public partial class MainViewModel
         {
             knowledgeBaseSearchImageBytes = value;
             RaisePropertyChanged(nameof(KnowledgeBaseSearchImageBytes));
+            NotifyKnowledgeBaseFiltersActiveChanged();
         }
     }
 
@@ -268,9 +306,55 @@ public partial class MainViewModel
         }
     }
 
+    private int knowledgeBaseVisionMinConfidence = 85;
+    public int KnowledgeBaseVisionMinConfidence
+    {
+        get => knowledgeBaseVisionMinConfidence;
+        set
+        {
+            int clamped = Math.Clamp(value, 50, 99);
+            if (knowledgeBaseVisionMinConfidence == clamped)
+            {
+                return;
+            }
+
+            knowledgeBaseVisionMinConfidence = clamped;
+            RaisePropertyChanged(nameof(KnowledgeBaseVisionMinConfidence));
+            RaisePropertyChanged(nameof(KnowledgeBaseVisionMinConfidenceLabel));
+            WriteLocalSetting("KnowledgeBaseVisionMinConfidence", clamped.ToString());
+        }
+    }
+
+    public string KnowledgeBaseVisionMinConfidenceLabel => $"Min match confidence: {KnowledgeBaseVisionMinConfidence}%";
+
     public bool KnowledgeBaseDetailPaneVisible => _knowledgeBaseDetailPaneMode != KnowledgeBaseDetailPaneMode.None;
 
     public bool KnowledgeBaseIsViewMode => _knowledgeBaseDetailPaneMode == KnowledgeBaseDetailPaneMode.View;
+
+    private bool knowledgeBaseLinkedScanBodyImagesHidden;
+    public bool KnowledgeBaseLinkedScanBodyImagesHidden
+    {
+        get => knowledgeBaseLinkedScanBodyImagesHidden;
+        set
+        {
+            if (knowledgeBaseLinkedScanBodyImagesHidden == value)
+                return;
+
+            knowledgeBaseLinkedScanBodyImagesHidden = value;
+            RaisePropertyChanged(nameof(KnowledgeBaseLinkedScanBodyImagesHidden));
+            RaisePropertyChanged(nameof(KnowledgeBaseHasLinkedScanBodyImages));
+            RaisePropertyChanged(nameof(KnowledgeBaseLinkedScanBodyImagesPanelVisible));
+            RaisePropertyChanged(nameof(KnowledgeBaseShowLinkedScanBodyImagesButtonVisible));
+        }
+    }
+
+    public bool KnowledgeBaseHasLinkedScanBodyImages => KnowledgeBaseLinkedScanBodyImages.Count > 0;
+
+    public bool KnowledgeBaseLinkedScanBodyImagesPanelVisible =>
+        KnowledgeBaseIsViewMode && KnowledgeBaseHasLinkedScanBodyImages && !KnowledgeBaseLinkedScanBodyImagesHidden;
+
+    public bool KnowledgeBaseShowLinkedScanBodyImagesButtonVisible =>
+        KnowledgeBaseIsViewMode && KnowledgeBaseHasLinkedScanBodyImages && KnowledgeBaseLinkedScanBodyImagesHidden;
 
     public bool KnowledgeBaseIsEditMode => _knowledgeBaseDetailPaneMode == KnowledgeBaseDetailPaneMode.Edit;
 
@@ -302,6 +386,9 @@ public partial class MainViewModel
         KnowledgeBasePreviewBackupCommand = new RelayCommand(_ => PreviewKnowledgeBaseBackup());
         KnowledgeBaseRestoreBackupCommand = new RelayCommand(_ => _ = RestoreKnowledgeBaseBackupAsync());
         KnowledgeBaseSearchByImageCommand = new RelayCommand(_ => _ = RunKnowledgeBaseVisionSearchAsync());
+        KnowledgeBaseOpenVisionMatchCommand = new RelayCommand(o => _ = OpenKnowledgeBaseVisionMatchAsync(o));
+        KnowledgeBaseHideLinkedScanBodyImagesCommand = new RelayCommand(_ => KnowledgeBaseLinkedScanBodyImagesHidden = true);
+        KnowledgeBaseShowLinkedScanBodyImagesCommand = new RelayCommand(_ => KnowledgeBaseLinkedScanBodyImagesHidden = false);
 
         _knowledgeBaseAutoSave.Configure(
             status => Application.Current.Dispatcher.Invoke(() => KnowledgeBaseStatusText = status),
@@ -319,7 +406,7 @@ public partial class MainViewModel
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
-            LabnextCanReload = true;
+            LabnextCanReload = false;
             ClearAllSearchCriteria();
             _MainWindow.mainTabControl.SelectedItem = _MainWindow.knowledgeBaseTab;
             UpdateTabChromeForSelection();
@@ -337,6 +424,14 @@ public partial class MainViewModel
 
         KnowledgeBaseDatabase.ConnectionStringFactory = ConnectionStrToStatsDatabase;
         _knowledgeBaseInitialized = true;
+
+        if (int.TryParse(ReadLocalSetting("KnowledgeBaseVisionMinConfidence"), out int savedConfidence))
+        {
+            knowledgeBaseVisionMinConfidence = Math.Clamp(savedConfidence, 50, 99);
+            RaisePropertyChanged(nameof(KnowledgeBaseVisionMinConfidence));
+            RaisePropertyChanged(nameof(KnowledgeBaseVisionMinConfidenceLabel));
+        }
+
         KnowledgeBaseSchemaAvailable = await KnowledgeBaseSchemaProbe.IsAvailableAsync().ConfigureAwait(false);
         KnowledgeBaseSchemaMessage = KnowledgeBaseSchemaAvailable
             ? string.Empty
@@ -352,6 +447,8 @@ public partial class MainViewModel
 
     private async Task RefreshKnowledgeBaseAsync()
     {
+        await PerfDiagLog.TrackAsync("KnowledgeBase", "RefreshKnowledgeBase", async () =>
+        {
         if (!KnowledgeBaseSchemaAvailable)
         {
             return;
@@ -396,10 +493,13 @@ public partial class MainViewModel
         });
 
         await RefreshKnowledgeBaseCardsAsync().ConfigureAwait(false);
+        });
     }
 
     private async Task RefreshKnowledgeBaseCardsAsync()
     {
+        await PerfDiagLog.TrackAsync("KnowledgeBase", "RefreshKnowledgeBaseCards", async () =>
+        {
         if (!KnowledgeBaseSchemaAvailable)
         {
             return;
@@ -435,6 +535,9 @@ public partial class MainViewModel
                     ModifiedUtc = card.ModifiedUtc
                 });
             }
+
+            UpdateKnowledgeBaseCardListSelection();
+        });
         });
     }
 
@@ -461,7 +564,7 @@ public partial class MainViewModel
 
         Application.Current.Dispatcher.Invoke(() =>
         {
-            _knowledgeBaseEditingCardId = 0;
+            SetKnowledgeBaseEditingCardId(0);
             _knowledgeBaseIsNewCard = true;
             _knowledgeBaseLoadingEditor = true;
             ClearKnowledgeBaseEditorFields();
@@ -497,7 +600,7 @@ public partial class MainViewModel
         Application.Current.Dispatcher.Invoke(() =>
         {
             _knowledgeBaseLoadingEditor = true;
-            _knowledgeBaseEditingCardId = cardId;
+            SetKnowledgeBaseEditingCardId(cardId);
             KnowledgeBaseEditorTitle = detail.Title;
             KnowledgeBaseEditorBody = detail.BodyText;
             KnowledgeBaseEditorLinks.Clear();
@@ -537,6 +640,67 @@ public partial class MainViewModel
             _knowledgeBaseLoadingEditor = false;
             KnowledgeBaseStatusText = "Ready";
             SetKnowledgeBaseDetailPaneMode(paneMode);
+        });
+
+        _ = RefreshKnowledgeBaseLinkedScanBodyImagesAsync(detail);
+    }
+
+    private async Task RefreshKnowledgeBaseLinkedScanBodyImagesAsync(KnowledgeBaseCardDetail detail)
+    {
+        bool scanBodySchemaExists = await Task.Run(ScanBodyGalleryRepository.SchemaExists).ConfigureAwait(false);
+        if (!scanBodySchemaExists)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                KnowledgeBaseLinkedScanBodyImages.Clear();
+                KnowledgeBaseLinkedScanBodyImagesHidden = false;
+                RaisePropertyChanged(nameof(KnowledgeBaseHasLinkedScanBodyImages));
+                RaisePropertyChanged(nameof(KnowledgeBaseLinkedScanBodyImagesPanelVisible));
+                RaisePropertyChanged(nameof(KnowledgeBaseShowLinkedScanBodyImagesButtonVisible));
+            });
+            return;
+        }
+
+        var scanBodies = await ScanBodyGalleryRepository.GetAllAsync().ConfigureAwait(false);
+        var matching = scanBodies
+            .Where(sb => ScanBodyKnowledgeBaseCrossReference.CardMatchesScanBody(detail, sb))
+            .ToList();
+
+        if (matching.Count == 0)
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                KnowledgeBaseLinkedScanBodyImages.Clear();
+                KnowledgeBaseLinkedScanBodyImagesHidden = false;
+                RaisePropertyChanged(nameof(KnowledgeBaseHasLinkedScanBodyImages));
+                RaisePropertyChanged(nameof(KnowledgeBaseLinkedScanBodyImagesPanelVisible));
+                RaisePropertyChanged(nameof(KnowledgeBaseShowLinkedScanBodyImagesButtonVisible));
+            });
+            return;
+        }
+
+        var entryIds = matching.Select(m => m.EntryId).ToList();
+        var images = await ScanBodyGalleryRepository.GetImagesForEntryIdsAsync(entryIds).ConfigureAwait(false);
+        var titleByEntry = matching.ToDictionary(m => m.EntryId, m => m.DisplayTitle);
+
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            KnowledgeBaseLinkedScanBodyImagesHidden = false;
+            KnowledgeBaseLinkedScanBodyImages.Clear();
+            foreach (var image in images)
+            {
+                KnowledgeBaseLinkedScanBodyImages.Add(new KnowledgeBaseLinkedScanBodyImageItem
+                {
+                    EntryId = image.EntryId,
+                    ImageId = image.ImageId,
+                    ScanBodyTitle = titleByEntry.GetValueOrDefault(image.EntryId, "Scan body"),
+                    ThumbnailData = image.ThumbnailData is { Length: > 0 } ? image.ThumbnailData : image.ImageData,
+                });
+            }
+
+            RaisePropertyChanged(nameof(KnowledgeBaseHasLinkedScanBodyImages));
+            RaisePropertyChanged(nameof(KnowledgeBaseLinkedScanBodyImagesPanelVisible));
+            RaisePropertyChanged(nameof(KnowledgeBaseShowLinkedScanBodyImagesButtonVisible));
         });
     }
 
@@ -617,7 +781,7 @@ public partial class MainViewModel
         Application.Current.Dispatcher.Invoke(() =>
         {
             SetKnowledgeBaseDetailPaneMode(KnowledgeBaseDetailPaneMode.None);
-            _knowledgeBaseEditingCardId = 0;
+            SetKnowledgeBaseEditingCardId(0);
             _knowledgeBaseIsNewCard = false;
             _knowledgeBaseAutoSave.ResetSession();
             ClearKnowledgeBaseEditorFields();
@@ -639,31 +803,18 @@ public partial class MainViewModel
         {
             if (_knowledgeBaseEditingCardId == cardId)
             {
-                _knowledgeBaseEditingCardId = 0;
+                SetKnowledgeBaseEditingCardId(0);
                 ClearKnowledgeBaseEditorFields();
             }
         });
     }
 
-    private bool IsKnowledgeBaseEditorEmpty()
-    {
-        int? categoryId = null;
-        if (!string.IsNullOrWhiteSpace(KnowledgeBaseEditorCategoryName))
-        {
-            var existing = KnowledgeBaseEditorCategories.FirstOrDefault(c =>
-                c.CategoryId > 0 &&
-                c.Name.Equals(KnowledgeBaseEditorCategoryName.Trim(), StringComparison.OrdinalIgnoreCase));
-            categoryId = existing?.CategoryId;
-            if (categoryId is null or 0 && !string.IsNullOrWhiteSpace(KnowledgeBaseEditorCategoryName))
-            {
-                return false;
-            }
-        }
-
-        return KnowledgeBaseCardContentRules.IsEmpty(
+    private bool IsKnowledgeBaseEditorEmpty() =>
+        KnowledgeBaseCardContentRules.IsEmpty(
             KnowledgeBaseEditorTitle,
             KnowledgeBaseEditorBody,
-            categoryId,
+            null,
+            KnowledgeBaseEditorCategoryName,
             KnowledgeBaseEditorTags,
             KnowledgeBaseEditorLinks.Select(l => new KnowledgeBaseCardLink
             {
@@ -679,7 +830,6 @@ public partial class MainViewModel
                 ThumbnailData = i.ThumbnailData,
                 SortOrder = i.SortOrder
             }));
-    }
 
     private async Task PersistKnowledgeBaseDraftAsync()
     {
@@ -705,7 +855,7 @@ public partial class MainViewModel
             int cardId = await _knowledgeBaseRepository.CreateCardAsync(Environment.MachineName).ConfigureAwait(false);
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                _knowledgeBaseEditingCardId = cardId;
+                SetKnowledgeBaseEditingCardId(cardId);
                 QueueKnowledgeBaseSaveInternal(categoryId);
             });
         }
@@ -725,6 +875,11 @@ public partial class MainViewModel
         KnowledgeBaseEditorCategoryName = string.Empty;
         KnowledgeBaseHasBackup = false;
         KnowledgeBaseNewTagText = string.Empty;
+        KnowledgeBaseLinkedScanBodyImages.Clear();
+        KnowledgeBaseLinkedScanBodyImagesHidden = false;
+        RaisePropertyChanged(nameof(KnowledgeBaseHasLinkedScanBodyImages));
+        RaisePropertyChanged(nameof(KnowledgeBaseLinkedScanBodyImagesPanelVisible));
+        RaisePropertyChanged(nameof(KnowledgeBaseShowLinkedScanBodyImagesButtonVisible));
     }
 
     private void SetKnowledgeBaseDetailPaneMode(KnowledgeBaseDetailPaneMode mode)
@@ -734,6 +889,27 @@ public partial class MainViewModel
         RaisePropertyChanged(nameof(KnowledgeBaseIsViewMode));
         RaisePropertyChanged(nameof(KnowledgeBaseIsEditMode));
         RaisePropertyChanged(nameof(KnowledgeBaseDetailPaneTitle));
+        RaisePropertyChanged(nameof(KnowledgeBaseLinkedScanBodyImagesPanelVisible));
+        RaisePropertyChanged(nameof(KnowledgeBaseShowLinkedScanBodyImagesButtonVisible));
+        UpdateKnowledgeBaseCardListSelection();
+    }
+
+    private void SetKnowledgeBaseEditingCardId(int cardId)
+    {
+        _knowledgeBaseEditingCardId = cardId;
+        UpdateKnowledgeBaseCardListSelection();
+    }
+
+    private void UpdateKnowledgeBaseCardListSelection()
+    {
+        int selectedId = KnowledgeBaseDetailPaneVisible && _knowledgeBaseEditingCardId > 0
+            ? _knowledgeBaseEditingCardId
+            : 0;
+
+        foreach (var card in KnowledgeBaseCards)
+        {
+            card.IsSelected = card.CardId == selectedId;
+        }
     }
 
     private void QueueKnowledgeBaseSave()
@@ -837,8 +1013,12 @@ public partial class MainViewModel
             return;
         }
 
+        NotifyKnowledgeBaseFiltersActiveChanged();
         _ = RefreshKnowledgeBaseCardsAsync();
     }
+
+    private void NotifyKnowledgeBaseFiltersActiveChanged() =>
+        RaisePropertyChanged(nameof(KnowledgeBaseFiltersActive));
 
     private void ClearKnowledgeBaseFilters()
     {
@@ -854,6 +1034,7 @@ public partial class MainViewModel
         KnowledgeBaseSearchImageBytes = null;
         KnowledgeBaseVisionResults.Clear();
         _knowledgeBaseSuppressTagFilterRefresh = false;
+        NotifyKnowledgeBaseFiltersActiveChanged();
         _ = RefreshKnowledgeBaseCardsAsync();
     }
 
@@ -890,7 +1071,7 @@ public partial class MainViewModel
             return;
         }
 
-        var prepared = await Application.Current.Dispatcher.InvokeAsync(() => KnowledgeBaseImageHelper.PrepareImage(bytes, fileName));
+        var prepared = await Application.Current.Dispatcher.InvokeAsync(() => KnowledgeBaseImageHelper.PrepareFile(bytes, fileName));
         Application.Current.Dispatcher.Invoke(() =>
         {
             KnowledgeBaseEditorImages.Add(new KnowledgeBaseImageEditorItem
@@ -969,7 +1150,7 @@ public partial class MainViewModel
         }
 
         await _knowledgeBaseRepository.SoftDeleteCardAsync(_knowledgeBaseEditingCardId, Environment.MachineName).ConfigureAwait(false);
-        _knowledgeBaseEditingCardId = 0;
+        SetKnowledgeBaseEditingCardId(0);
         _knowledgeBaseIsNewCard = false;
         _knowledgeBaseAutoSave.ResetSession();
 
@@ -1076,19 +1257,40 @@ public partial class MainViewModel
         }
 
         KnowledgeBaseVisionSearchRunning = true;
+        KnowledgeBaseStatusText = "Analyzing scan photo…";
         try
         {
-            var service = new KnowledgeBaseVisionSearchService();
             int? categoryId = KnowledgeBaseFilterCategory?.CategoryId;
             if (categoryId == 0)
             {
                 categoryId = null;
             }
 
-            var cardIds = KnowledgeBaseCards.Select(c => c.CardId).ToList();
+            var scopeFilter = new KnowledgeBaseCardFilter
+            {
+                CategoryId = categoryId,
+                TagNames = KnowledgeBaseTagFilters.Where(t => t.IsSelected).Select(t => t.TagName).ToList(),
+                Take = 500,
+                Skip = 0
+            };
+
+            var scopedCards = await _knowledgeBaseRepository.ListCardsAsync(scopeFilter).ConfigureAwait(false);
+            var cardIds = scopedCards.Select(c => c.CardId).ToList();
+            if (cardIds.Count == 0)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    KnowledgeBaseVisionResults.Clear();
+                    KnowledgeBaseStatusText = "No entries with images match the current filters.";
+                });
+                return;
+            }
+
+            var service = new KnowledgeBaseVisionSearchService();
             var matches = await service.SearchAsync(
                 KnowledgeBaseSearchImageBytes,
                 cardIds,
+                KnowledgeBaseVisionMinConfidence,
                 () => ReadStatsSetting("Nvidia_API_KEY"),
                 CancellationToken.None).ConfigureAwait(false);
 
@@ -1097,14 +1299,18 @@ public partial class MainViewModel
                 KnowledgeBaseVisionResults.Clear();
                 foreach (var match in matches)
                 {
-                    var card = KnowledgeBaseCards.FirstOrDefault(c => c.CardId == match.CardId);
+                    var card = scopedCards.FirstOrDefault(c => c.CardId == match.CardId);
                     if (card is not null)
                     {
-                        match.Title = card.Title;
+                        match.Title = string.IsNullOrWhiteSpace(card.Title) ? "(Untitled)" : card.Title;
                     }
 
                     KnowledgeBaseVisionResults.Add(match);
                 }
+
+                KnowledgeBaseStatusText = matches.Count == 0
+                    ? $"No matches at ≥{KnowledgeBaseVisionMinConfidence}% confidence."
+                    : $"{matches.Count} match(es) at ≥{KnowledgeBaseVisionMinConfidence}% confidence.";
             });
         }
         catch (Exception ex)
@@ -1115,5 +1321,19 @@ public partial class MainViewModel
         {
             KnowledgeBaseVisionSearchRunning = false;
         }
+    }
+
+    private async Task OpenKnowledgeBaseVisionMatchAsync(object? parameter)
+    {
+        if (parameter is not KnowledgeBaseVisionMatch match || match.CardId <= 0)
+        {
+            return;
+        }
+
+        await LoadKnowledgeBaseCardAsync(new KnowledgeBaseCardListItem
+        {
+            CardId = match.CardId,
+            Title = match.Title
+        }).ConfigureAwait(false);
     }
 }

@@ -72,7 +72,6 @@ namespace StatsClient.UserControls
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            
             // NOTE I use a border as the first child, to which I add the image. I do this so the panned image doesn't partly obscure the control's border.
             // In case you are going to use rounder corner's on this control, you may to update your clipping, as in this example:
             // http://wpfspark.wordpress.com/2011/06/08/clipborder-a-wpf-border-that-clips/
@@ -86,12 +85,15 @@ namespace StatsClient.UserControls
 
             image.MouseWheel += (s, e) =>
             {
+                if (image.ActualWidth <= 0 || image.ActualHeight <= 0)
+                    return;
+
                 var zoom = e.Delta > 0 ? .2 : -.2;
                 var position = e.GetPosition(image);
                 image.RenderTransformOrigin = new Point(position.X / image.ActualWidth, position.Y / image.ActualHeight);
                 var st = (ScaleTransform)((TransformGroup)image.RenderTransform).Children.First(tr => tr is ScaleTransform);
 
-                if (image.ActualWidth * (st.ScaleX + zoom) < 200 || image.ActualHeight * (st.ScaleY + zoom) < 200) //don't zoom out too small.
+                if (image.ActualWidth * (st.ScaleX + zoom) < 200 || image.ActualHeight * (st.ScaleY + zoom) < 200)
                     return;
 
                 st.ScaleX += zoom;
@@ -159,7 +161,6 @@ namespace StatsClient.UserControls
             try
             {
                 ResetPanZoom();
-                // load the image, specify CacheOption so the file is not locked
                 var bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad;

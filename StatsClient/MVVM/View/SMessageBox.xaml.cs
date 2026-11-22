@@ -1,10 +1,12 @@
 ﻿using StatsClient.MVVM.Core;
 using StatsClient.MVVM.ViewModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using static StatsClient.MVVM.ViewModel.MainViewModel;
 using static StatsClient.MVVM.Core.Enums;
 
@@ -141,7 +143,7 @@ namespace StatsClient.MVVM.View
         public SMessageBox(string Title, string Message, SMessageBoxButtons Buttons,
                                          NotificationIcon MessageBoxIcon,
                                          double DismissAfterSeconds = 90,
-                                         Window? Owner = null)
+                                         Window? ownerWindow = null)
         {
 
             
@@ -207,7 +209,128 @@ namespace StatsClient.MVVM.View
                 SMessageButtonRightContent = "Do it later";
             }
 
-            xRightButton.Focus();
+            if (ownerWindow is not null)
+            {
+                Owner = ownerWindow;
+            }
+
+            ApplyInitialLayout(ownerWindow);
+
+            Loaded += SMessageBox_Loaded;
+            Closed += SMessageBox_Closed;
+        }
+
+        private void ApplyInitialLayout(Window? ownerWindow)
+        {
+            const double horizontalPadding = 38;
+            const double minWidth = 400;
+            const double maxWidth = 640;
+            const double minHeight = 100;
+            const double headerHeight = 30;
+            const double footerHeight = 52;
+            const double verticalPadding = 16;
+
+            double contentMaxWidth = maxWidth - horizontalPadding;
+            Size bodySize = MeasureMessageBody(contentMaxWidth);
+
+            double textWidth = Math.Ceiling(bodySize.Width);
+            double targetWidth = Math.Clamp(Math.Max(textWidth + horizontalPadding, minWidth), minWidth, maxWidth);
+
+            bodySize = MeasureMessageBody(targetWidth - horizontalPadding);
+            double textHeight = Math.Ceiling(bodySize.Height);
+
+            double maxHeight = SystemParameters.WorkArea.Height * 0.85;
+            double targetHeight = Math.Max(minHeight, headerHeight + footerHeight + verticalPadding + textHeight);
+            if (targetHeight > maxHeight)
+            {
+                targetHeight = maxHeight;
+                MessageBodyText.MaxHeight = maxHeight - headerHeight - footerHeight - verticalPadding;
+            }
+
+            MessageBodyText.MaxWidth = targetWidth - horizontalPadding;
+            Width = targetWidth;
+            Height = targetHeight;
+
+            CenterOnOwnerWindow(ownerWindow);
+        }
+
+        private Size MeasureMessageBody(double maxTextWidth)
+        {
+            double pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            var formatted = new FormattedText(
+                SMessageBody ?? "",
+                CultureInfo.CurrentUICulture,
+                FlowDirection,
+                new Typeface(MessageBodyText.FontFamily, MessageBodyText.FontStyle, MessageBodyText.FontWeight, MessageBodyText.FontStretch),
+                MessageBodyText.FontSize,
+                Brushes.Black,
+                pixelsPerDip)
+            {
+                MaxTextWidth = Math.Max(1, maxTextWidth),
+                TextAlignment = TextAlignment.Left,
+            };
+
+            return new Size(formatted.Width, formatted.Height);
+        }
+
+        private void CenterOnOwnerWindow(Window? ownerWindow)
+        {
+            Rect targetRect;
+            Window? owner = ownerWindow ?? Owner;
+            if (owner is not null)
+            {
+                double ownerWidth = owner.ActualWidth > 0 ? owner.ActualWidth : owner.Width;
+                double ownerHeight = owner.ActualHeight > 0 ? owner.ActualHeight : owner.Height;
+                if (ownerWidth > 0 && ownerHeight > 0)
+                {
+                    targetRect = new Rect(
+                        owner.Left + (ownerWidth - Width) / 2,
+                        owner.Top + (ownerHeight - Height) / 2,
+                        Width,
+                        Height);
+                }
+                else
+                {
+                    targetRect = CenterOnWorkArea();
+                }
+            }
+            else
+            {
+                targetRect = CenterOnWorkArea();
+            }
+
+            Rect workArea = SystemParameters.WorkArea;
+            Left = Math.Max(workArea.Left, Math.Min(targetRect.Left, workArea.Right - Width));
+            Top = Math.Max(workArea.Top, Math.Min(targetRect.Top, workArea.Bottom - Height));
+        }
+
+        private Rect CenterOnWorkArea()
+        {
+            Rect workArea = SystemParameters.WorkArea;
+            return new Rect(
+                workArea.Left + (workArea.Width - Width) / 2,
+                workArea.Top + (workArea.Height - Height) / 2,
+                Width,
+                Height);
+        }
+
+        private bool _backdropShown;
+
+        private void SMessageBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            // WPF re-broadcasts Loaded on window resize; only attach the backdrop once per dialog.
+            if (_backdropShown)
+            {
+                return;
+            }
+
+            _backdropShown = true;
+            WindowModalBackdrop.Show(Owner);
+        }
+
+        private void SMessageBox_Closed(object? sender, EventArgs e)
+        {
+            WindowModalBackdrop.Hide(Owner);
         }
 
         private void CountbackTimer_Elapsed(object? sender, ElapsedEventArgs e)
@@ -235,6 +358,7 @@ namespace StatsClient.MVVM.View
             _timer.Interval = 1000 * SMessageBoxDismissAfterSeconds;
             _timer.Start();
             _countbackTimer.Start();
+            xRightButton.Focus();
         }
 
         private void SMessageButtonClick(object obj)

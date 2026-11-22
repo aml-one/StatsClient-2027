@@ -37,6 +37,546 @@
         </Setter>
     </Style>
 
+    <Style x:Key="SettingsPrimaryButton"
+           TargetType="Button">
+        <Setter Property="OverridesDefaultStyle"
+                Value="True" />
+        <Setter Property="Background"
+                Value="{DynamicResource PrimaryDarkColor}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource LightTextColor}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource TabLegacyBorder}" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Padding"
+                Value="12,6" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="border"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource TabLegacyBackground_Cl}" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="border"
+                                    Property="BorderBrush">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource TabItem.Selected.Border_Cl}" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="border"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource HomeButtonsAreaBackground_Cl}" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SettingsListBox"
+           TargetType="ListBox">
+        <Setter Property="Background"
+                Value="{DynamicResource SettingsListBackground}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource LightTextColor}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource SettingsPanelBorder}" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+    </Style>
+
+    <Style x:Key="RxMakerToolbarButton"
+           TargetType="Button">
+        <Setter Property="MinHeight"
+                Value="28" />
+        <Setter Property="Padding"
+                Value="12,3" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource ImmersiveAccentBlue}" />
+        <Setter Property="FontSize"
+                Value="12" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Btn"
+                            CornerRadius="7"
+                            Background="{DynamicResource ImmersiveAccentBlueLight}"
+                            BorderBrush="{DynamicResource ImmersiveAccentBlueBorder}"
+                            BorderThickness="1"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background"
+                                    Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                            <Setter Property="Foreground"
+                                    Value="{StaticResource ImmersiveTextPrimary}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background"
+                                    Value="{StaticResource ImmersiveFilterButtonPressedGradientStart}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="RxMakerPrimaryButton"
+           TargetType="Button"
+           BasedOn="{StaticResource RxMakerToolbarButton}">
+        <Setter Property="MinHeight"
+                Value="40" />
+        <Setter Property="Padding"
+                Value="16,6" />
+        <Setter Property="FontSize"
+                Value="13" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource ImmersiveSuccessText}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Btn"
+                            CornerRadius="8"
+                            BorderThickness="1"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Background>
+                            <SolidColorBrush Color="{StaticResource ImmersiveSuccessText_Cl}"
+                                             Opacity="0.42" />
+                        </Border.Background>
+                        <Border.BorderBrush>
+                            <SolidColorBrush Color="{StaticResource ImmersiveSuccessText_Cl}"
+                                             Opacity="0.85" />
+                        </Border.BorderBrush>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource ImmersiveSuccessText_Cl}"
+                                                     Opacity="0.58" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="Btn"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource ImmersiveSuccessText}" />
+                            <Setter Property="Foreground"
+                                    Value="{StaticResource ImmersiveTextPrimary}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource ImmersiveSuccessText_Cl}"
+                                                     Opacity="0.72" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="RxMakerPastelActionButton"
+           TargetType="Button"
+           BasedOn="{StaticResource RxMakerToolbarButton}">
+        <Setter Property="MinHeight"
+                Value="40" />
+        <Setter Property="Padding"
+                Value="14,6" />
+        <Setter Property="FontSize"
+                Value="13" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Btn"
+                            CornerRadius="8"
+                            BorderThickness="1"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True"
+                                          TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Opacity"
+                                    Value="0.9" />
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Opacity"
+                                    Value="0.78" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="RxMakerPastelSaveButton"
+           TargetType="Button"
+           BasedOn="{StaticResource RxMakerPastelActionButton}">
+        <Setter Property="Foreground"
+                Value="{DynamicResource RxMakerPastelSaveForeground}" />
+        <Setter Property="Background"
+                Value="{DynamicResource RxMakerPastelSaveBackground}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource RxMakerPastelSaveBorder}" />
+    </Style>
+
+    <Style x:Key="RxMakerPastelDefaultButton"
+           TargetType="Button"
+           BasedOn="{StaticResource RxMakerPastelActionButton}">
+        <Setter Property="Foreground"
+                Value="{DynamicResource RxMakerPastelDefaultForeground}" />
+        <Setter Property="Background"
+                Value="{DynamicResource RxMakerPastelDefaultBackground}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource RxMakerPastelDefaultBorder}" />
+    </Style>
+
+    <Style x:Key="RxMakerPastelCancelButton"
+           TargetType="Button"
+           BasedOn="{StaticResource RxMakerPastelActionButton}">
+        <Setter Property="Foreground"
+                Value="{DynamicResource RxMakerPastelCancelForeground}" />
+        <Setter Property="Background"
+                Value="{DynamicResource RxMakerPastelCancelBackground}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource RxMakerPastelCancelBorder}" />
+    </Style>
+
+    <Style x:Key="RxMakerCompactColoredButton"
+           TargetType="Button"
+           BasedOn="{StaticResource RxMakerPastelActionButton}">
+        <Setter Property="MinHeight"
+                Value="28" />
+        <Setter Property="Padding"
+                Value="12,4" />
+        <Setter Property="FontSize"
+                Value="11" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="RxMakerYellowButton"
+           TargetType="Button"
+           BasedOn="{StaticResource RxMakerPastelActionButton}">
+        <Setter Property="MinHeight"
+                Value="40" />
+        <Setter Property="Padding"
+                Value="14,6" />
+        <Setter Property="FontSize"
+                Value="11" />
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+        <Setter Property="Background"
+                Value="{DynamicResource ShowRxButtonColor}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource ShowRxButtonForeground}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource ShowRxButtonBorder}" />
+    </Style>
+
+    <Style x:Key="RxMakerSecondaryButton"
+           TargetType="Button"
+           BasedOn="{StaticResource RxMakerToolbarButton}">
+        <Setter Property="MinHeight"
+                Value="40" />
+        <Setter Property="Padding"
+                Value="16,6" />
+        <Setter Property="FontSize"
+                Value="13" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource SemanticErrorColor}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Btn"
+                            CornerRadius="8"
+                            BorderThickness="1"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Background>
+                            <SolidColorBrush Color="{StaticResource SemanticErrorColor_Cl}"
+                                             Opacity="0.42" />
+                        </Border.Background>
+                        <Border.BorderBrush>
+                            <SolidColorBrush Color="{StaticResource SemanticErrorColor_Cl}"
+                                             Opacity="0.85" />
+                        </Border.BorderBrush>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource SemanticErrorColor_Cl}"
+                                                     Opacity="0.58" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="Btn"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource SemanticErrorColor}" />
+                            <Setter Property="Foreground"
+                                    Value="{StaticResource ImmersiveTextPrimary}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource SemanticErrorColor_Cl}"
+                                                     Opacity="0.72" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Order Info — Design Edit panel buttons (light pastel; 3px corners). Not used on DCM canvas toolbar. -->
+    <Style x:Key="OrderInfoDesignEditButton"
+           TargetType="Button">
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="Padding"
+                Value="8,5" />
+        <Setter Property="FontSize"
+                Value="11" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource ImmersiveTextPrimary}" />
+        <Setter Property="Background"
+                Value="{DynamicResource ImmersiveAccentBlueLight}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource ImmersiveAccentBlueBorder}" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Btn"
+                            CornerRadius="3"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background"
+                                    Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background"
+                                    Value="{StaticResource ImmersiveFilterButtonPressedGradientStart}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="OrderInfoDesignEditAccentButton"
+           TargetType="Button"
+           BasedOn="{StaticResource OrderInfoDesignEditButton}">
+        <Setter Property="Foreground"
+                Value="{DynamicResource ImmersiveSuccessText}" />
+        <Setter Property="Background"
+                Value="{DynamicResource VitaButtonBackgroundMint}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource VitaButtonBackgroundGrayGreenAlt}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Btn"
+                            CornerRadius="3"
+                            BorderThickness="1"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Background>
+                            <SolidColorBrush Color="{StaticResource VitaButtonBackgroundMint_Cl}"
+                                             Opacity="0.92" />
+                        </Border.Background>
+                        <Border.BorderBrush>
+                            <SolidColorBrush Color="{StaticResource VitaButtonBackgroundGrayGreenAlt_Cl}"
+                                             Opacity="0.85" />
+                        </Border.BorderBrush>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource VitaButtonBackgroundMintAlt_Cl}"
+                                                     Opacity="0.95" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource VitaButtonBackgroundGrayGreenAlt_Cl}"
+                                                     Opacity="0.75" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="OrderInfoDesignEditToolButton"
+           TargetType="Button">
+        <Setter Property="Width"
+                Value="36" />
+        <Setter Property="Height"
+                Value="36" />
+        <Setter Property="Padding"
+                Value="4" />
+        <Setter Property="Margin"
+                Value="0,0,4,0" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="Background"
+                Value="{DynamicResource ImmersiveAccentBlueLight}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource ImmersiveAccentBlueBorder}" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Btn"
+                            CornerRadius="3"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background"
+                                    Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="Btn"
+                                    Property="Background"
+                                    Value="{StaticResource ImmersiveFilterButtonPressedGradientStart}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter Property="Opacity"
+                                    Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="ImmersiveFilterButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource TransparentBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource ImmersiveFilterButtonForeground}" />
@@ -115,7 +655,16 @@
                             </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource FilterButtonPressedBackground}" />
+                            <Setter TargetName="border" Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="{StaticResource ImmersiveFilterButtonPressedGradientStart_Cl}" Offset="0" />
+                                        <GradientStop Color="{StaticResource ImmersiveFilterButtonPressedGradientEnd_Cl}" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ImmersiveFilterButtonHoverBorder}" />
+                            <Setter TargetName="Glow" Property="Opacity" Value="0.9" />
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
                                     <ScaleTransform ScaleX="0.98" ScaleY="0.98" />
@@ -123,6 +672,85 @@
                             </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ImmersiveSliderRepeatButton"
+           TargetType="RepeatButton">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="3"
+                            Height="6"
+                            VerticalAlignment="Center" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ImmersiveSliderThumb"
+           TargetType="Thumb">
+        <Setter Property="Width" Value="18" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Ellipse x:Name="Knob"
+                             Fill="{StaticResource ImmersiveSliderThumbFillBrush}"
+                             Stroke="{StaticResource ImmersiveSliderThumbBorderBrush}"
+                             StrokeThickness="2" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Knob"
+                                    Property="Fill"
+                                    Value="{StaticResource ImmersiveSliderThumbHoverBrush}" />
+                            <Setter TargetName="Knob"
+                                    Property="Stroke"
+                                    Value="{StaticResource ImmersiveFocusRing}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Knob"
+                                    Property="Fill"
+                                    Value="{StaticResource ImmersiveAccentBlue}" />
+                            <Setter TargetName="Knob"
+                                    Property="Stroke"
+                                    Value="{StaticResource ImmersiveFocusRing}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ImmersiveConfidenceSlider"
+           TargetType="Slider">
+        <Setter Property="Height" Value="28" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid VerticalAlignment="Center">
+                        <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource ImmersiveSliderRepeatButton}"
+                                              Background="{StaticResource ImmersiveSliderTrackFillBrush}" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource ImmersiveSliderRepeatButton}"
+                                              Background="{StaticResource ImmersiveSliderTrackBrush}" />
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource ImmersiveSliderThumb}" />
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -2560,6 +3188,157 @@
     </Style>
     
 
+    <Style x:Key="IosToggleSwitch"
+           TargetType="ToggleButton">
+        <Setter Property="Width"
+                Value="52" />
+        <Setter Property="Height"
+                Value="28" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="Background"
+                Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="FocusVisualStyle"
+                Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Track"
+                            Width="52"
+                            Height="28"
+                            Padding="2"
+                            CornerRadius="6"
+                            Background="{DynamicResource IosSwitchTrackOffBackground}"
+                            BorderThickness="0"
+                            SnapsToDevicePixels="True">
+                        <Border x:Name="Thumb"
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                CornerRadius="6"
+                                Background="{DynamicResource IosSwitchThumbBackground}"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <TextBlock x:Name="OffIcon"
+                                           Text="✕"
+                                           FontSize="13"
+                                           FontWeight="Normal"
+                                           Foreground="{DynamicResource IosSwitchIconOffForeground}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Margin="0,-1,0,0" />
+                                <TextBlock x:Name="OnIcon"
+                                           Text="✓"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource IosSwitchIconOnForeground}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Margin="0,-1,0,0"
+                                           Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked"
+                                 Value="True">
+                            <Setter TargetName="Track"
+                                    Property="Background"
+                                    Value="{StaticResource IosSwitchTrackOnBackground}" />
+                            <Setter TargetName="Thumb"
+                                    Property="HorizontalAlignment"
+                                    Value="Right" />
+                            <Setter TargetName="OffIcon"
+                                    Property="Visibility"
+                                    Value="Collapsed" />
+                            <Setter TargetName="OnIcon"
+                                    Property="Visibility"
+                                    Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter TargetName="Track"
+                                    Property="Opacity"
+                                    Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="IosToggleSwitchLqHq"
+           TargetType="ToggleButton"
+           BasedOn="{StaticResource IosToggleSwitch}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Track"
+                            Width="52"
+                            Height="28"
+                            Padding="2"
+                            CornerRadius="6"
+                            Background="{DynamicResource IosSwitchTrackOffBackground}"
+                            BorderThickness="0"
+                            SnapsToDevicePixels="True">
+                        <Border x:Name="Thumb"
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                CornerRadius="6"
+                                Background="{DynamicResource IosSwitchThumbBackground}"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <TextBlock x:Name="OffIcon"
+                                           Text="LQ"
+                                           FontSize="9"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource IosSwitchIconOffForeground}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                                <TextBlock x:Name="OnIcon"
+                                           Text="HQ"
+                                           FontSize="9"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource IosSwitchIconOnForeground}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked"
+                                 Value="True">
+                            <Setter TargetName="Track"
+                                    Property="Background"
+                                    Value="{StaticResource IosSwitchTrackOnBackground}" />
+                            <Setter TargetName="Thumb"
+                                    Property="HorizontalAlignment"
+                                    Value="Right" />
+                            <Setter TargetName="OffIcon"
+                                    Property="Visibility"
+                                    Value="Collapsed" />
+                            <Setter TargetName="OnIcon"
+                                    Property="Visibility"
+                                    Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter TargetName="Track"
+                                    Property="Opacity"
+                                    Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="HealthReportListView"
            TargetType="ListView">
         <Setter Property="SnapsToDevicePixels"
@@ -2644,6 +3423,58 @@
                 </Trigger.ExitActions>
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ThreeShapeOrderSearchProgressBar"
+           TargetType="ProgressBar">
+        <Setter Property="Height"
+                Value="6" />
+        <Setter Property="Visibility"
+                Value="Collapsed" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="Background"
+                Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource SchemeColor_0CE10C}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Grid MinHeight="{TemplateBinding Height}">
+                        <Border CornerRadius="3"
+                                Background="{DynamicResource BusyOverlayTrackBackground}"
+                                Opacity="0.65"
+                                BorderBrush="{DynamicResource ImmersiveFilterButtonGlow}"
+                                BorderThickness="1" />
+                        <Border x:Name="PART_Track"
+                                Background="{DynamicResource TransparentBrush}"
+                                CornerRadius="3" />
+                        <Border x:Name="PART_Indicator"
+                                CornerRadius="2"
+                                HorizontalAlignment="Left"
+                                Margin="1">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0.5"
+                                                     EndPoint="1,0.5">
+                                    <GradientStop Color="#FF34D9F5"
+                                                  Offset="0" />
+                                    <GradientStop Color="#FF22C55E"
+                                                  Offset="0.55" />
+                                    <GradientStop Color="#FF0CE10C"
+                                                  Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="0"
+                                                  BlurRadius="12"
+                                                  Color="#FF0CE10C"
+                                                  Opacity="0.8" />
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

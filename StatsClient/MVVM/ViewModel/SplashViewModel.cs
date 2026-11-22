@@ -64,8 +64,13 @@ public class SplashViewModel : ObservableObject
     {
         progressAnimationTcs = new TaskCompletionSource<bool>();
 
+        progressAnimationTarget = Math.Clamp(targetValue, 0, 100);
+        if (progressAnimationTarget < LoadingProgress)
+        {
+            progressAnimationTarget = LoadingProgress;
+        }
+
         progressAnimationStart = LoadingProgress;
-        progressAnimationTarget = targetValue;
         progressAnimationDuration = durationMs;
         progressAnimationStartTime = DateTime.Now;
 
@@ -84,6 +89,18 @@ public class SplashViewModel : ObservableObject
         }
 
         return progressAnimationTcs.Task;
+    }
+
+    internal Task ReportProgressAsync(double targetPercent, int durationMs = 450)
+    {
+        if (Application.Current.Dispatcher.CheckAccess())
+        {
+            return AnimateProgress(targetPercent, durationMs);
+        }
+
+        return Application.Current.Dispatcher.InvokeAsync(
+            () => AnimateProgress(targetPercent, durationMs),
+            DispatcherPriority.Send).Task.Unwrap();
     }
 
     private void ProgressAnimationTimer_Tick(object? sender, EventArgs e)
@@ -250,15 +267,15 @@ public class SplashViewModel : ObservableObject
     internal async void StartLoading()
     {
         StartupLog.WriteStep("Splash: loading started");
-        await AnimateProgress(20);
+        await ReportProgressAsync(8, 600);
         StartupLog.WriteStep("Splash: loading SQL credentials");
         await Task.Run(DatabaseConnection.SetCredentials);
 
-        await AnimateProgress(50);
+        await ReportProgressAsync(18, 600);
         await SetSplashStatusAsync("Checking local configs..");
         await Task.Run(CreatingLocalConfigFiles);
 
-        await AnimateProgress(80);
+        await ReportProgressAsync(28, 600);
         StartupLog.WriteStep("Splash: starting server connection check");
         timerCheckServerConnectionFirstTime.Start();
     }
@@ -286,7 +303,7 @@ public class SplashViewModel : ObservableObject
                 command.ExecuteScalar();
             }
             FinishedWithServerConnectionCheck = true;
-            await AnimateProgress(173, 800);
+            await ReportProgressAsync(38, 700);
             await SetSplashStatusAsync("Successfully connected to server!");
             StartupLog.WriteStep("Splash: server connection OK");
         }
@@ -314,7 +331,7 @@ public class SplashViewModel : ObservableObject
                         command.ExecuteScalar();
                     }
                     FinishedWithServerConnectionCheck = true;
-                    await AnimateProgress(173, 800);
+                    await ReportProgressAsync(38, 700);
                     await SetSplashStatusAsync("Successfully connected to server!");
                     StartupLog.WriteStep("Splash: server connection OK (fallback instance)");
                 }
@@ -366,12 +383,7 @@ public class SplashViewModel : ObservableObject
                                               double DismissAfterSeconds = 300,
                                               Window? Owner = null)
     {
-        SMessageBox sMessageBox = new(Title, Message, Buttons, MessageBoxIcon, DismissAfterSeconds);
-        if (Owner is null)
-            sMessageBox.Owner = MainWindow.Instance;
-        else
-            sMessageBox.Owner = Owner;
-
+        SMessageBox sMessageBox = new(Title, Message, Buttons, MessageBoxIcon, DismissAfterSeconds, Owner ?? SplashWindow.Instance);
         sMessageBox.ShowDialog();
 
         if (MainViewModel.Instance is not null)

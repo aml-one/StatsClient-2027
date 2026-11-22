@@ -1,5 +1,6 @@
 using StatsClient.MVVM.Core;
 using System.Windows;
+using System.Windows.Input;
 
 namespace StatsClient.MVVM.View;
 
@@ -10,6 +11,14 @@ public partial class ArchiveImportChoiceWindow : Window
     public ArchiveImportChoiceWindow()
     {
         InitializeComponent();
+
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape)
+            {
+                CancelAndClose();
+            }
+        };
     }
 
     public static ArchiveImportChoice ShowDialog(Window owner)
@@ -35,8 +44,40 @@ public partial class ArchiveImportChoiceWindow : Window
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
+        CancelAndClose();
+    }
+
+    private void CancelAndClose()
+    {
         Choice = ArchiveImportChoice.Cancel;
         DialogResult = false;
         Close();
+    }
+
+    private void TitleBar_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is FrameworkElement { Name: "CloseButton" })
+        {
+            return;
+        }
+
+        if (e.ChangedButton != MouseButton.Left)
+        {
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
+        }
+    }
+
+    private void CloseButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        CancelAndClose();
     }
 }

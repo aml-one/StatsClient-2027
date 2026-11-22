@@ -1,0 +1,270 @@
+<Window x:Class="StatsClient.MVVM.View.PrescriptionDuplicateReviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Possible duplicate prescription"
+        Height="660"
+        Width="1100"
+        MinHeight="660"
+        MinWidth="1100"
+        MaxHeight="660"
+        MaxWidth="1100"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI"
+        Background="{DynamicResource TransparentBrush}">
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="0"
+                      CaptionHeight="0" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <Style x:Key="DuplicateReviewButtonBase"
+               TargetType="Button">
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="Padding"
+                    Value="14,0" />
+            <Setter Property="Height"
+                    Value="34" />
+            <Setter Property="MinWidth"
+                    Value="130" />
+            <Setter Property="FontSize"
+                    Value="13" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="border"
+                                        Property="Opacity"
+                                        Value="0.9" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="border"
+                                        Property="Opacity"
+                                        Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DuplicateReviewDiscardButton"
+               TargetType="Button"
+               BasedOn="{StaticResource DuplicateReviewButtonBase}">
+            <Setter Property="Background"
+                    Value="{DynamicResource DialogSurfaceBackground}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource DialogTitleForeground}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource DialogBorder}" />
+        </Style>
+
+        <Style x:Key="DuplicateReviewSaveButton"
+               TargetType="Button"
+               BasedOn="{StaticResource DuplicateReviewButtonBase}">
+            <Setter Property="Background"
+                    Value="{DynamicResource DialogAccentBlue}" />
+            <Setter Property="Foreground"
+                    Value="White" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource DialogAccentBlueDark}" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="DuplicateReviewCloseButton"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Border"
+                                        Property="Background"
+                                        Value="{StaticResource SchemeColor_DE766B}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="8"
+            BorderThickness="0.5"
+            BorderBrush="{DynamicResource BlackColor}"
+            Background="{DynamicResource PrimaryDarkColor}"
+            ClipToBounds="True">
+        <Border CornerRadius="8"
+                Margin="10"
+                BorderThickness="0.5"
+                BorderBrush="{DynamicResource BlackColor}"
+                Background="{DynamicResource PrimaryColor}"
+                ClipToBounds="True">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="36" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0"
+                      PreviewMouseDown="TitleBar_PreviewMouseDown">
+                    <TextBlock Text="Possible duplicate prescription"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource DialogTitleForeground}" />
+                    <Button Content="╳"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Width="36"
+                            Height="28"
+                            FontSize="12"
+                            Foreground="{DynamicResource DialogTitleForeground}"
+                            Style="{StaticResource DuplicateReviewCloseButton}"
+                            Click="CloseButton_OnClick" />
+                </Grid>
+
+                <Grid Grid.Row="1"
+                      Margin="0,6,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Name="SavedHeaderTextBlock"
+                                   Text="Saved"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource DialogTitleForeground}"
+                                   Margin="0,0,0,4" />
+                        <Border Grid.Row="1"
+                                Background="{DynamicResource ImageViewportBackground}"
+                                BorderBrush="#22C55E"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                ClipToBounds="True">
+                            <ScrollViewer x:Name="SavedScrollViewer"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          Cursor="Hand"
+                                          PreviewMouseWheel="ImageScrollViewer_OnPreviewMouseWheel"
+                                          PreviewMouseDown="ImageScrollViewer_OnPreviewMouseDown"
+                                          PreviewMouseMove="ImageScrollViewer_OnPreviewMouseMove"
+                                          PreviewMouseUp="ImageScrollViewer_OnPreviewMouseUp">
+                                <Grid x:Name="SavedHostGrid"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center">
+                                    <Grid x:Name="SavedTransformGrid"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center">
+                                        <Image x:Name="SavedImage"
+                                               Stretch="Fill"
+                                               RenderOptions.BitmapScalingMode="HighQuality" />
+                                    </Grid>
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Incoming (not saved)"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource DialogTitleForeground}"
+                                   Margin="0,0,0,4" />
+                        <Border Grid.Row="1"
+                                Background="{DynamicResource ImageViewportBackground}"
+                                BorderBrush="#EF4444"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                ClipToBounds="True">
+                            <ScrollViewer x:Name="IncomingScrollViewer"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          Cursor="Hand"
+                                          PreviewMouseWheel="ImageScrollViewer_OnPreviewMouseWheel"
+                                          PreviewMouseDown="ImageScrollViewer_OnPreviewMouseDown"
+                                          PreviewMouseMove="ImageScrollViewer_OnPreviewMouseMove"
+                                          PreviewMouseUp="ImageScrollViewer_OnPreviewMouseUp">
+                                <Grid x:Name="IncomingHostGrid"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center">
+                                    <Grid x:Name="IncomingTransformGrid"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center">
+                                        <Image x:Name="IncomingImage"
+                                               Stretch="Fill"
+                                               RenderOptions.BitmapScalingMode="HighQuality" />
+                                    </Grid>
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <Grid Grid.Row="2">
+                    <TextBlock Text="Scroll wheel zooms both · middle-drag pans both"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource DialogMutedForeground}" />
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+                        <Button Content="Same — discard"
+                                Margin="0,0,8,0"
+                                Style="{StaticResource DuplicateReviewDiscardButton}"
+                                Click="SameDiscardButton_OnClick" />
+                        <Button Content="Different — save"
+                                IsDefault="True"
+                                Style="{StaticResource DuplicateReviewSaveButton}"
+                                Click="DifferentSaveButton_OnClick" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Border>
+</Window>

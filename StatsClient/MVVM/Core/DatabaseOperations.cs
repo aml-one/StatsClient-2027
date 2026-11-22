@@ -149,16 +149,47 @@ public partial class DatabaseOperations
     }
 
 
+    public static async Task<(List<InconsistencyModel> Inconsistent, List<InconsistencyModel> Matched)> GetPrescriptionPanOrderListsAsync()
+    {
+        List<InconsistencyModel> pairs = await LoadPrescriptionPanOrderPairsAsync();
+        ApplyTriosOrderFallback(pairs);
+        ApplyLookupPanNumbers(pairs);
+        await ApplyOrderPatientNamesAsync(pairs);
+
+        var inconsistent = pairs
+            .Where(x => string.IsNullOrWhiteSpace(x.OrderID) || string.IsNullOrWhiteSpace(x.PanNumber))
+            .ToList();
+        var matched = pairs
+            .Where(x => !string.IsNullOrWhiteSpace(x.OrderID) && !string.IsNullOrWhiteSpace(x.PanNumber))
+            .ToList();
+
+        return (inconsistent, matched);
+    }
+
     public static async Task<List<InconsistencyModel>> GetPrescriptionInconsistencys()
+    {
+        var (inconsistent, _) = await GetPrescriptionPanOrderListsAsync();
+        return inconsistent;
+    }
+
+    public static async Task<List<InconsistencyModel>> GetPrescriptionWithNoInconsistencys()
+    {
+        var (_, matched) = await GetPrescriptionPanOrderListsAsync();
+        return matched;
+    }
+
+    private static async Task<List<InconsistencyModel>> LoadPrescriptionPanOrderPairsAsync()
     {
         List<InconsistencyModel> list = [];
         try
         {
             string connectionString = await Task.Run(ConnectionStrToStatsDatabase);
-            string query = $@"SELECT OrderID, Prescriptions.PanNumber 
+            const string query = @"SELECT DigiCases.OrderID,
+                                          Prescriptions.PanNumber,
+                                          DigiCases.PanNumber AS DigiPanNumber
                               FROM dbo.DigitalCasesToday DigiCases 
                               FULL OUTER JOIN PrescriptionNumbers Prescriptions ON Prescriptions.PanNumber = DigiCases.PanNumber
-                              ORDER BY PanNumber ASC, OrderID ASC";
+                              ORDER BY DigiCases.PanNumber ASC, Prescriptions.PanNumber ASC, DigiCases.OrderID ASC";
 
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(query, connection);
@@ -167,39 +198,77 @@ public partial class DatabaseOperations
             using SqlDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                string? orderID = reader["OrderID"].ToString();
-                string? panNumber = reader["PanNumber"].ToString();
-
-                orderID ??= "";
-                panNumber ??= "";
-
-                if (orderID == "" || panNumber == "")
-                    list.Add(new InconsistencyModel
-                    {
-                        OrderID = orderID,
-                        PanNumber = panNumber,
-                    });
+                list.Add(new InconsistencyModel
+                {
+                    OrderID = reader["OrderID"]?.ToString() ?? "",
+                    PanNumber = reader["PanNumber"]?.ToString() ?? "",
+                    DigiPanNumber = reader["DigiPanNumber"]?.ToString() ?? "",
+                });
             }
         }
         catch (Exception ex)
         {
             Debug.WriteLine("[" + ex.LineNumber() + "] (DataBaseOperations)" + ex.Message);
-            return list;
         }
 
         return list;
     }
 
-    public static async Task<List<InconsistencyModel>> GetPrescriptionWithNoInconsistencys()
+    private static void ApplyLookupPanNumbers(List<InconsistencyModel> pairs)
     {
-        List<InconsistencyModel> list = [];
+        foreach (InconsistencyModel item in pairs)
+        {
+            if (!string.IsNullOrWhiteSpace(item.DigiPanNumber))
+                continue;
+
+            if (string.IsNullOrWhiteSpace(item.OrderID))
+                continue;
+
+            string firstSegment = item.OrderID.Split('-', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault() ?? "";
+            if (int.TryParse(firstSegment, out _))
+                item.DigiPanNumber = firstSegment;
+        }
+    }
+
+    private static async Task ApplyOrderPatientNamesAsync(List<InconsistencyModel> pairs)
+    {
+        var orderIds = pairs
+            .Where(x => !string.IsNullOrWhiteSpace(x.OrderID))
+            .Select(x => x.OrderID!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (orderIds.Count == 0)
+            return;
+
+        Dictionary<string, (string First, string Last)> names = await QueryOrderPatientNamesAsync(orderIds);
+        foreach (InconsistencyModel item in pairs)
+        {
+            if (string.IsNullOrWhiteSpace(item.OrderID))
+                continue;
+
+            if (!names.TryGetValue(item.OrderID, out var patient))
+                continue;
+
+            item.Patient_FirstName = patient.First;
+            item.Patient_LastName = patient.Last;
+        }
+    }
+
+    private static async Task<Dictionary<string, (string First, string Last)>> QueryOrderPatientNamesAsync(IReadOnlyCollection<string> orderIds)
+    {
+        var result = new Dictionary<string, (string First, string Last)>(StringComparer.OrdinalIgnoreCase);
+        if (orderIds.Count == 0)
+            return result;
+
         try
         {
-            string connectionString = await Task.Run(ConnectionStrToStatsDatabase);
-            string query = $@"SELECT OrderID, Prescriptions.PanNumber 
-                              FROM dbo.DigitalCasesToday DigiCases 
-                              FULL OUTER JOIN PrescriptionNumbers Prescriptions ON Prescriptions.PanNumber = DigiCases.PanNumber
-                              ORDER BY PanNumber ASC, OrderID ASC";
+            string connectionString = await Task.Run(ConnectionStrFor3Shape);
+            string inClause = string.Join(",", orderIds.Select(id => $"'{id.Replace("'", "''")}'"));
+            string query = $@"
+SELECT o.IntOrderID, o.Patient_FirstName, o.Patient_LastName
+FROM Orders o
+WHERE o.IntOrderID IN ({inClause})";
 
             using SqlConnection connection = new(connectionString);
             SqlCommand command = new(query, connection);
@@ -208,27 +277,127 @@ public partial class DatabaseOperations
             using SqlDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                string? orderID = reader["OrderID"].ToString();
-                string? panNumber = reader["PanNumber"].ToString();
+                string orderId = reader["IntOrderID"]?.ToString()?.Trim() ?? "";
+                if (orderId.Length == 0)
+                    continue;
 
-                orderID ??= "";
-                panNumber ??= "";
-
-                if (orderID != "" && panNumber != "")
-                    list.Add(new InconsistencyModel
-                    {
-                        OrderID = orderID,
-                        PanNumber = panNumber,
-                    });
+                result[orderId] = (
+                    reader["Patient_FirstName"]?.ToString()?.Trim() ?? "",
+                    reader["Patient_LastName"]?.ToString()?.Trim() ?? "");
             }
         }
         catch (Exception ex)
         {
             Debug.WriteLine("[" + ex.LineNumber() + "] (DataBaseOperations)" + ex.Message);
-            return list;
         }
 
-        return list;
+        return result;
+    }
+
+    /// <summary>
+    /// TRIOS cases can be created yesterday (or today but missing from DigitalCasesToday).
+    /// Before flagging "Missing 3Shape Order", match 3Shape TRIOS orders by pan number.
+    /// </summary>
+    private static void ApplyTriosOrderFallback(List<InconsistencyModel> pairs)
+    {
+        MainViewModel? vm = MainViewModel.Instance;
+        if (vm is null || string.IsNullOrWhiteSpace(vm.DtYesterday) || string.IsNullOrWhiteSpace(vm.DtToday))
+            return;
+
+        // Prefer yesterday TRIOS (common lab workflow), then today TRIOS for gaps in DigitalCasesToday.
+        ApplyTriosOrderFallbackForDay(
+            pairs,
+            vm.DtYesterday + vm.RestDayStart,
+            vm.DtYesterday + vm.RestDayEnd);
+
+        ApplyTriosOrderFallbackForDay(
+            pairs,
+            vm.DtToday + vm.RestDayStart,
+            vm.DtToday + vm.RestDayEnd);
+    }
+
+    private static void ApplyTriosOrderFallbackForDay(List<InconsistencyModel> pairs, string from, string to)
+    {
+        var missingPans = pairs
+            .Where(x => !string.IsNullOrWhiteSpace(x.PanNumber) && string.IsNullOrWhiteSpace(x.OrderID))
+            .Select(x => x.PanNumber!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (missingPans.Count == 0)
+            return;
+
+        Dictionary<string, string> triosByPan = QueryTriosOrdersByPan(missingPans, from, to);
+        if (triosByPan.Count == 0)
+            return;
+
+        foreach (InconsistencyModel item in pairs)
+        {
+            if (!string.IsNullOrWhiteSpace(item.OrderID) || string.IsNullOrWhiteSpace(item.PanNumber))
+                continue;
+
+            if (triosByPan.TryGetValue(item.PanNumber, out string? orderId))
+                item.OrderID = orderId;
+        }
+    }
+
+    private static Dictionary<string, string> QueryTriosOrdersByPan(
+        IReadOnlyCollection<string> panNumbers,
+        string from,
+        string to)
+    {
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (panNumbers.Count == 0)
+            return result;
+
+        var panSet = new HashSet<string>(panNumbers, StringComparer.OrdinalIgnoreCase);
+
+        // TRIOS appears in IntOrderID (e.g. ...-TRIOS or ...-TRIOS-REDO), not always as the final segment.
+        const string query = @"
+SELECT o.IntOrderID
+FROM Orders o
+INNER JOIN OrdersInfo i ON i.OrderID = o.IntOrderID
+WHERE o.IntOrderID LIKE '%-TRIOS%'
+  AND i.MaxCreateDate > @fromDate
+  AND i.MaxCreateDate < @toDate";
+
+        try
+        {
+            using SqlConnection connection = new(ConnectionStrFor3Shape());
+            using SqlCommand command = new(query, connection);
+            command.Parameters.AddWithValue("@fromDate", from);
+            command.Parameters.AddWithValue("@toDate", to);
+            connection.Open();
+
+            using SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                string orderId = reader["IntOrderID"]?.ToString() ?? "";
+                if (string.IsNullOrWhiteSpace(orderId))
+                    continue;
+
+                string pan = ParsePanNumberFromOrderId(orderId);
+                if (string.IsNullOrWhiteSpace(pan) || !panSet.Contains(pan))
+                    continue;
+
+                result.TryAdd(pan, orderId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("[" + ex.LineNumber() + "] (DataBaseOperations)" + ex.Message);
+        }
+
+        return result;
+    }
+
+    private static string ParsePanNumberFromOrderId(string orderId)
+    {
+        string[] parts = orderId.Split('-');
+        if (parts.Length > 0 && int.TryParse(parts[0], out _))
+            return parts[0];
+
+        return "";
     }
 
     public static async Task<List<AvailablePanCountModel>> GetBackAllAvailablePanNumberListCount(double NumberFontSize, double TitleFontSize, double NamesFontSize)
@@ -1518,6 +1687,7 @@ public partial class DatabaseOperations
         {
             string designerID = designer.DesignerID!;
             double totalUnits = 0;
+            double totalOrders = 0;
 
             try
             {
@@ -1533,6 +1703,8 @@ public partial class DatabaseOperations
                 using SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
+                    totalOrders++;
+
                     double crowns = 0;
                     double abutments = 0;
 
@@ -1553,6 +1725,7 @@ public partial class DatabaseOperations
             {
                 DesignerID = designerID,
                 TotalUnits = totalUnits,
+                TotalOrders = totalOrders,
             });
 
         }
@@ -1645,6 +1818,42 @@ public partial class DatabaseOperations
 
             return list;
         });
+    }
+
+    public static async Task<bool> InsertAccountInfoAsync(AccountInfoModel model)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                string credentialsJson = JsonConvert.SerializeObject(model.Credentials ?? new AccountCredential());
+                string credentialsBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentialsJson));
+
+                const string query = """
+                    INSERT INTO dbo.AccountInfos
+                        (FriendlyName, Category, SubCategory, Website, Credentials, ApplicationName, ApplicationPath)
+                    VALUES
+                        (@FriendlyName, @Category, @SubCategory, @Website, @Credentials, @ApplicationName, @ApplicationPath)
+                    """;
+
+                using SqlConnection connection = new(ConnectionStrToStatsDatabase());
+                using SqlCommand command = new(query, connection);
+                command.Parameters.AddWithValue("@FriendlyName", model.FriendlyName ?? string.Empty);
+                command.Parameters.AddWithValue("@Category", model.Category ?? string.Empty);
+                command.Parameters.AddWithValue("@SubCategory", model.SubCategory ?? string.Empty);
+                command.Parameters.AddWithValue("@Website", model.Website ?? string.Empty);
+                command.Parameters.AddWithValue("@Credentials", credentialsBase64);
+                command.Parameters.AddWithValue("@ApplicationName", model.ApplicationName ?? string.Empty);
+                command.Parameters.AddWithValue("@ApplicationPath", model.ApplicationPath ?? string.Empty);
+                connection.Open();
+                command.ExecuteNonQuery();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }).ConfigureAwait(false);
     }
 
 
@@ -1934,6 +2143,64 @@ WHERE c.OrderID IS NOT NULL AND LTRIM(RTRIM(c.OrderID)) <> ''";
         }
 
         return list;
+    }
+
+    public static async Task<List<string>> SearchThreeShapeCustomersAsync(string searchTerm, int maxResults = 50)
+    {
+        List<string> list = [];
+
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return list;
+        }
+
+        try
+        {
+            string connectionString = await Task.Run(ConnectionStrToStatsDatabase);
+            string escaped = searchTerm.Trim().Replace("'", "''");
+
+            string query = $@"
+                SELECT TOP {maxResults} CustomerName
+                FROM dbo.ThreeShapeCustomers
+                WHERE CustomerName LIKE '%{escaped}%'
+                ORDER BY
+                    CASE
+                        WHEN CustomerName LIKE '{escaped}%' THEN 0
+                        WHEN CustomerName LIKE '% {escaped}%' THEN 1
+                        ELSE 2
+                    END,
+                    CustomerName";
+
+            using SqlConnection connection = new(connectionString);
+            SqlCommand command = new(query, connection);
+            connection.Open();
+
+            using SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                string? value = reader[0].ToString();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    list.Add(value);
+                }
+            }
+        }
+        catch (Exception)
+        {
+        }
+
+        return list;
+    }
+
+    public static async Task<bool> SaveCustomerPreference(string originalCustomer, string suggestedCustomer)
+    {
+        if (string.IsNullOrWhiteSpace(originalCustomer) || string.IsNullOrWhiteSpace(suggestedCustomer))
+        {
+            return false;
+        }
+
+        await DeleteCustomer(originalCustomer);
+        return await AddNewCustomerSuggestion(originalCustomer, suggestedCustomer);
     }
 
 
@@ -2784,12 +3051,19 @@ WHERE c.OrderID IS NOT NULL AND LTRIM(RTRIM(c.OrderID)) <> ''";
             using SqlDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
+                var level = reader["Level"].ToString();
                 list.Add(new OrderIssueModel()
                 {
-                    Level = reader["Level"].ToString(),
+                    Level = level,
                     OrderID = reader["OrderID"].ToString(),
                     IssueDescription = reader["SkipReason"].ToString()!.Replace("&apos;", "'"),
                     Color = reader["ForeColor"].ToString(),
+                    IconSource = level switch
+                    {
+                        "1" => @"\Images\IssuesIcons\warning.png",
+                        "2" => @"\Images\IssuesIcons\error.png",
+                        _ => @"\Images\IssuesIcons\info.png",
+                    },
                 });
             }
         }
@@ -3730,6 +4004,52 @@ WHERE c.OrderID IS NOT NULL AND LTRIM(RTRIM(c.OrderID)) <> ''";
         else
             return false;
     }
+
+    public static string FormatFriendlyListDateTime(DateTime dt, string? dtThisMonday)
+    {
+        DateTime weekBoundary = default;
+        if (DateTime.TryParse(dtThisMonday, out DateTime parsedMonday))
+            weekBoundary = parsedMonday.AddDays(-1);
+
+        string dtString = dt.ToString();
+        if (IsItToday(dtString))
+            return dt.ToString("h:mm tt");
+        if (weekBoundary != default && dt > weekBoundary)
+            return dt.ToString("dddd - h:mm tt");
+        if (IsItThisYear(dtString))
+            return dt.ToString("MM/dd - h:mm tt");
+
+        return dt.ToString("MM/dd/yyyy - h:mm tt");
+    }
+
+    public static string? ExtractDesignedDateFromPatientRefNo(string? patientRefNo)
+    {
+        if (string.IsNullOrWhiteSpace(patientRefNo))
+            return null;
+
+        string[] parts = patientRefNo.Split('-', 2);
+        return parts.Length == 2 ? parts[1].Trim() : null;
+    }
+
+    public static string ResolveDesignedDateTimeForList(
+        IReadOnlyList<DesignerHistoryModel> designerHistory,
+        string? patientRefNo,
+        string dtThisMonday)
+    {
+        if (designerHistory.Count > 0 && designerHistory[0].DesignedAt is DateTime designedAt)
+            return FormatFriendlyListDateTime(designedAt, dtThisMonday);
+
+        return ExtractDesignedDateFromPatientRefNo(patientRefNo) ?? string.Empty;
+    }
+
+    public static bool ShouldShowDesignedDateTimeInDesignerColumn(
+        string? extOrderId,
+        string? designedDateTime,
+        bool showCheckedOutDesignerFromStats) =>
+        !showCheckedOutDesignerFromStats
+        && !string.IsNullOrWhiteSpace(extOrderId)
+        && !string.IsNullOrWhiteSpace(designedDateTime)
+        && extOrderId.IndexOf("Changed by", StringComparison.OrdinalIgnoreCase) < 0;
 
     public static string RemoveChineseCharacters(string Text)
     {

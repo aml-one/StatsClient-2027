@@ -38,104 +38,93 @@ public class MainMenuViewModel : ObservableObject
         {
             menuItems = value;
             RaisePropertyChanged(nameof(MenuItems));
+            RaisePropertyChanged(nameof(MenuTileItems));
         }
     }
-    
-    private MainMenuItemModel? selectedMenuItem;
-    public MainMenuItemModel? SelectedMenuItem
+
+    public IEnumerable<MainMenuItemModel> MenuTileItems =>
+        MenuItems.Where(item => item.Visible == Visibility.Visible);
+
+    public MainMenuItemModel SettingsMenuItem { get; } = new()
     {
-        get => selectedMenuItem;
-        set
-        {
-            selectedMenuItem = value;
-            RaisePropertyChanged(nameof(SelectedMenuItem));
-            if (value != null)
-            { 
-                RunCommand();
-            }
-        }
-    }
+        Icon = "/Images/HomeButtons/settings_dark.png",
+        Header = "Settings",
+        Command = "openSettings"
+    };
 
     public RelayCommand CloseMainMenuCommand { get; set; }
-    public RelayCommand RunCommandCommand { get; set; }
-
-    
+    public RelayCommand RunMenuItemCommand { get; set; }
 
     public MainMenuViewModel()
     {
         StaticInstance = this;
         Instance = this;
 
-        CloseMainMenuCommand = new RelayCommand(o => CloseMainMenu());
-        RunCommandCommand = new RelayCommand(o => RunCommand());
+        CloseMainMenuCommand = new RelayCommand(_ => CloseMainMenu());
+        RunMenuItemCommand = new RelayCommand(RunMenuItem);
 
-        _ = bool.TryParse(ReadLocalSetting("ModuleSmartOrderNames"), out bool moduleSmartOrderNames);
-        
-        if (moduleSmartOrderNames)
-            ShowSmartRenameMenuItem();
-        else
-            HideSmartRenameMenuItem();
+        RefreshMenuItems();
     }
 
-    private void BuildMenu(string hideMenuItems = "", bool hideItems = true)
+    public void RefreshMenuItems()
     {
-        MenuItems.Clear();
+        _ = bool.TryParse(ReadLocalSetting("ModuleSmartOrderNames"), out bool moduleSmartOrderNames);
+        _ = bool.TryParse(ReadLocalSetting("ModuleAccountInfos"), out bool moduleAccountInfos);
+
         MenuItems =
         [
-            new MainMenuItemModel { Icon = "/Images/ToolBar/update.png", Header = "Look for update", Command = "lookForUpdate", Visible = GetVisibility(hideMenuItems, hideItems, "lookForUpdate") },
-            new MainMenuItemModel { Icon = "/Images/ToolBar/folder.png", Header = "Open Manufacturing folder", Command = "openManufFolder", Visible = GetVisibility(hideMenuItems, hideItems, "openManufFolder")},
-            new MainMenuItemModel { Icon = "/Images/ToolBar/folder.png", Header = "Open Trios Inbox folder", Command = "openTriosInbox", Visible = GetVisibility(hideMenuItems, hideItems, "openTriosInbox")},
-            new MainMenuItemModel { Icon = "/Images/ToolBar/rename.png", Header = "Smart Order Names", Command = "openSmartRenameWindw", Visible = GetVisibility(hideMenuItems, hideItems, "openSmartRenameWindw")},
-            new MainMenuItemModel { Icon = "/Images/ListViewIcons/psScanned.png", Header = "Watch list", Command = "openWatchList", Visible = GetVisibility(hideMenuItems, hideItems, "openWatchList")},
+            new MainMenuItemModel { Icon = "/Images/ToolBar/update.png", Header = "Look for update", Command = "lookForUpdate" },
+            new MainMenuItemModel { Icon = "/Images/ToolBar/folder.png", Header = "Manufacturing folder", Command = "openManufFolder" },
+            new MainMenuItemModel { Icon = "/Images/ToolBar/folder.png", Header = "Trios Inbox", Command = "openTriosInbox" },
+            new MainMenuItemModel
+            {
+                Icon = "/Images/ToolBar/rename.png",
+                Header = "Smart Order Names",
+                Command = "openSmartRenameWindw",
+                Visible = moduleSmartOrderNames ? Visibility.Visible : Visibility.Collapsed
+            },
+            new MainMenuItemModel { IconGlyph = "\uE7B3", Header = "Watch list", Command = "openWatchList" },
+            new MainMenuItemModel
+            {
+                Icon = "/Images/AccountInfoIcons/key.png",
+                Header = "Passwords",
+                Command = "openAccountInfos",
+                Visible = moduleAccountInfos ? Visibility.Visible : Visibility.Collapsed
+            },
+            new MainMenuItemModel
+            {
+                Icon = "/Images/AccountInfoIcons/web.png",
+                Header = "Useful websites",
+                Command = "openUsefulWebsites"
+            },
+            new MainMenuItemModel
+            {
+                Icon = "/Images/Other/scanbody.png",
+                Header = "Scan body gallery",
+                Command = "openScanBodyGallery"
+            }
         ];
     }
 
-    private Visibility GetVisibility(string hideMenuItems, bool hidingItems, string menuCommand)
-    {
-        if (hidingItems)
-        {
-            if (hideMenuItems.Contains(menuCommand))
-                return Visibility.Collapsed;
-            else 
-                return Visibility.Visible;
-        }
-        else
-        {
-            if (hideMenuItems.Contains(menuCommand))
-                return Visibility.Visible;
-            else
-                return Visibility.Collapsed;
-        }
-    }
+    public void ShowSmartRenameMenuItem() => RefreshMenuItems();
 
-    public void ShowSmartRenameMenuItem()
-    {
-        BuildMenu("lookForUpdate|openManufFolder|openTriosInbox|openSmartRenameWindw|openWatchList", false);
-    }
-    
-    public void HideSmartRenameMenuItem()
-    {
-        BuildMenu("openSmartRenameWindw", true);
-    }
+    public void HideSmartRenameMenuItem() => RefreshMenuItems();
+
+    public void RefreshAccountInfosMenuItem() => RefreshMenuItems();
 
     private void CloseMainMenu()
     {
-        if (SelectedMenuItem is null)
-            MainViewModel.Instance.MainMenuOpen = Visibility.Hidden;
-        
+        MainViewModel.Instance.MainMenuOpen = Visibility.Collapsed;
     }
 
-    private void RunCommand()
+    private void RunMenuItem(object? parameter)
     {
-        if (SelectedMenuItem is not null)
+        if (parameter is not MainMenuItemModel item || string.IsNullOrWhiteSpace(item.Command))
         {
-            MainViewModel.Instance.RunMainMenuCommand(SelectedMenuItem.Command!);
-            MainViewModel.Instance.MainMenuOpen = Visibility.Hidden;
-            MainMenu.StaticInstance.mainMenuListView.UnselectAll();
+            return;
         }
 
-        SelectedMenuItem = null;
+        MainViewModel.Instance.RunMainMenuCommand(item.Command);
+        MainViewModel.Instance.MainMenuOpen = Visibility.Collapsed;
     }
-
-    
 }

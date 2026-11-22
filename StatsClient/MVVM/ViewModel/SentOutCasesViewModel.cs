@@ -1,13 +1,11 @@
 ﻿using StatsClient.MVVM.Core;
 using StatsClient.MVVM.Model;
+using StatsClient.MVVM.View;
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Threading;
 using static StatsClient.MVVM.Core.DatabaseOperations;
 using static StatsClient.MVVM.ViewModel.MainViewModel;
-using System.Windows;
-using System.Timers;
-using StatsClient.MVVM.View;
-using System.Windows.Controls;
-using System.Collections.ObjectModel;
-using System.Windows.Threading;
 
 namespace StatsClient.MVVM.ViewModel;
 
@@ -78,6 +76,17 @@ public partial class SentOutCasesViewModel : ObservableObject
         {
             designerPagesTotalUnits = value;
             RaisePropertyChanged(nameof(DesignerPagesTotalUnits));
+        }
+    }
+
+    private Dictionary<string, double>? designerPagesTotalOrders = [];
+    public Dictionary<string, double> DesignerPagesTotalOrders
+    {
+        get => designerPagesTotalOrders!;
+        set
+        {
+            designerPagesTotalOrders = value;
+            RaisePropertyChanged(nameof(DesignerPagesTotalOrders));
         }
     }
 
@@ -173,10 +182,34 @@ public partial class SentOutCasesViewModel : ObservableObject
         }
     }
 
+    private ObservableCollection<SentOutDesignerAccordionItem> designerPanels = [];
+    public ObservableCollection<SentOutDesignerAccordionItem> DesignerPanels
+    {
+        get => designerPanels;
+        set
+        {
+            designerPanels = value;
+            RaisePropertyChanged(nameof(DesignerPanels));
+        }
+    }
+
+    private double expandedPanelHeight = 400;
+    public double ExpandedPanelHeight
+    {
+        get => expandedPanelHeight;
+        set
+        {
+            if (Math.Abs(expandedPanelHeight - value) < 0.5)
+                return;
+            expandedPanelHeight = value;
+            RaisePropertyChanged(nameof(ExpandedPanelHeight));
+        }
+    }
+
+    public RelayCommand ToggleDesignerPanelCommand { get; }
 
     #endregion Properties
 
-    private int Counter = 10;
     public System.Timers.Timer _timer;
 
     public SentOutCasesViewModel()
@@ -184,7 +217,7 @@ public partial class SentOutCasesViewModel : ObservableObject
         Instance = this;
         StaticInstance = this;
         MainViewModel.Instance.SentOutCasesViewModel = this;
-
+        ToggleDesignerPanelCommand = new RelayCommand(ToggleDesignerPanel);
 
         _timer = new System.Timers.Timer(10000);
         _timer.Elapsed += Timer_Elapsed;
@@ -196,6 +229,38 @@ public partial class SentOutCasesViewModel : ObservableObject
         }
 
         _ = GetServerInfo();
+    }
+
+    public void RecalculateExpandedPanelHeight(double hostHeight)
+    {
+        if (hostHeight <= 0)
+            return;
+
+        int collapsedCount = DesignerPanels.Count(p => p.IsVisibleInAccordion && !p.IsExpanded);
+        const double stripHeight = 36;
+        const double spacing = 2;
+        double reserved = collapsedCount * (stripHeight + spacing) + 8;
+        ExpandedPanelHeight = Math.Max(220, hostHeight - reserved);
+    }
+
+    private void ToggleDesignerPanel(object? parameter)
+    {
+        if (parameter is not string designerId || string.IsNullOrWhiteSpace(designerId))
+            return;
+
+        SentOutDesignerAccordionItem? item = DesignerPanels.FirstOrDefault(p =>
+            string.Equals(p.DesignerID, designerId, StringComparison.OrdinalIgnoreCase));
+
+        if (item is null || !item.IsVisibleInAccordion)
+            return;
+
+        if (item.IsExpanded)
+            return;
+
+        foreach (SentOutDesignerAccordionItem panel in DesignerPanels)
+            panel.IsExpanded = string.Equals(panel.DesignerID, designerId, StringComparison.OrdinalIgnoreCase);
+
+        SentOutCasesPage.Instance?.RecalculateLayout();
     }
 
     private void StopTimer()
@@ -233,7 +298,7 @@ public partial class SentOutCasesViewModel : ObservableObject
         }
     }
 
-    private async void Timer_Elapsed(object? sender, ElapsedEventArgs e)
+    private async void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
         if (Application.Current?.Dispatcher is null || Application.Current.Dispatcher.HasShutdownStarted || Application.Current.Dispatcher.HasShutdownFinished)
         {
@@ -253,92 +318,89 @@ public partial class SentOutCasesViewModel : ObservableObject
 
             await GetServerInfo();
 
-            // creating panels corresponding to the number of designers
             if (!PanelsAddedalready)
             {
                 DesignersModel = await GetDesignersModel();
                 PanelCount = DesignersModel.Count;
-
                 PanelsAddedalready = true;
-                for (int i = 0; i < PanelCount; i++)
-                {
-                    string designerID = DesignersModel.ToArray()[i].DesignerID!;
-                    int panelIndex = i;
-
-                    _ = TryInvokeOnUi(() =>
-                    {
-                        if (SentOutCasesPage.Instance?.mainGrid is null)
-                        {
-                            return;
-                        }
-
-                        UserPanel userPanel = new(designerID);
-                        ColumnDefinition column = new()
-                        {
-                            Width = new GridLength(1, GridUnitType.Star),
-                            Name = $"gridColumn{designerID}"
-                        };
-                        SentOutCasesPage.Instance.mainGrid.ColumnDefinitions.Add(column);
-                        Grid.SetColumn(userPanel, panelIndex);
-
-                        DesignerPagesTotalUnits.TryAdd(designerID, 0);
-
-                        SentOutCasesPage.Instance.mainGrid.Children.Add(userPanel);
-                    });
-                }
+                BuildDesignerPanels();
             }
             else
-                await GetTotalUnitsForEachDesigner();
-
-
-            if (DesignerPagesTotalUnits.Count > 0 && PanelsAddedalready)
             {
-                foreach (var item in DesignerPagesTotalUnits)
-                {
-                    var designerId = item.Key;
-                    var totalUnits = item.Value;
-
-                    if (totalUnits < 1)
-                    {
-                        _ = TryInvokeOnUi(() =>
-                        {
-                            try
-                            {
-                                if (SentOutCasesPage.Instance?.mainGrid is null)
-                                {
-                                    return;
-                                }
-
-                                SentOutCasesPage.Instance.mainGrid.ColumnDefinitions.FirstOrDefault(x => x.Name == $"gridColumn{designerId}")!.Width = new GridLength(1, GridUnitType.Pixel);
-                            }
-                            catch (Exception ex)
-                            {
-                                MainViewModel.Instance.AddDebugLine(ex, ex.Message, "SentOutCasesVM");
-                            }
-                        });
-                    }
-                    else
-                    {
-                        _ = TryInvokeOnUi(() =>
-                        {
-                            try
-                            {
-                                if (SentOutCasesPage.Instance?.mainGrid is null)
-                                {
-                                    return;
-                                }
-
-                                SentOutCasesPage.Instance.mainGrid.ColumnDefinitions.FirstOrDefault(x => x.Name == $"gridColumn{designerId}")!.Width = new GridLength(1, GridUnitType.Star);
-                            }
-                            catch (Exception ex)
-                            {
-                                MainViewModel.Instance.AddDebugLine(ex, ex.Message, "SentOutCasesVM");
-                            }
-                        });
-                    }
-                }
+                await GetTotalUnitsForEachDesigner();
+                SyncAccordionSummaries();
             }
         }
+    }
+
+    private void BuildDesignerPanels()
+    {
+        _ = TryInvokeOnUi(() =>
+        {
+            DesignerPanels.Clear();
+
+            foreach (DesignerModel designer in DesignersModel)
+            {
+                string designerId = designer.DesignerID ?? "";
+                if (string.IsNullOrWhiteSpace(designerId))
+                    continue;
+
+                DesignerPagesTotalUnits.TryAdd(designerId, 0);
+                DesignerPagesTotalOrders.TryAdd(designerId, 0);
+
+                var item = new SentOutDesignerAccordionItem
+                {
+                    DesignerID = designerId,
+                    DesignerName = designer.FriendlyName ?? designerId,
+                    TotalUnits = DesignerPagesTotalUnits.TryGetValue(designerId, out double units) ? units : 0,
+                    TotalOrders = DesignerPagesTotalOrders.TryGetValue(designerId, out double orders) ? orders : 0,
+                };
+
+                item.Panel = new UserPanel(designerId);
+                DesignerPanels.Add(item);
+            }
+
+            SentOutDesignerAccordionItem? firstWithWork = DesignerPanels.FirstOrDefault(p => p.HasWork)
+                ?? DesignerPanels.FirstOrDefault();
+
+            if (firstWithWork is not null)
+                firstWithWork.IsExpanded = true;
+
+            SentOutCasesPage.Instance?.RecalculateLayout();
+        });
+    }
+
+    private void SyncAccordionSummaries()
+    {
+        _ = TryInvokeOnUi(() =>
+        {
+            foreach (SentOutDesignerAccordionItem item in DesignerPanels)
+            {
+                if (DesignerPagesTotalUnits.TryGetValue(item.DesignerID, out double units))
+                    item.TotalUnits = units;
+
+                if (DesignerPagesTotalOrders.TryGetValue(item.DesignerID, out double orders))
+                    item.TotalOrders = orders;
+
+                if (!item.HasWork && item.IsExpanded)
+                {
+                    item.IsExpanded = false;
+                    SentOutDesignerAccordionItem? fallback = DesignerPanels.FirstOrDefault(p => p.HasWork);
+                    if (fallback is not null)
+                        fallback.IsExpanded = true;
+                }
+            }
+
+            if (DesignerPanels.All(p => !p.IsExpanded))
+            {
+                SentOutDesignerAccordionItem? fallback = DesignerPanels.FirstOrDefault(p => p.HasWork)
+                    ?? DesignerPanels.FirstOrDefault();
+                if (fallback is not null)
+                    fallback.IsExpanded = true;
+            }
+
+            SentOutCasesPage.Instance?.RecalculateLayout();
+        });
     }
 
     private async Task GetTotalUnitsForEachDesigner()
@@ -349,9 +411,10 @@ public partial class SentOutCasesViewModel : ObservableObject
         List<DesignerUnitsModel> designerUnitsModels = await GetDesignerUnitsModel();
         if (designerUnitsModels.Count > 0)
         {
-            foreach (var item in designerUnitsModels)
+            foreach (DesignerUnitsModel item in designerUnitsModels)
             {
                 DesignerPagesTotalUnits[item.DesignerID!] = item.TotalUnits;
+                DesignerPagesTotalOrders[item.DesignerID!] = item.TotalOrders;
             }
         }
     }

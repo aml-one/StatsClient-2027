@@ -1,3 +1,4 @@
+using DCMViewer.Services;
 using StatsClient.MVVM.Core;
 using StatsClient.MVVM.Model;
 using StatsClient.MVVM.View;
@@ -41,6 +42,7 @@ public class OrderInfoViewModel : ObservableObject
             threeShapeObject = value;
             SyncWatchListStateFromOrder();
             RaisePropertyChanged(nameof(ThreeShapeObject));
+            RaisePropertyChanged(nameof(CanUnlockOrder));
         }
     }
 
@@ -61,6 +63,30 @@ public class OrderInfoViewModel : ObservableObject
                 return;
 
             MainViewModel.Instance.ToggleWatchListForOrder(ThreeShapeObject, value);
+        }
+    }
+
+    private bool _suppressDcmRenderingPreferenceSync;
+    private bool _dcmHighQualityRendering = true;
+    public bool DcmHighQualityRendering
+    {
+        get => _dcmHighQualityRendering;
+        set
+        {
+            if (_dcmHighQualityRendering == value)
+            {
+                return;
+            }
+
+            _dcmHighQualityRendering = value;
+            RaisePropertyChanged(nameof(DcmHighQualityRendering));
+
+            if (_suppressDcmRenderingPreferenceSync)
+            {
+                return;
+            }
+
+            DcmViewerRenderingPreferences.SetHighQualityRendering(value);
         }
     }
 
@@ -229,6 +255,17 @@ public class OrderInfoViewModel : ObservableObject
         }
     }
 
+    private bool showScanned;
+    public bool ShowScanned
+    {
+        get => showScanned;
+        set
+        {
+            showScanned = value;
+            RaisePropertyChanged(nameof(ShowScanned));
+        }
+    }
+
     private string manufacturer = "";
     public string Manufacturer
     {
@@ -248,8 +285,11 @@ public class OrderInfoViewModel : ObservableObject
         {
             comments = value;
             RaisePropertyChanged(nameof(Comments));
+            RaisePropertyChanged(nameof(IsRush));
         }
     }
+
+    public bool IsRush => OrderCommentKeywords.ContainsRushKeyword(Comments);
 
     private string traySystem = "";
     public string TraySystem
@@ -337,8 +377,14 @@ public class OrderInfoViewModel : ObservableObject
         {
             isArchiveOrder = value;
             RaisePropertyChanged(nameof(IsArchiveOrder));
+            RaisePropertyChanged(nameof(CanDeleteOrder));
+            RaisePropertyChanged(nameof(CanUnlockOrder));
         }
     }
+
+    public bool CanDeleteOrder => !IsArchiveOrder;
+
+    public bool CanUnlockOrder => !IsArchiveOrder && ThreeShapeObject?.IsLocked == true;
 
     private bool isLoading;
     public bool IsLoading
@@ -368,6 +414,8 @@ public class OrderInfoViewModel : ObservableObject
     public RelayCommand GenerateArchiveZipCommand { get; set; }
     public RelayCommand ImportArchiveOrderCommand { get; set; }
     public RelayCommand RenameOrderCommand { get; set; }
+    public RelayCommand DeleteOrderCommand { get; set; }
+    public RelayCommand UnlockOrderCommand { get; set; }
 
     private void SyncWatchListStateFromOrder()
     {
@@ -393,6 +441,11 @@ public class OrderInfoViewModel : ObservableObject
     public OrderInfoViewModel()
     {
         Instance = this;
+        DcmViewerRenderingPreferences.LoadFromLocalSettings();
+        _suppressDcmRenderingPreferenceSync = true;
+        DcmHighQualityRendering = DcmViewerRenderingPreferences.HighQualityRendering;
+        _suppressDcmRenderingPreferenceSync = false;
+        DcmViewerRenderingPreferences.Changed += OnDcmRenderingPreferencesChanged;
 
         CloseWindowCommand = new RelayCommand(o => CloseWindow());
         ImageClickedCommand = new RelayCommand(o => ImageClicked(o));
@@ -404,7 +457,8 @@ public class OrderInfoViewModel : ObservableObject
         GenerateArchiveZipCommand = new RelayCommand(o => GenerateArchiveZip());
         ImportArchiveOrderCommand = new RelayCommand(o => _ = ImportArchiveOrderAsync());
         RenameOrderCommand = new RelayCommand(o => _ = OpenRenameOrderWindowAsync());
-        
+        DeleteOrderCommand = new RelayCommand(o => _ = DeleteOrderCompletelyAsync());
+        UnlockOrderCommand = new RelayCommand(o => _ = UnlockOrderAsync());
     }
 
     private void ShowOrderXmlDiff()
@@ -683,11 +737,7 @@ public class OrderInfoViewModel : ObservableObject
                 string designerName = Designers.FirstOrDefault(x => x.DesignerID == designerID)!.FriendlyName!;
                 System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
-                    SMessageBox sMessageBox = new("Success", $"Designer set to {designerName}", Enums.SMessageBoxButtons.Ok, MainViewModel.NotificationIcon.Success, 4)
-                    {
-                        Owner = MainWindow.Instance
-                    };
-
+                    SMessageBox sMessageBox = new("Success", $"Designer set to {designerName}", Enums.SMessageBoxButtons.Ok, MainViewModel.NotificationIcon.Success, 4, MainWindow.Instance);
                     sMessageBox.ShowDialog();
                 }));
             }
@@ -697,11 +747,7 @@ public class OrderInfoViewModel : ObservableObject
         {
             System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-                SMessageBox sMessageBox = new("Error", "Some of the tasks could not be finished..", Enums.SMessageBoxButtons.Ok, MainViewModel.NotificationIcon.Warning, 7)
-                {
-                    Owner = MainWindow.Instance
-                };
-
+                SMessageBox sMessageBox = new("Error", "Some of the tasks could not be finished..", Enums.SMessageBoxButtons.Ok, MainViewModel.NotificationIcon.Warning, 7, MainWindow.Instance);
                 sMessageBox.ShowDialog();                
             }));
         }
@@ -712,6 +758,19 @@ public class OrderInfoViewModel : ObservableObject
         string imageSource = (string)obj;
         ImagePreviewWindow imagePreviewWindow = new ();
         imagePreviewWindow.ShowDialog(OrderInfoWindow.StaticInstance, imageSource);
+    }
+
+    private void OnDcmRenderingPreferencesChanged(object? sender, EventArgs e)
+    {
+        var value = DcmViewerRenderingPreferences.HighQualityRendering;
+        if (_dcmHighQualityRendering == value)
+        {
+            return;
+        }
+
+        _suppressDcmRenderingPreferenceSync = true;
+        DcmHighQualityRendering = value;
+        _suppressDcmRenderingPreferenceSync = false;
     }
 
     private void CloseWindow()
@@ -734,9 +793,45 @@ public class OrderInfoViewModel : ObservableObject
         ApplyPanColorUi(backgroundData.PanColorBrush);
         ApplyDesignerMenuUi(designersList);
         UpdateDesignedByList();
-        ReloadImages(false);
+
+        var imagePaths = await Task.Run(() => CollectImagePathsForOrder(ThreeShapeObject!, releaseFileLocks: false)).ConfigureAwait(true);
+        ApplyImagePaths(imagePaths);
 
         //tbOrderUpdated.Visibility = Visibility.Visible;
+    }
+
+    private async Task UnlockOrderAsync()
+    {
+        if (!CanUnlockOrder || ThreeShapeObject?.IntOrderID is not string orderId)
+        {
+            return;
+        }
+
+        Window owner = OrderInfoWindow.StaticInstance ?? _InfoWindow;
+        string patientLabel = $"{ThreeShapeObject.Patient_FirstName} {ThreeShapeObject.Patient_LastName}".Trim();
+
+        bool confirmed = Application.Current.Dispatcher.Invoke(() =>
+            MainViewModel.Instance.ShowMessageBox(
+                "Unlock order",
+                $"Order {orderId}\n{patientLabel}\n\n"
+                + "You should not unlock 3Shape orders unless you know exactly why this case is locked.\n\n"
+                + "Unlocking releases the 3Shape lock and may allow other users or processes to modify this case.\n\n"
+                + "Are you sure you want to unlock this order?",
+                Enums.SMessageBoxButtons.YesNo,
+                MainViewModel.NotificationIcon.Warning,
+                30,
+                owner) == Enums.SMessageBoxResult.Yes);
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await UnLockOrderIn3Shape(orderId);
+
+        ThreeShapeObject.IsLocked = false;
+        ThreeShapeObject.ProcessLockID = "plReady";
+        RaisePropertyChanged(nameof(CanUnlockOrder));
     }
 
     private async Task OpenRenameOrderWindowAsync()
@@ -757,6 +852,117 @@ public class OrderInfoViewModel : ObservableObject
 
         string newOrderId = OrderRenameViewModel.Instance.OrderID ?? ThreeShapeObject.IntOrderID ?? originalOrderId;
         await ReloadAfterRenameAsync(newOrderId);
+    }
+
+    private async Task DeleteOrderCompletelyAsync()
+    {
+        if (ThreeShapeObject is null || string.IsNullOrWhiteSpace(ThreeShapeObject.IntOrderID))
+        {
+            return;
+        }
+
+        if (IsArchiveOrder)
+        {
+            ShowMessage(
+                OrderInfoWindow.StaticInstance ?? _InfoWindow,
+                "Archive orders cannot be deleted from StatsClient.",
+                TaskDialogIcon.Warning,
+                Buttons.Ok);
+            return;
+        }
+
+        Window owner = OrderInfoWindow.StaticInstance ?? _InfoWindow;
+        string orderId = ThreeShapeObject.IntOrderID;
+        string patientLabel = $"{ThreeShapeObject.Patient_FirstName} {ThreeShapeObject.Patient_LastName}".Trim();
+        string warningExtra = string.Empty;
+
+        if (ThreeShapeObject.IsLocked || ThreeShapeObject.IsCheckedOut)
+        {
+            warningExtra = "\n\nThis order is locked or checked out. Locks will be released before deletion.";
+        }
+
+        bool step1 = Application.Current.Dispatcher.Invoke(() =>
+            MainViewModel.Instance.ShowMessageBox(
+                "Delete order — step 1 of 3",
+                $"You are about to permanently delete order:\n\n{orderId}\n{patientLabel}\n\n"
+                + "This will remove the order from 3Shape, delete operational Stats database records, "
+                + "and delete the live order folder. Import history, payment history, and archive data are preserved. "
+                + "A backup copy of the live folder will be created first."
+                + warningExtra
+                + "\n\nContinue?",
+                Enums.SMessageBoxButtons.YesNo,
+                MainViewModel.NotificationIcon.Warning,
+                30,
+                owner) == Enums.SMessageBoxResult.Yes);
+
+        if (!step1)
+        {
+            return;
+        }
+
+        bool step2 = Application.Current.Dispatcher.Invoke(() =>
+            MainViewModel.Instance.ShowMessageBox(
+                "Delete order — step 2 of 3",
+                "This action CANNOT be undone.\n\n"
+                + "The live 3Shape order, its folder, and operational queue/history rows for this order will be permanently removed.\n"
+                + "Import history, payment history, and archive records will NOT be deleted.\n\n"
+                + "Are you absolutely sure?",
+                Enums.SMessageBoxButtons.YesNo,
+                MainViewModel.NotificationIcon.Error,
+                30,
+                owner) == Enums.SMessageBoxResult.Yes);
+
+        if (!step2)
+        {
+            return;
+        }
+
+        bool step3 = Application.Current.Dispatcher.Invoke(() =>
+            OrderDeleteConfirmWindow.Confirm(owner, orderId));
+
+        if (!step3)
+        {
+            return;
+        }
+
+        try
+        {
+            await OrderInfoWindow.ReleaseLocksIfViewingOrderAsync(orderId);
+            await DatabaseOperations.UnLockOrderIn3Shape(orderId);
+
+            var request = new ThreeShapeOrderDeleteRequest
+            {
+                OrderId = orderId,
+                LiveOrderFolderPath = ThreeShapeObject.OrderFolderPath,
+                ArchiveBaseFolderPath = ThreeShapeObject.ArchiveBaseFolderPath,
+                XmlFilePath = ThreeShapeObject.XmlFilePath,
+                IsArchiveOrder = IsArchiveOrder,
+            };
+
+            ThreeShapeOrderDeleteResult result = await ThreeShapeOrderDeleteService.DeleteOrderCompletelyAsync(request);
+
+            if (!result.Success)
+            {
+                ShowMessage(
+                    owner,
+                    $"Order deletion failed:\n\n{result.ErrorMessage}",
+                    TaskDialogIcon.Error,
+                    Buttons.Ok);
+                return;
+            }
+
+            MainViewModel.Instance.Refresh3ShapeListCommand.Execute(null);
+            MainViewModel.Instance.ShowNotificationMessage(
+                "Order deleted",
+                $"Order {orderId} was deleted. Backup saved to:\n{result.BackupPath}",
+                MainViewModel.NotificationIcon.Success);
+
+            CloseWindow();
+        }
+        catch (Exception ex)
+        {
+            ShowMessage(owner, $"Order deletion failed:\n\n{ex.Message}", TaskDialogIcon.Error, Buttons.Ok);
+        }
     }
 
     private sealed class OrderInfoSnapshot
@@ -864,8 +1070,11 @@ public class OrderInfoViewModel : ObservableObject
             created = maxCreateDate.ToString("yyyy-MM-dd h:mm:ss tt", CultureInfo.InvariantCulture);
 
         string scanned = string.Empty;
-        if (DateTime.TryParse(snapshot.CacheMaxScanDate, out DateTime cacheMaxScanDate))
+        if (!IsDigitalCase(snapshot.ScanSource) &&
+            DateTime.TryParse(snapshot.CacheMaxScanDate, out DateTime cacheMaxScanDate))
+        {
             scanned = cacheMaxScanDate.ToString("yyyy-MM-dd h:mm:ss tt", CultureInfo.InvariantCulture);
+        }
 
         string manufacturer = string.IsNullOrWhiteSpace(snapshot.Manufacturer) ? "This Lab" : snapshot.Manufacturer;
         string comments = snapshot.Comments.Replace("&#xA;", "\n").Replace("&", "");
@@ -937,6 +1146,8 @@ public class OrderInfoViewModel : ObservableObject
         DigitalCase = data.DigitalCase;
         Created = data.Created;
         Scanned = data.Scanned;
+        ShowScanned = !string.Equals(data.DigitalCase, "Yes", StringComparison.OrdinalIgnoreCase) &&
+                      !string.IsNullOrWhiteSpace(data.Scanned);
         Manufacturer = data.Manufacturer;
         Comments = data.Comments;
         TraySystem = data.TraySystem;
@@ -945,6 +1156,7 @@ public class OrderInfoViewModel : ObservableObject
         LastTouchedByList = data.LastTouchedByList;
         ThreeShapeObject!.IsCaseWereDesigned = data.IsCaseWereDesigned;
         RaisePropertyChanged(nameof(CanShowDesignEditButton));
+        RaisePropertyChanged(nameof(CanUnlockOrder));
     }
 
     private void ApplyLastTouchedByUi(List<LastTouchedByModel> lastTouchedByList)
@@ -1431,68 +1643,72 @@ public class OrderInfoViewModel : ObservableObject
 
     public void ReloadImages(bool ReleaseFileLocks)
     {
+        if (ThreeShapeObject is null)
+            return;
+
+        ApplyImagePaths(CollectImagePathsForOrder(ThreeShapeObject, ReleaseFileLocks));
+    }
+
+    private static List<string> CollectImagePathsForOrder(ThreeShapeOrdersModel order, bool releaseFileLocks)
+    {
+        var paths = new List<string>();
+        bool isArchiveOrder = !string.IsNullOrWhiteSpace(order.ArchiveBaseFolderPath);
+        string orderRoot = ResolveImageOrderRoot(order, isArchiveOrder);
+
+        void AddImagesFromFolder(string? folder)
+        {
+            if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
+                return;
+
+            DirectoryInfo directory = new(folder);
+            FileInfo[] images = [.. directory.GetFiles("*.jpg"), .. directory.GetFiles("*.jpeg"), .. directory.GetFiles("*.png")];
+            foreach (FileInfo image in images)
+            {
+                paths.Add(image.FullName);
+            }
+        }
+
+        if (releaseFileLocks)
+        {
+            AddImagesFromFolder(LocalSettingsDB.DataBaseFolder);
+            return paths;
+        }
+
+        AddImagesFromFolder(Path.Combine(orderRoot, "Images"));
+        AddImagesFromFolder(Path.Combine(orderRoot, "3SCom", "Screenshots"));
+        AddImagesFromFolder(orderRoot);
+        return paths;
+    }
+
+    private static string ResolveImageOrderRoot(ThreeShapeOrdersModel order, bool isArchiveOrder)
+    {
+        if (isArchiveOrder)
+        {
+            if (!string.IsNullOrWhiteSpace(order.OrderFolderPath))
+                return order.OrderFolderPath.Trim();
+
+            if (!string.IsNullOrWhiteSpace(order.XmlFilePath))
+                return Path.GetDirectoryName(order.XmlFilePath.Trim()) ?? string.Empty;
+        }
+
+        return Path.Combine(GetServerFileDirectory(), order.IntOrderID ?? string.Empty);
+    }
+
+    private void ApplyImagePaths(IReadOnlyList<string> imagePaths)
+    {
         ImageList.Clear();
 
-        bool isThereAnyPicture = false;
-        string orderFolder;
-
-        if (ReleaseFileLocks)
-            orderFolder = LocalSettingsDB.DataBaseFolder;
-        else
-            orderFolder = GetServerFileDirectory() + ThreeShapeObject!.IntOrderID + "\\Images";
-        if (Directory.Exists(orderFolder))
+        foreach (string imagePath in imagePaths)
         {
-            DirectoryInfo folder = new (orderFolder);
-            FileInfo[] images = [.. folder.GetFiles("*.jpg"), .. folder.GetFiles("*.jpeg"), .. folder.GetFiles("*.png")];
-            if (images.Length > 0)
-                isThereAnyPicture = true;
-            foreach (FileInfo img in images)
-            {
-                ImageList.Add(new ImageListModel(img.FullName));
-            }
+            ImageList.Add(new ImageListModel(imagePath));
         }
 
-
-
-        if (ReleaseFileLocks)
-            GC.Collect();
-
-        if (!ReleaseFileLocks)
-            orderFolder = GetServerFileDirectory() + ThreeShapeObject!.IntOrderID + "\\3SCom\\Screenshots";
-        if (Directory.Exists(orderFolder))
-        {
-            DirectoryInfo folder = new (orderFolder);
-            FileInfo[] images = [.. folder.GetFiles("*.jpg"), .. folder.GetFiles("*.jpeg"), .. folder.GetFiles("*.png")];
-            if (images.Length > 0)
-                isThereAnyPicture = true;
-            foreach (FileInfo img in images)
-            {
-                ImageList.Add(new ImageListModel(img.FullName));
-            }
-        }
-
-        if (!ReleaseFileLocks)
-            orderFolder = GetServerFileDirectory() + ThreeShapeObject!.IntOrderID;
-        if (Directory.Exists(orderFolder))
-        {
-            DirectoryInfo folder = new (orderFolder);
-            FileInfo[] images = [.. folder.GetFiles("*.jpg"), .. folder.GetFiles("*.jpeg"), .. folder.GetFiles("*.png")];
-            if (images.Length > 0)
-                isThereAnyPicture = true;
-            foreach (FileInfo img in images)
-            {
-                ImageList.Add(new ImageListModel(img.FullName));
-            }
-        }
-
-        var showHeaderImages = isThereAnyPicture && !ReleaseFileLocks;
+        bool showHeaderImages = imagePaths.Count > 0;
         _InfoWindow.orderInfoHeaderImagesPanel.Visibility = showHeaderImages
             ? Visibility.Visible
             : Visibility.Collapsed;
-        _InfoWindow.tabPageImages.Visibility = Visibility.Collapsed;
 
         RaisePropertyChanged(nameof(ImageList));
-        _InfoWindow.Thumbnails.Items.Refresh();
     }
 
     public bool ReadXMLInfo(string OrderID)

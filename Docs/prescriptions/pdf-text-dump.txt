@@ -1,0 +1,417 @@
+﻿==== ASCONNECT\treatment-report.pdf ====
+
+Treatment Report
+Case Name:
+Mary Hayes's Case
+Scan Time:
+2026/06/09 15:00:47
+Patient Name:
+Mary Hayes
+Patient ID:
+PI00000255
+Order
+Order ID:
+260610056039260336128
+Medical License:
+--
+Order Time:
+2026/06/09 15:02:56
+Requested Delivery Date:
+2026/06/23
+Clinic
+Dentist Name:
+Jennifer Maras
+Clinic Name:
+Maras Dentistry
+Address:
+2521 Burns Rd. ,Palm Beach Gardens ,Florida
+Laboratory
+Laboratory Name:
+Carlos Ceramics Dental Lab
+Address:
+3363 NE 163rd St Unit 804,North Miami Beach,FL
+Treatment
+Tooth No.
+19
+Clinical Type
+Restoration
+Tooth Type
+Crown
+Material
+Multilayer Zirconia
+Shade
+B1
+Implant-based?
+--
+Abutment Material
+--
+ 
+Restoration
+ 
+
+
+==== DEXIS\73fbfcb7-3683-41aa-84e2-fafd85a5e431.pdf ====
+CASE INFORMATION (OFE-6762)
+Patient #
+ 
+Visit Date
+ 
+Due Date
+ 
+Treatment Type
+ 
+Scans
+ 
+Prescription
+Type
+Tooth Number
+Implant Brand
+Implant
+Connection/Platform
+Abutment Material
+Prosthetic Material
+Shade
+Comment:
+NAME : SAMATHA DE LAS TRAVIESAS, DR GUERRA , FLAGLER , SHADE 1M2,
+#4 CROWN NO OCLUSION
+Dr. Edy Guerra
+Edy A. Guerra DDS
+9456 harding ave Surfside Fl
+33154
+Mercy
+3058662626
+Smantha De Las Traviesas
+06/06/1997 PWID:000001034715
+06/01/2026
+06/10/2026 17:00
+Untitled
+Common
+
+
+==== DSCORE\Dentsply Sirona.pdf ====
+Order Number:
+1AABJEY4
+Order Date:
+06/09/2026, 10:58
+Date Due:
+06/16/2026, 12:00
+Sender
+Premier Dental Ltd
+Dr Duanne Jones
+9151 Estate Thomas, Foothills
+Profession Bld, Suite 203
+00802, St Thomas
+US
+premierdentalskb@hotmail.com
+Recipient
+Ceramics Dental Lab
+3363 NE 163rd St Unit 804
+33160, North Miami Beach
+US
+carlosceramicsdental@gmail.com
+3059404040
+Patient
+Gvaune Amory
+AM0031
+Gender: male
+Age: 28
+Restoration
+Crown
+ΓÇâCategory: Restorative
+ΓÇâTooth (UNS): 8
+ΓÇâService type: Design & Manufacturing
+ΓÇâTooth shade guide: VITA Classical + Bleached
+ΓÇâTooth shade: A2
+Crown
+ΓÇâCategory: Restorative
+ΓÇâTooth (UNS): 9
+ΓÇâService type: Design & Manufacturing
+ΓÇâTooth shade guide: VITA Classical + Bleached
+ΓÇâTooth shade: A2
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+32
+31
+30
+29
+28
+27
+26
+25
+24
+23
+22
+21
+20
+19
+18
+17
+Comments
+Dr Duanne Jones wrote at 06/09/2026, 10:58:42 EDT:
+Please place ink under crown on tooth #8 to avoid traslucent on necrotic prep
+ 
+Case Sheet
+
+
+==== IS3D\Case details-Shining 3D Dental Cloud.pdf ====
+Case Information-Restore
+NO.a4533a5c-b9a2-5aa8-a43e-135304678cb0
+Other requirements: 
+Shade:A2 RUSH
+Please fabricate full zirconia crown #29 and #30.
+Thank you !!!
+Due date 06/11
+Other Notes: 
+-
+Case Information
+Creator
+Dental Options Aventura
+Patient
+Francisco F Lopera
+Expected delivery date
+2026-06-15
+Upload time
+2026-06-05 17:07:25
+Clinic/hospital
+Dental Options
+Dental Notation
+UN
+Doctor
+Montefalco
+Clinic Contact
+Dental Options Aventura
+Clinic contact
+information
+aventura@dentaloptionspa.com
+Clinic address
+-
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+Other Notes
+Screenshot
+Full jaw
+Upper Jaw
+Mandible
+
+
+==== ITERO\Viewer ┬╖ My iTero.pdf ====
+Order:
+309293566
+Patient:
+Potts, Thelma
+Doctor:
+Dr. Long, W. Roger
+Treatment Information
+Tooth No.
+Treatment
+Specification
+Material
+Shade
+Incisal/Body/Gingival
+14
+Crown
+Full Contour
+Ceramic: Translucent Zirconia
+-/A2/-
+Notes
+Procedure: 
+Fixed Restorative
+Type: 
+--
+Practice:
+Long, W. Roger (Fort Pierce)
+Ship to Address:
+1511 S. 25th St, Ste A, Fort Pierce, 34947-4779
+Scan Date:
+06/10/2026
+Due Date:
+06/24/2026
+Status:
+Lab Review
+Scanner Model:
+Element 5D
+Signature:
+License:
+9663
+Tooth Diagram
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+32
+31
+30
+29
+28
+27
+26
+25
+24
+23
+22
+21
+20
+19
+18
+17
+
+
+==== MEDIT\John Sandler, Dr. B Davidson's Case_6 20 2026 1 00 PM_Case Information.pdf ====
+3
+Crown
+FullΓÇæContour
+Zirconia
+A3
+No.
+Type
+Method
+Material
+Shade
+Dr.D
+3
+Crown
+FullΓÇæContour
+Zirconia
+A3
+No.
+Type
+Method
+Material
+Shade
+Dr.D
+
+
+==== TRIOS\529118700_20260608_1326_42_651.pdf ====
+Creation date:
+6/8/2026 1:26:42 PM (GMT-04:00)
+Delivery date:
+6/19/2026 9:00:00 AM (GMT-04:00)
+Dentist name:
+Advanced Dental Group
+Case number:
+529118700_20260608_1326_42_651
+Patient name:
+Michael Burleigh
+Lab name:
+CARLOS CERAMICS DENTAL LAB
+Has additional scan:
+False
+Comments
+Please fabricate EMAX crowns for #6, 8, 10 and 11. Please use zirconia monolithic for #5, 12, 13 and 30. Broad contacts and light occulusion. SHADE 2M1/2M2 Thank You Dr. Marx
+Restorations
+Types
+UNN
+Type
+Design settings
+5
+ 
+Crown
+Crown
+Material
+Zirconia - monolithic
+Shade
+Any shade
+Types
+UNN
+Type
+Design settings
+6
+ 
+Crown
+Crown
+Material
+Emax
+Shade
+Any shade
+Types
+UNN
+Type
+Design settings
+12
+ 
+Crown
+Crown
+Material
+Zirconia - monolithic
+Shade
+Any shade
+Types
+UNN
+Type
+Design settings
+13
+ 
+Crown
+Crown
+Material
+Zirconia - monolithic
+Shade
+Any shade
+Types
+UNN
+Type
+Design settings
+30
+ 
+Crown
+Crown
+Material
+Zirconia - monolithic
+
+

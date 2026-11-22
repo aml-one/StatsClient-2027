@@ -6,4 +6,5 @@ public class OrderIssueModel
     public string? IssueDescription { get; set; }
     public string? Color { get; set; }
     public string? Level { get; set; }
+    public string? IconSource { get; set; }
 }

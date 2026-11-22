@@ -2,45 +2,50 @@
 using StatsClient.MVVM.ViewModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Controls;
 
-namespace StatsClient.MVVM.View
+namespace StatsClient.MVVM.View;
+
+public partial class SentOutCasesPage : UserControl, INotifyPropertyChanged
 {
-    /// <summary>
-    /// Interaction logic for SentOutCasesPage.xaml
-    /// </summary>
-    public partial class SentOutCasesPage : UserControl, INotifyPropertyChanged
+    public static event PropertyChangedEventHandler? PropertyChangedStatic;
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public static void RaisePropertyChangedStatic([CallerMemberName] string? propertyname = null)
     {
-        public static event PropertyChangedEventHandler? PropertyChangedStatic;
-        public event PropertyChangedEventHandler? PropertyChanged;
+        PropertyChangedStatic?.Invoke(typeof(ObservableObject), new PropertyChangedEventArgs(propertyname));
+    }
 
-        public static void RaisePropertyChangedStatic([CallerMemberName] string? propertyname = null)
-        {
-            PropertyChangedStatic?.Invoke(typeof(ObservableObject), new PropertyChangedEventArgs(propertyname));
-        }
-        public void RaisePropertyChanged([CallerMemberName] string? propertyname = null)
-        {
-            PropertyChanged?.Invoke(typeof(ObservableObject), new PropertyChangedEventArgs(propertyname));
-        }
+    public void RaisePropertyChanged([CallerMemberName] string? propertyname = null)
+    {
+        PropertyChanged?.Invoke(typeof(ObservableObject), new PropertyChangedEventArgs(propertyname));
+    }
 
-        private static SentOutCasesPage? instance;
-        public static SentOutCasesPage Instance
+    private static SentOutCasesPage? instance;
+    public static SentOutCasesPage Instance
+    {
+        get => instance!;
+        set
         {
-            get => instance!;
-            set
-            {
-                instance = value;
-                RaisePropertyChangedStatic(nameof(Instance));
-            }
+            instance = value;
+            RaisePropertyChangedStatic(nameof(Instance));
         }
-        
+    }
 
-        public SentOutCasesPage()
-        {
-            Instance = this;
-            InitializeComponent();
-            DataContext = new SentOutCasesViewModel();
-        }
+    public SentOutCasesPage()
+    {
+        Instance = this;
+        InitializeComponent();
+        DataContext = new SentOutCasesViewModel();
+    }
 
+    private void PanelsHost_SizeChanged(object sender, SizeChangedEventArgs e)
+        => RecalculateLayout();
+
+    public void RecalculateLayout()
+    {
+        if (DataContext is SentOutCasesViewModel vm)
+            vm.RecalculateExpandedPanelHeight(PanelsHost.ActualHeight);
     }
 }

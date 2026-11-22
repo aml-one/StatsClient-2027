@@ -1,0 +1,26 @@
+﻿PDF Field Extract Preview Report
+Shows only fields visible in the PDF Field Extract window (new rules).
+Generated: 2026-06-11 20:04:08
+========================================================================
+
+File: Dentsply Sirona-bridge.pdf
+Detected system: DS Core (PageHeaderIsHigh=6)
+Customer (Doctor name): Reyes
+Patient First name: Pedro
+Patient Last name: Barraza
+Shade: 5M2
+Teeth numbers: 7,8
+Comments: Christina Reyes wrote at 06/11/2026, 08:55:35 EDT: Please fabricate porcelain crowns (TOGETHER) for teeth #7 and #8.. Shade- 5M-2
+Order ID: 1AABJNI6
+------------------------------------------------------------------------
+
+File: Dentsply Sirona.pdf
+Detected system: DS Core (PageHeaderIsHigh=6)
+Customer (Doctor name): Duanne Jones
+Patient First name: Gvaune
+Patient Last name: Amory
+Shade: A2
+Teeth numbers: 8,9
+Comments: Dr Duanne Jones wrote at 06/09/2026, 10:58:42 EDT: Please place ink under crown on tooth #8 to avoid traslucent on necrotic prep
+Order ID: 1AABJEY4
+------------------------------------------------------------------------

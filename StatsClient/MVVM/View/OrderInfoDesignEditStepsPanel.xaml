@@ -3,18 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root"
              DataContext="{x:Null}">
-    <UserControl.Resources>
-        <Style x:Key="DesignEditStepsActionButton"
-               TargetType="Button">
-            <Setter Property="Padding" Value="8,5" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Background" Value="{DynamicResource PrimaryDarkColor}" />
-            <Setter Property="Foreground" Value="{DynamicResource BlackColor}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource GlassPanelBorder}" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
-    </UserControl.Resources>
-
     <Grid Margin="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -87,17 +75,17 @@
             <UniformGrid Columns="2"
                          Margin="0,0,0,6">
                 <Button Content="Undo"
-                        Style="{StaticResource DesignEditStepsActionButton}"
+                        Style="{StaticResource OrderInfoDesignEditButton}"
                         Command="{Binding UndoDesignEditCommand}"
                         Margin="0,0,4,0"
                         ToolTip="Undo last step (Ctrl+Z)" />
                 <Button Content="Redo"
-                        Style="{StaticResource DesignEditStepsActionButton}"
+                        Style="{StaticResource OrderInfoDesignEditButton}"
                         Command="{Binding RedoDesignEditCommand}"
                         ToolTip="Redo step (Ctrl+Y)" />
             </UniformGrid>
             <Button Content="Undo all"
-                    Style="{StaticResource DesignEditStepsActionButton}"
+                    Style="{StaticResource OrderInfoDesignEditButton}"
                     Command="{Binding UndoAllDesignEditCommand}"
                     ToolTip="Remove every saved step and restore the original 3Shape design" />
         </StackPanel>

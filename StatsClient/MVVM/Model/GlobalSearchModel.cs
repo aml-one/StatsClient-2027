@@ -22,4 +22,5 @@ public class GlobalSearchModel
     public string? OrderFolder { get; set; } = "";
     public string? BaseFolder { get; set; } = "";
     public string? XMLFile { get; set; } = "";
+    public bool IsOnWatchList { get; set; }
 }

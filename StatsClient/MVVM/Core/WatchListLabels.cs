@@ -33,4 +33,35 @@ public static class WatchListLabels
         "plCheckedOut" => "#FBBF24",
         _ => "#38BDF8"
     };
+
+    public static string AccentColorForRenamed() => "#FB923C";
+
+    public static string AccentColorForRushDesigned() => "#F87171";
+
+    public static string TitleForNewStatus(string? statusId) => statusId switch
+    {
+        "psCreated" => "Got Created",
+        "psScanned" => "Got Scanned",
+        "psModelled" => "Got Designed",
+        "psSent" => "Got Sent",
+        _ => "Status updated"
+    };
+
+    public static string TitleForNewLock(string? lockId) => lockId switch
+    {
+        "plCheckedOut" => "Got Checked out",
+        "plReady" => "Got Ready",
+        _ => "Lock status changed"
+    };
+
+    public static string AccentColorForStatusChange(string? newStatusId, string? orderComments)
+    {
+        if (string.Equals(newStatusId, "psModelled", StringComparison.OrdinalIgnoreCase)
+            && OrderCommentKeywords.ContainsRushKeyword(orderComments))
+        {
+            return AccentColorForRushDesigned();
+        }
+
+        return AccentColorForStatus(newStatusId);
+    }
 }

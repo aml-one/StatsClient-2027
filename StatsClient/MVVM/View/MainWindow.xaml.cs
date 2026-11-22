@@ -1,7 +1,6 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using StatsClient.MVVM.Core;
-using StatsClient.MVVM.Core;
 using StatsClient.MVVM.ViewModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -55,8 +54,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     
     public MainWindow(string url)
     {
+        SyncfusionLicenseRegistrar.Register();
         DataContext = MainViewModel.Instance;
         InitializeComponent();
+        LabnextWebViewTransparency.ConfigureHost(webviewLabnext);
         DataObject.AddPastingHandler(tbPmAddNewNumber, TbPmAddNewNumber_Pasting);
 
         webviewLabnext.Source = new Uri(url);
@@ -64,21 +65,21 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public MainWindow()
     {
-        //Register Syncfusion license
-        Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JGaF5cXGpCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWH1ceXRcQ2heVkZ+XkpWYEs=");
+        SyncfusionLicenseRegistrar.Register();
         StartupLog.WritePhase("MainWindow", "Constructor begin");
         Instance = this;
         DataContext = MainViewModel.Instance;
         StartupLog.WriteDetail("MainWindow", $"DataContext set to Instance hash={MainViewModel.Instance.GetHashCode()}");
         InitializeComponent();
+        LabnextWebViewTransparency.ConfigureHost(webviewLabnext);
         StartupLog.WritePhase("MainWindow", "InitializeComponent complete");
         DataObject.AddPastingHandler(tbPmAddNewNumber, TbPmAddNewNumber_Pasting);
         MainViewModel.Instance._MainWindow = this;
         SplashViewModel.Instance.mainWindow = this;
         Loaded += MainWindow_StartupLoaded;
 
-        pb3ShapeProgressBar.Value = 0;
         pbArchivesProgressBar.Value = 0;
+        Hide3ShapeOrderProgressBar();
 
         _ = int.TryParse(ReadLocalSetting("WindowWidth"), out int wWidth);
         _ = int.TryParse(ReadLocalSetting("WindowHeight"), out int wHeight);
@@ -103,11 +104,38 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
 
         tbSearch.PreviewKeyDown += new KeyEventHandler(HandleEsc);
-        //tbFlyingSearch.PreviewKeyDown += new KeyEventHandler(HandleEscFs);
-
-        zipArchiveIcon.Width = 0;
 
         InitializePrescriptionMakerImageInput();
+    }
+
+    private void IteroZipCelebration_DismissRequested(object sender, EventArgs e)
+        => MainViewModel.Instance.HideZipArchiveIconCommand.Execute(null);
+
+    public void ShowIteroZipCelebration()
+    {
+        iteroZipCelebration.EntranceCompleted -= IteroZipCelebration_EntranceCompleted;
+        iteroZipCelebration.EntranceCompleted += IteroZipCelebration_EntranceCompleted;
+        iteroZipCelebration.PlayEntrance();
+    }
+
+    private void IteroZipCelebration_EntranceCompleted(object? sender, EventArgs e)
+    {
+        iteroZipCelebration.EntranceCompleted -= IteroZipCelebration_EntranceCompleted;
+        MainViewModel.Instance.NotifyIteroZipCelebrationEntranceCompleted();
+    }
+
+    public void HideIteroZipCelebrationOverlay() => iteroZipCelebration.PlayExit();
+
+    public void Hide3ShapeOrderProgressBar()
+    {
+        pb3ShapeProgressBar.Value = 0;
+        pb3ShapeProgressBar.Visibility = Visibility.Collapsed;
+    }
+
+    public void Increment3ShapeOrderProgressBar()
+    {
+        pb3ShapeProgressBar.Visibility = Visibility.Visible;
+        pb3ShapeProgressBar.Value += 1;
     }
 
     private void InitializePrescriptionMakerImageInput()
@@ -191,14 +219,44 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     }
 
 
-    private async void Window_Closing(object sender, CancelEventArgs e)
+    private void Window_Closing(object sender, CancelEventArgs e)
     {
-        await ResetPingDifferenceInDatabaseOnClose();
-        Application.Current.Shutdown();
+        if (Application.Current is { } app)
+        {
+            app.ShutdownMode = ShutdownMode.OnMainWindowClose;
+        }
+
+        MainViewModel.Instance?.PrepareApplicationShutdown();
+        _ = ResetPingDifferenceInDatabaseOnClose();
+    }
+
+    private void Window_Closed(object sender, EventArgs e)
+    {
+        MainViewModel.Instance?.PrepareApplicationShutdown();
+
+        var app = Application.Current;
+        if (app is not null && !app.Dispatcher.HasShutdownStarted)
+        {
+            try
+            {
+                app.Shutdown();
+            }
+            catch
+            {
+            }
+        }
+
+        // WPF Shutdown() can return while WebView2, hidden windows, or SharpDX hosts keep the process alive.
+        Dispatcher.BeginInvoke(static () => Environment.Exit(0), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
     }
 
     public void TitleBar_PreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
+        if (e.OriginalSource is DependencyObject source && IsWithinAppLogoMenu(source))
+        {
+            return;
+        }
+
         if (e.ClickCount >= 2)
             BtnMaximize_Click(sender, e);
 
@@ -208,6 +266,31 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 this.DragMove();
             }
             catch { }
+    }
+
+    private void MainMenuDismissOverlay_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+        {
+            vm.MainMenuOpen = Visibility.Collapsed;
+        }
+
+        e.Handled = true;
+    }
+
+    private bool IsWithinAppLogoMenu(DependencyObject source)
+    {
+        while (source != null)
+        {
+            if (source == btnAppLogoMenu)
+            {
+                return true;
+            }
+
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        return false;
     }
 
     private void BtnMinimize_Click(object sender, RoutedEventArgs e)
@@ -235,10 +318,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     }
 
-    private async void BtnCloseApplication_Click(object sender, RoutedEventArgs e)
+    private void BtnCloseApplication_Click(object sender, RoutedEventArgs e)
     {
-        await ResetPingDifferenceInDatabaseOnClose();
-        Application.Current.Shutdown();
+        Close();
     }
 
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -286,6 +368,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (infoTab is not null)
             if (!infoTab.IsSelected)
                 aboutTab.IsSelected = true;
+
+        if (paymentsTab.IsSelected)
+            _ = MainViewModel.Instance.EnsurePaymentTabDataLoadedAsync();
     }
 
     //private void BtnFilter_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -362,7 +447,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Loaded -= MainWindow_StartupLoaded;
         StartupLog.WritePhase("MainWindow", "Loaded event — visual tree ready");
         MainViewModel.Instance.LogStartupVmSnapshot("MainWindow Loaded");
+        PerfDiagLog.Write("Startup", "MainWindow Loaded — visual tree ready");
         StartupLog.Flush();
+        PerfDiagLog.Flush();
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -370,48 +457,91 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         MainViewModel.Instance.SmartOrderNamesWindow.Owner = this;
     }
 
-    private void WebviewLabnext_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
+    private async void WebviewLabnext_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
     {
-        webviewLabnext.CoreWebView2.Settings.IsPasswordAutosaveEnabled = true;
-        webviewLabnext.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
-        webviewLabnext.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-        webviewLabnext.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = true;
-        webviewLabnext.CoreWebView2.Settings.IsScriptEnabled = true;
-        webviewLabnext.CoreWebView2.Settings.IsWebMessageEnabled = true;
-        webviewLabnext.CoreWebView2.Settings.IsZoomControlEnabled = false;
-        webviewLabnext.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+        if (!e.IsSuccess || webviewLabnext.CoreWebView2 is not { } coreWebView2)
+            return;
+
+        LabnextWebViewTransparency.ConfigureHost(webviewLabnext);
+        await LabnextWebViewTransparency.RegisterAsync(coreWebView2);
+        UpdateLabnextChromeForColorScheme();
+        if (LabnextWebViewTransparency.IsHostStyleEnabled)
+            MainViewModel.Instance.BeginLabnextHostStyleApplication();
+
+        coreWebView2.Settings.IsPasswordAutosaveEnabled = true;
+        coreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
+        coreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+        coreWebView2.Settings.AreDefaultScriptDialogsEnabled = true;
+        coreWebView2.Settings.IsScriptEnabled = true;
+        coreWebView2.Settings.IsWebMessageEnabled = true;
+        coreWebView2.Settings.IsZoomControlEnabled = false;
+        coreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+        coreWebView2.NavigationStarting -= WebviewLabnext_NavigationStarting;
+        coreWebView2.NavigationStarting += WebviewLabnext_NavigationStarting;
         webviewLabnext.NavigationCompleted -= WebviewLabnext_NavigationCompleted;
         webviewLabnext.NavigationCompleted += WebviewLabnext_NavigationCompleted;
         MainViewModel.Instance.TryEnsureLabnextWebViewEventHandlers();
     }
 
-    private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+    private void WebviewLabnext_NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
     {
-        //CoreWebView2 cwv2 = (CoreWebView2)sender;
-
-        CoreWebView2Deferral deferral = e.GetDeferral();
-
-        //LabnextChildWindow childWindow = new(e.Uri)
-        //{
-        //    Title = "Child Window"
-        //};
-        //childWindow.Show();
-
-        //e.Handled = true;
-        deferral.Complete();
+        if (LabnextWebViewTransparency.IsHostStyleEnabled)
+            MainViewModel.Instance.BeginLabnextHostStyleApplication();
     }
 
-    private void WebviewLabnext_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+    private async void WebviewLabnext_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
     {
         try
         {
-            if (FolderSubscriptionTabPanel.Children.Contains(LabnextView))
+            if (e.IsSuccess)
             {
-                webviewLabnext.ZoomFactor = 0.75;
+                bool applied = await LabnextWebViewTransparency.ApplyForCurrentSchemeAsync(webviewLabnext, webviewLabnext.CoreWebView2);
+                if (applied && LabnextWebViewTransparency.IsHostStyleEnabled)
+                    await Task.Delay(80);
             }
+
+            if (FolderSubscriptionTabPanel.Children.Contains(LabnextView))
+                webviewLabnext.ZoomFactor = 0.75;
         }
         catch
         {
+        }
+        finally
+        {
+            MainViewModel.Instance.EndLabnextHostStyleApplication();
+        }
+    }
+
+    private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
+    {
+        CoreWebView2Deferral deferral = e.GetDeferral();
+        deferral.Complete();
+    }
+
+    public void UpdateLabnextChromeForColorScheme()
+    {
+        Brush panelBackground = LabnextWebViewTransparency.GetHostPanelBackgroundBrush();
+        LabnextTabPanel.Background = panelBackground;
+        LabnextView.Background = panelBackground;
+        LabnextWebViewTransparency.ConfigureHost(webviewLabnext);
+    }
+
+    public async Task ApplyLabnextHostStyleForCurrentSchemeAsync()
+    {
+        UpdateLabnextChromeForColorScheme();
+        if (webviewLabnext.CoreWebView2 is not { } coreWebView2)
+            return;
+
+        MainViewModel.Instance.BeginLabnextHostStyleApplication();
+        try
+        {
+            bool applied = await LabnextWebViewTransparency.ApplyForCurrentSchemeAsync(webviewLabnext, coreWebView2);
+            if (applied && LabnextWebViewTransparency.IsHostStyleEnabled)
+                await Task.Delay(80);
+        }
+        finally
+        {
+            MainViewModel.Instance.EndLabnextHostStyleApplication();
         }
     }
 
@@ -477,6 +607,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     
     private async void WebviewLabnext_ContentLoading(object sender, CoreWebView2ContentLoadingEventArgs e)
     {
+        if (LabnextWebViewTransparency.IsHostStyleEnabled)
+            MainViewModel.Instance.BeginLabnextHostStyleApplication();
+
         if (webviewLabnext.Source is not null)
         {
             MainViewModel.Instance.LabNextWebViewStatusText = webviewLabnext.Source.ToString().Replace($"https://{MainViewModel.Instance.LabnextLabID}.labnext.net/lab", "");
@@ -521,15 +654,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         try
         {
-            if (!string.IsNullOrWhiteSpace(MainViewModel.Instance.LabnextUrl))
-            {
-                webviewLabnext.Source = new Uri(MainViewModel.Instance.LabnextUrl);
-                await Task.Delay(1200);
-            }
-            else
-            {
-                await Task.Delay(700);
-            }
+            MainViewModel.Instance.GoHomeOnLabnextWebViewCommand.Execute(null);
+            await Task.Delay(1200);
 
             string userJs = EscapeForSingleQuotedJs(userName);
             string passJs = EscapeForSingleQuotedJs(password);
@@ -664,16 +790,6 @@ return 'submit-not-found';
         MainViewModel.Instance.ShowNotificationMessage("Order Import", $"Order {orderId} queued for import service.", MainViewModel.NotificationIcon.Success);
     }
 
-    private async void PaymentsTab_Loaded(object sender, RoutedEventArgs e)
-    {
-        // Load designers for payment order lists when PAYMENTS tab is first loaded
-        if (MainViewModel.Instance.PaymentOrderListDesigners.Count == 0)
-        {
-            await MainViewModel.Instance.LoadPaymentDesignersAsync();
-        }
-    }
-
-    private const int PmAddNewNumberMin = 33;
     private const int PmAddNewNumberMax = 99999;
 
     private static bool IsAllowedPmAddNewNumberText(string text)
@@ -701,17 +817,7 @@ return 'submit-not-found';
             return false;
         }
 
-        if (text.Length == 1)
-        {
-            return text[0] >= '3';
-        }
-
-        if (text.Length == 2 && text[0] == '3' && text[1] < '3')
-        {
-            return false;
-        }
-
-        return int.TryParse(text, out int value) && value <= PmAddNewNumberMax;
+        return !int.TryParse(text, out int value) || value <= PmAddNewNumberMax;
     }
 
     private static string BuildProposedTextBoxValue(TextBox textBox, string insertion)
@@ -761,5 +867,72 @@ return 'submit-not-found';
         {
             e.CancelCommand();
         }
+    }
+
+    private void PrescriptionPreviewOverlay_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is DependencyObject source
+            && IsVisualDescendantOf(source, prescriptionEditPanToolbar))
+        {
+            return;
+        }
+
+        if (DataContext is MainViewModel vm)
+        {
+            vm.HidePrescriptionPreviewPanelCommand.Execute(null);
+        }
+
+        e.Handled = true;
+    }
+
+    private void EditPanPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (DataContext is MainViewModel vm)
+        {
+            vm.EditPrescriptionPanPositionCommand.Execute(null);
+        }
+    }
+
+    private void EditRushPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (DataContext is MainViewModel vm)
+        {
+            vm.EditPrescriptionRushPositionCommand.Execute(null);
+        }
+    }
+
+    private void EditInfoLabelPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (DataContext is MainViewModel vm)
+        {
+            vm.EditPrescriptionInfoLabelPositionCommand.Execute(null);
+        }
+    }
+
+    private void PrescriptionEventsLoadingOverlay_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        if (DataContext is MainViewModel vm)
+        {
+            vm.DismissPrescriptionProcessingOverlayCommand.Execute(null);
+        }
+    }
+
+    private static bool IsVisualDescendantOf(DependencyObject? child, DependencyObject? ancestor)
+    {
+        while (child is not null)
+        {
+            if (child == ancestor)
+            {
+                return true;
+            }
+
+            child = VisualTreeHelper.GetParent(child);
+        }
+
+        return false;
     }
 }

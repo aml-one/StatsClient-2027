@@ -4,6 +4,7 @@ using StatsClient.MVVM.ViewModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace StatsClient.Themes;
 
@@ -12,6 +13,16 @@ public partial class LvItemModern
     public LvItemModern()
     {
         InitializeComponent();
+    }
+
+    private void WatchListEyeToggle_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is not CheckBox checkBox)
+            return;
+
+        bool newState = MainViewModel.Instance.ToggleWatchListFromListItem(checkBox.DataContext);
+        checkBox.IsChecked = newState;
     }
 
     private void MenuItemOpenUpOrderInfoWindow_Click(object sender, RoutedEventArgs e)
@@ -25,6 +36,10 @@ public partial class LvItemModern
             {
                 order = target.DataContext as ThreeShapeOrdersModel;
             }
+        }
+        else if (sender is FrameworkElement element)
+        {
+            order = element.DataContext as ThreeShapeOrdersModel;
         }
 
         MainViewModel.Instance.OpenUpOrderInfoWindow(order);

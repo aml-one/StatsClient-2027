@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using StatsClient.MVVM.Core;
+using System.Windows;
 
 namespace StatsClient.MVVM.Model;
 
@@ -9,6 +10,7 @@ public class ThreeShapeOrdersModel{
     public string? Patient_RefNo { get; set; } 
     public string? ExtOrderID { get; set; } 
     public string? OrderComments { get; set; }
+    public bool IsRush => OrderCommentKeywords.ContainsRushKeyword(OrderComments);
     public string? Items { get; set; } 
     public string? OperatorName { get; set; }
     public string? Customer { get; set; }
@@ -42,6 +44,10 @@ public class ThreeShapeOrdersModel{
     public string? OriginalOrderID { get; set; }
     public string? DesignerID { get; set; }
     public string? DesignerName { get; set; }
+    /// <summary>Friendly designed date/time for the Designer column (from DesignedBy file or Patient_RefNo).</summary>
+    public string? DesignedDateTime { get; set; }
+    /// <summary>Show designed date under purple designer name (not green checkout, not "Changed by").</summary>
+    public bool ShowDesignedDateTimeInColumn { get; set; }
     public string? OrderFolderPath { get; set; }
     public string? XmlFilePath { get; set; }
     public string? ArchiveBaseFolderPath { get; set; }
@@ -74,4 +80,5 @@ public class DesignerHistoryModel()
     public string? Date { get; set; }
     public string? Time { get; set; }
     public string? DesignerName { get; set; }
+    public DateTime? DesignedAt { get; set; }
 }

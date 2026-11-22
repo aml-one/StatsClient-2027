@@ -32,6 +32,7 @@ public partial class MainViewModel
             order.ExtOrderID = friendlyName;
             order.DesignerName = friendlyName;
             order.ShowCheckedOutDesignerFromStats = true;
+            order.ShowDesignedDateTimeInColumn = false;
         }
     }
 
@@ -39,6 +40,8 @@ public partial class MainViewModel
     /// Checked-out in 3Shape is <c>plCheckedOut</c> on ModelElement (not a process status id).
     /// </summary>
     private static bool IsCheckedOutForDesignerLookup(ThreeShapeOrdersModel order) =>
-        order.IsCheckedOut
-        || string.Equals(order.ProcessLockID, "plCheckedOut", StringComparison.OrdinalIgnoreCase);
+        !order.IsCaseWereDesigned
+        && !string.Equals(order.MaxProcessStatusID, "psModelled", StringComparison.OrdinalIgnoreCase)
+        && (order.IsCheckedOut
+            || string.Equals(order.ProcessLockID, "plCheckedOut", StringComparison.OrdinalIgnoreCase));
 }

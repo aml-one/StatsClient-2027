@@ -232,6 +232,67 @@
             </Setter>
         </Style>
 
+        <Style x:Key="SectionHeaderResetZoomButton"
+               TargetType="Button">
+            <Setter Property="MinWidth"
+                    Value="34" />
+            <Setter Property="Height"
+                    Value="22" />
+            <Setter Property="Padding"
+                    Value="6,1" />
+            <Setter Property="FontSize"
+                    Value="10" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Background"
+                    Value="{DynamicResource ViewerPanelBackground}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ViewerInfoPanelTitleForeground}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource ViewerPanelBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Chrome"
+                                        Property="Background"
+                                        Value="{StaticResource ViewerPanelBackgroundAlt}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+                                <Setter TargetName="Chrome"
+                                        Property="Background"
+                                        Value="{StaticResource ViewerSliderTrackDark}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter Property="Opacity"
+                                        Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="NiceVerticalSlider"
                TargetType="Slider">
             <Setter Property="OverridesDefaultStyle"
@@ -1342,10 +1403,11 @@
                                Height="24"
                                Stretch="Uniform" />
                     </Button>-->
-                    <Button Style="{StaticResource IconButton}"
-                            ToolTip="Toggle finish"
+                    <Button x:Name="FinishToggleButton"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="{Binding FinishLabel, StringFormat=Toggle finish ({0})}"
                             Command="{Binding ToggleFinishCommand}">
-                        <Image Source="/DcmViewer/Images/finish.png"
+                        <Image Source="/DcmViewer/Images/shader.png"
                                Width="24"
                                Height="24"
                                Stretch="Uniform" />
@@ -1374,7 +1436,7 @@
                             ToolTip="Sculpt mode — add, remove, smooth, or move surface"
                             Margin="0,0,0,6"
                             Command="{Binding ToggleSculptModeCommand}">
-                        <Image Source="/DcmViewer/Images/sculp_tool.png"
+                        <Image Source="/DcmViewer/Images/sculp_tool_model.png"
                                Width="22"
                                Height="22"
                                Stretch="Uniform" />
@@ -1722,11 +1784,9 @@
                                     PreviewMouseLeftButtonDown="Slider_PreviewMouseLeftButtonDown" />
                             <Button Grid.Column="2"
                                     x:Name="ResetZoomButton"
+                                    Style="{StaticResource SectionHeaderResetZoomButton}"
                                     Content="1:1"
                                     Margin="0,0,6,0"
-                                    Padding="5,1"
-                                    VerticalAlignment="Center"
-                                    FontSize="10"
                                     ToolTip="Reset zoom"
                                     Click="ResetZoomButton_OnClick"
                                     Visibility="Collapsed" />

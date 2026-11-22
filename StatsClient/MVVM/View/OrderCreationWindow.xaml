@@ -1,0 +1,577 @@
+<Window x:Class="StatsClient.MVVM.View.OrderCreationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
+        xmlns:controls="clr-namespace:StatsClient.UserControls"
+        xmlns:vm="clr-namespace:StatsClient.MVVM.ViewModel"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:OrderCreationViewModel, IsDesignTimeCreatable=True}"
+        Title="Order Creation"
+        Height="920"
+        Width="620"
+        MinHeight="680"
+        MinWidth="520"
+        MaxWidth="720"
+        ResizeMode="CanResizeWithGrip"
+        WindowStyle="None"
+        ShowInTaskbar="False"
+        WindowStartupLocation="Manual"
+        FontFamily="Segoe UI"
+        Background="{DynamicResource TransparentBrush}">
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="4"
+                      CaptionHeight="0" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <converter:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <converter:InverseBoolConverter x:Key="InverseBoolConverter" />
+        <Style x:Key="OrderCreationLabel"
+               TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+            <Setter Property="Margin"
+                    Value="0,0,10,0" />
+        </Style>
+
+        <Style x:Key="OrderCreationInput"
+               TargetType="TextBox">
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="Padding"
+                    Value="8,6" />
+            <Setter Property="Background"
+                    Value="{DynamicResource ImmersiveGlassBackground}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource ImmersiveGlassBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+        </Style>
+
+        <Style x:Key="OrderCreationCombo"
+               TargetType="ComboBox"
+               BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="MinHeight"
+                    Value="28" />
+            <Setter Property="Margin"
+                    Value="0" />
+        </Style>
+
+        <DataTemplate x:Key="OrderCreationShadeItemTemplate">
+            <StackPanel Orientation="Horizontal"
+                        Margin="2,1">
+                <Border Width="18"
+                        Height="18"
+                        CornerRadius="3"
+                        Margin="0,0,8,0"
+                        BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                        BorderThickness="1"
+                        Background="{Binding SwatchBrush}" />
+                <TextBlock Text="{Binding Display}"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ImmersiveTextPrimary}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <Style x:Key="OrderCreationCustomerListItem"
+               TargetType="ListBoxItem">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="Padding"
+                    Value="8,4" />
+            <Style.Triggers>
+                <Trigger Property="IsSelected"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="{StaticResource ComboBoxItemHighlightBackground}" />
+                    <Setter Property="Foreground"
+                            Value="{StaticResource ImmersiveTextPrimary}" />
+                </Trigger>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="{StaticResource ImmersiveFilterButtonHoverGradientStart}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="OrderCreationSmallButton"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="{DynamicResource ImmersiveGlassBackground}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource ImmersiveGlassBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="FontSize"
+                    Value="11" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Padding"
+                    Value="8,4" />
+            <Setter Property="MinHeight"
+                    Value="28" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="OrderCreationCancelButton"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="#C0392B" />
+            <Setter Property="Foreground"
+                    Value="White" />
+            <Setter Property="BorderBrush"
+                    Value="#962D22" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="FontSize"
+                    Value="13" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Padding"
+                    Value="16,10" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="IsDefault"
+                    Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="#E74C3C" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="OrderCreationGenerateButton"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="#27AE60" />
+            <Setter Property="Foreground"
+                    Value="White" />
+            <Setter Property="BorderBrush"
+                    Value="#1E8449" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="FontSize"
+                    Value="13" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Padding"
+                    Value="16,10" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="#2ECC71" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="8"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+            Background="{DynamicResource ClassicWindowBackgroundBrush}"
+            ClipToBounds="True">
+        <Grid Margin="14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource ImmersiveGlassBackground}"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="6,6,0,0"
+                    Padding="10,8"
+                    Margin="-14,-14,-14,10"
+                    PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown">
+                <Grid>
+                    <TextBlock Text="Order Creation"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ImmersiveTextPrimary}"
+                               VerticalAlignment="Center" />
+                    <TextBlock x:Name="CloseButton"
+                               Text="╳"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               FontSize="14"
+                               Cursor="Hand"
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+                               ToolTip="Close"
+                               PreviewMouseLeftButtonDown="CloseButton_PreviewMouseLeftButtonDown" />
+                </Grid>
+            </Border>
+
+            <TextBlock Grid.Row="1"
+                       Text="Review and edit extracted prescription fields before generating the order."
+                       FontSize="10"
+                       Foreground="{DynamicResource ImmersiveTextMuted}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,10" />
+
+            <ScrollViewer Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Grid.Column="0"
+                               Text="Pan Number"
+                               VerticalAlignment="Top"
+                               Style="{StaticResource OrderCreationLabel}" />
+                    <TextBox Grid.Row="0"
+                             Grid.Column="1"
+                             Margin="0,0,0,8"
+                             Style="{StaticResource OrderCreationInput}"
+                             IsReadOnly="True"
+                             IsTabStop="False"
+                             Text="{Binding PanNumber, Mode=OneWay}" />
+
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="0"
+                               Text="Doctor"
+                               VerticalAlignment="Top"
+                               Margin="0,0,10,0"
+                               Style="{StaticResource OrderCreationLabel}" />
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="1"
+                                Margin="0,0,0,8">
+                        <TextBox Style="{StaticResource OrderCreationInput}"
+                                 Text="{Binding DoctorName, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="3Shape customers"
+                                   Margin="0,8,0,4"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ImmersiveTextMuted}"
+                                   Visibility="{Binding HasCustomerSuggestions, Converter={StaticResource BoolToVis}}" />
+                        <ListBox MaxHeight="140"
+                                 ItemsSource="{Binding CustomerSuggestionsList}"
+                                 SelectedItem="{Binding SelectedCustomerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="{DynamicResource ImmersiveGlassBackground}"
+                                 BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                                 BorderThickness="1"
+                                 Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                 ItemContainerStyle="{StaticResource OrderCreationCustomerListItem}"
+                                 Visibility="{Binding HasCustomerSuggestions, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="2"
+                               Grid.Column="0"
+                               Text="Patient First name"
+                               VerticalAlignment="Top"
+                               Style="{StaticResource OrderCreationLabel}" />
+                    <TextBlock Grid.Row="3"
+                               Grid.Column="0"
+                               Text="Patient Last name"
+                               VerticalAlignment="Bottom"
+                               Margin="0,0,10,10"
+                               Style="{StaticResource OrderCreationLabel}" />
+                    <StackPanel Grid.Row="2"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Margin="0,0,0,8">
+                        <TextBox Style="{StaticResource OrderCreationInput}"
+                                 Text="{Binding PatientFirstName, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Width="30"
+                                Height="24"
+                                Margin="0,4,0,4"
+                                HorizontalAlignment="Center"
+                                Padding="0"
+                                Cursor="Hand"
+                                ToolTip="Swap first and last name"
+                                Command="{Binding SwapPatientNamesCommand}"
+                                Background="{DynamicResource ImmersiveGlassBackground}"
+                                Foreground="{DynamicResource ImmersiveTextPrimary}"
+                                BorderBrush="{DynamicResource ImmersiveGlassBorder}">
+                            <TextBlock Text="⇄"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="90" />
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Button>
+                        <TextBox Style="{StaticResource OrderCreationInput}"
+                                 Text="{Binding PatientLastName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="4"
+                               Grid.Column="0"
+                               Text="Shade"
+                               VerticalAlignment="Top"
+                               Style="{StaticResource OrderCreationLabel}" />
+                    <ComboBox Grid.Row="4"
+                              Grid.Column="1"
+                              Margin="0,0,0,8"
+                              Style="{StaticResource OrderCreationCombo}"
+                              ItemsSource="{Binding ShadesView}"
+                              ItemTemplate="{StaticResource OrderCreationShadeItemTemplate}"
+                              SelectedValuePath="Code"
+                              SelectedValue="{Binding SelectedShade, UpdateSourceTrigger=PropertyChanged}">
+                        <ComboBox.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource ImmersiveTextMuted}"
+                                                   Margin="0,4,0,2" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                                <GroupStyle.ContainerStyle>
+                                    <Style TargetType="{x:Type GroupItem}">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                    <StackPanel>
+                                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                                          ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                                        <ItemsPresenter Margin="8,0,0,4" />
+                                                    </StackPanel>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </GroupStyle.ContainerStyle>
+                            </GroupStyle>
+                        </ComboBox.GroupStyle>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="5"
+                               Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               Text="Teeth selection"
+                               Style="{StaticResource OrderCreationLabel}"
+                               Margin="0,0,0,6" />
+                    <controls:TeethSelectorControl Grid.Row="6"
+                                                   Grid.Column="0"
+                                                   Grid.ColumnSpan="2"
+                                                   Margin="0,0,0,10"
+                                                   MinHeight="180"
+                                                   NumberFontSize="20"
+                                                   d:TeethNumbers="3,8,9"
+                                                   TeethNumbers="{Binding TeethNumbers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Grid.Row="8"
+                               Grid.Column="0"
+                               Text="Comments"
+                               VerticalAlignment="Top"
+                               Style="{StaticResource OrderCreationLabel}"
+                               Visibility="{Binding ShowComments, Converter={StaticResource BoolToVis}}" />
+                    <TextBox Grid.Row="8"
+                             Grid.Column="1"
+                             Margin="0,0,0,8"
+                             Style="{StaticResource OrderCreationInput}"
+                             Text="{Binding Comments, UpdateSourceTrigger=PropertyChanged}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             MinHeight="54"
+                             VerticalScrollBarVisibility="Auto"
+                             Visibility="{Binding ShowComments, Converter={StaticResource BoolToVis}}" />
+
+                    <TextBlock Grid.Row="10"
+                               Grid.Column="0"
+                               VerticalAlignment="Top"
+                               Text="Scanner Order ID"
+                               Style="{StaticResource OrderCreationLabel}"
+                               Visibility="{Binding ShowScannerOrderId, Converter={StaticResource BoolToVis}}" />
+                    <TextBox Grid.Row="10"
+                             Grid.Column="1"
+                             Margin="0,0,0,8"
+                             Style="{StaticResource OrderCreationInput}"
+                             Text="{Binding ScannerOrderId, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="{Binding ShowScannerOrderId, Converter={StaticResource BoolToVis}}" />
+
+                    <TextBlock Grid.Row="12"
+                               Grid.Column="0"
+                               VerticalAlignment="Top"
+                               Text="Digital System"
+                               Style="{StaticResource OrderCreationLabel}" />
+                    <ComboBox Grid.Row="12"
+                              Grid.Column="1"
+                              Margin="0,0,0,8"
+                              Style="{StaticResource OrderCreationCombo}"
+                              ItemsSource="{Binding DigitalSystems}"
+                              SelectedItem="{Binding DigitalSystem, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Grid.Row="14"
+                               Grid.Column="0"
+                               Text="Restoration"
+                               VerticalAlignment="Top"
+                               Style="{StaticResource OrderCreationLabel}" />
+                    <StackPanel Grid.Row="14"
+                                Grid.Column="1"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,8">
+                        <RadioButton Content="No hole"
+                                       GroupName="OrderCreationScrewRetained"
+                                       IsChecked="{Binding IsScrewRetained, Converter={StaticResource InverseBoolConverter}, Mode=TwoWay}"
+                                       Margin="0,0,16,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                        <RadioButton Content="Screw retained"
+                                       GroupName="OrderCreationScrewRetained"
+                                       IsChecked="{Binding IsScrewRetained, Mode=TwoWay}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="16"
+                               Grid.Column="0"
+                               Text="Final Order ID"
+                               VerticalAlignment="Top"
+                               Style="{StaticResource OrderCreationLabel}" />
+                    <Grid Grid.Row="16"
+                          Grid.Column="1"
+                          Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0"
+                                 Margin="0,0,6,0"
+                                 Style="{StaticResource OrderCreationInput}"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding FinalOrderId, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Grid.Column="1"
+                                Content="Copy"
+                                Margin="0,0,4,0"
+                                Style="{StaticResource OrderCreationSmallButton}"
+                                Command="{Binding CopyFinalOrderIdCommand}" />
+                        <Button Grid.Column="2"
+                                Content="Copy and close"
+                                Style="{StaticResource OrderCreationSmallButton}"
+                                Command="{Binding CopyFinalOrderIdAndCloseCommand}" />
+                    </Grid>
+                </Grid>
+            </ScrollViewer>
+
+            <Grid Grid.Row="3"
+                  Margin="0,12,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ProgressBar Grid.Row="0"
+                             Height="4"
+                             Margin="0,0,0,8"
+                             IsIndeterminate="True"
+                             Visibility="{Binding IsGenerating, Converter={StaticResource BoolToVis}}" />
+                <TextBlock Grid.Row="1"
+                           Text="{Binding StatusMessage}"
+                           TextWrapping="Wrap"
+                           FontSize="11"
+                           Foreground="{DynamicResource OrderInfoHintForeground}"
+                           Margin="0,0,0,8"
+                           Visibility="{Binding HasStatusMessage, Converter={StaticResource BoolToVis}}" />
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Content="Generate Order"
+                            Margin="0,0,8,0"
+                            Style="{StaticResource OrderCreationGenerateButton}"
+                            IsEnabled="{Binding IsGenerating, Converter={StaticResource InverseBoolConverter}}"
+                            Command="{Binding GenerateOrderCommand}" />
+                    <Button Grid.Column="1"
+                            Content="Cancel"
+                            Style="{StaticResource OrderCreationCancelButton}"
+                            Command="{Binding CancelCommand}" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

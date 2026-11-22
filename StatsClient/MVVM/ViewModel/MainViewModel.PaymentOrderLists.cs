@@ -58,7 +58,7 @@ public partial class MainViewModel
         {
             selectedPaymentDesigner = value;
             RaisePropertyChanged(nameof(SelectedPaymentDesigner));
-            if (value != null)
+            if (value != null && _paymentTabDataLoaded)
             {
                 Debug.WriteLine($"[PaymentOrderLists] Designer selected: {value.FriendlyName} (ID: {value.DesignerID})");
 
@@ -308,6 +308,65 @@ public partial class MainViewModel
 
     #region PAYMENT ORDER LISTS METHODS
 
+    private bool _paymentTabDataLoaded;
+    private Task? _paymentTabDataLoadTask;
+
+    /// <summary>
+    /// Loads payment summaries, issue counts, and order-list designers the first time
+    /// the user opens the Payments tab. Not called during startup or background ticks.
+    /// </summary>
+    public Task EnsurePaymentTabDataLoadedAsync()
+    {
+        if (_paymentTabDataLoaded)
+            return Task.CompletedTask;
+
+        return _paymentTabDataLoadTask ??= LoadPaymentTabDataCoreAsync();
+    }
+
+    private async Task LoadPaymentTabDataCoreAsync()
+    {
+        Debug.WriteLine("[PaymentOrderLists] Loading payment tab data on first visit...");
+        try
+        {
+            await Task.Run(InitializePaymentListCutOffDate).ConfigureAwait(false);
+
+            var paymentIssueCount = await GetPaymentIssueCountFromDB().ConfigureAwait(false);
+            var designerPaymentSummaryList = await GetDesignerPaymentSummaryFromDB().ConfigureAwait(false);
+            var paidToWrongPersonOrdersList = await GetPaidToWrongPersonsOrdersListFromDB().ConfigureAwait(false);
+
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                PaymentIssueCount = paymentIssueCount;
+                DesignerPaymentSummaryList = designerPaymentSummaryList;
+                PaidToWrongPersonOrdersList = paidToWrongPersonOrdersList;
+                _paymentTabDataLoaded = true;
+            }).Task.ConfigureAwait(false);
+
+            await LoadPaymentDesignersAsync().ConfigureAwait(false);
+            Debug.WriteLine("[PaymentOrderLists] Payment tab data loaded");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[PaymentOrderLists] Error loading payment tab data: {ex.Message}");
+            _paymentTabDataLoadTask = null;
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Refreshes payment summary data after the user resolves an issue on the Payments tab.
+    /// </summary>
+    public async Task RefreshPaymentTabDataAsync()
+    {
+        if (!_paymentTabDataLoaded)
+            return;
+
+        Debug.WriteLine("[PaymentOrderLists] Refreshing payment tab data...");
+        PaymentIssueCount = await GetPaymentIssueCountFromDB().ConfigureAwait(true);
+        DesignerPaymentSummaryList = await GetDesignerPaymentSummaryFromDB().ConfigureAwait(true);
+        PaidToWrongPersonOrdersList = await GetPaidToWrongPersonsOrdersListFromDB().ConfigureAwait(true);
+    }
+
     /// <summary>
     /// Initializes the PaymentListCutOffDate from database settings.
     /// If not set or null, defaults to 2025-10-01 and saves to database.
@@ -390,7 +449,7 @@ public partial class MainViewModel
 
     private void LoadHistoricalCasesWithPagination()
     {
-        if (SelectedPaymentDesigner == null || bwLoadHistoricalCases.IsBusy)
+        if (!_paymentTabDataLoaded || SelectedPaymentDesigner == null || bwLoadHistoricalCases.IsBusy)
             return;
 
         IsLoadingHistoricalCases = true;
@@ -399,7 +458,7 @@ public partial class MainViewModel
 
     private void LoadUnpaidCasesWithPagination()
     {
-        if (SelectedPaymentDesigner == null || bwLoadUnpaidCases.IsBusy)
+        if (!_paymentTabDataLoaded || SelectedPaymentDesigner == null || bwLoadUnpaidCases.IsBusy)
             return;
 
         IsLoadingUnpaidCases = true;
@@ -792,7 +851,7 @@ public partial class MainViewModel
 
     private async void LoadPayPeriodStatistics(object? obj)
     {
-        if (SelectedPaymentDesigner == null)
+        if (!_paymentTabDataLoaded || SelectedPaymentDesigner == null)
         {
             Debug.WriteLine("[PaymentOrderLists] No designer selected for statistics");
             return;

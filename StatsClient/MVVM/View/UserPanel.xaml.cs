@@ -57,13 +57,16 @@ namespace StatsClient.MVVM.View
         }
 
         public System.Timers.Timer _timer;
+        private bool _timerStopped;
 
         public UserPanel(string designerID)
         {
             Instance = this;
             InitializeComponent();
             DesignerID = designerID;
-            UserPanelViewModel.Instance.DesignerID = designerID;
+
+            if (DataContext is UserPanelViewModel viewModel)
+                viewModel.DesignerID = designerID;
            
             PropertyGroupDescription groupDescription = new("SentOn");
             listView.Items.GroupDescriptions.Add(groupDescription);
@@ -71,15 +74,63 @@ namespace StatsClient.MVVM.View
             _timer = new System.Timers.Timer(4000);
             _timer.Elapsed += Timer_Elapsed;
             _timer.Start();
+
+            Unloaded += (_, _) => StopTimer();
+            if (Application.Current is not null)
+            {
+                Application.Current.Exit += (_, _) => StopTimer();
+            }
+        }
+
+        private void StopTimer()
+        {
+            if (_timerStopped)
+            {
+                return;
+            }
+
+            _timerStopped = true;
+            try
+            {
+                _timer.Stop();
+                _timer.Elapsed -= Timer_Elapsed;
+                _timer.Dispose();
+            }
+            catch
+            {
+            }
+
+            if (ReferenceEquals(Instance, this))
+            {
+                Instance = null;
+            }
         }
 
         private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
+            if (_timerStopped)
+            {
+                return;
+            }
+
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher is null || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
+            {
+                StopTimer();
+                return;
+            }
+
             try
             {
-                Application.Current.Dispatcher.Invoke(new Action(() => {
+                dispatcher.BeginInvoke(() =>
+                {
+                    if (_timerStopped || !IsLoaded)
+                    {
+                        return;
+                    }
+
                     listView.Items.Refresh();
-                }));
+                });
             }
             catch (Exception ex)
             {

@@ -816,7 +816,7 @@
                             </Button>
                         </Border>
 
-                        <Border Style="{StaticResource HomeTileReveal5}"
+                        <!--<Border Style="{StaticResource HomeTileReveal5}"
                                 Visibility="{Binding CbSettingModuleAccountInfos, Converter={StaticResource BoolToVisibilityConverter}}"
                                 d:Visibility="Visible">
                             <Button Command="{Binding SwitchToAccountInfosTabCommand}"
@@ -826,11 +826,11 @@
                                     <Image Source="/Images/HomeButtons/accounts.png"
                                            Height="72"
                                            Width="62" />
-                                    <TextBlock Text="Account Infos"
+                                    <TextBlock Text="Passwords"
                                                Style="{StaticResource HomeModuleTitle}" />
                                 </StackPanel>
                             </Button>
-                        </Border>
+                        </Border>-->
 
                         <Border Style="{StaticResource HomeTileReveal5}"
                                 Visibility="{Binding CbSettingModuleKnowledgeBase, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -839,7 +839,7 @@
                                     Style="{StaticResource HomeModuleTile}"
                                     Tag="{DynamicResource HomeTileSettingsTint}">
                                 <StackPanel>
-                                    <Image Source="/Images/database.png"
+                                    <Image Source="/Images/HomeButtons/accounts.png"
                                            Height="72"
                                            Width="62" />
                                     <TextBlock Text="Knowledge Base"
@@ -915,90 +915,169 @@
                 </Grid.ColumnDefinitions>
 
 
-                <Border Grid.Column="0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        CornerRadius="8"
-                        Padding="14,8"
-                        Opacity="0"
-                        Background="{DynamicResource FilterSectionCardBackground}"
-                        BorderBrush="{DynamicResource SchemeColor_44B8E8F5}"
-                        BorderThickness="1"
-                        Visibility="{Binding ArchivesCount, Converter={StaticResource ZeroToVisibleConverter}}"
-                        d:Visibility="Visible">
-                    <Border.Effect>
-                        <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
-                                          BlurRadius="12"
-                                          ShadowDepth="0"
-                                          Opacity="0.15" />
-                    </Border.Effect>
-                    <Border.Triggers>
-                        <EventTrigger RoutedEvent="Loaded">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                     To="1"
-                                                     Duration="0:0:0.5" />
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </Border.Triggers>
-                    <StackPanel>
-                        <TextBlock Text="Archives Datastore"
-                                   Foreground="{DynamicResource ImmersiveTextSecondary}"
-                                   FontWeight="SemiBold"
-                                   FontSize="13"
-                                   Margin="0,0,0,6" />
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0"
-                                       Grid.Column="0"
-                                       Text="Total orders:"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
-                            <TextBlock Grid.Row="0"
-                                       Grid.Column="2"
-                                       Text="{Binding TotalOrdersInArchivesDatastore}"
-                                       d:Text="11"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource HomeArchivesStatTotalForeground}"
-                                       FontWeight="SemiBold" />
-                            <TextBlock Grid.Row="1"
-                                       Grid.Column="0"
-                                       Text="Between dates:"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
-                            <TextBlock Grid.Row="1"
-                                       Grid.Column="2"
-                                       Text="{Binding OrdersInArchivesDatastoreBetweenDates}"
-                                       d:Text="11"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource HomeArchivesStatBetweenForeground}"
-                                       FontWeight="SemiBold" />
-                            <TextBlock Grid.Row="2"
-                                       Grid.Column="0"
-                                       Text="Last rebuild:"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
-                            <TextBlock Grid.Row="2"
-                                       Grid.Column="2"
-                                       Text="{Binding LastArchivesDatastoreRebuildDate}"
-                                       d:Text="11"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource HomeArchivesStatRebuildForeground}"
-                                       FontWeight="SemiBold" />
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                <Grid Grid.Column="0"
+                      VerticalAlignment="Bottom"
+                      HorizontalAlignment="Left">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Button Grid.Row="0"
+                            Command="{Binding SwitchToWatchListTabCommand}"
+                            Padding="0"
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Stretch"
+                            Cursor="Hand"
+                            ToolTip="Open watch list"
+                            Visibility="{Binding WatchListCount, Converter={StaticResource ZeroToCollapsedConverter}}"
+                            d:Visibility="Visible">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background"
+                                        Value="Transparent" />
+                                <Setter Property="BorderThickness"
+                                        Value="0" />
+                                <Setter Property="FocusVisualStyle"
+                                        Value="{x:Null}" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <ContentPresenter />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <Border CornerRadius="8"
+                                Padding="14,8"
+                                HorizontalAlignment="Stretch"
+                                Opacity="0"
+                                Background="{DynamicResource FilterSectionCardBackground}"
+                                BorderBrush="{DynamicResource SchemeColor_44B8E8F5}"
+                                BorderThickness="1">
+                            <Border.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                             To="1"
+                                                             Duration="0:0:0.5" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Border.Triggers>
+                            <StackPanel>
+                                <TextBlock Text="Watch list"
+                                           Foreground="{DynamicResource ImmersiveTextSecondary}"
+                                           FontWeight="SemiBold"
+                                           FontSize="13"
+                                           Margin="0,0,0,6" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="Cases watched:"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding WatchListCount}"
+                                               d:Text="3"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource HomeArchivesStatTotalForeground}"
+                                               FontWeight="SemiBold" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Button>
+
+                    <Border Grid.Row="1"
+                            CornerRadius="8"
+                            Padding="14,8"
+                            HorizontalAlignment="Stretch"
+                            Opacity="0"
+                            Background="{DynamicResource FilterSectionCardBackground}"
+                            BorderBrush="{DynamicResource SchemeColor_44B8E8F5}"
+                            BorderThickness="1"
+                            Visibility="{Binding ArchivesCount, Converter={StaticResource ZeroToVisibleConverter}}"
+                            d:Visibility="Visible">
+                        <Border.Effect>
+                            <DropShadowEffect Color="{DynamicResource ImmersiveCardShadow_Cl}"
+                                              BlurRadius="12"
+                                              ShadowDepth="0"
+                                              Opacity="0.15" />
+                        </Border.Effect>
+                        <Border.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         To="1"
+                                                         Duration="0:0:0.5" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Border.Triggers>
+                        <StackPanel>
+                            <TextBlock Text="Archives Datastore"
+                                       Foreground="{DynamicResource ImmersiveTextSecondary}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"
+                                       Margin="0,0,0,6" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0"
+                                           Grid.Column="0"
+                                           Text="Total orders:"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                <TextBlock Grid.Row="0"
+                                           Grid.Column="2"
+                                           Text="{Binding TotalOrdersInArchivesDatastore}"
+                                           d:Text="11"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource HomeArchivesStatTotalForeground}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Grid.Row="1"
+                                           Grid.Column="0"
+                                           Text="Between dates:"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                <TextBlock Grid.Row="1"
+                                           Grid.Column="2"
+                                           Text="{Binding OrdersInArchivesDatastoreBetweenDates}"
+                                           d:Text="11"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource HomeArchivesStatBetweenForeground}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Grid.Row="2"
+                                           Grid.Column="0"
+                                           Text="Last rebuild:"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}" />
+                                <TextBlock Grid.Row="2"
+                                           Grid.Column="2"
+                                           Text="{Binding LastArchivesDatastoreRebuildDate}"
+                                           d:Text="11"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource HomeArchivesStatRebuildForeground}"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
                 <!-- Check Pan Color panel -->
                 <Border Grid.Column="0"

@@ -1,74 +1,231 @@
 <UserControl x:Class="StatsClient.MVVM.View.SentOutCasesPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:StatsClient.MVVM.View"
-             xmlns:viewmodel="clr-namespace:StatsClient.MVVM.ViewModel"
-             xmlns:core="clr-namespace:StatsClient.MVVM.Core"
+             xmlns:model="clr-namespace:StatsClient.MVVM.Model"
              xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
-             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             xmlns:core="clr-namespace:StatsClient.MVVM.Core"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             Background="{DynamicResource SentOutCasesPageBackground}">
 
     <UserControl.Resources>
         <ResourceDictionary>
+            <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converter:BoolToInverseVisibilityConverter x:Key="BoolToInverseVisibilityConverter" />
+            <converter:ZeroToCollapsedVisibilityConverter x:Key="ZeroToCollapsedVisibilityConverter" />
+
+            <Style x:Key="SentOutAccordionStripButton"
+                   TargetType="Button">
+                <Setter Property="Background"
+                        Value="{DynamicResource SentOutCasesAccordionStripBackground}" />
+                <Setter Property="BorderBrush"
+                        Value="{DynamicResource SentOutCasesAccordionStripBorder}" />
+                <Setter Property="BorderThickness"
+                        Value="1" />
+                <Setter Property="Padding"
+                        Value="8,4" />
+                <Setter Property="Margin"
+                        Value="0,0,0,2" />
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="HorizontalContentAlignment"
+                        Value="Stretch" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Strip"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter TargetName="Strip"
+                                            Property="Background"
+                                            Value="{StaticResource SentOutCasesAccordionStripHover}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <DataTemplate DataType="{x:Type model:SentOutDesignerAccordionItem}">
+                <Grid Visibility="{Binding IsVisibleInAccordion, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Button Grid.Row="0"
+                            Style="{StaticResource SentOutAccordionStripButton}"
+                            Command="{Binding DataContext.ToggleDesignerPanelCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                            CommandParameter="{Binding DesignerID}"
+                            Visibility="{Binding IsExpanded, Converter={StaticResource BoolToInverseVisibilityConverter}}">
+                        <Grid HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="▸"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource RxMakerLabelForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+
+                            <core:OutlinedTextBlock Grid.Column="1"
+                                                    Text="{Binding TotalUnits, StringFormat='{}{0:0}'}"
+                                                    Width="52"
+                                                    TextAlignment="Right"
+                                                    Stroke="{DynamicResource RxMakerPanelBorder}"
+                                                    StrokePosition="Outside"
+                                                    FontSize="28"
+                                                    FontWeight="SemiBold"
+                                                    Fill="{DynamicResource SentOutCasesUnitsAccent}"
+                                                    StrokeThickness="1"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,10,0">
+                                <core:OutlinedTextBlock.Effect>
+                                    <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
+                                                      BlurRadius="6"
+                                                      ShadowDepth="1"
+                                                      Opacity="0.35"
+                                                      Direction="270" />
+                                </core:OutlinedTextBlock.Effect>
+                            </core:OutlinedTextBlock>
+
+                            <StackPanel Grid.Column="2"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DesignerName}"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SentOutCasesUnitsAccent}"
+                                           TextTrimming="CharacterEllipsis"
+                                           MaxWidth="220" />
+                                <TextBlock Text="{Binding TotalOrders, StringFormat='{}{0:0} case'}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SentOutCasesOrdersAccent}"
+                                           Opacity="0.95"
+                                           Margin="0,1,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <Border Grid.Row="1"
+                            Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Background="{DynamicResource SentOutCasesDesignerBarBackground}"
+                            BorderBrush="{DynamicResource SentOutCasesAccordionExpandedBorder}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Margin="0,0,0,6"
+                            Height="{Binding DataContext.ExpandedPanelHeight, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0"
+                                    Background="{DynamicResource SentOutCasesAccordionStripBackground}"
+                                    BorderBrush="{DynamicResource SentOutCasesAccordionStripBorder}"
+                                    BorderThickness="0,0,0,1"
+                                    CornerRadius="10,10,0,0"
+                                    Padding="12,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="▾"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource SentOutCasesUnitsAccent}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,10,0" />
+
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding DesignerName}"
+                                               FontSize="17"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource RxMakerValueForeground}"
+                                               VerticalAlignment="Center" />
+
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding TotalUnits, StringFormat='{}{0:0} units active'}"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SentOutCasesUnitsAccent}"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <ContentControl Grid.Row="1"
+                                            Content="{Binding Panel}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Themes/ScrollBar.xaml" />
-                <ResourceDictionary Source="/Themes/LvItemModern.xaml" />            </ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="{DynamicResource SchemeColor_F5F7FA}"
-          d:Background="{DynamicResource SchemeColor_F5F7FA}"
-          HorizontalAlignment="Stretch"
-          Margin="-2,-4,-4,0">
+    <Grid Margin="6,4,6,4">
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0"
-              HorizontalAlignment="Stretch"
-              x:Name="mainGrid" />
+        <Border Grid.Row="0"
+                x:Name="PanelsHost"
+                Background="{DynamicResource TransparentBrush}"
+                SizeChanged="PanelsHost_SizeChanged">
+            <ItemsControl ItemsSource="{Binding DesignerPanels}"
+                          HorizontalContentAlignment="Stretch"
+                          VerticalAlignment="Top" />
+        </Border>
 
-        <Grid Grid.Row="1"
-              Grid.Column="0"
-              Grid.ColumnSpan="2"
-              Background="{DynamicResource WhiteBackground}"
-              Margin="4,0,4,4">
-            <Grid.Effect>
-                <DropShadowEffect Color="{DynamicResource SchemeColor_30000000_Cl}"
-                                  BlurRadius="8"
-                                  ShadowDepth="2"
-                                  Opacity="0.15"
-                                  Direction="270" />
-            </Grid.Effect>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-
-
+        <Border Grid.Row="1"
+                Background="{DynamicResource SentOutCasesFooterBackground}"
+                BorderBrush="{DynamicResource SentOutCasesFooterBorder}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Margin="0,6,0,0"
+                Padding="10,6">
             <StackPanel Orientation="Horizontal"
-                        Grid.Column="1"
-                        Margin="0,0,8,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center">
-                <Label Content="Last change in database:"
-                       FontSize="13"
-                       Foreground="{DynamicResource SchemeColor_7F8C8D}"
-                       Margin="0,0,-4,0" />
-
-                <Label Content="{Binding LastDBUpdateLocalTime}"
-                       d:Content="Fetching data.."
-                       d:Foreground="{DynamicResource PaymentStatusPaidColor}"
-                       FontSize="13"
-                       Foreground="{Binding UpdateTimeColor}"
-                       Opacity="{Binding UpdateTimeOpacity}"
-                       FontWeight="SemiBold" />
+                <TextBlock Text="Last change in database:"
+                           FontSize="13"
+                           Foreground="{DynamicResource RxMakerLabelForeground}"
+                           Margin="0,0,6,0" />
+                <TextBlock Text="{Binding LastDBUpdateLocalTime}"
+                           d:Text="Fetching data.."
+                           FontSize="13"
+                           Foreground="{Binding UpdateTimeColor}"
+                           Opacity="{Binding UpdateTimeOpacity}"
+                           FontWeight="SemiBold" />
             </StackPanel>
-        </Grid>
-    
+        </Border>
     </Grid>
 </UserControl>

@@ -161,9 +161,11 @@
     <None Remove="Images\Other\download.png" />
     <None Remove="Images\Other\download_2.gif" />
     <None Remove="Images\Other\edit.png" />
+    <None Remove="Images\Other\encode.png" />
     <None Remove="Images\Other\loading.gif" />
     <None Remove="Images\Other\loading2.gif" />
     <None Remove="Images\Other\scr.png" />
+    <None Remove="Images\Other\scanbody.png" />
     <None Remove="Images\Other\threeshape.png" />
     <None Remove="Images\Other\zip.png" />
     <None Remove="Images\SentOutCases\abutment.png" />
@@ -176,43 +178,14 @@
     <None Remove="Images\SentOutCases\screwretained.png" />
     <None Remove="Images\SentOutCases\trios_new.png" />
     <None Remove="Images\server.png" />
-    <None Remove="Images\Splash\1.jpg" />
-    <None Remove="Images\Splash\10.jpg" />
-    <None Remove="Images\Splash\11.jpg" />
-    <None Remove="Images\Splash\12.jpg" />
-    <None Remove="Images\Splash\13.jpg" />
-    <None Remove="Images\Splash\14.jpg" />
-    <None Remove="Images\Splash\15.jpg" />
-    <None Remove="Images\Splash\16.jpg" />
     <None Remove="Images\Splash\17.jpg" />
-    <None Remove="Images\Splash\18.jpg" />
-    <None Remove="Images\Splash\19.jpg" />
-    <None Remove="Images\Splash\2.jpg" />
-    <None Remove="Images\Splash\20.jpg" />
-    <None Remove="Images\Splash\21.jpg" />
-    <None Remove="Images\Splash\22.jpg" />
-    <None Remove="Images\Splash\23.jpg" />
-    <None Remove="Images\Splash\24.jpg" />
-    <None Remove="Images\Splash\25.jpg" />
-    <None Remove="Images\Splash\26.jpg" />
-    <None Remove="Images\Splash\27.jpg" />
-    <None Remove="Images\Splash\28.jpg" />
-    <None Remove="Images\Splash\29.jpg" />
-    <None Remove="Images\Splash\3.jpg" />
-    <None Remove="Images\Splash\30.jpg" />
-    <None Remove="Images\Splash\31.jpg" />
-    <None Remove="Images\Splash\4.jpg" />
-    <None Remove="Images\Splash\5.jpg" />
-    <None Remove="Images\Splash\6.jpg" />
-    <None Remove="Images\Splash\7.jpg" />
-    <None Remove="Images\Splash\8.jpg" />
-    <None Remove="Images\Splash\9.jpg" />
     <None Remove="Images\stats_2025_icon.ico" />
     <None Remove="Images\stats_2025_Q512.png" />
     <None Remove="Images\system-update.png" />
     <None Remove="Images\ToolBar\assign.png" />
     <None Remove="Images\ToolBar\dcm.png" />
     <None Remove="Images\ToolBar\download.png" />
+    <None Remove="Images\ToolBar\edit_design.png" />
     <None Remove="Images\ToolBar\folder.png" />
     <None Remove="Images\ToolBar\id.png" />
     <None Remove="Images\ToolBar\import.png" />
@@ -231,13 +204,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Images\PrescriptionCalibrations\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\stats_2025_icon.ico" />
+    <Content Include="Themes\LabnextHost.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\OrderCreation\TemplateOrder.xml" LogicalName="StatsClient.Assets.OrderCreation.TemplateOrder.xml" />
+    <EmbeddedResource Include="Assets\OrderCreation\Manufacturers.3ml" LogicalName="StatsClient.Assets.OrderCreation.Manufacturers.3ml" />
     <EmbeddedResource Include="eng.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Themes\LabnextHost.css" />
+    <EmbeddedResource Include="Images\Other\Labnext_Logo_RGB.svg" />
   </ItemGroup>
 	
   
@@ -625,6 +608,12 @@
     <Resource Include="Images\Other\edit.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Images\ToolBar\edit_design.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\ToolBar\encode.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Images\Other\loading.gif">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
@@ -632,6 +621,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\Other\scr.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Other\scanbody.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\Other\threeshape.png">
@@ -670,103 +662,16 @@
     <Resource Include="Images\server.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Images\Splash\1.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\10.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\11.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\12.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\13.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\14.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\15.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\16.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="Images\Splash\17.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\18.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\19.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\2.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\20.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\21.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\22.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\23.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\24.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\25.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\26.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\27.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\28.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\29.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\3.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\30.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\31.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\4.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\5.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\6.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\7.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\8.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Images\Splash\9.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\stats_2025_icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\stats_2025_Q512.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\TeethSelector\base_image.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Images\system-update.png">

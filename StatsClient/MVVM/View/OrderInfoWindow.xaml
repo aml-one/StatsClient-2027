@@ -41,7 +41,6 @@
                 <ResourceDictionary Source="/Themes/ScrollBar.xaml" />
                 <ResourceDictionary Source="/Themes/LvItemModern.xaml" />
                 <ResourceDictionary Source="/Themes/ControlStyles.xaml" />
-                <ResourceDictionary Source="/Themes/TabControlStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="OrderInfoWatchListEyeToggle"
@@ -49,9 +48,9 @@
                 <Setter Property="Cursor"
                         Value="Hand" />
                 <Setter Property="Width"
-                        Value="24" />
+                        Value="34" />
                 <Setter Property="Height"
-                        Value="24" />
+                        Value="34" />
                 <Setter Property="Background"
                         Value="{DynamicResource TransparentBrush}" />
                 <Setter Property="BorderThickness"
@@ -64,7 +63,7 @@
                                 <TextBlock x:Name="EyeIcon"
                                            FontFamily="Segoe MDL2 Assets"
                                            Text="&#xE7B3;"
-                                           FontSize="16"
+                                           FontSize="24"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            Foreground="{DynamicResource OrderInfoWatchListEyeInactive}"
@@ -97,6 +96,55 @@
                                             Property="Opacity"
                                             Value="0.88" />
                                 </MultiTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="OrderInfoDesignEditToggle"
+                   TargetType="ToggleButton">
+                <Setter Property="Cursor"
+                        Value="Hand" />
+                <Setter Property="Background"
+                        Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness"
+                        Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="Root"
+                                    Background="{DynamicResource TransparentBrush}"
+                                    BorderThickness="0"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+                                    <Setter TargetName="Root"
+                                            Property="Background"
+                                            Value="{StaticResource TransparentBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsChecked"
+                                         Value="True">
+                                    <Setter TargetName="Root"
+                                            Property="Background"
+                                            Value="{StaticResource TransparentBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed"
+                                         Value="True">
+                                    <Setter TargetName="Root"
+                                            Property="Background"
+                                            Value="{StaticResource TransparentBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled"
+                                         Value="False">
+                                    <Setter TargetName="Root"
+                                            Property="Opacity"
+                                            Value="0.45" />
+                                </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
@@ -174,10 +222,15 @@
                             VerticalAlignment="Top"
                             Panel.ZIndex="50"
                             Margin="0,-6,-7,0">
+                    <ToggleButton Style="{StaticResource IosToggleSwitchLqHq}"
+                                  IsChecked="{Binding DcmHighQualityRendering, Mode=TwoWay}"
+                                  Margin="0,0,20,0"
+                                  VerticalAlignment="Center"
+                                  ToolTip="Low quality / High quality rendering" />
                     <Button x:Name="btnToggleFullscreen"
                             Width="32"
                             Height="32"
-                            Margin="0,4,2,0"
+                            Margin="4,4,14,0"
                             VerticalAlignment="Center"
                             Background="{DynamicResource TransparentBrush}"
                             BorderThickness="0"
@@ -187,11 +240,12 @@
                         <TextBlock x:Name="tbFullscreenIcon"
                                    FontFamily="Segoe MDL2 Assets"
                                    Text="&#xE740;"
-                                   FontSize="13"
+                                   FontSize="18"
                                    Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center" />
                     </Button>
+
 
                     <Border Background="{DynamicResource DialogCloseButtonBackground}"
                             Width="52"
@@ -247,11 +301,14 @@
                                 BorderThickness="0"
                                 Margin="20,0,10,4"
                                 ToolTip="Rename order"
-                                Command="{Binding RenameOrderCommand}">
+                                Command="{Binding RenameOrderCommand}"
+                                Visibility="{Binding IsArchiveOrder, Converter={StaticResource BoolToInverseVisibilityConverter}}">
                             <Button.Content>
                                 <Image Source="/Images/ToolBar/rename.png" />
                             </Button.Content>
                         </Button>
+
+
 
                         <CheckBox Style="{StaticResource OrderInfoWatchListEyeToggle}"
                                   IsChecked="{Binding IsOnWatchList, Mode=TwoWay}"
@@ -259,6 +316,9 @@
                                   VerticalAlignment="Center"
                                   ToolTip="Watch this order"
                                   Visibility="{Binding IsArchiveOrder, Converter={StaticResource BoolToInverseVisibilityConverter}}" />
+
+
+
 
                         <Grid PreviewMouseDown="TitleBar_PreviewMouseDown"
                               Cursor="Hand">
@@ -525,534 +585,346 @@
                 </Grid>
 
 
-                <TabControl Grid.Row="2"
-                            SelectionChanged="TabControl_SelectionChanged">
-                    <TabItem Header="Overview"
-                             AllowDrop="True"
-                             x:Name="tabPageOverview"
-                             Drop="Thumbnails_Drop">
+                <!-- Full-bleed 3D canvas; gradient lives on the viewer. Side panels float above. -->
+                <Grid Grid.Row="2"
+                      Margin="0"
+                      AllowDrop="True"
+                      Drop="Thumbnails_Drop">
+                    <dcm:DcmViewerCanvasComponent x:Name="dcmViewer"
+                                                  Background="{DynamicResource TransparentBrush}"
+                                                  UseFullAppShell="True"
+                                                  IsBackgroundTransparent="True" />
 
-                        <!-- Full-bleed 3D canvas; gradient lives on the viewer. Side panels float above. -->
-                        <Grid Margin="0">
-                            <dcm:DcmViewerCanvasComponent x:Name="dcmViewer"
-                                                          Background="{DynamicResource TransparentBrush}"
-                                                          UseFullAppShell="True"
-                                                          IsBackgroundTransparent="True" />
+                    <Border x:Name="OrderInfoLeftPanel"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Stretch"
+                            Width="400"
+                            Margin="10,8,0,8"
+                            Panel.ZIndex="20"
+                            Background="{DynamicResource GlassPanelBackground}"
+                            CornerRadius="4"
+                            BorderBrush="{DynamicResource GlassPanelBorder}"
+                            BorderThickness="1">
+                        <Grid Margin="12,10,12,10">
+                            <ScrollViewer x:Name="orderInfoOverviewScroll"
+                                          VerticalScrollBarVisibility="Auto"
+                                          Background="{DynamicResource TransparentBrush}">
+                                <Grid Background="{DynamicResource TransparentBrush}">
+                                    <TextBox Text="RUSH"
+                                             FontSize="30"
+                                             Margin="0,-7,0,0"
+                                             BorderThickness="0"
+                                             Background="{DynamicResource TransparentBrush}"
+                                             Foreground="{DynamicResource SchemeColor_FFEF4444}"
+                                             Cursor="Arrow"
+                                             IsReadOnly="True"
+                                             FontWeight="Light"
+                                             HorizontalAlignment="Right"
+                                             Visibility="{Binding IsRush, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    <StackPanel>
+                                        <StackPanel Margin="0,1,15,8">
+                                            <TextBlock Text="DIGITAL CASE"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding DigitalCase}"
+                                                       d:Text="DIGITAL CASE"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       Margin="0,0,15,0"
+                                                       x:Name="tbDigitalCase" />
+                                            <TextBlock Text="TRAY SYSTEM"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,3,0,0"
+                                                       Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
+                                            <TextBlock Text="{Binding TraySystem}"
+                                                       d:Text="TRAY SYSTEM"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       x:Name="tbTraySystem"
+                                                       Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
+                                        </StackPanel>
 
-                            <Border x:Name="OrderInfoLeftPanel"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Stretch"
-                                    Width="400"
-                                    Margin="10,8,0,8"
-                                    Panel.ZIndex="20"
-                                    Background="{DynamicResource GlassPanelBackground}"
+                                        <StackPanel Margin="0,1,15,12">
+                                            <TextBlock Text="SCANNER"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Scanner}"
+                                                       d:Text="SCANNER"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       Margin="0,0,15,0"
+                                                       x:Name="tbScanner" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,1,15,12">
+                                            <TextBlock Text="STATUS"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Status}"
+                                                       d:Text="STATUS"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       Margin="0,0,15,0"
+                                                       x:Name="tbStatus" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,1,15,12">
+                                            <TextBlock Text="CREATED"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Created}"
+                                                       d:Text="CREATED"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       Margin="0,0,15,0"
+                                                       x:Name="tbCreated" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,1,15,12"
+                                                    Visibility="{Binding ShowScanned, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <TextBlock Text="SCANNED"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Scanned}"
+                                                       d:Text="SCANNED"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       Margin="0,0,15,0"
+                                                       x:Name="tbScanned" />
+                                        </StackPanel>
+
+
+
+                                        <StackPanel Margin="0,6,15,10">
+                                            <TextBlock Text="MATERIAL"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold"
+                                                       x:Name="tbMaterialTitle" />
+                                            <TextBlock Text="{Binding Material}"
+                                                       d:Text="MATERIAL"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       Margin="0,0,15,0"
+                                                       TextWrapping="Wrap"
+                                                       x:Name="tbMaterial" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,1,15,12">
+                                            <TextBlock Text="MANUFACTURER"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Manufacturer}"
+                                                       d:Text="MANUFACURER"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       Margin="0,0,15,0"
+                                                       TextWrapping="Wrap"
+                                                       x:Name="tbManufacturer" />
+                                        </StackPanel>
+
+
+
+                                        <StackPanel Margin="0,0,15,0"
+                                                    Visibility="{Binding Comments, Converter={StaticResource EmptyToHiddenConverter}}">
+                                            <TextBlock Text="COMMENTS"
+                                                       FontSize="10"
+                                                       VerticalAlignment="Top"
+                                                       Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Comments}"
+                                                       d:Text="COMMENTS"
+                                                       VerticalAlignment="Top"
+                                                       Margin="0,0,5,0"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SchemeColor_006800}"
+                                                       TextWrapping="Wrap"
+                                                       x:Name="tbComments" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </ScrollViewer>
+
+                            <view:OrderInfoDesignEditStepsPanel x:Name="orderInfoDesignEditStepsPanel"
+                                                                Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+
+                    <Grid HorizontalAlignment="Right"
+                          VerticalAlignment="Stretch"
+                          Width="200"
+                          Margin="0,8,10,8"
+                          Panel.ZIndex="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                            <RowDefinition Height="2" />
+                            <RowDefinition MaxHeight="105"
+                                           MinHeight="10" />
+                        </Grid.RowDefinitions>
+
+                        <view:OrderInfoDesignEditPanel x:Name="orderInfoDesignEditPanel"
+                                                       Grid.Row="0"
+                                                       Margin="0,0,0,6"
+                                                       Visibility="Collapsed" />
+
+                        <Border Grid.Row="1"
+                                Background="{DynamicResource GlassPanelBackground}"
+                                CornerRadius="4"
+                                BorderBrush="{DynamicResource GlassPanelBorder}"
+                                BorderThickness="1"
+                                Margin="0,0,0,6"
+                                x:Name="borderLastTouchedByPanel">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Background="{DynamicResource TransparentBrush}">
+                                    <TextBlock Text="LAST TOUCHED BY"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource GlassPanelSectionTitleForeground}"
+                                               HorizontalAlignment="Left"
+                                               Margin="14,8,0,0"
+                                               FontWeight="SemiBold" />
+
+                                    <StackPanel x:Name="panelLastTouchedBy"
+                                                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                Margin="15,5,15,15">
+                                        <StackPanel Margin="0,0,0,8">
+                                            <TextBlock Text="Stats Server"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
+                                                       FontSize="9"
+                                                       Foreground="{DynamicResource OrderInfoHintForeground}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,0,8">
+                                            <TextBlock Text="Stats Server"
+                                                       Foreground="{DynamicResource GlassPanelValueForeground}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
+                                                       FontSize="9"
+                                                       Foreground="{DynamicResource OrderInfoHintForeground}" />
+                                        </StackPanel>
+
+
+                                    </StackPanel>
+
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+
+
+                        <Grid Grid.Row="3"
+                              Background="{DynamicResource TransparentBrush}">
+                            <Grid.ContextMenu>
+                                <ContextMenu x:Name="designerContextMenu" />
+                            </Grid.ContextMenu>
+
+                            <Border Background="{DynamicResource GlassPanelBackground}"
                                     CornerRadius="4"
                                     BorderBrush="{DynamicResource GlassPanelBorder}"
-                                    BorderThickness="1">
-                                <Grid Margin="12,10,12,10">
-                                    <ScrollViewer x:Name="orderInfoOverviewScroll"
-                                                  VerticalScrollBarVisibility="Auto"
-                                                  Background="{DynamicResource TransparentBrush}">
-                                        <Grid Background="{DynamicResource TransparentBrush}">
-                                            <StackPanel>
-                                            <StackPanel Margin="0,1,15,8">
-                                                <TextBlock Text="DIGITAL CASE"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
+                                    BorderThickness="1"
+                                    x:Name="borderLastDesignedByPanel">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Background="{DynamicResource TransparentBrush}">
+                                        <TextBlock Text="DESIGNED BY"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource GlassPanelSectionTitleForeground}"
+                                                   HorizontalAlignment="Left"
+                                                   FontWeight="SemiBold"
+                                                   Margin="14,0,0,0" />
+
+                                        <StackPanel x:Name="panelLastDesignedBy"
+                                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                    Margin="15,5,15,15">
+                                            <StackPanel Margin="0,0,0,8">
+                                                <TextBlock Text="Designer Name"
+                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
                                                            FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding DigitalCase}"
-                                                           d:Text="DIGITAL CASE"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                           Margin="0,0,15,0"
-                                                           x:Name="tbDigitalCase" />
-                                                <TextBlock Text="TRAY SYSTEM"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
-                                                           FontWeight="SemiBold"
-                                                           Margin="0,3,0,0"
-                                                           Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
-                                                <TextBlock Text="{Binding TraySystem}"
-                                                           d:Text="TRAY SYSTEM"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                           x:Name="tbTraySystem"
-                                                           Visibility="{Binding TraySystem, Converter={StaticResource EmptyToHiddenConverter}}" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,1,15,12">
-                                                <TextBlock Text="SCANNER"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
-                                                           FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Scanner}"
-                                                           d:Text="SCANNER"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                           Margin="0,0,15,0"
-                                                           x:Name="tbScanner" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,1,15,12">
-                                                <TextBlock Text="STATUS"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
-                                                           FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Status}"
-                                                           d:Text="STATUS"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                           Margin="0,0,15,0"
-                                                           x:Name="tbStatus" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,1,15,12">
-                                                <TextBlock Text="CREATED"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
-                                                           FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Created}"
-                                                           d:Text="CREATED"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                           Margin="0,0,15,0"
-                                                           x:Name="tbCreated" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,1,15,12"
-                                                        Visibility="{Binding Scanned, Converter={StaticResource EmptyToHiddenConverter}}">
-                                                <TextBlock Text="SCANNED"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
-                                                           FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Scanned}"
-                                                           d:Text="SCANNED"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                           Margin="0,0,15,0"
-                                                           x:Name="tbScanned" />
-                                            </StackPanel>
-
-
-
-                                            <StackPanel Margin="0,6,15,10">
-                                                <TextBlock Text="MATERIAL"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
-                                                           FontWeight="SemiBold"
-                                                           x:Name="tbMaterialTitle" />
-                                                <TextBlock Text="{Binding Material}"
-                                                           d:Text="MATERIAL"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                           Margin="0,0,15,0"
-                                                           TextWrapping="Wrap"
-                                                           x:Name="tbMaterial" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,1,15,12">
-                                                <TextBlock Text="MANUFACTURER"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
-                                                           FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Manufacturer}"
-                                                           d:Text="MANUFACURER"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                           Margin="0,0,15,0"
-                                                           TextWrapping="Wrap"
-                                                           x:Name="tbManufacturer" />
-                                            </StackPanel>
-
-                                            <Button x:Name="btnIdentifyEncodeCap"
-                                                    Content="Identify Encode healing cap"
-                                                    Margin="0,8,15,4"
-                                                    Padding="10,6"
-                                                    HorizontalAlignment="Left"
-                                                    Click="IdentifyEncodeCap_Click"
-                                                    ToolTip="Pick 3 points on the healing cap top; the viewer will align, measure diameter, and suggest a 3Shape library entry." />
-
-                                            <Button x:Name="btnOpenStatsDesign"
-                                                    Content="Open Stats Design"
-                                                    Margin="0,4,15,4"
-                                                    Padding="10,6"
-                                                    HorizontalAlignment="Left"
-                                                    Click="OpenStatsDesign_Click"
-                                                    ToolTip="Full-screen design workspace: cement shell, sculpt restoration only, export STL to StatsCAD." />
-
-                                            <StackPanel Margin="0,0,15,0"
-                                                        Visibility="{Binding Comments, Converter={StaticResource EmptyToHiddenConverter}}">
-                                                <TextBlock Text="COMMENTS"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Top"
-                                                           Foreground="{DynamicResource GlassPanelLabelForeground}"
-                                                           FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Comments}"
-                                                           d:Text="COMMENTS"
-                                                           VerticalAlignment="Top"
-                                                           Margin="0,0,5,0"
-                                                           FontSize="11"
-                                                           Foreground="{DynamicResource SchemeColor_006800}"
-                                                           TextWrapping="Wrap"
-                                                           x:Name="tbComments" />
+                                                <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
+                                                           FontSize="9"
+                                                           Foreground="{DynamicResource OrderInfoHintForeground}" />
                                             </StackPanel>
                                         </StackPanel>
-                                    </Grid>
-                                </ScrollViewer>
-
-                                <view:OrderInfoDesignEditStepsPanel x:Name="orderInfoDesignEditStepsPanel"
-                                                                    Visibility="Collapsed" />
-                                </Grid>
-                            </Border>
-
-                            <Grid HorizontalAlignment="Right"
-                                  VerticalAlignment="Stretch"
-                                  Width="200"
-                                  Margin="0,8,10,8"
-                                  Panel.ZIndex="20">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition />
-                                    <RowDefinition Height="2" />
-                                    <RowDefinition MaxHeight="105"
-                                                   MinHeight="10" />
-                                </Grid.RowDefinitions>
-
-                                <view:OrderInfoDesignEditPanel x:Name="orderInfoDesignEditPanel"
-                                                               Grid.Row="0"
-                                                               Margin="0,0,0,6"
-                                                               Visibility="Collapsed" />
-
-                                <Border Grid.Row="1"
-                                        Background="{DynamicResource GlassPanelBackground}"
-                                        CornerRadius="4"
-                                        BorderBrush="{DynamicResource GlassPanelBorder}"
-                                        BorderThickness="1"
-                                        Margin="0,0,0,6"
-                                        x:Name="borderLastTouchedByPanel">
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                        <StackPanel Background="{DynamicResource TransparentBrush}">
-                                            <TextBlock Text="LAST TOUCHED BY"
-                                                       FontSize="11"
-                                                       Foreground="{DynamicResource GlassPanelSectionTitleForeground}"
-                                                       HorizontalAlignment="Left"
-                                                       Margin="14,8,0,0"
-                                                       FontWeight="SemiBold" />
-
-                                            <StackPanel x:Name="panelLastTouchedBy"
-                                                        ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                                        Margin="15,5,15,15">
-                                                <StackPanel Margin="0,0,0,8">
-                                                    <TextBlock Text="Stats Server"
-                                                               FontSize="12"
-                                                               Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                               FontWeight="SemiBold" />
-                                                    <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
-                                                               FontSize="9"
-                                                               Foreground="{DynamicResource OrderInfoHintForeground}" />
-                                                </StackPanel>
-                                                <StackPanel Margin="0,0,0,8">
-                                                    <TextBlock Text="Stats Server"
-                                                               Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                               FontWeight="SemiBold" />
-                                                    <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
-                                                               FontSize="9"
-                                                               Foreground="{DynamicResource OrderInfoHintForeground}" />
-                                                </StackPanel>
-
-
-                                            </StackPanel>
-
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                </Border>
-
-
-                                <Grid Grid.Row="3"
-                                      Background="{DynamicResource TransparentBrush}">
-                                    <Grid.ContextMenu>
-                                        <ContextMenu x:Name="designerContextMenu" />
-                                    </Grid.ContextMenu>
-
-                                    <Border Background="{DynamicResource GlassPanelBackground}"
-                                            CornerRadius="4"
-                                            BorderBrush="{DynamicResource GlassPanelBorder}"
-                                            BorderThickness="1"
-                                            x:Name="borderLastDesignedByPanel">
-                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                            <StackPanel Background="{DynamicResource TransparentBrush}">
-                                                <TextBlock Text="DESIGNED BY"
-                                                           FontSize="12"
-                                                           Foreground="{DynamicResource GlassPanelSectionTitleForeground}"
-                                                           HorizontalAlignment="Left"
-                                                           FontWeight="SemiBold"
-                                                           Margin="14,0,0,0" />
-
-                                                <StackPanel x:Name="panelLastDesignedBy"
-                                                            ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                                            Margin="15,5,15,15">
-                                                    <StackPanel Margin="0,0,0,8">
-                                                        <TextBlock Text="Designer Name"
-                                                                   Foreground="{DynamicResource GlassPanelValueForeground}"
-                                                                   FontWeight="SemiBold" />
-                                                        <TextBlock Text="Saturday - 11/4/2023 4:40:29 AM"
-                                                                   FontSize="9"
-                                                                   Foreground="{DynamicResource OrderInfoHintForeground}" />
-                                                    </StackPanel>
-                                                </StackPanel>
-                                            </StackPanel>
-                                        </ScrollViewer>
-                                    </Border>
-
-                                </Grid>
-                            </Grid>
-
-                            <Border x:Name="OverviewLoadingOverlay"
-                                    Panel.ZIndex="600"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"
-                                    Background="{DynamicResource BlackSeeThruColor}"
-                                    Visibility="Collapsed"
-                                    IsHitTestVisible="False">
-                                <Border HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Padding="24,20"
-                                        MaxWidth="420"
-                                        Background="{DynamicResource ModalCardBackground}"
-                                        BorderBrush="{DynamicResource ModalCardBorder}"
-                                        BorderThickness="1"
-                                        CornerRadius="10">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border HorizontalAlignment="Center"
-                                                Padding="12"
-                                                Background="{DynamicResource FilterSectionCardBackground}"
-                                                CornerRadius="36">
-                                            <usercontrols:LoadingSpinner Width="56"
-                                                                         Height="56" />
-                                        </Border>
-                                        <Border Margin="0,14,0,0"
-                                                Padding="12,8"
-                                                Background="{DynamicResource SchemeColor_DFFFFFFF}"
-                                                CornerRadius="6"
-                                                BorderBrush="{DynamicResource ModalCardBorderLight}"
-                                                BorderThickness="1">
-                                            <TextBlock x:Name="OverviewLoadingStatusText"
-                                                       Text="Loading..."
-                                                       HorizontalAlignment="Center"
-                                                       TextAlignment="Center"
-                                                       TextWrapping="Wrap"
-                                                       MaxWidth="340"
-                                                       FontSize="13"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource ModalTitleForeground}" />
-                                        </Border>
-                                        <ProgressBar x:Name="OverviewLoadingProgress"
-                                                     Width="160"
-                                                     Height="6"
-                                                     Margin="0,12,0,0"
-                                                     Minimum="0"
-                                                     Maximum="1"
-                                                     Visibility="Collapsed"
-                                                     Foreground="{DynamicResource ModalBodyForeground}"
-                                                     Background="{DynamicResource ModalChipBackground}"
-                                                     BorderThickness="0" />
                                     </StackPanel>
-                                </Border>
+                                </ScrollViewer>
                             </Border>
+
                         </Grid>
+                    </Grid>
 
-
-                    </TabItem>
-                    <TabItem Header="Order Items"
-                             x:Name="tpItemsDetailed">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="20" />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-
-
-                            <StackPanel Grid.Row="0"
-                                        Orientation="Horizontal">
-                                <StackPanel.Background>
-                                    <LinearGradientBrush StartPoint="0 0"
-                                                         EndPoint="0 1">
-                                        <LinearGradientBrush.GradientStops>
-                                            <GradientStop Offset="0.1"
-                                                          Color="{DynamicResource WhiteBackground_Cl}" />
-                                            <GradientStop Offset="0.5"
-                                                          Color="{DynamicResource WhiteBackground_Cl}" />
-                                            <GradientStop Offset="1"
-                                                          Color="{DynamicResource SchemeColor_EFEFEF_Cl}" />
-                                        </LinearGradientBrush.GradientStops>
-                                    </LinearGradientBrush>
-                                </StackPanel.Background>
-
-                                <TextBlock Text="Dental System Version:"
-                                           FontSize="10"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                           Margin="6,0,0,0"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding DentalSystemVersion}"
-                                           d:Text="2018-1"
-                                           FontSize="10"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource NamedDarkGreen}"
-                                           VerticalAlignment="Center"
-                                           Margin="3,0,10,0"
-                                           x:Name="tbDentalSystemVersion" />
-
-                                <TextBlock Text="|"
-                                           FontSize="10"
-                                           FontWeight="Normal"
-                                           Margin="3,0,13,0"
-                                           Foreground="{DynamicResource NamedSilver}"
-                                           VerticalAlignment="Center" />
-
-                                <TextBlock Text="Design Module Now:"
-                                           FontSize="10"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding DesignModuleActual}"
-                                           d:Text="DD2018"
-                                           FontSize="10"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource BlueColor}"
-                                           VerticalAlignment="Center"
-                                           Margin="3,0,10,0"
-                                           x:Name="tbDesignModuleActual" />
-
-                                <TextBlock Text="|"
-                                           FontSize="10"
-                                           FontWeight="Normal"
-                                           Margin="3,0,13,0"
-                                           Foreground="{DynamicResource NamedSilver}"
-                                           VerticalAlignment="Center"
-                                           Visibility="{Binding DesignModuleOriginal, Converter={StaticResource EmptyToHiddenConverter}}"
-                                           d:Visibility="Visible" />
-
-                                <TextBlock Text="Original Design Module:"
-                                           FontSize="10"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                           VerticalAlignment="Center"
-                                           Visibility="{Binding DesignModuleOriginal, Converter={StaticResource EmptyToHiddenConverter}}"
-                                           d:Visibility="Visible" />
-                                <TextBlock Text="{Binding DesignModuleOriginal}"
-                                           d:Text="DD2021"
-                                           FontSize="10"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource NamedDarkViolet}"
-                                           VerticalAlignment="Center"
-                                           Margin="3,0,10,0"
-                                           x:Name="tbDesignModuleOriginal"
-                                           Visibility="{Binding DesignModuleOriginal, Converter={StaticResource EmptyToHiddenConverter}}"
-                                           d:Visibility="Visible" />
-
-
-
-                                <TextBlock Text="|"
-                                           FontSize="10"
-                                           FontWeight="Normal"
-                                           Margin="3,0,13,0"
-                                           Foreground="{DynamicResource NamedSilver}"
-                                           VerticalAlignment="Center"
-                                           Visibility="{Binding OriginalOrderID, Converter={StaticResource EmptyToHiddenConverter}}"
-                                           d:Visibility="Visible" />
-
-                                <TextBlock Text="Original Order ID:"
-                                           FontSize="10"
-                                           FontWeight="SemiBold"
-                                           VerticalAlignment="Center"
-                                           Foreground="{DynamicResource GlassPanelValueForeground}"
-                                           Visibility="{Binding OriginalOrderID, Converter={StaticResource EmptyToHiddenConverter}}"
-                                           d:Visibility="Visible" />
-                                <TextBlock Text="{Binding OriginalOrderID}"
-                                           d:Text="Original Order ID"
-                                           FontSize="10"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource SchemeColor_9D6612}"
-                                           VerticalAlignment="Center"
-                                           Margin="3,0,10,0"
-                                           x:Name="tbOriginalOrderID" />
-                            </StackPanel>
-
-
-
-                            <ListView
-                                      Style="{StaticResource LvListViewForItemList}" Grid.Row="1"
-                                      x:Name="listViewItems"
-                                      ScrollViewer.CanContentScroll="False"
-                                      BorderThickness="0,1,0,0"
-                                      BorderBrush="{DynamicResource VitaButtonBorderLight}"
-                                      Padding="0,10,0,0"
-                                      AlternationCount="2"
-                                      ItemsSource="{Binding TDM_ItemsList}"
-                                      ItemContainerStyle="{StaticResource LvItemForItemList}">
-                                <ListView.Resources>
-                                    <Style TargetType="{x:Type GridViewColumnHeader}">
-                                        <Setter Property="HorizontalContentAlignment"
-                                                Value="Left" />
-                                        <Setter Property="IsEnabled"
-                                                Value="False" />
+                    <Grid x:Name="orderInfoLoadingOverlay"
+                          Panel.ZIndex="200"
+                          IsHitTestVisible="True">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
+                                <Setter Property="Opacity"
+                                        Value="0" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoading}"
+                                                 Value="True">
                                         <Setter Property="Visibility"
-                                                Value="Collapsed" />
-                                    </Style>
-                                </ListView.Resources>
-                                <ListView.View>
+                                                Value="Visible" />
+                                        <Setter Property="IsHitTestVisible"
+                                                Value="True" />
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                     To="1"
+                                                                     Duration="0:0:0.12" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                     To="0"
+                                                                     Duration="0:0:0.22">
+                                                        <DoubleAnimation.EasingFunction>
+                                                            <QuadraticEase EasingMode="EaseOut" />
+                                                        </DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)">
+                                                        <DiscreteObjectKeyFrame KeyTime="0:0:0.22"
+                                                                                Value="{x:Static Visibility.Collapsed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.IsHitTestVisible)">
+                                                        <DiscreteBooleanKeyFrame KeyTime="0:0:0.22"
+                                                                                 Value="False" />
+                                                    </BooleanAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Border Background="#99000000" />
+                        <usercontrols:InfinityCometLoader x:Name="orderInfoCometLoader"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
+                    </Grid>
 
-                                    <GridView AllowsColumnReorder="False">
-
-                                        <GridViewColumn x:Name="headerItem"
-                                                        Width="350"
-                                                        DisplayMemberBinding="{Binding Item}" />
-                                        <GridViewColumn x:Name="headerCacheMaterialName"
-                                                        Width="720"
-                                                        DisplayMemberBinding="{Binding CacheMaterialName}" />
-                                    </GridView>
-
-                                </ListView.View>
-
-
-                            </ListView>
-                        </Grid>
-
-
-                    </TabItem>
-
-                    <TabItem Header="Images"
-                             x:Name="tabPageImages"
-                             Visibility="Collapsed"
-                             Background="{DynamicResource OrderInfoFooterBackground}">
-
-
-                        <ListView
-                                      Style="{StaticResource LvListViewImages}" x:Name="Thumbnails"
-                                  AllowDrop="True"
-                                  Drop="Thumbnails_Drop"
-                                  Background="{DynamicResource WindowBackgroundBrush}"
-                                  BorderThickness="0"
-                                  ItemsSource="{Binding ImageList}"
-                                  ItemContainerStyle="{StaticResource LvItemImages}">
-                            <ListView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="4" />
-                                </ItemsPanelTemplate>
-                            </ListView.ItemsPanel>
-                        </ListView>
-
-                    </TabItem>
-                </TabControl>
+                </Grid>
 
                 <Grid VerticalAlignment="Center"
                       Margin="0,6,0,0"
@@ -1064,13 +936,13 @@
 
                     <StackPanel Orientation="Horizontal"
                                 Grid.Column="0">
-                        <Button Width="44"
-                                Height="44"
+                        <Button Width="36"
+                                Height="34"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Left"
                                 Background="{DynamicResource TransparentBrush}"
                                 BorderThickness="0"
-                                Margin="-4,0,10,0"
+                                Margin="0,0,10,0"
                                 ToolTip="Open up order source directory"
                                 Command="{Binding OpenUpOrderSourceFolderCommand}">
                             <Button.Content>
@@ -1088,7 +960,7 @@
                                 ToolTip="Load/Unload scans"
                                 Click="AddScanButton_Click">
                             <TextBlock Text="+"
-                                       FontSize="28"
+                                       FontSize="38"
                                        FontWeight="Bold"
                                        Foreground="{DynamicResource OrderInfoToolbarAddScanForeground}"
                                        HorizontalAlignment="Center"
@@ -1104,7 +976,7 @@
                                 ToolTip="Reload selected scans"
                                 Click="RefreshScansButton_Click">
                             <TextBlock Text="&#x21BB;"
-                                       FontSize="24"
+                                       FontSize="32"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource OrderInfoToolbarRefreshForeground}"
                                        HorizontalAlignment="Center"
@@ -1124,7 +996,7 @@
                                 <Image Source="/Images/ToolBar/xml.png" />
                             </Button.Content>
                         </Button>
-                        <Button x:Name="btnToolbarDes"
+                        <!--<Button x:Name="btnToolbarDes"
                                 Width="44"
                                 Height="44"
                                 VerticalAlignment="Center"
@@ -1140,10 +1012,10 @@
                                        Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center" />
-                        </Button>
+                        </Button>-->
                         <Button x:Name="btnToolbarEnc"
                                 Width="44"
-                                Height="44"
+                                Height="24"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Left"
                                 Background="{DynamicResource TransparentBrush}"
@@ -1151,14 +1023,12 @@
                                 Margin="0,0,10,0"
                                 ToolTip="Identify Encode healing cap"
                                 Click="IdentifyEncodeCap_Click">
-                            <TextBlock Text="ENC"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" />
+                            <Button.Content>
+                                <Image Source="/Images/ToolBar/encode.png" />
+                            </Button.Content>
                         </Button>
                         <ToggleButton x:Name="btnDesignEditToggle"
+                                      Style="{StaticResource OrderInfoDesignEditToggle}"
                                       Width="52"
                                       Height="44"
                                       VerticalAlignment="Center"
@@ -1166,16 +1036,33 @@
                                       Background="{DynamicResource TransparentBrush}"
                                       BorderThickness="0"
                                       Margin="0,0,10,0"
+                                      d:Visibility="Visible"
                                       Click="DesignEditToggle_Click"
                                       Visibility="{Binding CanShowDesignEditButton, Converter={StaticResource BoolToVisibilityConverter}}"
                                       ToolTip="Edit the 3Shape restoration locally. Changes save to StatsDesignEdit only; DCM files are not modified.">
-                            <TextBlock Text="EDIT"
-                                       FontSize="10"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" />
+
+                            <Image Source="/Images/ToolBar/edit_design.png"
+                                   Width="38"
+                                   Height="36" />
                         </ToggleButton>
+
+                        <!--<Button x:Name="btnDesignEditToggle"
+                                Width="44"
+                                Height="24"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Background="{DynamicResource TransparentBrush}"
+                                BorderThickness="0"
+                                Margin="0,0,10,0"
+                                d:Visibility="Visible"
+                                Click="DesignEditToggle_Click"
+                                Visibility="{Binding CanShowDesignEditButton, Converter={StaticResource BoolToVisibilityConverter}}"
+                                ToolTip="Edit the 3Shape restoration locally. Changes save to StatsDesignEdit only; DCM files are not modified.">
+                            <Button.Content>
+                                <Image Source="/Images/ToolBar/edit_design.png" />
+                            </Button.Content>
+                        </Button>-->
+
                         <!--<Button Width="44"
                                 Height="44"
                                 VerticalAlignment="Center"
@@ -1189,58 +1076,121 @@
                                 <Image Source="/Images/ToolBar/dcm.png" />
                             </Button.Content>
                         </Button>-->
-                        <StackPanel Margin="20,5,15,0">
-                            <TextBlock Text="ITEMS"
-                                       FontSize="10"
-                                       VerticalAlignment="Top"
-                                       Foreground="{DynamicResource OrderInfoToolbarLabelForeground}"
-                                       FontWeight="SemiBold" />
-                            <TextBlock Text="{Binding Items}"
-                                       d:Text="ITEMS"
-                                       x:Name="tbItems"
-                                       Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,0,0" />
-                        </StackPanel>
+                        <Border Margin="20,5,15,0"
+                                Background="{DynamicResource TransparentBrush}"
+                                Cursor="Hand"
+                                ToolTip="View order items"
+                                PreviewMouseLeftButtonDown="ItemsPanel_PreviewMouseLeftButtonDown">
+                            <StackPanel>
+                                <TextBlock Text="ITEMS"
+                                           FontSize="10"
+                                           VerticalAlignment="Top"
+                                           Foreground="{DynamicResource OrderInfoToolbarLabelForeground}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Items}"
+                                           d:Text="ITEMS"
+                                           x:Name="tbItems"
+                                           Foreground="{DynamicResource OrderInfoToolbarValueForeground}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,0" />
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
 
+
                     <Grid Grid.Column="1"
-                          HorizontalAlignment="Right"
                           Margin="0,0,5,0"
-                          Visibility="{Binding ThreeShapeObject.ArchiveBaseFolderPath, Converter={StaticResource EmptyToCollapsedConverter}}">
+                          HorizontalAlignment="Right">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="44" />
-                            <ColumnDefinition Width="10" />
-                            <ColumnDefinition Width="44" />
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
 
-                        <Button Width="38"
-                                Height="38"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Right"
-                                Background="{DynamicResource TransparentBrush}"
-                                BorderThickness="0"
-                                ToolTip="Generate Zipped Order"
-                                Command="{Binding GenerateArchiveZipCommand}"
-                                Grid.Column="0">
-                            <Button.Content>
-                                <Image Source="/Images/ToolBar/download.png" />
-                            </Button.Content>
-                        </Button>
+                        <Grid Grid.Column="0"
+                              HorizontalAlignment="Right"
+                              Visibility="{Binding ThreeShapeObject.ArchiveBaseFolderPath, Converter={StaticResource EmptyToCollapsedConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <Button Width="40"
-                                Height="40"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Right"
-                                Background="{DynamicResource TransparentBrush}"
-                                BorderThickness="0"
-                                ToolTip="Import order"
-                                Grid.Column="2"
-                                Command="{Binding ImportArchiveOrderCommand}">
-                            <Button.Content>
-                                <Image Source="/Images/ToolBar/import.png" />
-                            </Button.Content>
-                        </Button>
+                            <Button Width="38"
+                                    Height="38"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Right"
+                                    Background="{DynamicResource TransparentBrush}"
+                                    BorderThickness="0"
+                                    ToolTip="Generate Zipped Order"
+                                    Command="{Binding GenerateArchiveZipCommand}"
+                                    Grid.Column="0">
+                                <Button.Content>
+                                    <Image Source="/Images/ToolBar/download.png"
+                                           Width="28"
+                                           Height="28" />
+                                </Button.Content>
+                            </Button>
+
+                            <Button Width="40"
+                                    Height="40"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Right"
+                                    Background="{DynamicResource TransparentBrush}"
+                                    BorderThickness="0"
+                                    ToolTip="Import order"
+                                    Grid.Column="1"
+                                    Margin="10,0,30,0"
+                                    Command="{Binding ImportArchiveOrderCommand}">
+                                <Button.Content>
+                                    <Image Source="/Images/ToolBar/import.png" />
+                                </Button.Content>
+                            </Button>
+                        </Grid>
+                        <Grid Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Width="52"
+                                    Height="24"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,10,0"
+                                    Padding="6,2"
+                                    FontSize="10"
+                                    FontWeight="SemiBold"
+                                    Foreground="#2BB2C0"
+                                    Background="{DynamicResource TransparentBrush}"
+                                    BorderBrush="#2BB2C0"
+                                    BorderThickness="1"
+                                    Cursor="Hand"
+                                    ToolTip="Unlock order"
+                                    Command="{Binding UnlockOrderCommand}"
+                                    d:Visibility="Visible"
+                                    Visibility="{Binding CanUnlockOrder, Converter={StaticResource BoolToVisibilityConverter}}">
+                                Unlock
+                            </Button>
+                            <Button Width="52"
+                                    Height="24"
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Left"
+                                    Padding="6,2"
+                                    FontSize="10"
+                                    FontWeight="SemiBold"
+                                    Foreground="#C0392B"
+                                    Background="{DynamicResource TransparentBrush}"
+                                    BorderBrush="#C0392B"
+                                    BorderThickness="1"
+                                    Cursor="Hand"
+                                    ToolTip="Permanently delete this live 3Shape order (never available for archive orders)"
+                                    Command="{Binding DeleteOrderCommand}"
+                                    Visibility="{Binding CanDeleteOrder, Converter={StaticResource BoolToVisibilityConverter}}">
+                                Delete
+                            </Button>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Grid>

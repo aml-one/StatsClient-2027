@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using System.Xml.Linq;
 using static StatsClient.MVVM.Core.DatabaseOperations;
 using static StatsClient.MVVM.Core.Enums;
@@ -296,6 +297,7 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
                 SelectedDigitalSystem = "-- None --";
                 SelectedShade = "";
                 OrderNamePreview = string.Empty;
+                SelectedCustomerName = "";
                 CustomerSuggestionsList = [];
                 
             }
@@ -356,6 +358,8 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
             RaisePropertyChanged(nameof(FirstOrderSelected));
         }
     }
+
+    private bool _smartOrderNamesDialogInProgress;
 
     private bool jumpToSmartOrderNamesTabWhenNewOrder = false;
     public bool JumpToSmartOrderNamesTabWhenNewOrder
@@ -697,20 +701,152 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
     {
         Debug.WriteLine("hit");
         MainMenuViewModel.StaticInstance.ShowSmartRenameMenuItem();
+        FirstOrderSelected = false;
+        ClearRenameWizardState();
         MainViewModel.Instance.SmartOrderNamesWindow.Hide();
-        WindowTitle = "Smart Order Names";
     }
 
-    private async void SelectFirstOrder()
+    private void ClearRenameWizardState()
     {
-        await Task.Delay(1000);
-        if (NewOrdersByMe.Count > 0)
+        PanNumber = "";
+        CarestreamID = "";
+        IsScrewRetained = false;
+        SelectedDigitalSystem = "-- None --";
+        SelectedShade = "";
+        SelectedCustomerName = "";
+        OrderNamePreview = string.Empty;
+        WindowTitle = "Smart Order Names";
+        CustomerSuggestionsList = [];
+        CustomerName = "";
+    }
+
+    private async Task PrepareAndSelectFirstOrderAsync()
+    {
+        if (NewOrdersByMe.Count == 0)
+            return;
+
+        ClearRenameWizardState();
+        SelectedOrder = NewOrdersByMe[0];
+        FirstOrderSelected = true;
+
+        await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            if (PreviouslySelectedOrder != NewOrdersByMe[0])
+            SmartOrderNames2Page.StaticInstance?.JumpToTab("Start");
+            SmartOrderNames2Page.StaticInstance?.panNumberBox.Focus();
+        }, DispatcherPriority.Send);
+    }
+
+    public async Task OpenManuallyAsync()
+    {
+        NewOrdersByMe = await GetNewOrdersCreatedByMe(ShowCasesWithoutNumber);
+        FirstOrderSelected = false;
+        await ShowSmartOrderNamesDialogForNewOrdersAsync(manualOpen: true);
+    }
+
+    private bool ShouldAutoOpenForFirstOrder()
+    {
+        if (!SmartOrderNamesModuleIsActive || !AutoSelectFirstOrder || NewOrdersByMe.Count == 0)
+            return false;
+
+        if (_smartOrderNamesDialogInProgress)
+            return false;
+
+        if (FirstOrderSelected)
+            return false;
+
+        var window = MainViewModel.Instance.SmartOrderNamesWindow;
+        if (window.IsVisible)
+            return false;
+
+        var firstOrder = NewOrdersByMe[0];
+        return PreviouslySelectedOrder?.IntOrderID != firstOrder.IntOrderID;
+    }
+
+    private static void EnsureSmartOrderNamesWindowOwner()
+    {
+        var window = MainViewModel.Instance.SmartOrderNamesWindow;
+        if (window.Owner is null && MainWindow.Instance is not null)
+            window.Owner = MainWindow.Instance;
+    }
+
+    private void ApplyLastPanNumberHints()
+    {
+        if (!DontUseLastPanNumber)
+        {
+            LastPanNumberOnMainWindow = MainViewModel.Instance.LastUsedPanNumber;
+            LastPanNumber = LastPanNumberOnMainWindow;
+        }
+        else
+        {
+            LastPanNumber = string.Empty;
+        }
+
+        ASConnectID = MainViewModel.Instance.ASConnectOrderID;
+        LastPanNumbersDate = MainViewModel.Instance.LastUsedPanNumbersDate;
+        LastASConnectIDDate = MainViewModel.Instance.LastASConnectIDDate;
+
+        if (!string.IsNullOrEmpty(ASConnectID))
+            _asConnectIDAgeTimer.Start();
+
+        if (!string.IsNullOrEmpty(LastPanNumber))
+            _ageTimer.Start();
+    }
+
+    private Task ShowSmartOrderNamesDialogForNewOrdersAsync(bool manualOpen = false)
+    {
+        if (!manualOpen && !ShouldAutoOpenForFirstOrder())
+            return Task.CompletedTask;
+
+        return Application.Current.Dispatcher.InvokeAsync(() =>
+            ShowSmartOrderNamesDialogOnUiThread(manualOpen)).Task;
+    }
+
+    private void ShowSmartOrderNamesDialogOnUiThread(bool manualOpen)
+    {
+        if (!manualOpen && !ShouldAutoOpenForFirstOrder())
+            return;
+
+        if (_smartOrderNamesDialogInProgress)
+            return;
+
+        _smartOrderNamesDialogInProgress = true;
+        _timer.Stop();
+
+        try
+        {
+            ApplyLastPanNumberHints();
+            MainMenuViewModel.StaticInstance.HideSmartRenameMenuItem();
+
+            if (NewOrdersByMe.Count == 0)
             {
-                FirstOrderSelected = true;
-                SelectedOrder = NewOrdersByMe[0];
+                if (manualOpen)
+                    MainMenuViewModel.StaticInstance.ShowSmartRenameMenuItem();
+                return;
             }
+
+            ClearRenameWizardState();
+            SelectedOrder = NewOrdersByMe[0];
+            FirstOrderSelected = true;
+
+            EnsureSmartOrderNamesWindowOwner();
+            SmartOrderNames2Page.StaticInstance?.JumpToTab("Start");
+            SmartOrderNames2Page.StaticInstance?.panNumberBox.Focus();
+
+            MainViewModel.Instance.SmartOrderNamesWindow.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MainViewModel.Instance.AddDebugLine(ex);
+            FirstOrderSelected = false;
+            MainMenuViewModel.StaticInstance.ShowSmartRenameMenuItem();
+        }
+        finally
+        {
+            _smartOrderNamesDialogInProgress = false;
+            _timer.Start();
+
+            if (!MainViewModel.Instance.SmartOrderNamesWindow.IsVisible)
+                FirstOrderSelected = false;
         }
     }
 
@@ -786,20 +922,12 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
 
     private async void ResetNameForm()
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            PanNumber = "";
-            CarestreamID = "";
-            IsScrewRetained = false;
-            SelectedDigitalSystem = "-- None --";
-            SelectedShade = "";
-            OrderNamePreview = string.Empty;
+            ClearRenameWizardState();
             PreviouslySelectedOrder = null;
-            CustomerSuggestionsList = [];
-            WindowTitle = "Smart Order Names";
-        });
-
-        JumpToStep("Start");
+            SmartOrderNames2Page.StaticInstance?.JumpToTab("Start");
+        }, DispatcherPriority.Send);
 
         await Refresh();
     }
@@ -875,21 +1003,20 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
         List<string> customerSuggestions = await CustomerHasSuggestedName(customer);
         if (customerSuggestions.Count > 0)
         {
-            if (SelectedCustomerName is null)
-            {
+            if (string.IsNullOrEmpty(SelectedCustomerName))
                 customer = customerSuggestions[0];
-                if (customerSuggestions.Count > 1)
-                {
-                    if (string.IsNullOrEmpty(SelectedCustomerName))
-                        SelectedCustomerName = customerSuggestions[0];
-
-                    CustomerSuggestionsList = customerSuggestions;
-                }
-            }
             else
-            {
                 customer = SelectedCustomerName;
-            }
+
+            CustomerSuggestionsList = customerSuggestions.Count > 1
+                ? customerSuggestions
+                : [];
+        }
+        else
+        {
+            CustomerSuggestionsList = [];
+            if (string.IsNullOrWhiteSpace(customer))
+                customer = SelectedOrder.Customer ?? string.Empty;
         }
 
 
@@ -1025,36 +1152,8 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
     {
         NewOrdersByMe = await GetNewOrdersCreatedByMe(ShowCasesWithoutNumber);
 
-        if (AutoSelectFirstOrder && NewOrdersByMe.Count > 0 && !FirstOrderSelected)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                if (!DontUseLastPanNumber)
-                {
-                    LastPanNumberOnMainWindow = MainViewModel.Instance.LastUsedPanNumber;
-                    LastPanNumber = LastPanNumberOnMainWindow;
-                }
-                else
-                    LastPanNumber = string.Empty;
-
-                ASConnectID = MainViewModel.Instance.ASConnectOrderID;
-
-                LastPanNumbersDate = MainViewModel.Instance.LastUsedPanNumbersDate;
-                LastASConnectIDDate = MainViewModel.Instance.LastASConnectIDDate;
-
-                if (!string.IsNullOrEmpty(ASConnectID))
-                    _asConnectIDAgeTimer.Start();
-
-                if (!string.IsNullOrEmpty(LastPanNumber))
-                    _ageTimer.Start();
-
-                MainMenuViewModel.StaticInstance.HideSmartRenameMenuItem();
-                SelectFirstOrder();
-                _timer.Stop();
-                MainViewModel.Instance.SmartOrderNamesWindow.ShowDialog();
-                _timer.Start();
-            });
-        }
+        if (ShouldAutoOpenForFirstOrder())
+            await ShowSmartOrderNamesDialogForNewOrdersAsync();
     }
 
     private async void Timer_Elapsed(object? sender, ElapsedEventArgs e)
@@ -1070,41 +1169,8 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
         {
             NewOrdersByMe = await GetNewOrdersCreatedByMe(ShowCasesWithoutNumber);
 
-            if (AutoSelectFirstOrder && NewOrdersByMe.Count > 0 && !FirstOrderSelected)
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    if (!DontUseLastPanNumber)
-                    {
-                        LastPanNumberOnMainWindow = MainViewModel.Instance.LastUsedPanNumber;
-                        LastPanNumber = LastPanNumberOnMainWindow;
-                    }
-                    else
-                        LastPanNumber = string.Empty;
-
-                    ASConnectID = MainViewModel.Instance.ASConnectOrderID;
-                    LastASConnectIDDate = MainViewModel.Instance.LastASConnectIDDate;
-                    if (!string.IsNullOrEmpty(ASConnectID))
-                        _asConnectIDAgeTimer.Start();
-
-
-                    LastPanNumbersDate = MainViewModel.Instance.LastUsedPanNumbersDate;
-                    if (!string.IsNullOrEmpty(LastPanNumber))
-                        _ageTimer.Start();
-
-                    MainMenuViewModel.StaticInstance.HideSmartRenameMenuItem();
-                    SelectFirstOrder();
-                    _timer.Stop();
-                    try
-                    {
-                        MainViewModel.Instance.SmartOrderNamesWindow.ShowDialog();
-                    }
-                    catch (Exception ex)
-                    {
-                    }
-                    _timer.Start();
-                });
-            }
+            if (ShouldAutoOpenForFirstOrder())
+                await ShowSmartOrderNamesDialogForNewOrdersAsync();
         }
     }
 
@@ -1185,7 +1251,7 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
         LastPanNumber = string.Empty;
         if (AutoSelectFirstOrder && NewOrdersByMe.Count > 0)
         {
-            SelectFirstOrder();
+            await PrepareAndSelectFirstOrderAsync();
         }
 
         if (NewOrdersByMe.Count < 1)
@@ -1436,12 +1502,7 @@ public partial class SmartOrderNames2ViewModel : ObservableObject
                                               double DismissAfterSeconds = 300,
                                               Window? Owner = null)
     {
-        SMessageBox sMessageBox = new(Title, Message, Buttons, MessageBoxIcon, DismissAfterSeconds);
-        if (Owner is null)
-            sMessageBox.Owner = MainWindow.Instance;
-        else
-            sMessageBox.Owner = Owner;
-
+        SMessageBox sMessageBox = new(Title, Message, Buttons, MessageBoxIcon, DismissAfterSeconds, Owner ?? MainWindow.Instance);
         sMessageBox.ShowDialog();
 
         return MainViewModel.Instance.SMessageBoxxResult;

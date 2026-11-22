@@ -1,0 +1,15 @@
+# .NET Build Outputs
+bin/
+obj/
+
+# IDE and Project Settings
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Local graphify output directory itself
+graphify-out/
+
+# Version Control
+.git/

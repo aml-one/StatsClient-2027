@@ -6,42 +6,57 @@ namespace StatsClient.MVVM.Core;
 public readonly record struct WatchListOrderStatus(
     string IntOrderID,
     string? ProcessStatusID,
-    string? ProcessLockID);
+    string? ProcessLockID,
+    string? ModelHeight = null,
+    string? OriginalOrderID = null,
+    string? ElementProcessStatusID = null,
+    string? OrderComments = null);
 
 public static class WatchListStatusQuery
 {
     private const int ChunkSize = 400;
 
     public static List<WatchListOrderStatus> QueryStatuses(IReadOnlyList<string> orderIds)
+        => QueryStatusesWithResult(orderIds).Statuses;
+
+    public static (List<WatchListOrderStatus> Statuses, bool Succeeded) QueryStatusesWithResult(IReadOnlyList<string> orderIds)
     {
         var results = new List<WatchListOrderStatus>();
         if (orderIds.Count == 0)
-            return results;
+            return (results, true);
 
         var distinct = orderIds
             .Where(id => !string.IsNullOrWhiteSpace(id))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
+        bool succeeded = true;
         for (int offset = 0; offset < distinct.Count; offset += ChunkSize)
         {
             var chunk = distinct.Skip(offset).Take(ChunkSize).ToList();
-            results.AddRange(QueryChunk(chunk));
+            var (chunkResults, chunkSucceeded) = QueryChunk(chunk);
+            if (!chunkSucceeded)
+                succeeded = false;
+            results.AddRange(chunkResults);
         }
 
-        return results;
+        return (results, succeeded);
     }
 
-    private static List<WatchListOrderStatus> QueryChunk(List<string> orderIds)
+    private static (List<WatchListOrderStatus> Results, bool Succeeded) QueryChunk(List<string> orderIds)
     {
         if (orderIds.Count == 0)
-            return [];
+            return ([], true);
 
         string inClause = string.Join(",", orderIds.Select((_, i) => $"@id{i}"));
         string query = $@"
 SELECT o.IntOrderID,
        i.MaxProcessStatusID,
-       me.ProcessLockID
+       me.ProcessStatusID,
+       me.ProcessLockID,
+       me.ModelHeight,
+       o.OriginalOrderID,
+       o.OrderComments
 FROM Orders o
 INNER JOIN OrdersInfo i ON i.OrderID = o.IntOrderID
 LEFT JOIN ModelJob m ON m.OrderID = o.IntOrderID
@@ -64,23 +79,38 @@ WHERE o.IntOrderID IN ({inClause})";
                 raw.Add(new WatchListOrderStatus(
                     reader["IntOrderID"]?.ToString() ?? "",
                     reader["MaxProcessStatusID"]?.ToString(),
-                    reader["ProcessLockID"]?.ToString()));
+                    reader["ProcessLockID"]?.ToString(),
+                    reader["ModelHeight"]?.ToString(),
+                    reader["OriginalOrderID"]?.ToString(),
+                    reader["ProcessStatusID"]?.ToString(),
+                    reader["OrderComments"]?.ToString()));
             }
         }
         catch
         {
-            return [];
+            return ([], false);
         }
 
-        return raw
+        return (raw
             .Where(r => !string.IsNullOrWhiteSpace(r.IntOrderID))
             .GroupBy(r => r.IntOrderID, StringComparer.OrdinalIgnoreCase)
             .Select(g =>
             {
-                var first = g.First();
-                string? processLock = g.Select(x => x.ProcessLockID).FirstOrDefault(l => !string.IsNullOrWhiteSpace(l));
-                return first with { ProcessLockID = processLock ?? first.ProcessLockID };
+                var rows = g.ToList();
+                var first = rows[0];
+
+                string status = WatchListOrderDetailsQuery.ResolveEffectiveProcessStatus(
+                    first.ProcessStatusID,
+                    rows.Select(r => r.ElementProcessStatusID));
+                string processLock = WatchListOrderDetailsQuery.NormalizeProcessLock(
+                    WatchListOrderDetailsQuery.PickDisplayProcessLock(rows.Select(r => r.ProcessLockID)));
+
+                return first with
+                {
+                    ProcessStatusID = status,
+                    ProcessLockID = processLock,
+                };
             })
-            .ToList();
+            .ToList(), true);
     }
 }

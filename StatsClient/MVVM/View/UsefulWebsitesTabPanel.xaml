@@ -1,0 +1,646 @@
+<UserControl x:Class="StatsClient.MVVM.View.UsefulWebsitesTabPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700"
+             d:DesignWidth="1200">
+    <UserControl.Resources>
+        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <Style x:Key="UwSearchBox"
+               TargetType="TextBox">
+            <Setter Property="Height"
+                    Value="34" />
+            <Setter Property="FontSize"
+                    Value="14" />
+            <Setter Property="Padding"
+                    Value="12,6" />
+            <Setter Property="Background"
+                    Value="{DynamicResource ImmersiveInputBackground}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource ImmersiveInputBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+        </Style>
+
+        <SolidColorBrush x:Key="UwBlueButtonBg"
+                         Color="#FF1E3A5F" />
+        <SolidColorBrush x:Key="UwBlueButtonBorder"
+                         Color="#5538BDF8" />
+        <SolidColorBrush x:Key="UwBlueButtonFg"
+                         Color="#FF38BDF8" />
+        <SolidColorBrush x:Key="UwBlueButtonHover"
+                         Color="#FF2A4A6F" />
+
+        <SolidColorBrush x:Key="UwGreenButtonBg"
+                         Color="#FF1A3D32" />
+        <SolidColorBrush x:Key="UwGreenButtonBorder"
+                         Color="#664ADE80" />
+        <SolidColorBrush x:Key="UwGreenButtonFg"
+                         Color="#FF4ADE80" />
+        <SolidColorBrush x:Key="UwGreenButtonHover"
+                         Color="#FF234D40" />
+
+        <SolidColorBrush x:Key="UwYellowButtonBg"
+                         Color="#FF3D3520" />
+        <SolidColorBrush x:Key="UwYellowButtonBorder"
+                         Color="#66F0C03A" />
+        <SolidColorBrush x:Key="UwYellowButtonFg"
+                         Color="#FFF0C03A" />
+        <SolidColorBrush x:Key="UwYellowButtonHover"
+                         Color="#FF4D4528" />
+
+        <SolidColorBrush x:Key="UwRedButtonBg"
+                         Color="#FF3D2020" />
+        <SolidColorBrush x:Key="UwRedButtonBorder"
+                         Color="#66EF4444" />
+        <SolidColorBrush x:Key="UwRedButtonFg"
+                         Color="#FFEF4444" />
+        <SolidColorBrush x:Key="UwRedButtonHover"
+                         Color="#FF4D2828" />
+
+        <Style x:Key="UwClearButton"
+               TargetType="Button">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Height"
+                    Value="34" />
+            <Setter Property="MinWidth"
+                    Value="84" />
+            <Setter Property="Padding"
+                    Value="12,0" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource UwBlueButtonFg}" />
+            <Setter Property="Background"
+                    Value="{StaticResource UwBlueButtonBg}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource UwBlueButtonBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="7"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource UwBlueButtonHover}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="Btn"
+                                        Property="Opacity"
+                                        Value="0.42" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UwAddButton"
+               TargetType="Button"
+               BasedOn="{StaticResource UwClearButton}">
+            <Setter Property="Foreground"
+                    Value="{StaticResource UwGreenButtonFg}" />
+            <Setter Property="Background"
+                    Value="{StaticResource UwGreenButtonBg}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource UwGreenButtonBorder}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="7"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource UwGreenButtonHover}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="Btn"
+                                        Property="Opacity"
+                                        Value="0.42" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UwEditButton"
+               TargetType="Button"
+               BasedOn="{StaticResource UwClearButton}">
+            <Setter Property="Foreground"
+                    Value="{StaticResource UwYellowButtonFg}" />
+            <Setter Property="Background"
+                    Value="{StaticResource UwYellowButtonBg}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource UwYellowButtonBorder}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="7"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource UwYellowButtonHover}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="Btn"
+                                        Property="Opacity"
+                                        Value="0.42" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UwDeleteButton"
+               TargetType="Button"
+               BasedOn="{StaticResource UwClearButton}">
+            <Setter Property="Foreground"
+                    Value="{StaticResource UwRedButtonFg}" />
+            <Setter Property="Background"
+                    Value="{StaticResource UwRedButtonBg}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource UwRedButtonBorder}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="7"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource UwRedButtonHover}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="Btn"
+                                        Property="Opacity"
+                                        Value="0.42" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UwOpenButton"
+               TargetType="Button"
+               BasedOn="{StaticResource UwClearButton}" />
+
+        <Style x:Key="UwIconEditButton"
+               TargetType="Button">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Width"
+                    Value="32" />
+            <Setter Property="Height"
+                    Value="32" />
+            <Setter Property="Padding"
+                    Value="0" />
+            <Setter Property="Margin"
+                    Value="4,0,0,0" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="FontFamily"
+                    Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize"
+                    Value="14" />
+            <Setter Property="Content"
+                    Value="&#xE70F;" />
+            <Setter Property="ToolTip"
+                    Value="Edit" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource UwYellowButtonFg}" />
+            <Setter Property="Background"
+                    Value="{StaticResource UwYellowButtonBg}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource UwYellowButtonBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="7"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource UwYellowButtonHover}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UwIconDeleteButton"
+               TargetType="Button">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Width"
+                    Value="32" />
+            <Setter Property="Height"
+                    Value="32" />
+            <Setter Property="Padding"
+                    Value="0" />
+            <Setter Property="Margin"
+                    Value="4,0,0,0" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="FontFamily"
+                    Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize"
+                    Value="14" />
+            <Setter Property="Content"
+                    Value="&#xE74D;" />
+            <Setter Property="ToolTip"
+                    Value="Delete" />
+            <Setter Property="Foreground"
+                    Value="{StaticResource UwRedButtonFg}" />
+            <Setter Property="Background"
+                    Value="{StaticResource UwRedButtonBg}" />
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource UwRedButtonBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Btn"
+                                CornerRadius="7"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Btn"
+                                        Property="Background"
+                                        Value="{StaticResource UwRedButtonHover}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UwUrlLinkButton"
+               TargetType="Button">
+            <Setter Property="OverridesDefaultStyle"
+                    Value="True" />
+            <Setter Property="Background"
+                    Value="{DynamicResource TransparentBrush}" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
+            <Setter Property="Padding"
+                    Value="0" />
+            <Setter Property="Margin"
+                    Value="0,2,0,0" />
+            <Setter Property="HorizontalAlignment"
+                    Value="Left" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UwTagChipButton"
+               TargetType="Button">
+            <Setter Property="Height"
+                    Value="28" />
+            <Setter Property="Padding"
+                    Value="10,0" />
+            <Setter Property="Margin"
+                    Value="0,0,8,8" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="FontSize"
+                    Value="12" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+            <Setter Property="Background"
+                    Value="{DynamicResource ImmersiveInputBackground}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource ImmersiveInputBorder}" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}"
+                             Value="True">
+                    <Setter Property="Background"
+                            Value="{StaticResource ImmersiveAccentBlueLight}" />
+                    <Setter Property="BorderBrush"
+                            Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                    <Setter Property="Foreground"
+                            Value="{StaticResource ImmersiveAccentBlue}" />
+                    <Setter Property="FontWeight"
+                            Value="SemiBold" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="UwLinkListItem"
+               TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Stretch" />
+            <Setter Property="Padding"
+                    Value="0" />
+            <Setter Property="Margin"
+                    Value="0,0,0,8" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border x:Name="Card"
+                                CornerRadius="9"
+                                Padding="14,12"
+                                Background="{DynamicResource ImmersiveGlassBackground}"
+                                BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                                BorderThickness="1"
+                                Cursor="Hand">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="Card"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveFocusRing}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected"
+                                     Value="True">
+                                <Setter TargetName="Card"
+                                        Property="BorderBrush"
+                                        Value="{StaticResource ImmersiveAccentBlueBorder}" />
+                                <Setter TargetName="Card"
+                                        Property="Background"
+                                        Value="{StaticResource ImmersiveAccentBlueLight}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0"
+                                 EndPoint="1,1">
+                <GradientStop Color="{DynamicResource ImmersiveGradientStart_Cl}"
+                              Offset="0" />
+                <GradientStop Color="{DynamicResource ImmersiveGradientMid_Cl}"
+                              Offset="0.45" />
+                <GradientStop Color="{DynamicResource ImmersiveGradientEnd_Cl}"
+                              Offset="1" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Margin="16,14,16,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0"
+                        Margin="0,0,0,12">
+                <TextBlock Text="Quick links for the lab"
+                           FontSize="13"
+                           Foreground="{DynamicResource ImmersiveTextMuted}" />
+                <TextBlock Text="Useful websites"
+                           FontSize="30"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource ImmersiveTextPrimary}" />
+            </StackPanel>
+
+            <Border Grid.Row="1"
+                    CornerRadius="9"
+                    Padding="14,12"
+                    Margin="0,0,0,10"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="1"
+                    Background="{DynamicResource ImmersiveGlassBackground}"
+                    Visibility="{Binding UsefulWebsitesSchemaMissing, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock TextWrapping="Wrap"
+                           Foreground="{DynamicResource ImmersiveTextPrimary}"
+                           Text="Useful Websites tables are not installed on StatsDB yet. Run Docs/SQL/UsefulWebsites_Schema.sql on the Stats database, then reopen this tab." />
+            </Border>
+
+            <Border Grid.Row="2"
+                    CornerRadius="9"
+                    Padding="14,12"
+                    Margin="0,0,0,12"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="1"
+                    Background="{DynamicResource ImmersiveGlassBackground}">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Search"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ImmersiveTextMuted}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0" />
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource UwSearchBox}"
+                                 Text="{Binding SearchUsefulWebsites, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Grid.Column="2"
+                                Content="Clear"
+                                Style="{StaticResource UwClearButton}"
+                                Margin="8,0,0,0"
+                                Command="{Binding ClearUsefulWebsiteSearchCommand}" />
+                        <Button Grid.Column="3"
+                                Content="Add link"
+                                Style="{StaticResource UwAddButton}"
+                                Margin="8,0,0,0"
+                                Command="{Binding AddUsefulWebsiteCommand}" />
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,12,0,0">
+                        <TextBlock Text="Tags"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ImmersiveTextMuted}"
+                                   VerticalAlignment="Top"
+                                   Margin="0,6,10,0" />
+                        <ItemsControl ItemsSource="{Binding UsefulWebsiteTagFilters}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding DisplayText}"
+                                            Style="{StaticResource UwTagChipButton}"
+                                            Command="{Binding DataContext.ToggleUsefulWebsiteTagFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding TagName}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Clear tags"
+                                Style="{StaticResource UwClearButton}"
+                                Height="28"
+                                Margin="0,0,0,8"
+                                Command="{Binding ClearUsefulWebsiteTagFiltersCommand}" />
+                    </StackPanel>
+
+                    <TextBlock Margin="0,8,0,0"
+                               FontSize="12"
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+                               Text="{Binding UsefulWebsiteCountText}" />
+                </StackPanel>
+            </Border>
+
+            <ListView Grid.Row="3"
+                      ItemsSource="{Binding UsefulWebsiteList}"
+                      SelectedItem="{Binding SelectedUsefulWebsite}"
+                      ItemContainerStyle="{StaticResource UwLinkListItem}"
+                      Background="{DynamicResource TransparentBrush}"
+                      BorderThickness="0"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.InputBindings>
+                    <MouseBinding Gesture="LeftDoubleClick"
+                                  Command="{Binding OpenUsefulWebsiteCommand}"
+                                  CommandParameter="{Binding SelectedUsefulWebsite.Url}" />
+                </ListView.InputBindings>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                                <Button Style="{StaticResource UwUrlLinkButton}"
+                                        Command="{Binding DataContext.OpenUsefulWebsiteCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        CommandParameter="{Binding Url}"
+                                        ToolTip="Open website">
+                                    <TextBlock Text="{Binding Url}"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource ImmersiveAccentBlue}"
+                                               TextTrimming="CharacterEllipsis"
+                                               TextDecorations="Underline" />
+                                </Button>
+                                <TextBlock Text="{Binding TagsDisplay}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ImmersiveTextMuted}"
+                                           Margin="0,4,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="12,0,0,0">
+                                <Button Style="{StaticResource UwIconEditButton}"
+                                        Command="{Binding DataContext.EditUsefulWebsiteCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        CommandParameter="{Binding}" />
+                                <Button Style="{StaticResource UwIconDeleteButton}"
+                                        Command="{Binding DataContext.DeleteUsefulWebsiteCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        CommandParameter="{Binding}" />
+                                <Button Content="Open"
+                                        Style="{StaticResource UwOpenButton}"
+                                        Margin="8,0,0,0"
+                                        Command="{Binding DataContext.OpenUsefulWebsiteCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        CommandParameter="{Binding Url}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
+</UserControl>

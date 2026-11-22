@@ -190,7 +190,45 @@ public sealed class KnowledgeBaseRepository
         return summaries;
     }
 
-    public async Task<KnowledgeBaseCardDetail?> GetCardDetailAsync(int cardId, CancellationToken cancellationToken = default)
+    public async Task<List<KnowledgeBaseCardCrossReferenceInfo>> ListCardsCrossReferenceAsync(
+        CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT c.CardId, c.Title, c.BodyText
+            FROM dbo.KnowledgeBaseCard c
+            WHERE c.IsDeleted = 0
+            ORDER BY c.ModifiedUtc DESC
+            """;
+
+        var cards = new List<KnowledgeBaseCardCrossReferenceInfo>();
+        await using var connection = new SqlConnection(ConnectionString);
+        await using var command = new SqlCommand(sql, connection);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            cards.Add(new KnowledgeBaseCardCrossReferenceInfo
+            {
+                CardId = reader.GetInt32(0),
+                Title = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                BodyText = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+            });
+        }
+
+        await reader.CloseAsync().ConfigureAwait(false);
+
+        foreach (var card in cards)
+        {
+            card.Tags = await GetTagsForCardAsync(connection, card.CardId, cancellationToken).ConfigureAwait(false);
+        }
+
+        return cards;
+    }
+
+    public async Task<KnowledgeBaseCardDetail?> GetCardDetailAsync(
+        int cardId,
+        bool includeFullImageData = true,
+        CancellationToken cancellationToken = default)
     {
         const string sql = """
             SELECT c.CardId, c.Title, c.BodyText, c.CategoryId, cat.Name,
@@ -225,7 +263,7 @@ public sealed class KnowledgeBaseRepository
 
         await reader.CloseAsync().ConfigureAwait(false);
         detail.Links = await GetLinksAsync(connection, cardId, cancellationToken).ConfigureAwait(false);
-        detail.Images = await GetImagesAsync(connection, cardId, includeFullData: true, cancellationToken).ConfigureAwait(false);
+        detail.Images = await GetImagesAsync(connection, cardId, includeFullData: includeFullImageData, cancellationToken).ConfigureAwait(false);
         detail.Tags = await GetTagsForCardAsync(connection, cardId, cancellationToken).ConfigureAwait(false);
         return detail;
     }
@@ -335,7 +373,7 @@ public sealed class KnowledgeBaseRepository
             return;
         }
 
-        var detail = await GetCardDetailAsync(cardId, cancellationToken).ConfigureAwait(false);
+        var detail = await GetCardDetailAsync(cardId, cancellationToken: cancellationToken).ConfigureAwait(false);
         if (detail is null)
         {
             return;
@@ -466,7 +504,7 @@ public sealed class KnowledgeBaseRepository
 
     public async Task RestoreSnapshotAsync(KnowledgeBaseCardSnapshot snapshot, string machineName, CancellationToken cancellationToken = default)
     {
-        var detail = await GetCardDetailAsync(snapshot.CardId, cancellationToken).ConfigureAwait(false);
+        var detail = await GetCardDetailAsync(snapshot.CardId, cancellationToken: cancellationToken).ConfigureAwait(false);
         if (detail is null)
         {
             throw new InvalidOperationException($"Card {snapshot.CardId} was not found.");

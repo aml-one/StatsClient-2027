@@ -49,6 +49,7 @@ public partial class MainWindow : Window
 
     private const double DefaultPerspectiveFieldOfView = 45.0;
     private const double ZoomExtentsPadding = 1.08;
+    private const double MinimumZoomPercent = 10.0;
     private const double EmbeddedDefaultZoomPercent = 66.0;
     private const double EmbeddedChromeLeftMargin = 420;
     private const double EmbeddedCoordinateSystemHorizontalPosition = -0.88;
@@ -116,6 +117,9 @@ public partial class MainWindow : Window
     private Brush? _defaultWatermarkBackground;
     private bool _encodeSectionMeasureStyle;
     private Dispatcher? _hostUiDispatcher;
+    private bool _isApplyingViewModelCameraPose;
+    private bool _isCameraChangedHooked;
+    private bool _isViewportTransparentClear;
 
     public void RestoreEmbeddedInteraction()
     {
@@ -171,20 +175,26 @@ public partial class MainWindow : Window
         return dispatcher.InvokeAsync(action).Task.Unwrap();
     }
 
-    public async Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files, string? orderFolderPath = null)
+    public async Task LoadCaseFilesAsync(
+        IEnumerable<DCMFileItem> files,
+        string? orderFolderPath = null,
+        bool useStoneForModelScans = false)
     {
         var uiDispatcher = ResolveUiDispatcher();
         if (!uiDispatcher.CheckAccess())
         {
-            await uiDispatcher.InvokeAsync(() => LoadCaseFilesAsync(files, orderFolderPath)).Task.Unwrap();
+            await uiDispatcher.InvokeAsync(() => LoadCaseFilesAsync(files, orderFolderPath, useStoneForModelScans)).Task.Unwrap();
             return;
         }
 
-        var fileItems = files
-            .Where(x => !string.IsNullOrWhiteSpace(x.FilePath) && File.Exists(x.FilePath))
+        var candidateItems = files
+            .Where(x => !string.IsNullOrWhiteSpace(x.FilePath))
             .GroupBy(x => Path.GetFullPath(x.FilePath), StringComparer.OrdinalIgnoreCase)
             .Select(x => x.First())
             .ToList();
+
+        var fileItems = await Task.Run(() =>
+            candidateItems.Where(x => File.Exists(x.FilePath)).ToList()).ConfigureAwait(true);
 
         if (HostMode != ViewerHostMode.Design &&
             string.IsNullOrWhiteSpace(orderFolderPath) &&
@@ -197,6 +207,7 @@ public partial class MainWindow : Window
         {
             _viewModel.SetSculptOrderFolder(orderFolderPath);
             _viewModel.ConfigureOrderInfoHost();
+            _viewModel.SetUseStoneForModelScans(useStoneForModelScans);
             _viewModel.ConfigureDesignEditOrderFolder(orderFolderPath);
         }
 
@@ -408,10 +419,12 @@ public partial class MainWindow : Window
         SetHostUiDispatcher(hostUiDispatcher);
         _viewModel.EnsureEffectsManager();
         HookCompositionRendering();
+        ApplyRenderingQualitySettings();
         PinViewerDataContext();
         UpdateProjectionToggleButtonState();
         UpdateClippingToggleButtonState();
         UpdateHideLayerLabelsButtonState();
+        UpdateFinishToggleButtonState();
         ApplyHostChromeVisibility();
     }
 
@@ -424,6 +437,19 @@ public partial class MainWindow : Window
     public void ShutdownEmbeddedHost()
     {
         UnhookCompositionRendering();
+        UnhookCameraChanged();
+        _viewModel.DisposeEffectsManager();
+    }
+
+    public void ForceCloseEmbeddedHostWindow()
+    {
+        if (!IsEmbeddedHost)
+        {
+            return;
+        }
+
+        ShutdownEmbeddedHost();
+        Close();
     }
 
     public void EnsureEmbeddedViewportHealth()
@@ -450,6 +476,7 @@ public partial class MainWindow : Window
     private void TeardownEmbeddedHostResources()
     {
         UnhookCompositionRendering();
+        UnhookCameraChanged();
         _viewModel.DisposeEffectsManager();
     }
 
@@ -530,7 +557,8 @@ public partial class MainWindow : Window
 
         ApplyEmbeddedViewportChromeLayout();
         ApplyHostChromeVisibility();
-        ConfigureTransparencyRendering();
+        _isViewportTransparentClear = true;
+        ApplyRenderingQualitySettings();
     }
 
     public void EnsureDesignHostAppearance()
@@ -552,7 +580,8 @@ public partial class MainWindow : Window
 
         ApplyEmbeddedViewportChromeLayout();
         ApplyHostChromeVisibility();
-        ConfigureTransparencyRendering();
+        _isViewportTransparentClear = true;
+        ApplyRenderingQualitySettings();
     }
 
     private void ApplyHostChromeVisibility()
@@ -733,16 +762,56 @@ public partial class MainWindow : Window
     private void ApplyViewportClearTransparency()
     {
         // WPF Colors.Transparent is #00FFFFFF; Helix/DX11 needs #00000000 for a true clear.
+        _isViewportTransparentClear = true;
         Viewport.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
         Viewport.Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
-        Viewport.EnableSwapChainRendering = false;
-        ConfigureTransparencyRendering();
+        ApplyRenderingQualitySettings();
     }
 
-    private void ConfigureTransparencyRendering()
+    public void ApplyRenderingQualitySettings()
     {
-        Viewport.EnableRenderOrder = true;
+        RunOnHostUi(() =>
+        {
+            if (Viewport is null)
+            {
+                return;
+            }
+
+            var highQuality = DcmViewerRenderingPreferences.HighQualityRendering;
+            ApplyViewportRenderingQuality(highQuality);
+            ConfigureCameraHooksForRenderingQuality(highQuality);
+            _viewModel?.ApplyLightRigQualityMode(highQuality);
+            Viewport.InvalidateRender();
+        });
     }
+
+    private void ApplyViewportRenderingQuality(bool highQuality)
+    {
+        if (Viewport is null)
+        {
+            return;
+        }
+
+        if (highQuality)
+        {
+            Viewport.EnableRenderOrder = true;
+            Viewport.EnableSwapChainRendering = false;
+            return;
+        }
+
+        Viewport.EnableRenderOrder = false;
+        Viewport.EnableSwapChainRendering = !_isViewportTransparentClear && !IsEmbeddedHost;
+    }
+
+    private void ConfigureCameraHooksForRenderingQuality(bool highQuality)
+    {
+        EnsureCameraChangedHook();
+    }
+
+    private void OnDcmRenderingPreferencesChanged(object? sender, EventArgs e) =>
+        ApplyRenderingQualitySettings();
+
+    private bool IsHighQualityRendering => DcmViewerRenderingPreferences.HighQualityRendering;
 
     private void ConfigureViewportGestures()
     {
@@ -861,11 +930,15 @@ public partial class MainWindow : Window
         }
 
         UpdateHideLayerLabelsButtonState();
+        UpdateFinishToggleButtonState();
 
         if (Viewport.Camera is HelixProjectionCamera initialCamera)
         {
-            BindCameraPose(initialCamera);
+            UnbindCameraPose(initialCamera);
+            ApplyViewModelCameraToViewport();
         }
+
+        ApplyRenderingQualitySettings();
 
         if (!IsEmbeddedHost)
         {
@@ -875,8 +948,10 @@ public partial class MainWindow : Window
 
         Closed += (_, _) =>
         {
+            DcmViewerRenderingPreferences.Changed -= OnDcmRenderingPreferencesChanged;
             TeardownEmbeddedHostResources();
         };
+        DcmViewerRenderingPreferences.Changed += OnDcmRenderingPreferencesChanged;
         SyncLightingToCamera();
         UpdateZoomPercentLabel();
         Viewport.PreviewMouseLeftButtonDown += Viewport_OnPreviewMouseLeftButtonDown;
@@ -955,8 +1030,9 @@ public partial class MainWindow : Window
             CreateLeftHandSystem = false
         };
 
-        BindCameraPose(orthographicCamera);
         Viewport.Camera = orthographicCamera;
+        ApplyViewModelCameraToViewport();
+        ConfigureCameraHooksForRenderingQuality(IsHighQualityRendering);
         _isOrthographicView = true;
         CaptureClipDefaults(orthographicCamera);
         ApplyClipMode(orthographicCamera);
@@ -1025,6 +1101,7 @@ public partial class MainWindow : Window
         {
             _marginPrepSpatialIndices = null;
             ConfigureRotationBehavior();
+            SyncLightingToCamera();
             ScheduleTopRightOverlayFade();
             if (_viewModel.IsSectionMode)
             {
@@ -1046,6 +1123,13 @@ public partial class MainWindow : Window
                     }
                 }, DispatcherPriority.Loaded);
             }
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.CameraPosition), StringComparison.Ordinal) ||
+            string.Equals(e.PropertyName, nameof(MainViewModel.CameraLookDirection), StringComparison.Ordinal) ||
+            string.Equals(e.PropertyName, nameof(MainViewModel.CameraUpDirection), StringComparison.Ordinal))
+        {
+            ApplyViewModelCameraToViewport();
         }
 
         if (string.Equals(e.PropertyName, nameof(MainViewModel.IsSectionMode), StringComparison.Ordinal))
@@ -1148,6 +1232,12 @@ public partial class MainWindow : Window
         if (string.Equals(e.PropertyName, nameof(MainViewModel.HideLayerLabels), StringComparison.Ordinal))
         {
             UpdateHideLayerLabelsButtonState();
+        }
+
+        if (string.Equals(e.PropertyName, nameof(MainViewModel.IsFinishToggleActive), StringComparison.Ordinal) ||
+            string.Equals(e.PropertyName, nameof(MainViewModel.FinishLabel), StringComparison.Ordinal))
+        {
+            UpdateFinishToggleButtonState();
         }
     }
 
@@ -1311,8 +1401,8 @@ public partial class MainWindow : Window
                 CreateLeftHandSystem = false
             };
 
-            BindCameraPose(perspectiveCamera);
             Viewport.Camera = perspectiveCamera;
+            ApplyViewModelCameraToViewport();
             _isOrthographicView = false;
             CaptureClipDefaults(perspectiveCamera);
             ApplyClipMode(perspectiveCamera);
@@ -1330,8 +1420,8 @@ public partial class MainWindow : Window
                 Width = orthographicWidth
             };
 
-            BindCameraPose(orthographicCamera);
             Viewport.Camera = orthographicCamera;
+            ApplyViewModelCameraToViewport();
             _isOrthographicView = true;
             CaptureClipDefaults(orthographicCamera);
             ApplyClipMode(orthographicCamera);
@@ -1445,27 +1535,70 @@ public partial class MainWindow : Window
         }
     }
 
-    private void BindCameraPose(HelixProjectionCamera camera)
+    private static void UnbindCameraPose(HelixProjectionCamera camera)
     {
-        var positionBinding = new Binding(nameof(MainViewModel.CameraPosition))
-        {
-            Source = _viewModel,
-            Mode = BindingMode.OneWay
-        };
-        var lookBinding = new Binding(nameof(MainViewModel.CameraLookDirection))
-        {
-            Source = _viewModel,
-            Mode = BindingMode.OneWay
-        };
-        var upBinding = new Binding(nameof(MainViewModel.CameraUpDirection))
-        {
-            Source = _viewModel,
-            Mode = BindingMode.OneWay
-        };
+        BindingOperations.ClearBinding(camera, HelixProjectionCamera.PositionProperty);
+        BindingOperations.ClearBinding(camera, HelixProjectionCamera.LookDirectionProperty);
+        BindingOperations.ClearBinding(camera, HelixProjectionCamera.UpDirectionProperty);
+    }
 
-        BindingOperations.SetBinding(camera, HelixProjectionCamera.PositionProperty, positionBinding);
-        BindingOperations.SetBinding(camera, HelixProjectionCamera.LookDirectionProperty, lookBinding);
-        BindingOperations.SetBinding(camera, HelixProjectionCamera.UpDirectionProperty, upBinding);
+    private void EnsureCameraChangedHook()
+    {
+        if (_isCameraChangedHooked || Viewport is null)
+        {
+            return;
+        }
+
+        Viewport.CameraChanged += OnViewportCameraChanged;
+        _isCameraChangedHooked = true;
+    }
+
+    private void UnhookCameraChanged()
+    {
+        if (!_isCameraChangedHooked || Viewport is null)
+        {
+            return;
+        }
+
+        Viewport.CameraChanged -= OnViewportCameraChanged;
+        _isCameraChangedHooked = false;
+    }
+
+    private void ApplyViewModelCameraToViewport()
+    {
+        if (Viewport?.Camera is not HelixProjectionCamera camera)
+        {
+            return;
+        }
+
+        _isApplyingViewModelCameraPose = true;
+        try
+        {
+            camera.Position = _viewModel.CameraPosition;
+            camera.LookDirection = _viewModel.CameraLookDirection;
+            camera.UpDirection = _viewModel.CameraUpDirection;
+        }
+        finally
+        {
+            _isApplyingViewModelCameraPose = false;
+        }
+
+        SyncLightingToCamera();
+    }
+
+    private void OnViewportCameraChanged(object? sender, EventArgs e)
+    {
+        if (_isApplyingViewModelCameraPose || Viewport?.Camera is not HelixProjectionCamera camera)
+        {
+            return;
+        }
+
+        if (IsHighQualityRendering)
+        {
+            _viewModel.SetCameraPose(camera.Position, camera.LookDirection, camera.UpDirection);
+        }
+
+        SyncLightingToCamera();
     }
 
     private double CalculateOrthographicWidth(double cameraDistance, double fieldOfViewDegrees)
@@ -1505,8 +1638,34 @@ public partial class MainWindow : Window
 
         if (poseChanged)
         {
-            ApplyClipMode(camera);
-            SyncLightingToCamera();
+            var highQuality = IsHighQualityRendering;
+            if (highQuality)
+            {
+                if (TryClampMinimumCameraZoom(camera))
+                {
+                    _lastRenderedCameraPosition = camera.Position;
+                    _lastRenderedCameraLook = camera.LookDirection;
+                    _lastRenderedCameraUp = camera.UpDirection;
+                }
+
+                ApplyClipMode(camera);
+                SyncLightingToCamera();
+            }
+            else
+            {
+                if (_renderingFrameCounter % 8 == 0)
+                {
+                    TryClampMinimumCameraZoom(camera);
+                }
+
+                if (_renderingFrameCounter % 4 == 0)
+                {
+                    ApplyClipMode(camera);
+                }
+
+                SyncLightingToCamera();
+            }
+
             _lastRenderedCameraPosition = camera.Position;
             _lastRenderedCameraLook = camera.LookDirection;
             _lastRenderedCameraUp = camera.UpDirection;
@@ -1514,7 +1673,8 @@ public partial class MainWindow : Window
         }
 
         _renderingFrameCounter++;
-        if (poseChanged || _renderingFrameCounter % 8 == 0)
+        var zoomLabelInterval = IsHighQualityRendering ? 8 : 16;
+        if (poseChanged || _renderingFrameCounter % zoomLabelInterval == 0)
         {
             UpdateZoomPercentLabelIfChanged();
         }
@@ -1522,12 +1682,13 @@ public partial class MainWindow : Window
 
     private void SyncLightingToCamera()
     {
-        if (Viewport.Camera is not HelixProjectionCamera camera)
+        if (Viewport?.Camera is not HelixProjectionCamera camera)
         {
             return;
         }
 
         _viewModel.UpdateLightRigFromCamera(camera.LookDirection, camera.UpDirection);
+        Viewport.InvalidateRender();
     }
 
     private void UpdateZoomPercentLabel()
@@ -1576,8 +1737,82 @@ public partial class MainWindow : Window
             zoomPercent = (fitDistance / Math.Max(currentDistance, 1e-9)) * 100.0;
         }
 
-        var roundedPercent = Math.Clamp((int)Math.Round(zoomPercent), 1, 9999);
+        var roundedPercent = Math.Clamp((int)Math.Round(zoomPercent), (int)MinimumZoomPercent, 9999);
         return $"Zoom: {roundedPercent}%";
+    }
+
+    /// <summary>Stops infinite zoom-out once the model reaches <see cref="MinimumZoomPercent"/>.</summary>
+    private bool TryClampMinimumCameraZoom(HelixProjectionCamera camera)
+    {
+        var bounds = GetVisibleBounds();
+        if (bounds.IsEmpty)
+        {
+            return false;
+        }
+
+        var center = new Point3D(
+            bounds.X + (bounds.SizeX / 2.0),
+            bounds.Y + (bounds.SizeY / 2.0),
+            bounds.Z + (bounds.SizeZ / 2.0));
+
+        var look = camera.LookDirection;
+        if (look.LengthSquared < 1e-9)
+        {
+            return false;
+        }
+
+        look.Normalize();
+
+        var up = camera.UpDirection;
+        if (up.LengthSquared < 1e-9)
+        {
+            up = new Vector3D(0, 1, 0);
+        }
+
+        var minZoomScale = MinimumZoomPercent / 100.0;
+
+        if (camera is HelixOrthographicCamera orthographicCamera)
+        {
+            var fitWidth = CalculateOrthographicFitWidth(bounds, look, up);
+            var maxWidth = fitWidth / minZoomScale;
+            if (orthographicCamera.Width <= maxWidth + 1e-6)
+            {
+                return false;
+            }
+
+            orthographicCamera.Width = maxWidth;
+            return true;
+        }
+
+        var fieldOfView = camera is HelixPerspectiveCamera perspective
+            ? perspective.FieldOfView
+            : DefaultPerspectiveFieldOfView;
+        var fitDistance = CalculatePerspectiveFitDistance(
+            bounds,
+            look,
+            up,
+            fieldOfView,
+            Viewport.ActualWidth,
+            Viewport.ActualHeight);
+        var maxDistance = fitDistance / minZoomScale;
+        var currentDistance = GetDistance(camera.Position, center);
+        if (currentDistance <= maxDistance + 1e-6)
+        {
+            return false;
+        }
+
+        var offset = camera.Position - center;
+        if (offset.LengthSquared < 1e-9)
+        {
+            offset = -look;
+        }
+        else
+        {
+            offset.Normalize();
+        }
+
+        camera.Position = center + (offset * maxDistance);
+        return true;
     }
 
     private void UpdateZoomPercentLabelIfChanged(bool force = false)
@@ -2073,6 +2308,20 @@ public partial class MainWindow : Window
         }
 
         UpdateHideLayerLabelsButtonState();
+        UpdateFinishToggleButtonState();
+    }
+
+    private void UpdateFinishToggleButtonState()
+    {
+        if (FindName("FinishToggleButton") is not Button finishToggleButton)
+        {
+            return;
+        }
+
+        ApplyActiveToolbarButtonState(finishToggleButton, _viewModel.IsFinishToggleActive);
+        finishToggleButton.ToolTip = _viewModel.IsFinishToggleActive
+            ? "Toggle finish (Satin — polished)"
+            : "Toggle finish (Matte)";
     }
 
     private void ApplyActiveToolbarButtonState(Button button, bool isActive)
@@ -3078,7 +3327,7 @@ public partial class MainWindow : Window
         }
 
         var startCanvas = SectionToCanvasPoint(_viewModel.MeasureStartSection.Value);
-        DrawMeasureMarker(startCanvas, isStart: true);
+        DrawMeasureMarker(startCanvas);
 
         if (_viewModel.MeasureEndSection is null)
         {
@@ -3086,7 +3335,7 @@ public partial class MainWindow : Window
         }
 
         var endCanvas = SectionToCanvasPoint(_viewModel.MeasureEndSection.Value);
-        DrawMeasureMarker(endCanvas, isStart: false);
+        DrawMeasureMarker(endCanvas);
 
         var line = new Line
         {
@@ -3121,39 +3370,18 @@ public partial class MainWindow : Window
         SectionProfileCanvas.Children.Add(label);
     }
 
-    private void DrawMeasureMarker(Point point, bool isStart)
+    private void DrawMeasureMarker(Point point)
     {
         var markerSize = _encodeSectionMeasureStyle ? 6.0 : GetTransformedMarkerSize();
         var markerRadius = markerSize * 0.5;
-        Brush fill;
-        if (_encodeSectionMeasureStyle)
-        {
-            var core = isStart ? Color.FromRgb(235, 70, 70) : Color.FromRgb(55, 130, 235);
-            fill = new RadialGradientBrush(
-                Color.FromRgb(255, 255, 255),
-                core)
-            {
-                GradientOrigin = new Point(0.32, 0.28),
-                Center = new Point(0.32, 0.28),
-                RadiusX = 0.85,
-                RadiusY = 0.85
-            };
-            fill.Freeze();
-        }
-        else
-        {
-            fill = ColorSchemeResourceCatalog.GetBrush("BlackColor");
-        }
 
         var marker = new Ellipse
         {
             Width = markerSize,
             Height = markerSize,
-            Fill = fill,
-            Stroke = _encodeSectionMeasureStyle
-                ? new SolidColorBrush(Color.FromArgb(180, 30, 45, 70))
-                : null,
-            StrokeThickness = _encodeSectionMeasureStyle ? 0.8 : 0
+            Fill = Brushes.Black,
+            Stroke = null,
+            StrokeThickness = 0
         };
 
         Canvas.SetLeft(marker, point.X - markerRadius);

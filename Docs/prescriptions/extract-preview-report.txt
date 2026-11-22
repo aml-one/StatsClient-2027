@@ -1,0 +1,82 @@
+﻿PDF Field Extract Preview Report
+Shows only fields visible in the PDF Field Extract window (new rules).
+Generated: 2026-06-11 15:54:20
+========================================================================
+
+File: ASCONNECT\treatment-report.pdf
+Detected system: ASConnect (PageHeaderIsHigh=7)
+Customer (Doctor name): Jennifer Maras
+Patient First name: Mary
+Patient Last name: Hayes
+Shade: B1
+Teeth numbers: 19
+Comments: (empty)
+Order ID: 260610056039260336128
+------------------------------------------------------------------------
+
+File: DEXIS\73fbfcb7-3683-41aa-84e2-fafd85a5e431.pdf
+Detected system: Dexis (PageHeaderIsHigh=8)
+Customer (Doctor name): Edy Guerra
+Patient First name: Smantha De Las
+Patient Last name: Traviesas
+Shade: 1M2
+Teeth numbers: 4
+Comments: NAME : SAMATHA DE LAS TRAVIESAS, DR GUERRA , FLAGLER , SHADE 1M2,  #4 CROWN NO OCLUSION
+Order ID: OFE-6762
+------------------------------------------------------------------------
+
+File: DSCORE\Dentsply Sirona.pdf
+Detected system: DS Core (PageHeaderIsHigh=6)
+Customer (Doctor name): Duanne Jones
+Patient First name: Gvaune
+Patient Last name: Amory
+Shade: A2
+Teeth numbers: 8,9
+Comments: Dr Duanne Jones wrote at 06/09/2026, 10:58:42 EDT:
+Please place ink under crown on tooth #8 to avoid traslucent on necrotic prep
+Order ID: 1AABJEY4
+------------------------------------------------------------------------
+
+File: IS3D\Case details-Shining 3D Dental Cloud.pdf
+Detected system: IS3D / Shining 3D (PageHeaderIsHigh=3)
+Customer (Doctor name): Montefalco
+Patient First name: Francisco F
+Patient Last name: Lopera
+Shade: A2
+Teeth numbers: 29,30
+Comments: Shade:A2 RUSH Please fabricate full zirconia crown #29 and #30. Thank you !!!
+Order ID: (hidden — not iTero / ASConnect / Dexis / DS Core)
+------------------------------------------------------------------------
+
+File: ITERO\Viewer · My iTero.pdf
+Detected system: iTero (high header) (PageHeaderIsHigh=1)
+Customer (Doctor name): Long, W. Roger
+Patient First name: Thelma
+Patient Last name: Potts
+Shade: A2
+Teeth numbers: 14
+Comments: (hidden — iTero / TRIOS)
+Order ID: 309293566
+------------------------------------------------------------------------
+
+File: MEDIT\John Sandler, Dr. B Davidson's Case_6 20 2026 1 00 PM_Case Information.pdf
+Detected system: Medit Link (PageHeaderIsHigh=5)
+Customer (Doctor name): B Davidson
+Patient First name: John
+Patient Last name: Sandler
+Shade: A3
+Teeth numbers: 3
+Comments: (empty)
+Order ID: (hidden — not iTero / ASConnect / Dexis / DS Core)
+------------------------------------------------------------------------
+
+File: TRIOS\529118700_20260608_1326_42_651.pdf
+Detected system: TRIOS (PageHeaderIsHigh=4)
+Customer (Doctor name): Advanced Dental Group
+Patient First name: Michael
+Patient Last name: Burleigh
+Shade: 2M1/2M2
+Teeth numbers: 5,6,12,13,30
+Comments: (hidden — iTero / TRIOS)
+Order ID: (hidden — not iTero / ASConnect / Dexis / DS Core)
+------------------------------------------------------------------------

@@ -54,7 +54,7 @@
                                Opacity="0.55"
                                VerticalAlignment="Center"
                                Padding="0,0,5,0" />
-                    <TextBlock Text="?"
+                    <TextBlock Text="╳"
                                Cursor="Hand"
                                ToolTip="Close window"
                                Foreground="{DynamicResource BlackColor}"
@@ -91,20 +91,13 @@
                                Foreground="{DynamicResource BlackColor}" />
                     <TextBlock Text="Pan: Mouse right"
                                Foreground="{DynamicResource BlackColor}" />
-                    <TextBlock Text="Close: ESC or Mouse left double click"
+                    <TextBlock Text="Close: ESC or ✕"
                                Foreground="{DynamicResource BlackColor}" />
 
                 </StackPanel>
                 <uc:ImageViewControl x:Name="image"
                                      Panel.ZIndex="2"
-                                     MouseLeftButtonDown="Image_MouseLeftButtonDown"
-                                     Grid.Row="1">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="MouseDoubleClick">
-                            <i:InvokeCommandAction Command="{Binding CloseWindowCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </uc:ImageViewControl>
+                                     Grid.Row="1" />
             </Grid>
         </Border>
     </Border>

@@ -1,0 +1,199 @@
+<Window x:Class="StatsClient.MVVM.View.PrescriptionPanPositionEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit pan number position"
+        Height="1120"
+        Width="860"
+        MinHeight="480"
+        MinWidth="420"
+        ResizeMode="CanResizeWithGrip"
+        WindowStyle="None"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI"
+        Background="{DynamicResource TransparentBrush}">
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="4"
+                      CaptionHeight="0" />
+    </WindowChrome.WindowChrome>
+
+    <Border CornerRadius="8"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+            Background="{DynamicResource ClassicWindowBackgroundBrush}"
+            ClipToBounds="True">
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource ImmersiveGlassBackground}"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="6,6,0,0"
+                    Padding="10,8"
+                    Margin="-10,-10,-10,8"
+                    PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="{Binding HeaderTitle}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ImmersiveTextPrimary}" />
+                        <TextBlock Text="{Binding SystemDisplayName}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ImmersiveTextMuted}"
+                                   Margin="10,2,0,0" />
+                    </StackPanel>
+                    <TextBlock Text="╳"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               FontSize="14"
+                               Cursor="Hand"
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+                               ToolTip="Close"
+                               MouseLeftButtonDown="CloseButton_MouseLeftButtonDown" />
+                </Grid>
+            </Border>
+
+            <TextBlock Grid.Row="1"
+                       Text="{Binding HintText}"
+                       FontSize="10"
+                       Foreground="{DynamicResource ImmersiveTextMuted}"
+                       Margin="0,0,0,8"
+                       TextWrapping="Wrap" />
+
+            <Border Grid.Row="2"
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+                    BorderThickness="1"
+                    Background="{DynamicResource ImmersiveGlassBackground}"
+                    Margin="0,0,0,10">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto"
+                              Background="{DynamicResource SchemeColor_D1CCB8}">
+                    <Canvas x:Name="PrescriptionCanvas"
+                            Width="{Binding CanvasWidth}"
+                            Height="{Binding CanvasHeight}">
+                        <Image Source="{Binding PrescriptionImage}"
+                               Width="{Binding CanvasWidth}"
+                               Height="{Binding CanvasHeight}"
+                               Stretch="Fill" />
+                        <TextBlock x:Name="StampLabel"
+                                   Text="{Binding StampLabelText}"
+                                   FontFamily="Helvetica"
+                                   FontWeight="Bold"
+                                   FontSize="{Binding StampFontSizePixels}"
+                                   Foreground="{Binding StampForeground}"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="{Binding StampLabelMaxWidth}"
+                                   Canvas.Left="{Binding StampPixelX}"
+                                   Canvas.Top="{Binding StampPixelY}" />
+                    </Canvas>
+                </ScrollViewer>
+            </Border>
+
+            <StackPanel Grid.Row="3"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="-11,0,0,8">
+                    <TextBlock Text="Font size"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"
+                               FontSize="11"
+                               Foreground="{DynamicResource ImmersiveTextMuted}" />
+                    <Button Content="−"
+                            Style="{StaticResource RxMakerToolbarButton}"
+                            Width="36"
+                            Height="28"
+                            Margin="2,0"
+                            Padding="0,0,0,5"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Click="DecreaseFont_Click" />
+                    <Button Content="+"
+                            Style="{StaticResource RxMakerToolbarButton}"
+                            Width="36"
+                            Height="28"
+                            Padding="0,0,0,5"
+                            Margin="2,0"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Click="IncreaseFont_Click" />
+                </StackPanel>
+
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition Width="40" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Row="0"
+                            Grid.Column="1"
+                            Content="▲"
+                            Style="{StaticResource RxMakerToolbarButton}"
+                            Width="36"
+                            Height="28"
+                            Margin="2"
+                            Click="MoveUp_Click" />
+                    <Button Grid.Row="1"
+                            Grid.Column="0"
+                            Content="◀"
+                            Style="{StaticResource RxMakerToolbarButton}"
+                            Width="36"
+                            Height="28"
+                            Margin="2"
+                            Click="MoveLeft_Click" />
+                    <Button Grid.Row="1"
+                            Grid.Column="1"
+                            Content="▼"
+                            Style="{StaticResource RxMakerToolbarButton}"
+                            Width="36"
+                            Height="28"
+                            Margin="2"
+                            Click="MoveDown_Click" />
+                    <Button Grid.Row="1"
+                            Grid.Column="2"
+                            Content="▶"
+                            Style="{StaticResource RxMakerToolbarButton}"
+                            Width="36"
+                            Height="28"
+                            Margin="2"
+                            Click="MoveRight_Click" />
+                </Grid>
+            </StackPanel>
+
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="Save"
+                        Style="{StaticResource RxMakerPastelSaveButton}"
+                        Click="Save_Click" />
+                <Button Grid.Column="2"
+                        Content="Save position as default"
+                        Style="{StaticResource RxMakerPastelDefaultButton}"
+                        Click="SaveAsDefault_Click" />
+                <Button Grid.Column="4"
+                        Content="Cancel"
+                        Style="{StaticResource RxMakerPastelCancelButton}"
+                        Click="Cancel_Click" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

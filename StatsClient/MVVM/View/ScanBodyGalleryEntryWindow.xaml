@@ -1,0 +1,538 @@
+<Window x:Class="StatsClient.MVVM.View.ScanBodyGalleryEntryWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+
+        xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
+
+        Title="Scan body entry"
+
+        Height="640"
+
+        Width="560"
+
+        MinHeight="600"
+
+        MinWidth="500"
+
+        ResizeMode="NoResize"
+
+        WindowStartupLocation="CenterOwner"
+
+        ShowInTaskbar="False"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="{DynamicResource TransparentBrush}"
+
+        Foreground="{DynamicResource ImmersiveTextPrimary}">
+
+    <WindowChrome.WindowChrome>
+
+        <shell:WindowChrome CaptionHeight="0"
+
+                            ResizeBorderThickness="0"
+
+                            CornerRadius="0"
+
+                            GlassFrameThickness="0" />
+
+    </WindowChrome.WindowChrome>
+
+
+
+    <Window.Resources>
+
+        <converter:ByteArrayToImageConverter x:Key="ByteArrayToImageConverter" />
+
+
+
+        <Style x:Key="FieldLabel"
+
+               TargetType="TextBlock">
+
+            <Setter Property="FontSize"
+
+                    Value="12" />
+
+            <Setter Property="FontWeight"
+
+                    Value="SemiBold" />
+
+            <Setter Property="Foreground"
+
+                    Value="{DynamicResource ImmersiveTextMuted}" />
+
+            <Setter Property="Margin"
+
+                    Value="0,0,0,4" />
+
+        </Style>
+
+        <Style x:Key="FieldTextBox"
+
+               TargetType="TextBox">
+
+            <Setter Property="Height"
+
+                    Value="34" />
+
+            <Setter Property="FontSize"
+
+                    Value="13" />
+
+            <Setter Property="Padding"
+
+                    Value="10,6" />
+
+            <Setter Property="Margin"
+
+                    Value="0,0,0,10" />
+
+            <Setter Property="Background"
+
+                    Value="{DynamicResource ImmersiveInputBackground}" />
+
+            <Setter Property="Foreground"
+
+                    Value="{DynamicResource ImmersiveTextPrimary}" />
+
+            <Setter Property="BorderBrush"
+
+                    Value="{DynamicResource ImmersiveInputBorder}" />
+
+            <Setter Property="BorderThickness"
+
+                    Value="1" />
+
+        </Style>
+
+        <Style x:Key="PrimaryActionButton"
+
+               TargetType="Button">
+
+            <Setter Property="Height"
+
+                    Value="34" />
+
+            <Setter Property="MinWidth"
+
+                    Value="96" />
+
+            <Setter Property="Padding"
+
+                    Value="14,0" />
+
+            <Setter Property="Cursor"
+
+                    Value="Hand" />
+
+            <Setter Property="FontWeight"
+
+                    Value="SemiBold" />
+
+            <Setter Property="Foreground"
+
+                    Value="{StaticResource ImmersiveAccentBlue}" />
+
+            <Setter Property="Background"
+
+                    Value="{DynamicResource ImmersiveAccentBlueLight}" />
+
+            <Setter Property="BorderBrush"
+
+                    Value="{DynamicResource ImmersiveAccentBlueBorder}" />
+
+            <Setter Property="BorderThickness"
+
+                    Value="1" />
+
+        </Style>
+
+        <Style x:Key="SecondaryActionButton"
+
+               TargetType="Button"
+
+               BasedOn="{StaticResource PrimaryActionButton}">
+
+            <Setter Property="Foreground"
+
+                    Value="{DynamicResource ImmersiveTextMuted}" />
+
+            <Setter Property="Background"
+
+                    Value="{DynamicResource TransparentBrush}" />
+
+            <Setter Property="BorderBrush"
+
+                    Value="{DynamicResource ImmersiveInputBorder}" />
+
+        </Style>
+
+        <Style x:Key="TitleBarCloseButton"
+
+               TargetType="Button">
+
+            <Setter Property="Width"
+
+                    Value="28" />
+
+            <Setter Property="Height"
+
+                    Value="28" />
+
+            <Setter Property="Padding"
+
+                    Value="0" />
+
+            <Setter Property="Cursor"
+
+                    Value="Hand" />
+
+            <Setter Property="FontSize"
+
+                    Value="14" />
+
+            <Setter Property="FontWeight"
+
+                    Value="SemiBold" />
+
+            <Setter Property="Foreground"
+
+                    Value="{DynamicResource ImmersiveTextMuted}" />
+
+            <Setter Property="Background"
+
+                    Value="{DynamicResource TransparentBrush}" />
+
+            <Setter Property="BorderBrush"
+
+                    Value="{DynamicResource TransparentBrush}" />
+
+            <Setter Property="BorderThickness"
+
+                    Value="0" />
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Border CornerRadius="10"
+
+            BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+
+            BorderThickness="1"
+
+            Background="{DynamicResource ImmersiveGlassBackground}"
+
+            ClipToBounds="True">
+
+        <Grid>
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="36" />
+
+                <RowDefinition Height="Auto" />
+
+                <RowDefinition Height="*" />
+
+                <RowDefinition Height="Auto" />
+
+            </Grid.RowDefinitions>
+
+
+
+            <Border Grid.Row="0"
+
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+
+                    BorderThickness="0,0,0,1"
+
+                    Padding="14,0,8,0">
+
+                <DockPanel PreviewMouseLeftButtonDown="TitleBar_PreviewMouseLeftButtonDown"
+
+                           LastChildFill="True"
+
+                           Cursor="Hand">
+
+                    <Button x:Name="CloseTitleBarButton"
+
+                            DockPanel.Dock="Right"
+
+                            Content="✕"
+
+                            Style="{StaticResource TitleBarCloseButton}"
+
+                            Click="CloseTitleBar_Click" />
+
+                    <TextBlock x:Name="TitleBarText"
+
+                               Text="Add scan body"
+
+                               VerticalAlignment="Center"
+
+                               FontSize="13"
+
+                               FontWeight="SemiBold" />
+
+                </DockPanel>
+
+            </Border>
+
+
+
+            <TextBlock x:Name="HeaderText"
+
+                       Grid.Row="1"
+
+                       Text="Add scan body"
+
+                       FontSize="18"
+
+                       FontWeight="SemiBold"
+
+                       Margin="18,14,18,10" />
+
+
+
+            <ScrollViewer Grid.Row="2"
+
+                          VerticalScrollBarVisibility="Auto"
+
+                          Margin="18,0">
+
+                <StackPanel>
+
+                    <TextBlock Text="Brand (required)"
+
+                               Style="{StaticResource FieldLabel}" />
+
+                    <TextBox x:Name="BrandBox"
+
+                             Style="{StaticResource FieldTextBox}"
+
+                             TextChanged="Field_TextChanged" />
+
+
+
+                    <TextBlock Text="System (optional)"
+
+                               Style="{StaticResource FieldLabel}" />
+
+                    <TextBox x:Name="SystemBox"
+
+                             Style="{StaticResource FieldTextBox}"
+
+                             TextChanged="Field_TextChanged" />
+
+
+
+                    <TextBlock Text="Size (optional)"
+
+                               Style="{StaticResource FieldLabel}" />
+
+                    <TextBox x:Name="SizeBox"
+
+                             Style="{StaticResource FieldTextBox}"
+
+                             TextChanged="Field_TextChanged" />
+
+
+
+                    <TextBlock Text="Other info (optional)"
+
+                               Style="{StaticResource FieldLabel}" />
+
+                    <TextBox x:Name="OtherInfoBox"
+
+                             Style="{StaticResource FieldTextBox}"
+
+                             TextChanged="Field_TextChanged" />
+
+
+
+                    <TextBlock Text="Extra tags (comma-separated)"
+
+                               Style="{StaticResource FieldLabel}" />
+
+                    <TextBox x:Name="TagsBox"
+
+                             Style="{StaticResource FieldTextBox}"
+
+                             Margin="0,0,0,6" />
+
+                    <TextBlock Text="Tags are also auto-generated from Brand and any optional System, Size, or Other info."
+
+                               FontSize="11"
+
+                               Foreground="{DynamicResource ImmersiveTextMuted}"
+
+                               Margin="0,0,0,6" />
+
+                    <TextBlock x:Name="AutoTagsPreview"
+
+                               FontSize="11"
+
+                               Foreground="{DynamicResource ImmersiveAccentBlue}"
+
+                               TextWrapping="Wrap"
+
+                               Margin="0,0,0,12" />
+
+
+
+                    <TextBlock Text="Images (JPG/PNG — drop, paste Ctrl+V, or click)"
+
+                               Style="{StaticResource FieldLabel}" />
+
+                    <Border x:Name="ImageDropZone"
+
+                            MinHeight="120"
+
+                            CornerRadius="8"
+
+                            BorderBrush="{DynamicResource ImmersiveInputBorder}"
+
+                            BorderThickness="1"
+
+                            Background="{DynamicResource ImmersiveInputBackground}"
+
+                            AllowDrop="True"
+
+                            Drop="ImageDropZone_Drop"
+
+                            PreviewDragOver="ImageDropZone_PreviewDragOver"
+
+                            MouseLeftButtonUp="ImageDropZone_Click"
+
+                            Margin="0,0,0,10">
+
+                        <TextBlock Text="Drop images here, click to browse, or press Ctrl+V"
+
+                                   HorizontalAlignment="Center"
+
+                                   VerticalAlignment="Center"
+
+                                   FontSize="12"
+
+                                   Foreground="{DynamicResource ImmersiveTextMuted}" />
+
+                    </Border>
+
+
+
+                    <ItemsControl x:Name="ImagesList">
+
+                        <ItemsControl.ItemsPanel>
+
+                            <ItemsPanelTemplate>
+
+                                <WrapPanel />
+
+                            </ItemsPanelTemplate>
+
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <Border Width="110"
+
+                                        Height="110"
+
+                                        Margin="0,0,8,8"
+
+                                        CornerRadius="8"
+
+                                        BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+
+                                        BorderThickness="1"
+
+                                        Background="{DynamicResource ImmersiveGlassBackground}">
+
+                                    <Grid>
+
+                                        <Image Source="{Binding ThumbnailData, Converter={StaticResource ByteArrayToImageConverter}}"
+
+                                               Stretch="Uniform"
+
+                                               Margin="4" />
+
+                                        <Button Content="✕"
+
+                                                Width="22"
+
+                                                Height="22"
+
+                                                HorizontalAlignment="Right"
+
+                                                VerticalAlignment="Top"
+
+                                                Margin="2"
+
+                                                Padding="0"
+
+                                                FontSize="11"
+
+                                                Click="RemoveImage_Click" />
+
+                                    </Grid>
+
+                                </Border>
+
+                            </DataTemplate>
+
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <StackPanel Grid.Row="3"
+
+                        Orientation="Horizontal"
+
+                        HorizontalAlignment="Right"
+
+                        Margin="18,14,18,18">
+
+                <Button Content="Cancel"
+
+                        Style="{StaticResource SecondaryActionButton}"
+
+                        Margin="0,0,8,0"
+
+                        IsCancel="True"
+
+                        Click="Cancel_Click" />
+
+                <Button Content="Save"
+
+                        Style="{StaticResource PrimaryActionButton}"
+
+                        IsDefault="True"
+
+                        Click="Save_Click" />
+
+            </StackPanel>
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

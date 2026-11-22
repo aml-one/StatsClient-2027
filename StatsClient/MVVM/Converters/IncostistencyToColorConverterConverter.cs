@@ -9,6 +9,9 @@ public class IncostistencyToColorConverterConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
+        if (values.Length > 3 && values[3] as bool? == true)
+            return ColorSchemeResourceCatalog.GetBrush("InconsistencyLabnextMatchColor");
+
         if (!string.IsNullOrEmpty(values[0] as string) && !string.IsNullOrEmpty(values[1] as string))
             return ColorSchemeResourceCatalog.GetBrush("InconsistencyBothFilledColor");
 

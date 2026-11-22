@@ -693,12 +693,7 @@ public partial class UserPanelViewModel : ObservableObject
                                               double DismissAfterSeconds = 300,
                                               Window? Owner = null)
     {
-        SMessageBox sMessageBox = new(Title, Message, Buttons, MessageBoxIcon, DismissAfterSeconds);
-        if (Owner is null)
-            sMessageBox.Owner = MainWindow.Instance;
-        else
-            sMessageBox.Owner = Owner;
-
+        SMessageBox sMessageBox = new(Title, Message, Buttons, MessageBoxIcon, DismissAfterSeconds, Owner ?? MainWindow.Instance);
         sMessageBox.ShowDialog();
 
         return MainViewModel.Instance.SMessageBoxxResult;

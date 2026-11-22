@@ -1,0 +1,961 @@
+<UserControl x:Class="StatsClient.MVVM.View.ScanBodyGalleryTabPanel"
+
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+
+             xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
+
+             mc:Ignorable="d"
+
+             d:DesignHeight="700"
+
+             d:DesignWidth="1200"
+
+             Focusable="True">
+
+    <UserControl.Resources>
+
+        <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <converter:ByteArrayToImageConverter x:Key="ByteArrayToImageConverter" />
+
+        <converter:InverseBoolConverter x:Key="InverseBoolConverter" />
+
+        <converter:EmptyToCollapsedConverter x:Key="EmptyToCollapsedConverter" />
+
+
+
+        <SolidColorBrush x:Key="SbgBlueButtonBg" Color="#FF1E3A5F" />
+
+        <SolidColorBrush x:Key="SbgBlueButtonBorder" Color="#5538BDF8" />
+
+        <SolidColorBrush x:Key="SbgBlueButtonFg" Color="#FF38BDF8" />
+
+        <SolidColorBrush x:Key="SbgBlueButtonHover" Color="#FF2A4A6F" />
+
+        <SolidColorBrush x:Key="SbgGreenButtonBg" Color="#FF1A3D32" />
+
+        <SolidColorBrush x:Key="SbgGreenButtonBorder" Color="#664ADE80" />
+
+        <SolidColorBrush x:Key="SbgGreenButtonFg" Color="#FF4ADE80" />
+
+        <SolidColorBrush x:Key="SbgGreenButtonHover" Color="#FF234D40" />
+
+        <SolidColorBrush x:Key="SbgYellowButtonBg" Color="#FF3D3520" />
+
+        <SolidColorBrush x:Key="SbgYellowButtonBorder" Color="#66F0C03A" />
+
+        <SolidColorBrush x:Key="SbgYellowButtonFg" Color="#FFF0C03A" />
+
+        <SolidColorBrush x:Key="SbgYellowButtonHover" Color="#FF4D4528" />
+
+        <SolidColorBrush x:Key="SbgRedButtonBg" Color="#FF3D2020" />
+
+        <SolidColorBrush x:Key="SbgRedButtonBorder" Color="#66EF4444" />
+
+        <SolidColorBrush x:Key="SbgRedButtonFg" Color="#FFEF4444" />
+
+        <SolidColorBrush x:Key="SbgRedButtonHover" Color="#FF4D2828" />
+
+        <SolidColorBrush x:Key="SbgVisionSearchBackgroundBrush" Color="#2238BDF8" />
+
+        <SolidColorBrush x:Key="SbgVisionSearchBorderBrush" Color="#5534D9F5" />
+
+        <SolidColorBrush x:Key="SbgVisionSearchHoverBrush" Color="#4438BDF8" />
+
+
+
+        <Style x:Key="SbgSearchBox" TargetType="TextBox">
+
+            <Setter Property="Height" Value="34" />
+
+            <Setter Property="FontSize" Value="14" />
+
+            <Setter Property="Padding" Value="12,6" />
+
+            <Setter Property="Background" Value="{DynamicResource ImmersiveInputBackground}" />
+
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextPrimary}" />
+
+            <Setter Property="BorderBrush" Value="{DynamicResource ImmersiveInputBorder}" />
+
+            <Setter Property="BorderThickness" Value="1" />
+
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+
+        </Style>
+
+
+
+        <Style x:Key="SbgTintedButton" TargetType="Button">
+
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+
+            <Setter Property="Height" Value="34" />
+
+            <Setter Property="MinWidth" Value="84" />
+
+            <Setter Property="Padding" Value="12,0" />
+
+            <Setter Property="Cursor" Value="Hand" />
+
+            <Setter Property="FontWeight" Value="SemiBold" />
+
+            <Setter Property="FontSize" Value="12" />
+
+            <Setter Property="BorderThickness" Value="1" />
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="Btn" CornerRadius="7"
+
+                                Background="{TemplateBinding Background}"
+
+                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                BorderThickness="{TemplateBinding BorderThickness}"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="Btn" Property="Background" Value="{StaticResource SbgBlueButtonHover}" />
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+
+
+        <Style x:Key="SbgClearButton" TargetType="Button" BasedOn="{StaticResource SbgTintedButton}">
+
+            <Setter Property="Foreground" Value="{StaticResource SbgBlueButtonFg}" />
+
+            <Setter Property="Background" Value="{StaticResource SbgBlueButtonBg}" />
+
+            <Setter Property="BorderBrush" Value="{StaticResource SbgBlueButtonBorder}" />
+
+        </Style>
+
+
+
+        <Style x:Key="SbgAddButton" TargetType="Button" BasedOn="{StaticResource SbgTintedButton}">
+
+            <Setter Property="Foreground" Value="{StaticResource SbgGreenButtonFg}" />
+
+            <Setter Property="Background" Value="{StaticResource SbgGreenButtonBg}" />
+
+            <Setter Property="BorderBrush" Value="{StaticResource SbgGreenButtonBorder}" />
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="Btn" CornerRadius="7"
+
+                                Background="{TemplateBinding Background}"
+
+                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                BorderThickness="{TemplateBinding BorderThickness}"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="Btn" Property="Background" Value="{StaticResource SbgGreenButtonHover}" />
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+
+
+        <Style x:Key="SbgIconEditButton" TargetType="Button">
+
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+
+            <Setter Property="Width" Value="32" />
+
+            <Setter Property="Height" Value="32" />
+
+            <Setter Property="Margin" Value="4,0,0,0" />
+
+            <Setter Property="Cursor" Value="Hand" />
+
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+
+            <Setter Property="FontSize" Value="14" />
+
+            <Setter Property="Content" Value="&#xE70F;" />
+
+            <Setter Property="ToolTip" Value="Edit" />
+
+            <Setter Property="Foreground" Value="{StaticResource SbgYellowButtonFg}" />
+
+            <Setter Property="Background" Value="{StaticResource SbgYellowButtonBg}" />
+
+            <Setter Property="BorderBrush" Value="{StaticResource SbgYellowButtonBorder}" />
+
+            <Setter Property="BorderThickness" Value="1" />
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="Btn" CornerRadius="7"
+
+                                Background="{TemplateBinding Background}"
+
+                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                BorderThickness="{TemplateBinding BorderThickness}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="Btn" Property="Background" Value="{StaticResource SbgYellowButtonHover}" />
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+
+
+        <Style x:Key="SbgIconDeleteButton" TargetType="Button" BasedOn="{StaticResource SbgIconEditButton}">
+
+            <Setter Property="Content" Value="&#xE74D;" />
+
+            <Setter Property="ToolTip" Value="Delete" />
+
+            <Setter Property="Foreground" Value="{StaticResource SbgRedButtonFg}" />
+
+            <Setter Property="Background" Value="{StaticResource SbgRedButtonBg}" />
+
+            <Setter Property="BorderBrush" Value="{StaticResource SbgRedButtonBorder}" />
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="Btn" CornerRadius="7"
+
+                                Background="{TemplateBinding Background}"
+
+                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                BorderThickness="{TemplateBinding BorderThickness}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="Btn" Property="Background" Value="{StaticResource SbgRedButtonHover}" />
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+
+
+        <Style x:Key="SbgTagChipButton" TargetType="Button">
+
+            <Setter Property="Height" Value="28" />
+
+            <Setter Property="Padding" Value="10,0" />
+
+            <Setter Property="Margin" Value="0,0,8,8" />
+
+            <Setter Property="Cursor" Value="Hand" />
+
+            <Setter Property="FontSize" Value="12" />
+
+            <Setter Property="Foreground" Value="{DynamicResource ImmersiveTextPrimary}" />
+
+            <Setter Property="Background" Value="{DynamicResource ImmersiveInputBackground}" />
+
+            <Setter Property="BorderBrush" Value="{DynamicResource ImmersiveInputBorder}" />
+
+            <Setter Property="BorderThickness" Value="1" />
+
+            <Style.Triggers>
+
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+
+                    <Setter Property="Background" Value="{StaticResource ImmersiveAccentBlueLight}" />
+
+                    <Setter Property="BorderBrush" Value="{StaticResource ImmersiveAccentBlueBorder}" />
+
+                    <Setter Property="Foreground" Value="{StaticResource ImmersiveAccentBlue}" />
+
+                    <Setter Property="FontWeight" Value="SemiBold" />
+
+                </DataTrigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+
+
+        <Style x:Key="SbgVisionSearchButton" TargetType="Button" BasedOn="{StaticResource SbgClearButton}">
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="Btn" CornerRadius="7"
+
+                                Background="{StaticResource SbgVisionSearchBackgroundBrush}"
+
+                                BorderBrush="{StaticResource SbgVisionSearchBorderBrush}"
+
+                                BorderThickness="1"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="Btn" Property="Background" Value="{StaticResource SbgVisionSearchHoverBrush}" />
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+
+
+        <Style x:Key="SbgMatchRowButton" TargetType="Button">
+
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+
+            <Setter Property="Padding" Value="10,8" />
+
+            <Setter Property="Cursor" Value="Hand" />
+
+            <Setter Property="Background" Value="{DynamicResource ImmersiveGlassBackground}" />
+
+            <Setter Property="BorderBrush" Value="{DynamicResource ImmersiveGlassBorder}" />
+
+            <Setter Property="BorderThickness" Value="1" />
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                BorderThickness="{TemplateBinding BorderThickness}"
+
+                                CornerRadius="7"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter />
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+
+
+        <Style x:Key="SbgListItem" TargetType="ListViewItem">
+
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+
+            <Setter Property="Padding" Value="0" />
+
+            <Setter Property="Margin" Value="0,0,0,8" />
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="ListViewItem">
+
+                        <Border x:Name="Card" CornerRadius="9" Padding="14,12"
+
+                                Background="{DynamicResource ImmersiveGlassBackground}"
+
+                                BorderBrush="{DynamicResource ImmersiveGlassBorder}"
+
+                                BorderThickness="1">
+
+                            <ContentPresenter />
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource ImmersiveFocusRing}" />
+
+                            </Trigger>
+
+                            <Trigger Property="IsSelected" Value="True">
+
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource ImmersiveAccentBlueBorder}" />
+
+                                <Setter TargetName="Card" Property="Background" Value="{StaticResource ImmersiveAccentBlueLight}" />
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+    </UserControl.Resources>
+
+
+
+    <Grid>
+
+        <Grid.Background>
+
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+
+                <GradientStop Color="{DynamicResource ImmersiveGradientStart_Cl}" Offset="0" />
+
+                <GradientStop Color="{DynamicResource ImmersiveGradientMid_Cl}" Offset="0.45" />
+
+                <GradientStop Color="{DynamicResource ImmersiveGradientEnd_Cl}" Offset="1" />
+
+            </LinearGradientBrush>
+
+        </Grid.Background>
+
+
+
+        <Grid Margin="16,14,16,16">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto" />
+
+                <RowDefinition Height="Auto" />
+
+                <RowDefinition Height="*" />
+
+            </Grid.RowDefinitions>
+
+
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+
+                <TextBlock Text="Reference images for scan bodies"
+
+                           FontSize="13"
+
+                           Foreground="{DynamicResource ImmersiveTextMuted}" />
+
+                <TextBlock Text="Scan Body Gallery"
+
+                           FontSize="30"
+
+                           FontWeight="SemiBold"
+
+                           Foreground="{DynamicResource ImmersiveTextPrimary}" />
+
+            </StackPanel>
+
+
+
+            <Border Grid.Row="1" CornerRadius="9" Padding="14,12" Margin="0,0,0,10"
+
+                    BorderBrush="{DynamicResource ImmersiveGlassBorder}" BorderThickness="1"
+
+                    Background="{DynamicResource ImmersiveGlassBackground}"
+
+                    Visibility="{Binding ScanBodyGallerySchemaMissing, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                <TextBlock TextWrapping="Wrap"
+
+                           Text="Scan Body Gallery tables are not installed on StatsDB yet. Run Docs/SQL/ScanBodyGallery_Schema.sql on the Stats database, then reopen this tab." />
+
+            </Border>
+
+
+
+            <Grid Grid.Row="2">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="300" />
+
+                    <ColumnDefinition Width="12" />
+
+                    <ColumnDefinition Width="*" />
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <Border Grid.Column="0" CornerRadius="9" Padding="14,12"
+
+                        BorderBrush="{DynamicResource ImmersiveGlassBorder}" BorderThickness="1"
+
+                        Background="{DynamicResource ImmersiveGlassBackground}">
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                        <StackPanel>
+
+                            <TextBlock Text="AI image search"
+
+                                       FontSize="14" FontWeight="SemiBold"
+
+                                       Foreground="{DynamicResource ImmersiveTextPrimary}"
+
+                                       Margin="0,0,0,8" />
+
+                            <TextBlock Text="{Binding ScanBodyGalleryVisionMinConfidenceLabel}"
+
+                                       FontSize="11"
+
+                                       Foreground="{DynamicResource ImmersiveTextMuted}"
+
+                                       Margin="0,0,0,4" />
+
+                            <Slider Minimum="50" Maximum="99" TickFrequency="1" IsSnapToTickEnabled="True"
+
+                                    Value="{Binding ScanBodyGalleryVisionMinConfidence, Mode=TwoWay}"
+
+                                    Style="{StaticResource ImmersiveConfidenceSlider}"
+
+                                    Margin="0,0,0,8" />
+
+                            <Border MinHeight="140" CornerRadius="8"
+
+                                    BorderBrush="{DynamicResource ImmersiveInputBorder}" BorderThickness="1"
+
+                                    Background="{DynamicResource ImmersiveInputBackground}"
+
+                                    AllowDrop="True"
+
+                                    Drop="VisionSearchDropZone_Drop"
+
+                                    PreviewDragOver="VisionSearchDropZone_PreviewDragOver"
+
+                                    MouseLeftButtonUp="VisionSearchDropZone_Click">
+
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8">
+
+                                    <Image Width="96" Height="96" Stretch="Uniform"
+
+                                           Source="{Binding ScanBodyGallerySearchImageBytes, Converter={StaticResource ByteArrayToImageConverter}}" />
+
+                                    <TextBlock Text="Drop, click, or Ctrl+V"
+
+                                               FontSize="11" Margin="0,6,0,0"
+
+                                               HorizontalAlignment="Center"
+
+                                               Foreground="{DynamicResource ImmersiveTextMuted}" />
+
+                                </StackPanel>
+
+                            </Border>
+
+                            <Button Content="Find matching scan bodies"
+
+                                    Style="{StaticResource SbgVisionSearchButton}"
+
+                                    Margin="0,8,0,0"
+
+                                    HorizontalAlignment="Stretch"
+
+                                    Command="{Binding ScanBodyGallerySearchByImageCommand}"
+
+                                    IsEnabled="{Binding ScanBodyGalleryVisionSearchRunning, Converter={StaticResource InverseBoolConverter}}" />
+
+                            <TextBlock Text="{Binding ScanBodyGalleryStatusText}"
+
+                                       FontSize="11" TextWrapping="Wrap"
+
+                                       Margin="0,8,0,0"
+
+                                       Foreground="{DynamicResource ImmersiveTextMuted}" />
+
+                            <ItemsControl ItemsSource="{Binding ScanBodyGalleryVisionResults}" Margin="0,10,0,0">
+
+                                <ItemsControl.ItemTemplate>
+
+                                    <DataTemplate>
+
+                                        <Button Style="{StaticResource SbgMatchRowButton}" Margin="0,0,0,4"
+
+                                                Command="{Binding DataContext.ScanBodyGalleryOpenVisionMatchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+
+                                                CommandParameter="{Binding}">
+
+                                            <StackPanel>
+
+                                                <DockPanel LastChildFill="True">
+
+                                                    <TextBlock DockPanel.Dock="Right" Text="{Binding ConfidenceDisplay}"
+
+                                                               FontSize="11" FontWeight="SemiBold"
+
+                                                               Foreground="{StaticResource ImmersiveAccentBlue}" Margin="8,0,0,0" />
+
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" />
+
+                                                </DockPanel>
+
+                                                <TextBlock Text="{Binding Reason}" FontSize="11" TextWrapping="Wrap"
+
+                                                           Margin="0,4,0,0"
+
+                                                           Foreground="{DynamicResource ImmersiveTextMuted}" />
+
+                                            </StackPanel>
+
+                                        </Button>
+
+                                    </DataTemplate>
+
+                                </ItemsControl.ItemTemplate>
+
+                            </ItemsControl>
+
+                        </StackPanel>
+
+                    </ScrollViewer>
+
+                </Border>
+
+
+
+                <Grid Grid.Column="2">
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="Auto" />
+
+                        <RowDefinition Height="*" />
+
+                    </Grid.RowDefinitions>
+
+
+
+                    <Border CornerRadius="9" Padding="14,12" Margin="0,0,0,12"
+
+                            BorderBrush="{DynamicResource ImmersiveGlassBorder}" BorderThickness="1"
+
+                            Background="{DynamicResource ImmersiveGlassBackground}">
+
+                        <StackPanel>
+
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="Auto" />
+
+                                    <ColumnDefinition Width="*" />
+
+                                    <ColumnDefinition Width="Auto" />
+
+                                    <ColumnDefinition Width="Auto" />
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Search" FontSize="12" FontWeight="SemiBold"
+
+                                           Foreground="{DynamicResource ImmersiveTextMuted}"
+
+                                           VerticalAlignment="Center" Margin="0,0,10,0" />
+
+                                <TextBox Grid.Column="1" Style="{StaticResource SbgSearchBox}"
+
+                                         Text="{Binding SearchScanBodyGallery, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <Button Grid.Column="2" Content="Clear" Style="{StaticResource SbgClearButton}"
+
+                                        Margin="8,0,0,0" Command="{Binding ClearScanBodyGallerySearchCommand}" />
+
+                                <Button Grid.Column="3" Content="Add scan body" Style="{StaticResource SbgAddButton}"
+
+                                        Margin="8,0,0,0" Command="{Binding AddScanBodyGalleryEntryCommand}" />
+
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+
+                                <TextBlock Text="Tags" FontSize="12" FontWeight="SemiBold"
+
+                                           Foreground="{DynamicResource ImmersiveTextMuted}"
+
+                                           VerticalAlignment="Top" Margin="0,6,10,0" />
+
+                                <ItemsControl ItemsSource="{Binding ScanBodyGalleryTagFilters}">
+
+                                    <ItemsControl.ItemsPanel>
+
+                                        <ItemsPanelTemplate>
+
+                                            <WrapPanel />
+
+                                        </ItemsPanelTemplate>
+
+                                    </ItemsControl.ItemsPanel>
+
+                                    <ItemsControl.ItemTemplate>
+
+                                        <DataTemplate>
+
+                                            <Button Content="{Binding DisplayText}" Style="{StaticResource SbgTagChipButton}"
+
+                                                    Command="{Binding DataContext.ToggleScanBodyGalleryTagFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+
+                                                    CommandParameter="{Binding TagName}" />
+
+                                        </DataTemplate>
+
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+
+                                <Button Content="Clear tags" Style="{StaticResource SbgClearButton}" Height="28"
+
+                                        Margin="0,0,0,8" Command="{Binding ClearScanBodyGalleryTagFiltersCommand}" />
+
+                            </StackPanel>
+
+                            <TextBlock Margin="0,8,0,0" FontSize="12"
+
+                                       Foreground="{DynamicResource ImmersiveTextMuted}"
+
+                                       Text="{Binding ScanBodyGalleryCountText}" />
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <ListView Grid.Row="1"
+
+                              ItemsSource="{Binding ScanBodyGalleryList}"
+
+                              ItemContainerStyle="{StaticResource SbgListItem}"
+
+                              Background="{DynamicResource TransparentBrush}"
+
+                              BorderThickness="0"
+
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+                        <ListView.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <Grid>
+
+                                    <Grid.ColumnDefinitions>
+
+                                        <ColumnDefinition Width="170" />
+
+                                        <ColumnDefinition Width="*" />
+
+                                        <ColumnDefinition Width="Auto" />
+
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Width="170" Height="170" CornerRadius="8"
+
+                                            BorderBrush="{DynamicResource ImmersiveGlassBorder}" BorderThickness="1"
+
+                                            Background="{DynamicResource ImmersiveInputBackground}">
+
+                                        <Image Width="170" Height="170" Stretch="Uniform"
+
+                                               Source="{Binding ThumbnailData, Converter={StaticResource ByteArrayToImageConverter}}" />
+
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+
+                                        <TextBlock Text="{Binding DisplayTitle}" FontSize="16" FontWeight="SemiBold" />
+
+                                        <TextBlock Margin="0,4,0,0" FontSize="12"
+
+                                                   Foreground="{DynamicResource ImmersiveTextMuted}">
+
+                                            <Run Text="Brand: " /><Run Text="{Binding Brand}" />
+
+                                        </TextBlock>
+
+                                        <TextBlock FontSize="12" Foreground="{DynamicResource ImmersiveTextMuted}"
+                                                   Visibility="{Binding SystemName, Converter={StaticResource EmptyToCollapsedConverter}}">
+
+                                            <Run Text="System: " /><Run Text="{Binding SystemName}" />
+
+                                        </TextBlock>
+
+                                        <TextBlock FontSize="12" Foreground="{DynamicResource ImmersiveTextMuted}"
+                                                   Visibility="{Binding SizeLabel, Converter={StaticResource EmptyToCollapsedConverter}}">
+
+                                            <Run Text="Size: " /><Run Text="{Binding SizeLabel}" />
+
+                                        </TextBlock>
+
+                                        <TextBlock Text="{Binding OtherInfo}" FontSize="11" TextWrapping="Wrap"
+                                                   Margin="0,4,0,0"
+                                                   Visibility="{Binding OtherInfo, Converter={StaticResource EmptyToCollapsedConverter}}"
+                                                   Foreground="{DynamicResource ImmersiveTextMuted}" />
+
+                                        <TextBlock Text="{Binding TagsDisplay}" FontSize="11" TextWrapping="Wrap"
+
+                                                   Margin="0,6,0,0"
+
+                                                   Foreground="{DynamicResource ImmersiveAccentBlue}" />
+
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+
+                                        <Button Content="More info"
+                                                Style="{StaticResource SbgClearButton}"
+                                                Height="32"
+                                                MinWidth="78"
+                                                Padding="8,0"
+                                                Margin="0,0,4,0"
+                                                Visibility="{Binding HasKnowledgeBaseMatch, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                Command="{Binding DataContext.ScanBodyGalleryMoreInfoCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                CommandParameter="{Binding}" />
+
+                                        <Button Style="{StaticResource SbgIconEditButton}"
+
+                                                Command="{Binding DataContext.EditScanBodyGalleryEntryCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+
+                                                CommandParameter="{Binding}" />
+
+                                        <Button Style="{StaticResource SbgIconDeleteButton}"
+
+                                                Command="{Binding DataContext.DeleteScanBodyGalleryEntryCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+
+                                                CommandParameter="{Binding}" />
+
+                                    </StackPanel>
+
+                                </Grid>
+
+                            </DataTemplate>
+
+                        </ListView.ItemTemplate>
+
+                    </ListView>
+
+                </Grid>
+
+            </Grid>
+
+        </Grid>
+
+    </Grid>
+
+</UserControl>
+

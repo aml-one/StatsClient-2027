@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewmodel="clr-namespace:StatsClient.MVVM.ViewModel"
-        xmlns:converter="clr-namespace:StatsClient.MVVM.Converters"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
@@ -13,389 +12,237 @@
         AllowsTransparency="True"
         Loaded="Window_Loaded"
         Title="Stats 2027"
-        Height="300"
-        Width="500"
+        Height="340"
+        Width="620"
         Background="{DynamicResource TransparentBrush}">
 
     <Window.Resources>
         <ResourceDictionary>
-            <converter:BoolToOpacityConverter x:Key="BoolToOpacityConverter" />
-
             <QuarticEase x:Key="QuarticEaseOut"
                          EasingMode="EaseOut" />
             <QuarticEase x:Key="QuarticEaseInOut"
                          EasingMode="EaseInOut" />
             <BackEase x:Key="BackEaseOut"
                       EasingMode="EaseOut"
-                      Amplitude="0.3" />
+                      Amplitude="0.25" />
             <SineEase x:Key="SineEaseInOut"
                       EasingMode="EaseInOut" />
-            <QuadraticEase x:Key="QuadraticEaseInOut"
-                           EasingMode="EaseInOut" />
+            <CubicEase x:Key="CubicEaseOut"
+                       EasingMode="EaseOut" />
 
-            <Storyboard x:Key="IntroAmlAnimation">
-                <DoubleAnimation Storyboard.TargetName="introAmlGlow"
+            <!-- Dark-mode-aligned splash palette -->
+            <Color x:Key="SsmsDeepNavy">#283445</Color>
+            <Color x:Key="SsmsRoyalBlue">#0369A1</Color>
+            <Color x:Key="SsmsSkyBlue">#4A7290</Color>
+            <Color x:Key="SsmsLightBlue">#5A8EB0</Color>
+            <Color x:Key="SsmsHighlight">#5599B8</Color>
+            <Color x:Key="SsmsWaveBlue">#2D6588</Color>
+            <Color x:Key="SsmsAccentCyan">#38BDF8</Color>
+            <Color x:Key="SsmsYearAccent">#FB923C</Color>
+            <SolidColorBrush x:Key="SsmsWhiteBrush"
+                             Color="White" />
+            <SolidColorBrush x:Key="SsmsMutedWhiteBrush"
+                             Color="#CCFFFFFF" />
+            <SolidColorBrush x:Key="SsmsHighlightBrush"
+                             Color="{StaticResource SsmsHighlight}" />
+            <SolidColorBrush x:Key="SsmsYearAccentBrush"
+                             Color="{StaticResource SsmsYearAccent}" />
+
+            <!-- Background ribbon parallax / undulation -->
+            <Storyboard x:Key="RibbonBackgroundAnimation"
+                        RepeatBehavior="Forever">
+                <DoubleAnimation Storyboard.TargetName="ribbonBackTransform"
+                                 Storyboard.TargetProperty="Y"
+                                 From="-3"
+                                 To="4"
+                                 Duration="0:0:7"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="ribbonMidTransform"
+                                 Storyboard.TargetProperty="X"
+                                 From="-4"
+                                 To="4"
+                                 Duration="0:0:9"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="ribbonMidTransform"
+                                 Storyboard.TargetProperty="Y"
+                                 From="2"
+                                 To="-3"
+                                 Duration="0:0:8"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="ribbonFrontTransform"
+                                 Storyboard.TargetProperty="Angle"
+                                 From="-0.8"
+                                 To="0.8"
+                                 Duration="0:0:6.5"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="ribbonHighlightTransform"
+                                 Storyboard.TargetProperty="X"
+                                 From="-3"
+                                 To="5"
+                                 Duration="0:0:5.5"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="ribbonHighlightTransform"
+                                 Storyboard.TargetProperty="Y"
+                                 From="2"
+                                 To="-3"
+                                 Duration="0:0:6"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="ribbonLightStop1"
+                                 Storyboard.TargetProperty="Offset"
+                                 From="0.05"
+                                 To="0.35"
+                                 Duration="0:0:5"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="ribbonLightStop2"
+                                 Storyboard.TargetProperty="Offset"
+                                 From="0.45"
+                                 To="0.85"
+                                 Duration="0:0:5"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+            </Storyboard>
+
+            <Storyboard x:Key="TitleRevealAnimation">
+                <DoubleAnimation Storyboard.TargetName="titleBlock"
+                                 Storyboard.TargetProperty="Opacity"
+                                 From="0"
+                                 To="1"
+                                 Duration="0:0:0.9"
+                                 EasingFunction="{StaticResource QuarticEaseOut}" />
+                <DoubleAnimation Storyboard.TargetName="titleBlock"
+                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                                 From="16"
+                                 To="0"
+                                 Duration="0:0:0.9"
+                                 EasingFunction="{StaticResource CubicEaseOut}" />
+            </Storyboard>
+
+            <!-- Logo: glow pulse, scale assemble, slide up -->
+            <Storyboard x:Key="LogoAssembleAnimation">
+                <DoubleAnimation Storyboard.TargetName="logoGlow"
                                  Storyboard.TargetProperty="Opacity"
                                  From="0"
                                  To="0.55"
-                                 Duration="0:0:1.0"
+                                 Duration="0:0:0.35"
                                  EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="introAmlText"
+                <DoubleAnimation Storyboard.TargetName="logo"
                                  Storyboard.TargetProperty="Opacity"
                                  From="0"
                                  To="1"
-                                 Duration="0:0:1.0"
+                                 Duration="0:0:0.75"
+                                 BeginTime="0:0:0.08"
                                  EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="introAmlText"
+                <DoubleAnimation Storyboard.TargetName="logo"
                                  Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-                                 From="0.8"
-                                 To="1"
-                                 Duration="0:0:1.0"
-                                 EasingFunction="{StaticResource BackEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="introAmlText"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-                                 From="0.8"
-                                 To="1"
-                                 Duration="0:0:1.0"
-                                 EasingFunction="{StaticResource BackEaseOut}" />
-            </Storyboard>
-            <Storyboard x:Key="IntroAmlFadeOutAnimation">
-                <DoubleAnimation Storyboard.TargetName="introAmlGlow"
-                                 Storyboard.TargetProperty="Opacity"
                                  From="0.55"
+                                 To="1"
+                                 Duration="0:0:0.75"
+                                 BeginTime="0:0:0.08"
+                                 EasingFunction="{StaticResource BackEaseOut}" />
+                <DoubleAnimation Storyboard.TargetName="logo"
+                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                 From="0.55"
+                                 To="1"
+                                 Duration="0:0:0.75"
+                                 BeginTime="0:0:0.08"
+                                 EasingFunction="{StaticResource BackEaseOut}" />
+                <DoubleAnimation Storyboard.TargetName="logo"
+                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
+                                 From="18"
                                  To="0"
-                                 Duration="0:0:0.6"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-                <DoubleAnimation Storyboard.TargetName="introAmlText"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="1"
-                                 To="0"
-                                 Duration="0:0:0.6"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-            </Storyboard>
-            <Storyboard x:Key="IntroPresentsAnimation">
-                <DoubleAnimation Storyboard.TargetName="introPresentsText"
+                                 Duration="0:0:0.75"
+                                 BeginTime="0:0:0.08"
+                                 EasingFunction="{StaticResource CubicEaseOut}" />
+                <DoubleAnimation Storyboard.TargetName="brandText"
                                  Storyboard.TargetProperty="Opacity"
                                  From="0"
                                  To="1"
-                                 Duration="0:0:0.7"
+                                 Duration="0:0:0.55"
+                                 BeginTime="0:0:0.35"
                                  EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="introPresentsText"
-                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
-                                 From="14"
+                <DoubleAnimation Storyboard.TargetName="brandText"
+                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
+                                 From="-12"
                                  To="0"
-                                 Duration="0:0:0.7"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
+                                 Duration="0:0:0.55"
+                                 BeginTime="0:0:0.35"
+                                 EasingFunction="{StaticResource CubicEaseOut}" />
             </Storyboard>
-            <Storyboard x:Key="IntroPresensFadeOutAnimation">
-                <DoubleAnimation Storyboard.TargetName="introPresentsText"
-                                 Storyboard.TargetProperty="Opacity"
+
+            <Storyboard x:Key="LogoIdleAnimation"
+                        RepeatBehavior="Forever">
+                <DoubleAnimation Storyboard.TargetName="logo"
+                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
                                  From="1"
+                                 To="1.035"
+                                 Duration="0:0:2.4"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="logo"
+                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                 From="1"
+                                 To="1.035"
+                                 Duration="0:0:2.4"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+                <DoubleAnimation Storyboard.TargetName="logoGlow"
+                                 Storyboard.TargetProperty="Opacity"
+                                 From="0.35"
+                                 To="0.65"
+                                 Duration="0:0:2.4"
+                                 AutoReverse="True"
+                                 EasingFunction="{StaticResource SineEaseInOut}" />
+            </Storyboard>
+
+            <Storyboard x:Key="VersionRevealAnimation">
+                <DoubleAnimation Storyboard.TargetName="versionNumber"
+                                 Storyboard.TargetProperty="Opacity"
+                                 From="0"
+                                 To="1"
+                                 Duration="0:0:0.8"
+                                 BeginTime="0:0:0.2"
+                                 EasingFunction="{StaticResource QuarticEaseOut}" />
+                <DoubleAnimation Storyboard.TargetName="versionNumber"
+                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                                 From="12"
+                                 To="0"
+                                 Duration="0:0:0.8"
+                                 BeginTime="0:0:0.2"
+                                 EasingFunction="{StaticResource CubicEaseOut}" />
+            </Storyboard>
+
+            <Storyboard x:Key="LoadingAreaRevealAnimation">
+                <DoubleAnimation Storyboard.TargetName="loadingPanel"
+                                 Storyboard.TargetProperty="Opacity"
+                                 From="0"
+                                 To="1"
+                                 Duration="0:0:0.5"
+                                 EasingFunction="{StaticResource QuarticEaseOut}" />
+                <DoubleAnimation Storyboard.TargetName="loadingPanel"
+                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
+                                 From="8"
                                  To="0"
                                  Duration="0:0:0.5"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
+                                 EasingFunction="{StaticResource CubicEaseOut}" />
             </Storyboard>
 
-            <Storyboard x:Key="LogoOpacityAnimation">
-                <DoubleAnimation Storyboard.TargetName="logo"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="1"
-                                 Duration="0:0:0.8"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="logo"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-                                 From="0.5"
-                                 To="1"
-                                 Duration="0:0:0.8"
-                                 EasingFunction="{StaticResource BackEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="logo"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-                                 From="0.5"
-                                 To="1"
-                                 Duration="0:0:0.8"
-                                 EasingFunction="{StaticResource BackEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="logo"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[1].(RotateTransform.Angle)"
-                                 From="-360"
-                                 To="0"
-                                 Duration="0:0:0.8"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="logoGlow"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="0.5"
-                                 Duration="0:0:0.7"
-                                 AutoReverse="True"
-                                 RepeatBehavior="2x" />
-            </Storyboard>
-
-            <Storyboard x:Key="LogoMoveAnimation">
-                <DoubleAnimation Storyboard.TargetName="logo"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[2].(TranslateTransform.X)"
-                                 To="0"
-                                 Duration="0:0:0.9"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-                <DoubleAnimation Storyboard.TargetName="logo"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[2].(TranslateTransform.Y)"
-                                 To="-72"
-                                 Duration="0:0:0.9"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-                <DoubleAnimation Storyboard.TargetName="logoGlow"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[2].(TranslateTransform.X)"
-                                 To="0"
-                                 Duration="0:0:0.9"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-                <DoubleAnimation Storyboard.TargetName="logoGlow"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[2].(TranslateTransform.Y)"
-                                 To="-72"
-                                 Duration="0:0:0.9"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-            </Storyboard>
-            <Storyboard x:Key="LogoSizeAnimation">
-                <DoubleAnimation Storyboard.TargetName="logo"
-                                 Storyboard.TargetProperty="Width"
-                                 From="200"
-                                 To="76"
-                                 Duration="0:0:0.9"
-                                 EasingFunction="{StaticResource BackEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="logoGlow"
-                                 Storyboard.TargetProperty="Width"
-                                 From="216"
-                                 To="88"
-                                 Duration="0:0:0.9"
-                                 EasingFunction="{StaticResource BackEaseOut}" />
-            </Storyboard>
-            <Storyboard x:Key="PanelOpacityAnimation">
-                <DoubleAnimation Storyboard.TargetName="panel"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="1"
-                                 Duration="0:0:0.6"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="panel"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-                                 From="0.96"
-                                 To="1"
-                                 Duration="0:0:0.6"
-                                 EasingFunction="{StaticResource BackEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="panel"
-                                 Storyboard.TargetProperty="(RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-                                 From="0.96"
-                                 To="1"
-                                 Duration="0:0:0.6"
-                                 EasingFunction="{StaticResource BackEaseOut}" />
-                <ThicknessAnimation Storyboard.TargetName="panel"
-                                    Storyboard.TargetProperty="Margin"
-                                    From="16,0,16,-100"
-                                    To="16,0,16,16"
-                                    Duration="0:0:0.6"
-                                    EasingFunction="{StaticResource QuarticEaseOut}" />
-            </Storyboard>
-            <Storyboard x:Key="Panel2OpacityAnimation">
-                <DoubleAnimation Storyboard.TargetName="panel2"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="0.7"
-                                 Duration="0:0:0.55"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-            </Storyboard>
-            <Storyboard x:Key="BackgroundEaseInAnimation">
-                <DoubleAnimation Storyboard.TargetName="background"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="0.6"
-                                 Duration="0:0:1.0"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-            </Storyboard>
-            <Storyboard x:Key="BackgroundEaseOutAnimation">
-                <DoubleAnimation Storyboard.TargetName="background"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0.6"
-                                 To="0"
-                                 Duration="0:0:0.8"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-            </Storyboard>
-            <Storyboard x:Key="BackgroundZoomAndMoveAnimation">
-                <DoubleAnimation Storyboard.TargetName="backgroundOverlay"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0.3"
-                                 To="0.12"
-                                 Duration="0:0:2.5"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-            </Storyboard>
-            <Storyboard x:Key="BackgroundPulseOutAnimation">
-                <DoubleAnimation Storyboard.TargetName="background"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0.6"
-                                 To="0.3"
-                                 Duration="0:0:1.2"
-                                 EasingFunction="{StaticResource SineEaseInOut}" />
-            </Storyboard>
-            <Storyboard x:Key="BackgroundPulseInAnimation">
-                <DoubleAnimation Storyboard.TargetName="background"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0.3"
-                                 To="0.6"
-                                 Duration="0:0:1.2"
-                                 EasingFunction="{StaticResource SineEaseInOut}" />
-            </Storyboard>
-            <Storyboard x:Key="StatsTextAnimation">
-                <DoubleAnimation Storyboard.TargetName="statsText"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="1"
-                                 Duration="0:0:0.45"
-                                 BeginTime="0:0:0.1"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="statsText"
-                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
-                                 From="-14"
-                                 To="0"
-                                 Duration="0:0:0.45"
-                                 BeginTime="0:0:0.1"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="yearText"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="1"
-                                 Duration="0:0:0.45"
-                                 BeginTime="0:0:0.3"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="yearText"
-                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)"
-                                 From="14"
-                                 To="0"
-                                 Duration="0:0:0.45"
-                                 BeginTime="0:0:0.3"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-            </Storyboard>
-            <Storyboard x:Key="VersionNumberEaseInAnimation">
-                <DoubleAnimation Storyboard.TargetName="versionNumber"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="1"
-                                 Duration="0:0:0.7"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="versionNumber"
-                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.Y)"
-                                 From="10"
-                                 To="0"
-                                 Duration="0:0:0.7"
-                                 EasingFunction="{StaticResource QuarticEaseOut}" />
-                <DoubleAnimation Storyboard.TargetName="versionGlow"
-                                 Storyboard.TargetProperty="Opacity"
-                                 From="0"
-                                 To="0.85"
-                                 Duration="0:0:1.5"
-                                 BeginTime="0:0:0.4"
-                                 AutoReverse="True"
-                                 RepeatBehavior="Forever"
-                                 EasingFunction="{StaticResource SineEaseInOut}" />
-            </Storyboard>
-            <Storyboard x:Key="GradientOverlayAnimation"
-                        RepeatBehavior="Forever">
-                <DoubleAnimation Storyboard.TargetName="gradientStop1"
-                                 Storyboard.TargetProperty="Offset"
-                                 From="0"
-                                 To="0.85"
-                                 Duration="0:0:4"
-                                 AutoReverse="True"
-                                 EasingFunction="{StaticResource SineEaseInOut}" />
-                <DoubleAnimation Storyboard.TargetName="gradientStop2"
-                                 Storyboard.TargetProperty="Offset"
-                                 From="0.35"
-                                 To="1.1"
-                                 Duration="0:0:4"
-                                 AutoReverse="True"
-                                 EasingFunction="{StaticResource SineEaseInOut}" />
-            </Storyboard>
             <Storyboard x:Key="LoadingTextAnimation"
                         RepeatBehavior="Forever">
                 <DoubleAnimation Storyboard.TargetName="loadingText"
                                  Storyboard.TargetProperty="Opacity"
-                                 From="0.5"
+                                 From="0.55"
                                  To="1"
-                                 Duration="0:0:1.1"
+                                 Duration="0:0:1.2"
                                  AutoReverse="True"
                                  EasingFunction="{StaticResource SineEaseInOut}" />
             </Storyboard>
-            <Storyboard x:Key="ParticleAnimation1"
-                        RepeatBehavior="Forever">
-                <DoubleAnimation Storyboard.TargetName="particle1"
-                                 Storyboard.TargetProperty="(Canvas.Top)"
-                                 From="310"
-                                 To="-30"
-                                 Duration="0:0:7" />
-                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="particle1"
-                                               Storyboard.TargetProperty="Opacity">
-                    <LinearDoubleKeyFrame KeyTime="0:0:0"
-                                          Value="0" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:0.8"
-                                          Value="0.55" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:6"
-                                          Value="0.55" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:7"
-                                          Value="0" />
-                </DoubleAnimationUsingKeyFrames>
-            </Storyboard>
-            <Storyboard x:Key="ParticleAnimation2"
-                        RepeatBehavior="Forever">
-                <DoubleAnimation Storyboard.TargetName="particle2"
-                                 Storyboard.TargetProperty="(Canvas.Top)"
-                                 From="310"
-                                 To="-20"
-                                 Duration="0:0:9.5" />
-                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="particle2"
-                                               Storyboard.TargetProperty="Opacity">
-                    <LinearDoubleKeyFrame KeyTime="0:0:0"
-                                          Value="0" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:1.2"
-                                          Value="0.4" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:8.2"
-                                          Value="0.4" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:9.5"
-                                          Value="0" />
-                </DoubleAnimationUsingKeyFrames>
-            </Storyboard>
-            <Storyboard x:Key="ParticleAnimation3"
-                        RepeatBehavior="Forever">
-                <DoubleAnimation Storyboard.TargetName="particle3"
-                                 Storyboard.TargetProperty="(Canvas.Top)"
-                                 From="310"
-                                 To="-40"
-                                 Duration="0:0:11.5" />
-                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="particle3"
-                                               Storyboard.TargetProperty="Opacity">
-                    <LinearDoubleKeyFrame KeyTime="0:0:0"
-                                          Value="0" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:1.1"
-                                          Value="0.5" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:10.2"
-                                          Value="0.5" />
-                    <LinearDoubleKeyFrame KeyTime="0:0:11.5"
-                                          Value="0" />
-                </DoubleAnimationUsingKeyFrames>
-            </Storyboard>
-            <Storyboard x:Key="ShimmerAnimation"
-                        RepeatBehavior="Forever">
-                <DoubleAnimation Storyboard.TargetName="shimmerTransform"
-                                 Storyboard.TargetProperty="Transform.(TranslateTransform.X)"
-                                 From="-1.5"
-                                 To="2.5"
-                                 Duration="0:0:2.3"
-                                 EasingFunction="{StaticResource QuadraticEaseInOut}" />
-            </Storyboard>
-            <Storyboard x:Key="ProgressBarAnimation">
-                <DoubleAnimation Storyboard.TargetName="progressBar"
-                                 Storyboard.TargetProperty="Width"
-                                 From="0"
-                                 To="436"
-                                 Duration="0:0:4.5"
-                                 EasingFunction="{StaticResource QuarticEaseInOut}" />
-            </Storyboard>
-
-            <ResourceDictionary.MergedDictionaries>            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -405,694 +252,320 @@
 
     <Window.Triggers>
         <EventTrigger RoutedEvent="Window.Loaded">
-            <BeginStoryboard Storyboard="{StaticResource GradientOverlayAnimation}" />
-            <BeginStoryboard Storyboard="{StaticResource ParticleAnimation1}" />
-            <BeginStoryboard Storyboard="{StaticResource ParticleAnimation2}" />
-            <BeginStoryboard Storyboard="{StaticResource ParticleAnimation3}" />
-            <BeginStoryboard Storyboard="{StaticResource LoadingTextAnimation}" />
-            <BeginStoryboard Storyboard="{StaticResource BackgroundZoomAndMoveAnimation}" />
+            <BeginStoryboard Storyboard="{StaticResource RibbonBackgroundAnimation}" />
         </EventTrigger>
     </Window.Triggers>
 
-    <Grid>
-        <!-- Outer blue glow -->
-        <Border CornerRadius="16"
-                Margin="6"
-                Background="{DynamicResource TransparentBrush}">
-            <Border.Effect>
-                <DropShadowEffect Color="{DynamicResource SplashAccentBlue_Cl}"
-                                  Direction="270"
-                                  ShadowDepth="0"
-                                  BlurRadius="24"
-                                  Opacity="0.18" />
-            </Border.Effect>
-        </Border>
+    <Border CornerRadius="6"
+            BorderBrush="#44000000"
+            BorderThickness="1"
+            Background="#FF38485A"
+            ClipToBounds="True">
+        <Grid>
+            <!-- Base gradient -->
+            <Rectangle IsHitTestVisible="False">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="1,1">
+                        <GradientStop Color="#FF38485A"
+                                      Offset="0" />
+                        <GradientStop Color="#FF415366"
+                                      Offset="0.55" />
+                        <GradientStop Color="#FF344456"
+                                      Offset="1" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
 
-        <!-- Dark elevation shadow -->
-        <Border CornerRadius="16"
-                Margin="4"
-                Background="{DynamicResource TransparentBrush}">
-            <Border.Effect>
-                <DropShadowEffect Color="{DynamicResource LightGrayBorderAndShadowColor_Cl}"
-                                  Direction="270"
-                                  ShadowDepth="5"
-                                  BlurRadius="30"
-                                  Opacity="0.28" />
-            </Border.Effect>
-        </Border>
-
-        <!-- Gradient ring: 1.5px gold-to-dim border -->
-        <Border CornerRadius="15"
-                Margin="5"
-                Padding="1.5">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0.15,0"
-                                     EndPoint="0.85,1">
-                    <GradientStop Color="{DynamicResource SplashRingGradientStart_Cl}"
-                                  Offset="0" />
-                    <GradientStop Color="{DynamicResource SplashRingGradientMid_Cl}"
-                                  Offset="0.5" />
-                    <GradientStop Color="{DynamicResource SplashRingGradientEnd_Cl}"
-                                  Offset="1" />
-                </LinearGradientBrush>
-            </Border.Background>
-
-            <!-- Main card -->
-            <Border CornerRadius="14"
-                    Background="{DynamicResource SplashBackground}"
-                    ClipToBounds="True">
-                <Grid>
-                    <!-- Inner top highlight -->
-                    <Rectangle Height="1"
-                               VerticalAlignment="Top"
-                               IsHitTestVisible="False"
-                               Panel.ZIndex="200">
-                        <Rectangle.Fill>
-                            <LinearGradientBrush StartPoint="0,0"
+            <!-- 3D ribbon layers (oversized paths clipped at window border) -->
+            <Canvas Width="620"
+                    Height="340"
+                    IsHitTestVisible="False">
+                    <Path x:Name="ribbonBack"
+                          Data="M -60,400 C 100,250 250,320 380,200 C 470,120 545,165 680,70 L 680,400 L -60,400 Z"
+                          Opacity="0.95">
+                        <Path.Fill>
+                            <LinearGradientBrush StartPoint="0,1"
                                                  EndPoint="1,0">
-                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
+                                <GradientStop Color="#FF2A3545"
                                               Offset="0" />
-                                <GradientStop Color="{DynamicResource SplashHighlightSoft_Cl}"
-                                              Offset="0.25" />
-                                <GradientStop Color="{DynamicResource SplashHighlightFaint_Cl}"
-                                              Offset="0.75" />
-                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
+                                <GradientStop Color="#FF354555"
+                                              Offset="0.55" />
+                                <GradientStop Color="#FF2E3D4E"
                                               Offset="1" />
                             </LinearGradientBrush>
-                        </Rectangle.Fill>
-                    </Rectangle>
-                    <!-- Inner bottom blue whisper -->
-                    <Rectangle Height="1"
-                               VerticalAlignment="Bottom"
-                               IsHitTestVisible="False"
-                               Panel.ZIndex="200">
-                        <Rectangle.Fill>
-                            <LinearGradientBrush StartPoint="0,0"
-                                                 EndPoint="1,0">
-                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
+                        </Path.Fill>
+                        <Path.Effect>
+                            <DropShadowEffect Color="#66000000"
+                                              Direction="315"
+                                              ShadowDepth="4"
+                                              BlurRadius="12"
+                                              Opacity="0.35" />
+                        </Path.Effect>
+                        <Path.RenderTransform>
+                            <TranslateTransform x:Name="ribbonBackTransform" />
+                        </Path.RenderTransform>
+                    </Path>
+
+                    <Path x:Name="ribbonMid"
+                          Data="M -60,400 C 70,285 200,325 330,240 C 440,165 510,200 680,115 L 680,400 L -60,400 Z"
+                          Opacity="0.92">
+                        <Path.Fill>
+                            <LinearGradientBrush StartPoint="0.1,1"
+                                                 EndPoint="0.9,0">
+                                <GradientStop Color="#FF3A5068"
                                               Offset="0" />
-                                <GradientStop Color="{DynamicResource SplashRingGradientMid_Cl}"
-                                              Offset="0.5" />
-                                <GradientStop Color="{DynamicResource TransparentColor_Cl}"
+                                <GradientStop Color="#FF4A6888"
+                                              Offset="0.45" />
+                                <GradientStop Color="#FF3D5872"
                                               Offset="1" />
                             </LinearGradientBrush>
-                        </Rectangle.Fill>
-                    </Rectangle>
+                        </Path.Fill>
+                        <Path.Effect>
+                            <DropShadowEffect Color="#88000000"
+                                              Direction="300"
+                                              ShadowDepth="5"
+                                              BlurRadius="14"
+                                              Opacity="0.28" />
+                        </Path.Effect>
+                        <Path.RenderTransform>
+                            <TransformGroup>
+                                <TranslateTransform x:Name="ribbonMidTransform" />
+                            </TransformGroup>
+                        </Path.RenderTransform>
+                    </Path>
 
-                    <Grid>
+                    <Path x:Name="ribbonFront"
+                          Data="M -60,400 C 125,245 275,305 420,170 C 510,85 565,120 680,35 L 680,400 L -60,400 Z"
+                          Opacity="0.90">
+                        <Path.Fill>
+                            <LinearGradientBrush StartPoint="0,0.2"
+                                                 EndPoint="1,0.8">
+                                <GradientStop x:Name="ribbonLightStop1"
+                                              Color="{StaticResource SsmsLightBlue}"
+                                              Offset="0.1" />
+                                <GradientStop x:Name="ribbonLightStop2"
+                                              Color="{StaticResource SsmsWaveBlue}"
+                                              Offset="0.55" />
+                                <GradientStop Color="{StaticResource SsmsRoyalBlue}"
+                                              Offset="1" />
+                            </LinearGradientBrush>
+                        </Path.Fill>
+                        <Path.Effect>
+                            <DropShadowEffect Color="#55000000"
+                                              Direction="270"
+                                              ShadowDepth="4"
+                                              BlurRadius="12"
+                                              Opacity="0.22" />
+                        </Path.Effect>
+                        <Path.RenderTransform>
+                            <TransformGroup>
+                                <RotateTransform x:Name="ribbonFrontTransform"
+                                                 CenterX="310"
+                                                 CenterY="170"
+                                                 Angle="0" />
+                            </TransformGroup>
+                        </Path.RenderTransform>
+                    </Path>
 
-                        <!-- Radial warm glow -->
-                        <Rectangle x:Name="background"
-                                   Opacity="0"
-                                   IsHitTestVisible="False">
-                            <Rectangle.Fill>
-                                <RadialGradientBrush GradientOrigin="0.5,0.3"
-                                                     Center="0.5,0.3"
-                                                     RadiusX="0.55"
-                                                     RadiusY="0.55">
-                                    <GradientStop Color="{DynamicResource SplashGlowAccent_Cl}"
-                                                  Offset="0" />
-                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
-                                                  Offset="1" />
-                                </RadialGradientBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
+                    <Path x:Name="ribbonHighlight"
+                          Data="M -60,400 L -60,310 C 100,250 220,200 350,120 C 455,55 515,80 680,20 L 680,205 C 510,240 320,275 -60,320 L -60,400 Z"
+                          Opacity="0.48">
+                        <Path.Fill>
+                            <LinearGradientBrush StartPoint="0,0"
+                                                 EndPoint="1,1">
+                                <GradientStop Color="#7738BDF8"
+                                              Offset="0" />
+                                <GradientStop Color="#0038BDF8"
+                                              Offset="1" />
+                            </LinearGradientBrush>
+                        </Path.Fill>
+                        <Path.RenderTransform>
+                            <TranslateTransform x:Name="ribbonHighlightTransform" />
+                        </Path.RenderTransform>
+                    </Path>
+            </Canvas>
 
-                        <!-- Animated gradient wash -->
-                        <Rectangle x:Name="backgroundOverlay"
-                                   Opacity="0.22"
-                                   IsHitTestVisible="False">
-                            <Rectangle.Fill>
-                                <LinearGradientBrush StartPoint="0,0"
-                                                     EndPoint="1,1">
-                                    <GradientStop x:Name="gradientStop1"
-                                                  Color="{DynamicResource SplashWashStart_Cl}"
-                                                  Offset="0" />
-                                    <GradientStop x:Name="gradientStop2"
-                                                  Color="{DynamicResource SplashWashMid_Cl}"
-                                                  Offset="0.5" />
-                                    <GradientStop Color="{DynamicResource SplashWashEnd_Cl}"
-                                                  Offset="1" />
-                                </LinearGradientBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
+            <!-- Close button -->
+            <Button HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,8,10,0"
+                    Width="28"
+                    Height="28"
+                    Background="{DynamicResource TransparentBrush}"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    ToolTip="Close"
+                    Click="CloseButton_Click"
+                    Panel.ZIndex="50">
+                <TextBlock Text="&#x2715;"
+                           FontSize="14"
+                           Foreground="{StaticResource SsmsWhiteBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Opacity="0.85" />
+            </Button>
 
-                        <!-- Gold top-edge accent bar -->
-                        <Rectangle Height="2"
-                                   VerticalAlignment="Top"
-                                   IsHitTestVisible="False">
-                            <Rectangle.Fill>
-                                <LinearGradientBrush StartPoint="0,0"
-                                                     EndPoint="1,0">
-                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
-                                                  Offset="0" />
-                                    <GradientStop Color="{DynamicResource SplashAccentBar_Cl}"
-                                                  Offset="0.5" />
-                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
-                                                  Offset="1" />
-                                </LinearGradientBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
+            <!-- Center title -->
+            <StackPanel x:Name="titleBlock"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="0,-18,0,0"
+                        Opacity="0"
+                        d:Opacity="1"
+                        Panel.ZIndex="20">
+                <StackPanel.RenderTransform>
+                    <TranslateTransform />
+                </StackPanel.RenderTransform>
+                <TextBlock x:Name="titleText"
+                           Text="Stats"
+                           FontFamily="Segoe UI"
+                           FontSize="54"
+                           
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource SsmsWhiteBrush}"
+                           HorizontalAlignment="Center" />
+                <TextBlock x:Name="yearText"
+                           Text="2027"
+                           FontFamily="Segoe UI"
+                           FontSize="28"
+                           FontWeight="Light"
+                           Foreground="{StaticResource SsmsYearAccentBrush}"
+                           HorizontalAlignment="Right"
+                           Margin="-10,-20,0,0" />
+            </StackPanel>
 
-                        <!-- Soft ambient center glow -->
-                        <Ellipse Width="330"
-                                 Height="170"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Center"
-                                 Margin="0,-28,0,0"
-                                 Opacity="0.16"
-                                 IsHitTestVisible="False">
-                            <Ellipse.Fill>
-                                <RadialGradientBrush>
-                                    <GradientStop Color="{DynamicResource SplashGlowStrong_Cl}"
-                                                  Offset="0" />
-                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
-                                                  Offset="1" />
-                                </RadialGradientBrush>
-                            </Ellipse.Fill>
-                            <Ellipse.Effect>
-                                <BlurEffect Radius="24" />
-                            </Ellipse.Effect>
-                        </Ellipse>
-
-                        <!-- Bottom horizon glow line above info panel -->
-                        <Rectangle Height="1"
-                                   VerticalAlignment="Bottom"
-                                   Margin="34,0,34,126"
-                                   IsHitTestVisible="False"
-                                   Opacity="0.75">
-                            <Rectangle.Fill>
-                                <LinearGradientBrush StartPoint="0,0"
-                                                     EndPoint="1,0">
-                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
-                                                  Offset="0" />
-                                    <GradientStop Color="{DynamicResource SplashGlowMedium_Cl}"
-                                                  Offset="0.5" />
-                                    <GradientStop Color="{DynamicResource TransparentColor_Cl}"
-                                                  Offset="1" />
-                                </LinearGradientBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
-
-                        <!-- Subtle left-side dot cluster to balance right side -->
-                        <Canvas IsHitTestVisible="False"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                Margin="38,54,0,0"
-                                Opacity="0.45">
-                            <Ellipse Width="2.3"
-                                     Height="2.3"
-                                     Fill="{DynamicResource SplashParticleStrong}"
-                                     Canvas.Left="0"
-                                     Canvas.Top="0" />
-                            <Ellipse Width="2.3"
-                                     Height="2.3"
-                                     Fill="{DynamicResource SplashParticleStrong}"
-                                     Canvas.Left="14"
-                                     Canvas.Top="0" />
-                            <Ellipse Width="2.3"
-                                     Height="2.3"
-                                     Fill="{DynamicResource SplashParticleMid}"
-                                     Canvas.Left="28"
-                                     Canvas.Top="0" />
-                            <Ellipse Width="2.3"
-                                     Height="2.3"
-                                     Fill="{DynamicResource SplashParticleMid}"
-                                     Canvas.Left="0"
-                                     Canvas.Top="14" />
-                            <Ellipse Width="2.3"
-                                     Height="2.3"
-                                     Fill="{DynamicResource SplashParticleMid}"
-                                     Canvas.Left="14"
-                                     Canvas.Top="14" />
-                            <Ellipse Width="2.3"
-                                     Height="2.3"
-                                     Fill="{DynamicResource SplashParticleFaint}"
-                                     Canvas.Left="28"
-                                     Canvas.Top="14" />
-                        </Canvas>
-
-                        <!-- Corner brackets + dot grid -->
-                        <Grid IsHitTestVisible="False">
-                            <Canvas Width="12"
-                                    Height="12"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Margin="18,18,0,0">
-                                <Line X1="0"
-                                      Y1="12"
-                                      X2="0"
-                                      Y2="0"
-                                      Stroke="{DynamicResource SplashOrbitStroke}"
-                                      StrokeThickness="1.5"
-                                      SnapsToDevicePixels="True" />
-                                <Line X1="0"
-                                      Y1="0"
-                                      X2="12"
-                                      Y2="0"
-                                      Stroke="{DynamicResource SplashOrbitStroke}"
-                                      StrokeThickness="1.5"
-                                      SnapsToDevicePixels="True" />
-                            </Canvas>
-
-                            <Canvas Width="12"
-                                    Height="12"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Top"
-                                    Margin="0,18,18,0">
-                                <Line X1="0"
-                                      Y1="0"
-                                      X2="12"
-                                      Y2="0"
-                                      Stroke="{DynamicResource SplashOrbitStroke}"
-                                      StrokeThickness="1.5"
-                                      SnapsToDevicePixels="True" />
-                                <Line X1="12"
-                                      Y1="0"
-                                      X2="12"
-                                      Y2="12"
-                                      Stroke="{DynamicResource SplashOrbitStroke}"
-                                      StrokeThickness="1.5"
-                                      SnapsToDevicePixels="True" />
-                            </Canvas>
-
-                            <Canvas Width="12"
-                                    Height="12"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Bottom"
-                                    Margin="18,0,0,18">
-                                <Line X1="0"
-                                      Y1="0"
-                                      X2="0"
-                                      Y2="12"
-                                      Stroke="{DynamicResource SplashOrbitStroke}"
-                                      StrokeThickness="1.5"
-                                      SnapsToDevicePixels="True" />
-                                <Line X1="0"
-                                      Y1="12"
-                                      X2="12"
-                                      Y2="12"
-                                      Stroke="{DynamicResource SplashOrbitStroke}"
-                                      StrokeThickness="1.5"
-                                      SnapsToDevicePixels="True" />
-                            </Canvas>
-
-                            <Canvas Width="12"
-                                    Height="12"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Bottom"
-                                    Margin="0,0,18,18">
-                                <Line X1="0"
-                                      Y1="12"
-                                      X2="12"
-                                      Y2="12"
-                                      Stroke="{DynamicResource SplashOrbitStroke}"
-                                      StrokeThickness="1.5"
-                                      SnapsToDevicePixels="True" />
-                                <Line X1="12"
-                                      Y1="0"
-                                      X2="12"
-                                      Y2="12"
-                                      Stroke="{DynamicResource SplashOrbitStroke}"
-                                      StrokeThickness="1.5"
-                                      SnapsToDevicePixels="True" />
-                            </Canvas>
-
-                            <Canvas HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"
-                                    Margin="-10,10,0,0">
-                                <Ellipse Canvas.Left="394"
-                                         Canvas.Top="18"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleStrong}" />
-                                <Ellipse Canvas.Left="408"
-                                         Canvas.Top="18"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleStrong}" />
-                                <Ellipse Canvas.Left="422"
-                                         Canvas.Top="18"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleStrong}" />
-                                <Ellipse Canvas.Left="436"
-                                         Canvas.Top="18"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleStrong}" />
-                                <Ellipse Canvas.Left="450"
-                                         Canvas.Top="18"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleStrong}" />
-                                <Ellipse Canvas.Left="464"
-                                         Canvas.Top="18"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleStrong}" />
-                                <Ellipse Canvas.Left="394"
-                                         Canvas.Top="32"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleMid}" />
-                                <Ellipse Canvas.Left="408"
-                                         Canvas.Top="32"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleMid}" />
-                                <Ellipse Canvas.Left="422"
-                                         Canvas.Top="32"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleMid}" />
-                                <Ellipse Canvas.Left="436"
-                                         Canvas.Top="32"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleMid}" />
-                                <Ellipse Canvas.Left="450"
-                                         Canvas.Top="32"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleMid}" />
-                                <Ellipse Canvas.Left="394"
-                                         Canvas.Top="46"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleWhisper}" />
-                                <Ellipse Canvas.Left="408"
-                                         Canvas.Top="46"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleWhisper}" />
-                                <Ellipse Canvas.Left="422"
-                                         Canvas.Top="46"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleWhisper}" />
-                                <Ellipse Canvas.Left="436"
-                                         Canvas.Top="46"
-                                         Width="2.5"
-                                         Height="2.5"
-                                         Fill="{DynamicResource SplashSparkleWhisper}" />
-                            </Canvas>
-                        </Grid>
-
-                        <!-- Particles -->
-                        <Canvas ClipToBounds="True"
-                                IsHitTestVisible="False">
-                            <Ellipse x:Name="particle1"
-                                     Canvas.Left="76"
-                                     Canvas.Top="310"
-                                     Width="3"
-                                     Height="3"
-                                     Fill="{DynamicResource SplashLogoGlowPrimary}"
-                                     Opacity="0" />
-                            <Ellipse x:Name="particle2"
-                                     Canvas.Left="248"
-                                     Canvas.Top="310"
-                                     Width="2.5"
-                                     Height="2.5"
-                                     Fill="{DynamicResource SplashLogoGlowSecondary}"
-                                     Opacity="0" />
-                            <Ellipse x:Name="particle3"
-                                     Canvas.Left="416"
-                                     Canvas.Top="310"
-                                     Width="4"
-                                     Height="4"
-                                     Fill="{DynamicResource SplashLogoGlowPrimary}"
-                                     Opacity="0" />
-                        </Canvas>
-
-                        <!-- INTRO -->
-                        <Grid Panel.ZIndex="100">
-                            <TextBlock x:Name="introAmlGlow"
-                                       Text="AmL"
-                                       FontSize="82"
-                                       FontWeight="Bold"
-                                       Foreground="{DynamicResource SettingsSideTabAccent}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Opacity="0">
-                                <TextBlock.Effect>
-                                    <BlurEffect Radius="28" />
-                                </TextBlock.Effect>
-                            </TextBlock>
-                            <TextBlock x:Name="introAmlText"
-                                       Text="AmL"
-                                       FontSize="82"
-                                       FontWeight="Bold"
-                                       Foreground="{DynamicResource SplashTitleForeground}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Opacity="0">
-                                <TextBlock.RenderTransform>
-                                    <TransformGroup>
-                                        <ScaleTransform />
-                                        <TranslateTransform />
-                                    </TransformGroup>
-                                </TextBlock.RenderTransform>
-                            </TextBlock>
-                            <TextBlock x:Name="introPresentsText"
-                                       Text="presents"
-                                       FontSize="36"
-                                       FontWeight="Light"
-                                       FontStyle="Italic"
-                                       Foreground="{DynamicResource SplashHintForeground}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Opacity="0">
-                                <TextBlock.RenderTransform>
-                                    <TranslateTransform />
-                                </TextBlock.RenderTransform>
-                            </TextBlock>
-                        </Grid>
-
-                        <!-- LOGO -->
-                        <Image x:Name="logoGlow"
-                               Source="/Images/stats_2025_Q512.png"
-                               Width="216"
-                               Height="216"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Opacity="0"
-                               Panel.ZIndex="10">
-                            <Image.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform />
-                                    <RotateTransform />
-                                    <TranslateTransform />
-                                </TransformGroup>
-                            </Image.RenderTransform>
-                            <Image.Effect>
-                                <BlurEffect Radius="18" />
-                            </Image.Effect>
-                        </Image>
-                        <Image x:Name="logo"
-                               Source="/Images/stats_2025_Q512.png"
-                               Width="200"
-                               Height="200"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Opacity="0"
-                               Panel.ZIndex="11">
-                            <Image.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform />
-                                    <RotateTransform />
-                                    <TranslateTransform />
-                                </TransformGroup>
-                            </Image.RenderTransform>
-                        </Image>
-
-                        <StackPanel Grid.Row="0"
-                                    Grid.Column="1"
-                                    VerticalAlignment="Bottom"
-                                    HorizontalAlignment="Right"
-                                    Margin="0,0,12,80">
-                            <TextBlock x:Name="versionGlow"
-                                       Text="{Binding SoftwareVersion, StringFormat='v\{0}'}"
-                                       FontSize="110"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource SplashWarningTextSoft}"
-                                       HorizontalAlignment="Center"
-                                       Opacity="0"
-                                       Margin="0,0,0,0">
-                                <TextBlock.Effect>
-                                    <BlurEffect Radius="7" />
-                                </TextBlock.Effect>
-                            </TextBlock>
-                            <TextBlock x:Name="versionNumber"
-                                       Text="{Binding SoftwareVersion, StringFormat='v\{0}'}"
-                                       FontSize="1"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource SplashWarningTextFaint}"
-                                       HorizontalAlignment="Center"
-                                       Opacity="0"
-                                       Cursor="Hand">
-                                <TextBlock.RenderTransform>
-                                    <TranslateTransform />
-                                </TextBlock.RenderTransform>
-        <i:Interaction.Triggers>
-            <i:EventTrigger EventName="MouseDown">
-                <i:InvokeCommandAction Command="{Binding ResetWindowPositionCommand}" />
-            </i:EventTrigger>
-        </i:Interaction.Triggers>
-                            </TextBlock>
-                        </StackPanel>
-
-                        <!-- Panel shadow -->
-                        <Border x:Name="panel2"
-                                Margin="16,0,16,16"
-                                Height="112"
-                                VerticalAlignment="Bottom"
-                                Background="{DynamicResource SplashOverlayBackground}"
-                                Opacity="0"
-                                Panel.ZIndex="19">
-                            <Border.Effect>
-                                <BlurEffect Radius="22" />
-                            </Border.Effect>
-                        </Border>
-
-                        <!-- Info panel -->
-                        <Border x:Name="panel"
-                                Margin="16,0,16,-100"
-                                Height="112"
-                                VerticalAlignment="Bottom"
-                                CornerRadius="10"
-                                Opacity="0"
-                                Panel.ZIndex="20"
-                                RenderTransformOrigin="0.5,1">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0"
-                                                     EndPoint="0,1">
-                                    <GradientStop Color="{DynamicResource SplashCardGradientTop_Cl}"
-                                                  Offset="0" />
-                                    <GradientStop Color="{DynamicResource SplashCardGradientBottom_Cl}"
-                                                  Offset="1" />
-                                </LinearGradientBrush>
-                            </Border.Background>
-                            <Border.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform />
-                                    <TranslateTransform />
-                                </TransformGroup>
-                            </Border.RenderTransform>
-                            <Border CornerRadius="10"
-                                    BorderThickness="1"
-                                    Margin="1">
-                                <Border.BorderBrush>
-                                    <LinearGradientBrush x:Name="shimmerTransform"
-                                                         StartPoint="0,0"
-                                                         EndPoint="1,0">
-                                        <LinearGradientBrush.Transform>
-                                            <TranslateTransform X="-1" />
-                                        </LinearGradientBrush.Transform>
-                                        <GradientStop Color="{DynamicResource SplashCardShimmerStart_Cl}"
-                                                      Offset="0" />
-                                        <GradientStop Color="{DynamicResource SplashCardShimmerMid_Cl}"
-                                                      Offset="0.5" />
-                                        <GradientStop Color="{DynamicResource SplashCardShimmerStart_Cl}"
-                                                      Offset="1" />
-                                    </LinearGradientBrush>
-                                </Border.BorderBrush>
-                                <Grid Margin="16,10,16,10">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="4" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Orientation="Horizontal"
-                                                Grid.Row="0"
-                                                Grid.Column="0"
-                                                VerticalAlignment="Center">
-                                        <TextBlock x:Name="statsText"
-                                                   Text="Stats "
-                                                   FontSize="34"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource SplashBodyForeground}"
-                                                   Opacity="0">
-                                            <TextBlock.RenderTransform>
-                                                <TranslateTransform />
-                                            </TextBlock.RenderTransform>
-                                        </TextBlock>
-                                        <TextBlock x:Name="yearText"
-                                                   Text="2027"
-                                                   FontSize="34"
-                                                   FontWeight="Thin"
-                                                   Foreground="{DynamicResource SplashWarningOrange}"
-                                                   Margin="-4,0,0,0"
-                                                   Opacity="0">
-                                            <TextBlock.RenderTransform>
-                                                <TranslateTransform />
-                                            </TextBlock.RenderTransform>
-                                        </TextBlock>
-                                    </StackPanel>
-
-                                    <TextBlock x:Name="loadingText"
-                                               Grid.Row="1"
-                                               Grid.ColumnSpan="2"
-                                               Text="{Binding LoadingText}"
-                                               d:Text="Checking server connection.."
-                                               FontSize="9.5"
-                                               Foreground="{DynamicResource SplashCardSubtitle}"
-                                               Margin="0,5,0,0" />
-                                    <Grid Grid.Row="2"
-                                          Grid.ColumnSpan="2"
-                                          Margin="0,4,0,0"
-                                          Height="3">
-                                        <Border Background="{DynamicResource SplashCardBorder}"
-                                                CornerRadius="1.5" />
-                                        <Rectangle x:Name="progressBar"
-                                                   Width="{Binding LoadingProgress}"
-                                                   HorizontalAlignment="Left"
-                                                   RadiusX="1.5"
-                                                   RadiusY="1.5">
-                                            <Rectangle.Fill>
-                                                <LinearGradientBrush StartPoint="0,0"
-                                                                     EndPoint="1,0">
-                                                    <GradientStop Color="{DynamicResource SplashWarningGradientStart_Cl}"
-                                                                  Offset="0" />
-                                                    <GradientStop Color="{DynamicResource SplashWarningGradientEnd_Cl}"
-                                                                  Offset="1" />
-                                                </LinearGradientBrush>
-                                            </Rectangle.Fill>
-                                            <Rectangle.Effect>
-                                                <DropShadowEffect Color="{DynamicResource SplashWarningOrange_Cl}"
-                                                                  Direction="0"
-                                                                  ShadowDepth="0"
-                                                                  BlurRadius="5"
-                                                                  Opacity="0.45" />
-                                            </Rectangle.Effect>
-                                        </Rectangle>
-                                    </Grid>
-                                </Grid>
-                            </Border>
-                        </Border>
-
-                        <TextBlock Text="Window position got reset to default position"
-                                   FontSize="8"
-                                   Foreground="{DynamicResource SettingsSideTabAccent}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Top"
-                                   Margin="0,10,0,0"
-                                   Visibility="{Binding WindowPosResetText}"
-                                   Panel.ZIndex="65" />
-                        <TextBlock Text="Made by AmL"
-                                   FontSize="8"
-                                   Foreground="{DynamicResource SplashMutedForeground}"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Bottom"
-                                   Margin="0,0,18,5"
-                                   Panel.ZIndex="65" />
-                    </Grid>
+            <!-- Bottom-left branding + logo -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Margin="20,0,0,44"
+                        Panel.ZIndex="30">
+                <Grid Width="34"
+                      Height="34"
+                      Margin="0,0,10,0">
+                    <Image x:Name="logoGlow"
+                           Source="/Images/stats_2025_Q512.png"
+                           Width="34"
+                           Height="34"
+                           Opacity="0"
+                           RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform />
+                                <TranslateTransform />
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                        <Image.Effect>
+                            <BlurEffect Radius="10" />
+                        </Image.Effect>
+                    </Image>
+                    <Image x:Name="logo"
+                           Source="/Images/stats_2025_Q512.png"
+                           Width="24"
+                           Height="24"
+                           Opacity="0"
+                           d:Opacity="1"
+                           RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform />
+                                <TranslateTransform />
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
                 </Grid>
-            </Border>
-        </Border>
-    </Grid>
+                <TextBlock x:Name="brandText"
+                           Text="AmL"
+                           FontFamily="Segoe UI"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource SsmsWhiteBrush}"
+                           VerticalAlignment="Center"
+                           Opacity="0"
+                           d:Opacity="1">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform />
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+            </StackPanel>
+
+            <!-- Bottom-right version -->
+            <TextBlock x:Name="versionNumber"
+                       Text="{Binding SoftwareVersion}"
+                       FontFamily="Segoe UI"
+                       FontSize="32"
+                       FontWeight="Light"
+                       Foreground="{StaticResource SsmsWhiteBrush}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Bottom"
+                       Margin="0,0,20,38"
+                       Opacity="0"
+                       Panel.ZIndex="30"
+                       Cursor="Hand">
+                <TextBlock.RenderTransform>
+                    <TranslateTransform />
+                </TextBlock.RenderTransform>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseDown">
+                        <i:InvokeCommandAction Command="{Binding ResetWindowPositionCommand}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </TextBlock>
+
+            <!-- Loading area -->
+            <StackPanel x:Name="loadingPanel"
+                        VerticalAlignment="Bottom"
+                        Margin="20,0,20,14"
+                        Opacity="0"
+                        Panel.ZIndex="40">
+                <StackPanel.RenderTransform>
+                    <TranslateTransform />
+                </StackPanel.RenderTransform>
+                <TextBlock x:Name="loadingText"
+                           Text="{Binding LoadingText}"
+                           d:Text="Checking server connection.."
+                           FontFamily="Segoe UI"
+                           FontSize="11"
+                           Foreground="{StaticResource SsmsMutedWhiteBrush}"
+                           Margin="0,0,0,6" />
+                <Grid x:Name="progressTrack"
+                      Height="2">
+                    <Border Background="#33FFFFFF"
+                            CornerRadius="1" />
+                    <ProgressBar Value="{Binding LoadingProgress}"
+                                 Maximum="100"
+                                 Height="2"
+                                 Background="{DynamicResource TransparentBrush}"
+                                 Foreground="{StaticResource SsmsWhiteBrush}"
+                                 BorderThickness="0"
+                                 Opacity="0.85">
+                        <ProgressBar.Template>
+                            <ControlTemplate TargetType="ProgressBar">
+                                <Grid>
+                                    <Border x:Name="PART_Track"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="1" />
+                                    <Border x:Name="PART_Indicator"
+                                            Background="{TemplateBinding Foreground}"
+                                            CornerRadius="1"
+                                            HorizontalAlignment="Left" />
+                                </Grid>
+                            </ControlTemplate>
+                        </ProgressBar.Template>
+                    </ProgressBar>
+                </Grid>
+            </StackPanel>
+
+            <TextBlock Text="Window position got reset to default position"
+                       FontFamily="Segoe UI"
+                       FontSize="9"
+                       Foreground="{StaticResource SsmsHighlightBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,36,0,0"
+                       Visibility="{Binding WindowPosResetText}"
+                       Panel.ZIndex="60" />
+        </Grid>
+    </Border>
 </Window>

@@ -273,7 +273,7 @@
                     <DockPanel LastChildFill="False">
                         <Grid PreviewMouseDown="TitleBar_PreviewMouseDown"
                               Cursor="Hand"
-                              Width="577">
+                              Width="565">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto" />
                                 <ColumnDefinition Width="auto" />

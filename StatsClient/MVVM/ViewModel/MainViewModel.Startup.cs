@@ -1,7 +1,10 @@
+using DCMViewer.Services;
 using StatsClient.MVVM.Core;
+using StatsClient.MVVM.Services;
 using StatsClient.MVVM.View;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
@@ -90,6 +93,7 @@ public partial class MainViewModel
         RaisePropertyChanged(nameof(TotalOrdersInArchivesDatastore));
         RaisePropertyChanged(nameof(OrdersInArchivesDatastoreBetweenDates));
         RaisePropertyChanged(nameof(LastArchivesDatastoreRebuildDate));
+        RaisePropertyChanged(nameof(CanOpenMainMenu));
     }
 
     private long _startupUiPingMs = -1;
@@ -117,11 +121,23 @@ public partial class MainViewModel
         _startupHeartbeat = new Timer(
             _ =>
             {
+                if (_startupHeartbeat is null)
+                {
+                    return;
+                }
+
                 beat++;
                 long pingStarted = Environment.TickCount64;
+                var dispatcher = Application.Current?.Dispatcher;
+                if (dispatcher is null || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
+                {
+                    StopStartupHeartbeat();
+                    return;
+                }
+
                 try
                 {
-                    Application.Current.Dispatcher.BeginInvoke(
+                    dispatcher.BeginInvoke(
                         () => _startupUiPingMs = Environment.TickCount64 - pingStarted,
                         DispatcherPriority.Send);
                 }
@@ -136,10 +152,14 @@ public partial class MainViewModel
                     $"deferredRunning={_deferredStartupUiRunning}, allowBg={_allowPeriodicBackgroundTasks}, " +
                     $"mainWindow={IsMainWindowReady}");
 
+                if (_startupUiPingMs >= PerfDiagLog.FreezeThresholdMs)
+                    PerfDiagLog.Write("UI", $"Startup FREEZE uiPingMs={_startupUiPingMs} beat=#{beat}", mirrorToDebugTab: true);
+                else if (_startupUiPingMs >= PerfDiagLog.StallThresholdMs)
+                    PerfDiagLog.Write("UI", $"Startup STALL uiPingMs={_startupUiPingMs} beat=#{beat}", mirrorToDebugTab: true);
+
                 if (beat >= 60)
                 {
-                    _startupHeartbeat?.Dispose();
-                    _startupHeartbeat = null;
+                    StopStartupHeartbeat();
                 }
             },
             null,
@@ -147,6 +167,235 @@ public partial class MainViewModel
             TimeSpan.FromSeconds(2));
         StartupLog.WriteDetail("Heartbeat", "Thread-pool timer started (2s interval, max 60 beats)");
     }
+
+    internal void StopStartupHeartbeat()
+    {
+        var heartbeat = _startupHeartbeat;
+        if (heartbeat is null)
+        {
+            return;
+        }
+
+        _startupHeartbeat = null;
+        try
+        {
+            heartbeat.Dispose();
+        }
+        catch
+        {
+        }
+    }
+
+    internal void PrepareApplicationShutdown()
+    {
+        if (_applicationShutdownPrepared)
+        {
+            return;
+        }
+
+        _applicationShutdownPrepared = true;
+        _allowPeriodicBackgroundTasks = false;
+
+        StopStartupHeartbeat();
+        StopBackgroundActivityForShutdown();
+        CancelCancellableBackgroundWorkers();
+        DisposeWebViewsForShutdown();
+        WatchListNotificationManager.Shutdown();
+        EmbeddedDcmHostRegistry.ShutdownAll();
+        CloseAuxiliaryWindowsForShutdown();
+        CloseModelessToolWindows();
+        CloseHiddenToolWindowsForShutdown();
+        CloseAuxiliaryWindowsForShutdown();
+        PerfDiagLog.EndSession();
+    }
+
+    private static void CloseHiddenToolWindowsForShutdown()
+    {
+        var vm = Instance;
+        if (vm is null)
+        {
+            return;
+        }
+
+        try
+        {
+            vm.SmartOrderNamesWindow.Close();
+        }
+        catch
+        {
+        }
+    }
+
+    private static void DisposeWebViewsForShutdown()
+    {
+        var main = Instance?._MainWindow;
+        if (main is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (main.webviewLabnext.IsInitialized)
+            {
+                main.webviewLabnext.Dispose();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (main.webview.IsInitialized)
+            {
+                main.webview.Dispose();
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private static void CancelCancellableBackgroundWorkers()
+    {
+        try
+        {
+            if (bwListCases.IsBusy)
+            {
+                bwListCases.CancelAsync();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (bwListArchivesCases.IsBusy)
+            {
+                bwListArchivesCases.CancelAsync();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (bwListCasesGlobal.IsBusy)
+            {
+                bwListCasesGlobal.CancelAsync();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (bwListCasesForPaymentIssueMatching.IsBusy)
+            {
+                bwListCasesForPaymentIssueMatching.CancelAsync();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (bwZippingOrderArchives.IsBusy)
+            {
+                bwZippingOrderArchives.CancelAsync();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (bwGetSentOutIssues.IsBusy)
+            {
+                bwGetSentOutIssues.CancelAsync();
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private static void CloseModelessToolWindows()
+    {
+        var vm = Instance;
+        if (vm is null)
+        {
+            return;
+        }
+
+        vm.ClosePrescriptionExtractPreviewWindowForShutdown();
+        vm.ClosePrescriptionPanPositionEditorForShutdown();
+        vm.CloseOrderCreationWindowForShutdown();
+    }
+
+    private static void StopBackgroundActivityForShutdown()
+    {
+        var vm = Instance;
+        if (vm is null)
+        {
+            return;
+        }
+
+        vm.GeneralTimer.Stop();
+        vm.PrescriptionPreviewTimer.Stop();
+        vm.listUpdateTimer.Stop();
+        vm.notificationTimer.Stop();
+        vm.fsNotificationTimer.Stop();
+        vm.UpdateCheckTimer.Stop();
+        vm.ZipArchiveIconShowTimer.Stop();
+        vm.LabnextPanLookupTimer.Stop();
+        vm.LabnextLoadingHiderTimer.Stop();
+        vm.LabnextKeepAliveTimer.Stop();
+        vm._globalSearchDebounceTimer.Stop();
+
+        try
+        {
+            fswPrescriptionMaker.EnableRaisingEvents = false;
+            fswTriosFolderWatcher.EnableRaisingEvents = false;
+            fswIteroZipFileWhatcher.EnableRaisingEvents = false;
+        }
+        catch
+        {
+        }
+    }
+
+    private static void CloseAuxiliaryWindowsForShutdown()
+    {
+        var app = Application.Current;
+        if (app is null)
+        {
+            return;
+        }
+
+        foreach (var window in app.Windows.OfType<Window>().ToList())
+        {
+            if (window is MainWindow)
+            {
+                continue;
+            }
+
+            try
+            {
+                window.Close();
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    private bool _applicationShutdownPrepared;
 
     /// <summary>
     /// Runs synchronously on the UI thread right after Show() so the home screen is usable
@@ -234,11 +483,14 @@ public partial class MainViewModel
         if (_MainWindow.webviewLabnext.Source is null)
         {
             StartupLog.WriteStep("Initializing Labnext web view (on demand)");
+            if (LabnextWebViewTransparency.IsHostStyleEnabled)
+                BeginLabnextHostStyleApplication();
             _MainWindow.webviewLabnext.Source = new Uri(LabnextUrl);
             LabnextLoadingHiderTimer.Start();
         }
 
         TryEnsureLabnextWebViewEventHandlers();
+        UpdateLabnextWebViewPowerState();
     }
 
     internal void TryEnsureLabnextWebViewEventHandlers()
@@ -294,9 +546,20 @@ public partial class MainViewModel
         });
     }
 
+    private int _startupStatusStep;
+    private const double StartupProgressStart = 38;
+    private const double StartupProgressEnd = 95;
+    private const int EstimatedStartupSteps = 28;
+
     private async Task SetStartupStatusAsync(string message)
     {
+        int step = Interlocked.Increment(ref _startupStatusStep);
+        double progress = StartupProgressStart +
+            ((StartupProgressEnd - StartupProgressStart) * step / EstimatedStartupSteps);
+        progress = Math.Min(progress, StartupProgressEnd);
+
         StartupLog.WriteStep(message);
+        _ = SplashViewModel.Instance.ReportProgressAsync(progress, 250);
         await Application.Current.Dispatcher.InvokeAsync(
             () => SplashViewModel.Instance.LoadingText = message,
             DispatcherPriority.Send);
@@ -325,11 +588,9 @@ public partial class MainViewModel
         await SetStartupStatusAsync("Reading 3Shape file directory..");
         var fileDirectory = await Task.Run(DatabaseOperations.GetServerFileDirectory);
 
-        await SetStartupStatusAsync("Initializing payment cut-off date..");
-        await Task.Run(InitializePaymentListCutOffDate);
-
         await SetStartupStatusAsync("Loading local preferences..");
         _ = bool.TryParse(ReadLocalSetting("GlassyEffect"), out bool glassyEffect);
+        DcmViewerRenderingPreferences.LoadFromLocalSettings();
         _ = bool.TryParse(ReadLocalSetting("ShowAvailablePanCount"), out bool showAvailablePanCount);
         _ = bool.TryParse(ReadLocalSetting("StartAppMinimized"), out bool startAppMinimized);
         _ = bool.TryParse(ReadLocalSetting("ShowDigiCases"), out bool showDigiCases);
@@ -369,6 +630,7 @@ public partial class MainViewModel
         ThreeShapeDirectoryHelper = fileDirectory;
 
         CbSettingGlassyEffect = glassyEffect;
+        CbSettingDcmHighQualityRendering = DcmViewerRenderingPreferences.HighQualityRendering;
         CbSettingStartAppMinimized = startAppMinimized;
         CbSettingShowDigiCases = showDigiCases;
         CbSettingWatchFolderPrescriptionMaker = activePrescriptionMaker;
@@ -495,15 +757,7 @@ public partial class MainViewModel
 
         await SetStartupStatusAsync("Preparing PDF temp folder..");
         var pdfTemp = DataBaseFolder + @"PDFTemp";
-        await Task.Run(() =>
-        {
-            if (Directory.Exists(pdfTemp))
-            {
-                Directory.Delete(pdfTemp, true);
-            }
-
-            Directory.CreateDirectory(pdfTemp);
-        });
+        await Task.Run(() => PrescriptionPdfTempCleaner.PrepareFolder(pdfTemp));
         PDFTemp = pdfTemp;
 
         await SetStartupStatusAsync("Loading send-to list..");
@@ -539,25 +793,13 @@ public partial class MainViewModel
         await SetStartupStatusAsync("Loading last archive rebuild date..");
         var lastRebuildDate = await Task.Run(DatabaseOperations.GetLastRebuiltDateForArchives);
 
-        await SetStartupStatusAsync("Loading payment issue count..");
-        var paymentIssueCount = await GetPaymentIssueCountFromDB();
-
-        await SetStartupStatusAsync("Loading designer payment summaries..");
-        var designerPaymentSummaryList = await GetDesignerPaymentSummaryFromDB();
-
-        await SetStartupStatusAsync("Loading wrong-person payment orders..");
-        var paidToWrongPersonOrdersList = await GetPaidToWrongPersonsOrdersListFromDB();
-
         SearchHistory = searchHistory;
         PrescriptionMakerEventsList = pmEvents;
-        PaymentIssueCount = paymentIssueCount;
-        DesignerPaymentSummaryList = designerPaymentSummaryList;
-        PaidToWrongPersonOrdersList = paidToWrongPersonOrdersList;
 
         await SetStartupStatusAsync("Opening main window..");
         LogStartupVmSnapshot("Before main window UI dispatch");
         await Application.Current.Dispatcher.InvokeAsync(
-            () =>
+            async () =>
         {
             StartupLog.WritePhase("MainWindow", "UI dispatch entered");
             LogStartupVmSnapshot("Inside main window UI dispatch");
@@ -590,15 +832,15 @@ public partial class MainViewModel
             }
 
             StartupLog.WritePhase("MainWindow", "RevealMainWindowAfterStartup begin");
-            RevealMainWindowAfterStartup();
+            await RevealMainWindowAfterStartupAsync();
             StartupLog.WritePhase("MainWindow", "RevealMainWindowAfterStartup returned");
             LogStartupVmSnapshot("After RevealMainWindowAfterStartup");
         },
-            DispatcherPriority.Send).Task;
+            DispatcherPriority.Send).Task.Unwrap();
         LogStartupVmSnapshot("InitialTasks complete");
     }
 
-    private void RevealMainWindowAfterStartup()
+    private async Task RevealMainWindowAfterStartupAsync()
     {
         SyncMainWindowReferenceFromSplash();
 
@@ -609,6 +851,7 @@ public partial class MainViewModel
         }
 
         SplashViewModel.Instance.LoadingText = "Loading finished!";
+        await SplashViewModel.Instance.ReportProgressAsync(100, 800);
         StartupLog.WriteStep("Loading finished — showing main window");
         AppIsFullyLoaded = true;
 
@@ -622,10 +865,12 @@ public partial class MainViewModel
         _mainWindow ??= mainWindow;
         StartupLog.WriteDetail("Reveal", $"Calling mainWindow.Show() — size={mainWindow.Width}x{mainWindow.Height}");
         var showSw = System.Diagnostics.Stopwatch.StartNew();
+        Application.Current.MainWindow = mainWindow;
+        Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
         mainWindow.Show();
         showSw.Stop();
         StartupLog.WriteDetail("Reveal", $"mainWindow.Show() returned in {showSw.ElapsedMilliseconds}ms");
-        SplashWindow.Instance.Hide();
+        SplashWindow.Instance.Close();
         CompleteImmediatePostStartupUi();
         StartupLog.WriteStep("Startup complete");
         LogStartupVmSnapshot("Startup complete");
@@ -676,7 +921,7 @@ public partial class MainViewModel
             {
                 StartupLog.WriteStep("Deferred: enabling prescription maker watcher");
                 var pmSw = System.Diagnostics.Stopwatch.StartNew();
-                await Task.Run(ConfigurePrescriptionMakerFileWatcher);
+                Application.Current?.Dispatcher.Invoke(ConfigurePrescriptionMakerFileWatcher);
                 pmSw.Stop();
                 StartupLog.WriteDetail("Deferred", $"Prescription maker watcher ready ({pmSw.ElapsedMilliseconds}ms)");
             }
@@ -740,7 +985,9 @@ public partial class MainViewModel
             _deferredStartupUiRunning = false;
             _allowPeriodicBackgroundTasks = true;
             StartupLog.WriteStep("Deferred: finished — periodic background tasks enabled");
+            PerfDiagLog.Write("Startup", "Deferred startup complete — periodic background tasks enabled");
             StartupLog.Flush();
+            PerfDiagLog.Flush();
         }
     }
 
@@ -752,7 +999,7 @@ public partial class MainViewModel
             AddDebugLine(e.Error);
         }
 
-        Application.Current.Dispatcher.BeginInvoke(() =>
+        Application.Current.Dispatcher.BeginInvoke(async () =>
         {
             SyncMainWindowReferenceFromSplash();
 
@@ -764,7 +1011,7 @@ public partial class MainViewModel
                     SplashViewModel.Instance.mainWindow = new MainWindow();
                 }
 
-                RevealMainWindowAfterStartup();
+                await RevealMainWindowAfterStartupAsync();
             }
 
 #if DEBUG
@@ -778,13 +1025,22 @@ public partial class MainViewModel
             {
                 StartupLog.WriteDetail("Timer", "GeneralTimer skipped — post-startup not ready");
             }
+
+            ConfigurePrescriptionMakerFileWatcher();
+            ConfigureIteroZipFileWatcher();
         });
+    }
+
+    private void ResetStartupProgressTracking()
+    {
+        _startupStatusStep = 0;
     }
 
     internal static void StartInitialTasks()
     {
         if (!bwInitialTasks.IsBusy)
         {
+            Instance?.ResetStartupProgressTracking();
             StartupLog.WriteStep("Starting initial background tasks");
             bwInitialTasks.RunWorkerAsync();
         }

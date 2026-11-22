@@ -4,6 +4,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using Microsoft.Win32;
 using StatsClient.MVVM.Core;
+using StatsClient.MVVM.ViewModel;
 using Application = System.Windows.Application;
 using static StatsClient.MVVM.Core.LocalSettingsDB;
 
@@ -16,8 +17,14 @@ namespace StatsClient
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            SyncfusionLicenseRegistrar.Register();
+
             StartupLog.BeginSession();
             StartupLog.WriteStep("Application OnStartup");
+
+            PerfDiagLog.BeginSession();
+            PerfDiagLog.Write("App", "OnStartup");
+            PerfDiagLog.StartUiMonitor(intervalSeconds: 5);
 
             // Clear any stale WPF render-tier cache (DISPLAY* subkeys under Avalon.Graphics).
             // A stale Tier 0 from a previous RDP/console session prevents WPF re-probing the GPU.
@@ -40,6 +47,12 @@ namespace StatsClient
             ColorSchemeManager.ApplySavedFromLocalSettings();
 
             base.OnStartup(e);
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            MainViewModel.Instance?.PrepareApplicationShutdown();
+            base.OnExit(e);
         }
 
         /// <summary>
@@ -94,7 +107,7 @@ namespace StatsClient
                 bool hwForcedOff = hwDisabledUser == 1 || hwDisabledMachine == 1;
 
                 string hwDiagnosis = hwForcedOff
-                    ? $"*** DisableHWAcceleration FOUND ù HKCU:{hwDisabledUser} HKLM:{hwDisabledMachine} ***"
+                    ? $"*** DisableHWAcceleration FOUND ÔøΩ HKCU:{hwDisabledUser} HKLM:{hwDisabledMachine} ***"
                     : "DisableHWAcceleration: not set (OK)";
 
                 var lines = new[]
@@ -103,7 +116,7 @@ namespace StatsClient
                     $"Machine       : {Environment.MachineName}",
                     $"User          : {Environment.UserName}",
                     $"Remote session: {isRemote}",
-                    $"Render tier   : {tier} ù {tierLabel}",
+                    $"Render tier   : {tier} ÔøΩ {tierLabel}",
                     $"PS 2.0        : {ps2}",
                     $"PS 3.0        : {ps3}",
                     $"OS            : {Environment.OSVersion}",

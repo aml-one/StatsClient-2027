@@ -26,6 +26,7 @@ public partial class DcmViewerCanvasComponent : UserControl
     private UIElement? _hostedContent;
     private List<DCMFileItem>? _pendingCaseFiles;
     private string? _pendingOrderFolderPath;
+    private bool _pendingUseStoneForModelScans;
     private string? _pendingDesignOrderId;
 
     private static ImageSource? TryCreateDefaultLogoSource()
@@ -351,7 +352,10 @@ public partial class DcmViewerCanvasComponent : UserControl
         _embeddedWindow?.ConfigureAsDesignHost(orderFolderPath, orderId);
     }
 
-    public Task LoadCaseFilesAsync(IEnumerable<DCMFileItem> files, string? orderFolderPath = null)
+    public Task LoadCaseFilesAsync(
+        IEnumerable<DCMFileItem> files,
+        string? orderFolderPath = null,
+        bool useStoneForModelScans = false)
     {
         var fileList = files?.ToList() ?? [];
         if (!UseFullAppShell)
@@ -361,6 +365,7 @@ public partial class DcmViewerCanvasComponent : UserControl
 
         _pendingCaseFiles = fileList;
         _pendingOrderFolderPath = orderFolderPath;
+        _pendingUseStoneForModelScans = useStoneForModelScans;
         return EnsureEmbeddedWindowLoadedAsync();
     }
 
@@ -396,8 +401,7 @@ public partial class DcmViewerCanvasComponent : UserControl
     {
         _pendingCaseFiles = null;
         Content = null;
-        _hostedContent = null;
-        DataContext = null;
+        SetCurrentValue(DataContextProperty, null);
 
         if (_embeddedWindow is null)
         {
@@ -420,8 +424,9 @@ public partial class DcmViewerCanvasComponent : UserControl
         }
 
         _embeddedWindow.ShutdownEmbeddedHost();
-        _embeddedWindow.Close();
+        _embeddedWindow.ForceCloseEmbeddedHostWindow();
         _embeddedWindow = null;
+        EmbeddedDcmHostRegistry.Unregister(this);
         MainViewModel.UiDispatcher = null;
     }
 
@@ -620,7 +625,10 @@ public partial class DcmViewerCanvasComponent : UserControl
             {
                 var pendingCaseFiles = _pendingCaseFiles;
                 _pendingCaseFiles = null;
-                await _embeddedWindow.LoadCaseFilesAsync(pendingCaseFiles, _pendingOrderFolderPath);
+                await _embeddedWindow.LoadCaseFilesAsync(
+                    pendingCaseFiles,
+                    _pendingOrderFolderPath,
+                    _pendingUseStoneForModelScans);
             }
 
             return;
@@ -640,6 +648,7 @@ public partial class DcmViewerCanvasComponent : UserControl
                 Left = -32000,
                 Top = -32000
             };
+            EmbeddedDcmHostRegistry.Register(this);
             _embeddedWindow.SetCanvasBackgroundTransparent(IsBackgroundTransparent);
 
             if (_embeddedWindow.Content is not UIElement hostedContent)
@@ -680,9 +689,11 @@ public partial class DcmViewerCanvasComponent : UserControl
         {
             var pendingCaseFiles = _pendingCaseFiles;
             var pendingOrderFolder = _pendingOrderFolderPath;
+            var pendingUseStone = _pendingUseStoneForModelScans;
             _pendingCaseFiles = null;
             _pendingOrderFolderPath = null;
-            await _embeddedWindow.LoadCaseFilesAsync(pendingCaseFiles, pendingOrderFolder);
+            _pendingUseStoneForModelScans = false;
+            await _embeddedWindow.LoadCaseFilesAsync(pendingCaseFiles, pendingOrderFolder, pendingUseStone);
         }
     }
 
@@ -746,8 +757,7 @@ public partial class DcmViewerCanvasComponent : UserControl
     {
         Viewport.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
         Viewport.Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
-        Viewport.EnableSwapChainRendering = false;
-        Viewport.EnableRenderOrder = true;
+        _embeddedWindow?.ApplyRenderingQualitySettings();
     }
 
     private void ConfigureViewportGestures()

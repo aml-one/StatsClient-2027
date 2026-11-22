@@ -198,6 +198,16 @@ public class OrderRenameViewModel : ObservableObject
             RaisePropertyChanged(nameof(OrderIDBeforeChange));
         }
     }
+
+    public bool LastRenameSucceeded { get; private set; }
+
+    public string? LastRenamedOrderId { get; private set; }
+
+    public void ResetRenameOutcome()
+    {
+        LastRenameSucceeded = false;
+        LastRenamedOrderId = null;
+    }
     
     private string toothNumbersString = "";
     public string ToothNumbersString
@@ -588,7 +598,11 @@ public class OrderRenameViewModel : ObservableObject
                 }
             }
 
-            //openOrderIdHelper = NewFileName;
+            LastRenameSucceeded = true;
+            LastRenamedOrderId = NewFileName;
+            if (ThreeShapeObject is not null)
+                ThreeShapeObject.IntOrderID = NewFileName;
+
             await UnLockOrderIn3Shape(NewFileName);
             OrderRenameWindow.StaticInstance.Close();
         }
@@ -670,12 +684,7 @@ public class OrderRenameViewModel : ObservableObject
                                               double DismissAfterSeconds = 300,
                                               Window? Owner = null)
     {
-        SMessageBox sMessageBox = new(Title, Message, Buttons, MessageBoxIcon, DismissAfterSeconds);
-        if (Owner is null)
-            sMessageBox.Owner = MainWindow.Instance;
-        else
-            sMessageBox.Owner = Owner;
-
+        SMessageBox sMessageBox = new(Title, Message, Buttons, MessageBoxIcon, DismissAfterSeconds, Owner ?? OrderRenameWindow.StaticInstance);
         sMessageBox.ShowDialog();
 
         return MainViewModel.Instance.SMessageBoxxResult;

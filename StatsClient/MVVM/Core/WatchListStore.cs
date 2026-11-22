@@ -86,11 +86,12 @@ public static class WatchListStore
         }
     }
 
-    public static void AddOrUpdate(WatchListEntry entry)
+    public static void AddOrUpdate(WatchListEntry entry, bool notifyChanged = true)
     {
         if (string.IsNullOrWhiteSpace(entry.IntOrderID))
             return;
 
+        bool changed;
         lock (Gate)
         {
             var existing = _entries.FirstOrDefault(e =>
@@ -102,9 +103,19 @@ public static class WatchListStore
                     entry.AddedUtc = DateTime.UtcNow;
                 _entries.Add(entry);
                 persisted = entry;
+                changed = true;
             }
             else
             {
+                changed = !string.Equals(existing.LastProcessStatusID, entry.LastProcessStatusID, StringComparison.OrdinalIgnoreCase)
+                    || !string.Equals(existing.LastProcessLockID, entry.LastProcessLockID, StringComparison.OrdinalIgnoreCase)
+                    || !string.Equals(existing.Patient_FirstName, entry.Patient_FirstName, StringComparison.Ordinal)
+                    || !string.Equals(existing.Patient_LastName, entry.Patient_LastName, StringComparison.Ordinal)
+                    || !string.Equals(existing.Customer, entry.Customer, StringComparison.Ordinal)
+                    || !string.Equals(existing.Items, entry.Items, StringComparison.Ordinal)
+                    || !string.Equals(existing.PanNumber, entry.PanNumber, StringComparison.OrdinalIgnoreCase)
+                    || !string.Equals(existing.ImageSource, entry.ImageSource, StringComparison.Ordinal);
+
                 existing.LastProcessStatusID = entry.LastProcessStatusID ?? existing.LastProcessStatusID;
                 existing.LastProcessLockID = entry.LastProcessLockID ?? existing.LastProcessLockID;
                 existing.Patient_FirstName = entry.Patient_FirstName ?? existing.Patient_FirstName;
@@ -119,8 +130,11 @@ public static class WatchListStore
             LocalSettingsDB.UpsertWatchListEntry(persisted);
         }
 
-        Changed?.Invoke();
+        if (notifyChanged && changed)
+            Changed?.Invoke();
     }
+
+    public static void NotifyChanged() => Changed?.Invoke();
 
     public static void Remove(string? orderId)
     {

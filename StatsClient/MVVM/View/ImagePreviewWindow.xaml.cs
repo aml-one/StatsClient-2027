@@ -60,7 +60,6 @@ public partial class ImagePreviewWindow : Window, INotifyPropertyChanged
         FileName = fileInfo.Name.Replace(fileInfo.Extension, "");
 
         image.ImagePath = ImageSource;
-
         this.ShowDialog();            
     }
 
@@ -87,11 +86,4 @@ public partial class ImagePreviewWindow : Window, INotifyPropertyChanged
             catch { }
     }
 
-    private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.ClickCount >= 2)
-        {
-            Close();
-        }
-    }
 }
